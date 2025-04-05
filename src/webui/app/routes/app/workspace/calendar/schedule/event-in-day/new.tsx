@@ -40,7 +40,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const ParamsSchema = z.object({})
+
+const QuerySchema = z.object({
   date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
@@ -50,16 +52,16 @@ const QuerySchema = {
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
   initialStartTimeInDay: z.string().optional(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   scheduleStreamRefId: z.string(),
   userTimezone: z.string(),
   name: z.string(),
   startDate: z.string(),
   startTimeInDay: z.string().optional(),
   durationMins: z.string().transform((v) => parseInt(v, 10)),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -295,7 +297,8 @@ export default function ScheduleEventInDayNew() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
+  (_params, searchParams) => `/app/workspace/calendar?${searchParams}`,
+  ParamsSchema,
   {
     error: () =>
       `There was an error creating the event in day! Please try again!`,

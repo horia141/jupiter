@@ -34,10 +34,12 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   rightNow: z.string(),
   period: z.nativeEnum(RecurringTaskPeriod),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -140,6 +142,10 @@ export default function NewJournal() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/journals", {
-  error: () => `There was an error creating the journal! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/journals",
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the journal! Please try again!`,
+  },
+);

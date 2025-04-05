@@ -37,10 +37,10 @@ import { AUTH_TOKEN_NAME } from "~/names";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { commitSession, getSession } from "~/sessions";
 
-const LoginFormSchema = {
+const LoginFormSchema = z.object({
   emailAddress: z.string(),
   password: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.ROOT,

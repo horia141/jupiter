@@ -12,11 +12,11 @@ import {
 } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 
-const UpdateStatusAndEisenFormSchema = {
+const UpdateStatusAndEisenFormSchema = z.object({
   id: z.string(),
   status: z.nativeEnum(InboxTaskStatus),
   eisen: z.nativeEnum(Eisen).or(z.literal("no-go")).optional(),
-};
+});
 
 export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);

@@ -45,9 +45,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const GCFormSchema = {
+const GCFormSchema = z.object({
   gcTargets: selectZod(z.nativeEnum(SyncTarget)),
-};
+});
 
 export const handle = {
   displayType: DisplayType.TOOL,

@@ -96,8 +96,10 @@ type ActionDesc =
   | NavMultipleDesc // A group of buttons, as a navigation
   | ActionSingleDesc // A single button, as an action
   | ActionMultipleDesc // A group of buttons, as an action
-  | FilterFewOptionsDesc<never> // A group to filter on, can be a navigation or a callback
-  | FilterManyOptionsDesc<never>; // A group to filter on, with many options
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | FilterFewOptionsDesc<any> // A group to filter on, can be a navigation or a callback
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | FilterManyOptionsDesc<any>; // A group to filter on, with many options
 
 export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
   return {

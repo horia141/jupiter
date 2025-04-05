@@ -114,14 +114,14 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-const QuerySchema = {
+const QuerySchema = z.object({
   date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
   period: z.nativeEnum(RecurringTaskPeriod).optional(),
   view: z.nativeEnum(View).optional(),
-};
+});
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);

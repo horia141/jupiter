@@ -33,12 +33,12 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { commitSession, getSession } from "~/sessions";
 
-const RecoverAccountFormSchema = {
+const RecoverAccountFormSchema = z.object({
   emailAddress: z.string(),
   recoveryToken: z.string(),
   newPassword: z.string(),
   newPasswordRepeat: z.string(),
-};
+});
 
 // @secureFn
 export async function action({ request }: LoaderFunctionArgs) {

@@ -12,13 +12,13 @@ import {
 } from "~/logic/action-result";
 import { NoteContentParser } from "~/logic/domain/notes";
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
   content: z.preprocess((value) => {
     const utf8Buffer = Buffer.from(String(value), "base64");
     return JSON.parse(utf8Buffer.toString("utf-8"));
   }, NoteContentParser),
-};
+});
 
 export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);

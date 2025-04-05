@@ -31,11 +31,11 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const UpdateFormSchema = {
-  project: z.string().optional(),
-};
-
 const ParamsSchema = z.object({});
+
+const UpdateFormSchema = z.object({
+  project: z.string().optional(),
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,

@@ -30,11 +30,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
   isDone: CheckboxAsString,
   tags: z
@@ -44,7 +44,7 @@ const CreateFormSchema = {
     .string()
     .transform((s) => (s === "" ? undefined : s))
     .optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -171,7 +171,8 @@ export default function NewSmartListItem() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/items`,
+  (params) => `/app/workspace/smart-lists/${params.id}/items`,
+  ParamsSchema,
   {
     error: () =>
       `There was an error creating the smart list item! Please try again!`,

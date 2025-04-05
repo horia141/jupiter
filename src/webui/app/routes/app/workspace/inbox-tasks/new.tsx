@@ -57,15 +57,17 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const ParamsSchema = z.object({});
+
+const QuerySchema = z.object({
   timePlanReason: z.literal("for-time-plan").optional(),
   timePlanRefId: z.string().optional(),
   bigPlanReason: z.literal("for-big-plan").optional(),
   bigPlanRefId: z.string().optional(),
   parentTimePlanActivityRefId: z.string().optional(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   bigPlan: z.string().optional(),
@@ -77,7 +79,7 @@ const CreateFormSchema = {
   timePlanActivityFeasability: z
     .nativeEnum(TimePlanActivityFeasability)
     .optional(),
-};
+});
 
 type BigPlanACOption = {
   label: string;
@@ -540,6 +542,7 @@ export default function NewInboxTask() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/inbox-tasks",
+  ParamsSchema,
   {
     error: () =>
       `There was an error creating the inbox task! Please try again!`,

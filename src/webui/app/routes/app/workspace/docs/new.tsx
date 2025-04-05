@@ -18,11 +18,11 @@ import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
-  name: z.string(),
-};
-
 const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
+  name: z.string(),
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,

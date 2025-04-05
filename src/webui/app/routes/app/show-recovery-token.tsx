@@ -25,9 +25,9 @@ import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
 import { Title } from "~/components/title";
 
-const QuerySchema = {
+const QuerySchema = z.object({
   recoveryToken: z.string(),
-};
+});
 
 // @secureFn
 export async function loader({ request }: LoaderFunctionArgs) {

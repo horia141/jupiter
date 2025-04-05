@@ -29,9 +29,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
@@ -236,10 +237,12 @@ export default function SmartListDetails() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/items`,
+  (params) => `/app/workspace/smart-lists/${params.id}/items`,
+  ParamsSchema,
   {
-    notFound: () => `Could not find smart list item details!`,
-    error: () =>
-      `There was an error loading smart list item details! Please try again!`,
+    notFound: (params) =>
+      `Could not find smart list item details for #${params.id}!`,
+    error: (params) =>
+      `There was an error loading smart list item details for #${params.id}! Please try again!`,
   },
 );

@@ -4,6 +4,7 @@ import {
   isRouteErrorResponse,
   useParams,
   useRouteError,
+  useSearchParams,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
@@ -67,12 +68,11 @@ export function makeRootErrorBoundary(labelsFor: { error?: () => string }) {
 export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
   returnLocation:
     | string
-    | (() => string)
-    | ((params: z.infer<typeof paramsParser>) => string),
+    | ((params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string),
   paramsParser: z.ZodObject<K>,
   labelsFor: {
-    notFound?: (params: z.infer<typeof paramsParser>) => string;
-    error?: (params: z.infer<typeof paramsParser>) => string;
+    notFound?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
+    error?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
   },
 ) {
   function ErrorBoundary() {
@@ -80,16 +80,17 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
     const globalProperties = useContext(GlobalPropertiesContext);
     const paramsRaw = useParams();
     const params = paramsParser.parse(paramsRaw);
+    const [searchParams] = useSearchParams();
     const resolvedReturnLocation =
       typeof returnLocation === "function"
-        ? returnLocation(params)
+        ? returnLocation(params, searchParams)
         : returnLocation;
 
     if (isRouteErrorResponse(error)) {
       if (error.status === StatusCodes.NOT_FOUND) {
         const resolvedReturnLocation =
           typeof returnLocation === "function"
-            ? returnLocation()
+            ? returnLocation(params, searchParams)
             : returnLocation;
         return (
           <LeafPanel
@@ -100,7 +101,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
             <Alert severity="warning">
               <AlertTitle>Error</AlertTitle>
               {labelsFor.notFound
-                ? labelsFor.notFound(params)
+                ? labelsFor.notFound(params, searchParams)
                 : "Could not find entity!"}
             </Alert>
           </LeafPanel>
@@ -118,7 +119,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
           <Alert severity="error">
             <AlertTitle>Danger</AlertTitle>
             {labelsFor.error
-              ? labelsFor.error(params)
+              ? labelsFor.error(params, searchParams)
               : "Error retrieving entity!"}
 
             {isDevelopment(globalProperties.env) && (
@@ -150,11 +151,11 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
 }
 
 export function makeBranchErrorBoundary<K extends z.ZodRawShape>(
-  returnLocation: string | (() => string),
+  returnLocation: string | ((params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string),
   paramsParser: z.ZodObject<K>,
   labelsFor: {
-    notFound?: (params: z.infer<typeof paramsParser>) => string;
-    error?: (params: z.infer<typeof paramsParser>) => string;
+    notFound?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
+    error?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
   },
 ) {
   function ErrorBoundary() {
@@ -162,8 +163,11 @@ export function makeBranchErrorBoundary<K extends z.ZodRawShape>(
     const globalProperties = useContext(GlobalPropertiesContext);
     const paramsRaw = useParams();
     const params = paramsParser.parse(paramsRaw);
+    const [searchParams] = useSearchParams();
     const resolvedReturnLocation =
-      typeof returnLocation === "function" ? returnLocation() : returnLocation;
+      typeof returnLocation === "function"
+        ? returnLocation(params, searchParams)
+        : returnLocation;
 
     if (isRouteErrorResponse(error)) {
       if (error.status === StatusCodes.NOT_FOUND) {
@@ -176,7 +180,7 @@ export function makeBranchErrorBoundary<K extends z.ZodRawShape>(
             <Alert severity="warning">
               <AlertTitle>Error</AlertTitle>
               {labelsFor.notFound
-                ? labelsFor.notFound(params)
+                ? labelsFor.notFound(params, searchParams)
                 : "Could not find entity!"}
             </Alert>
           </BranchPanel>
@@ -194,7 +198,7 @@ export function makeBranchErrorBoundary<K extends z.ZodRawShape>(
           <Alert severity="error">
             <AlertTitle>Danger</AlertTitle>
             {labelsFor.error
-              ? labelsFor.error(params)
+              ? labelsFor.error(params, searchParams)
               : "Error retrieving entity!"}
 
             {isDevelopment(globalProperties.env) && (

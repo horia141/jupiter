@@ -10,5 +10,5 @@ poetry run ruff check --cache-dir=.build-cache/ruff --config=./scripts/check/lin
 
 # Check Node+TS
 (cd src/webui && npx tsc)
-# (cd src/desktop && npx tsc) # TODO(horia141): typescriptify electron app
-# (cd tests && exit 1) # TODO(horia141): with new test
+npx prettier --check --list-different src/webui src/desktop src/mobile
+npx eslint src/webui

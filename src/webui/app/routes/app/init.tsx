@@ -57,7 +57,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { commitSession, getSession } from "~/sessions";
 
-const WorkspaceInitFormSchema = {
+const WorkspaceInitFormSchema = z.object({
   userEmailAddress: z.string(),
   userName: z.string(),
   userTimezone: z.string(),
@@ -71,7 +71,7 @@ const WorkspaceInitFormSchema = {
   workspaceFirstScheduleStreamName: z.string(),
   workspaceFeatureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
   // forAppReview: CheckboxAsString,
-};
+});
 
 // @secureFn
 export async function loader({ request }: LoaderFunctionArgs) {

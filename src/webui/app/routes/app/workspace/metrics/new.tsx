@@ -41,7 +41,9 @@ import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   icon: z.string().optional(),
   collectionPeriod: z.union([
@@ -54,7 +56,7 @@ const CreateFormSchema = {
   collectionActionableFromMonth: z.string().optional(),
   collectionDueAtDay: z.string().optional(),
   collectionDueAtMonth: z.string().optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -309,6 +311,10 @@ export default function NewMetric() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(`/app/workspace/metrics`, {
-  error: () => `There was an error creating the metric! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  `/app/workspace/metrics`,
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the metric! Please try again!`,
+  },
+);

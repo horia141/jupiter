@@ -41,7 +41,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const QuerySchema = z.object({
   today: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
@@ -50,7 +50,7 @@ const QuerySchema = {
   breakdownPeriod: z
     .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
     .optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.TOOL,

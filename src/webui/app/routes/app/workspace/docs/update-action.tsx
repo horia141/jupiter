@@ -12,7 +12,7 @@ import {
 } from "~/logic/action-result";
 import { NoteContentParser } from "~/logic/domain/notes";
 
-const UpdateFormSchema = {
+const UpdateFormSchema = z.object({
   docId: z.string(),
   noteId: z.string(),
   name: z.string(),
@@ -20,7 +20,7 @@ const UpdateFormSchema = {
     const utf8Buffer = Buffer.from(String(value), "base64");
     return JSON.parse(utf8Buffer.toString("utf-8"));
   }, NoteContentParser),
-};
+});
 
 export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);

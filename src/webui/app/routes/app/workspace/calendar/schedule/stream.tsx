@@ -4,6 +4,7 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useSearchParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+import { z } from "zod";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -19,6 +20,8 @@ import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
+
+const ParamsSchema = z.object({});
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -86,7 +89,8 @@ export default function ScheduleStreamViewAll() {
 }
 
 export const ErrorBoundary = makeBranchErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
+  (_params, searchParams) => `/app/workspace/calendar?${searchParams}`,
+  ParamsSchema,
   {
     error: () => "There was an error loading time plan calendar streams!",
   },

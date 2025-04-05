@@ -68,11 +68,12 @@ const ParamsSchema = z.object({
   id: z.string(),
 });
 
-const QuerySchema = {
+const QuerySchema = z.object({
   bigPlanReason: z.literal("for-big-plan").optional(),
   bigPlanRefId: z.string().optional(),
   timePlanActivityRefId: z.string().optional(),
-};
+});
+
 const CommonParamsSchema = {
   targetInboxTaskRefIds: z
     .string()

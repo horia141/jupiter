@@ -51,7 +51,7 @@ export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-const QuerySchema = {
+const QuerySchema = z.object({
   query: z.string().optional(),
   limit: z.string().optional(),
   includeArchived: CheckboxAsString,
@@ -62,7 +62,7 @@ const QuerySchema = {
   filterLastModifiedTimeBefore: z.string().optional(),
   filterArchivedTimeAfter: z.string().optional(),
   filterArchivedTimeBefore: z.string().optional(),
-};
+});
 
 const DEFAULT_LIMIT = 30;
 

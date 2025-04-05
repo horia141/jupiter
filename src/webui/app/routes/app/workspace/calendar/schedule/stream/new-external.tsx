@@ -35,10 +35,12 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({})
+
+const CreateFormSchema = z.object({
   sourceIcalUrl: z.string(),
   color: z.nativeEnum(ScheduleStreamColor),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -144,7 +146,9 @@ export default function ScheduleStreamNew() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar/schedule/stream?${useSearchParams()}`,
+  (_params, searchParams) =>
+    `/app/workspace/calendar/schedule/stream?${searchParams}`,
+  ParamsSchema,
   {
     error: () =>
       `There was an error creating the schedule stream! Please try again!`,

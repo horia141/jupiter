@@ -22,9 +22,9 @@ import { Logo } from "~/components/logo";
 import { Title } from "~/components/title";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const QuerySchema = {
+const QuerySchema = z.object({
   returnTo: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.ROOT,

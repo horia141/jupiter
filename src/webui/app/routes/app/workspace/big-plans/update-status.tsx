@@ -12,10 +12,10 @@ import {
 } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 
-const UpdateStatusFormSchema = {
+const UpdateStatusFormSchema = z.object({
   id: z.string(),
   status: z.nativeEnum(BigPlanStatus),
-};
+});
 
 export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);

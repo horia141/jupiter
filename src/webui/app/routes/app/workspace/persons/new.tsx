@@ -38,7 +38,9 @@ import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   relationship: z.string(),
   birthdayDay: z.string(),
@@ -50,7 +52,7 @@ const CreateFormSchema = {
   catchUpActionableFromMonth: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
   catchUpDueAtMonth: z.string().optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -287,6 +289,10 @@ export default function NewPerson() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(`/app/workspace/persons`, {
-  error: () => `There was an error creating the person! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  `/app/workspace/persons`,
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the person! Please try again!`,
+  },
+);

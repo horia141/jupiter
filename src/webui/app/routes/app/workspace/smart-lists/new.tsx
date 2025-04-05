@@ -27,12 +27,12 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   icon: z.string().optional(),
-};
-
-const ParamsSchema = z.object({});
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,

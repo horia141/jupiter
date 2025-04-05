@@ -7,9 +7,9 @@ import { parseQuery } from "zodix";
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { VERSION_HEADER } from "~/names";
 
-const QuerySchema = {
+const QuerySchema = z.object({
   distribution: z.nativeEnum(AppDistribution),
-};
+});
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const query = parseQuery(request, QuerySchema);

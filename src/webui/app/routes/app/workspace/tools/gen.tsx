@@ -90,7 +90,7 @@ interface PersonOptions {
   label: string;
 }
 
-const GenFormSchema = {
+const GenFormSchema = z.object({
   gen_even_if_not_modified: CheckboxAsString,
   today: z.optional(z.string()),
   gen_targets: selectZod(z.nativeEnum(SyncTarget)),
@@ -100,7 +100,7 @@ const GenFormSchema = {
   filter_chore_ref_ids: selectZod(z.string()),
   filter_metric_ref_ids: selectZod(z.string()),
   filter_person_ref_ids: selectZod(z.string()),
-};
+});
 
 export const handle = {
   displayType: DisplayType.TOOL,

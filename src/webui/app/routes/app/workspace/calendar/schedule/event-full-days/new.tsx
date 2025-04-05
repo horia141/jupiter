@@ -37,21 +37,21 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const ParamsSchema = z.object({});
+
+const QuerySchema = z.object({
   date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
-};
+});
 
-const ParamsSchema = z.object({});
-
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   scheduleStreamRefId: z.string(),
   name: z.string(),
   startDate: z.string(),
   durationDays: z.string().transform((v) => parseInt(v, 10)),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,

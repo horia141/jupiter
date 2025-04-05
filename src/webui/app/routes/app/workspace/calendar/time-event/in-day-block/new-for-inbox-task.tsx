@@ -39,7 +39,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const ParamsSchema = z.object({});
+
+const QuerySchema = z.object({
   inboxTaskRefId: z.string(),
   timePlanReason: z.literal("for-time-plan").optional(),
   timePlanRefId: z.string().optional(),
@@ -48,14 +50,14 @@ const QuerySchema = {
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   userTimezone: z.string(),
   startDate: z.string(),
   startTimeInDay: z.string().optional(),
   durationMins: z.string().transform((v) => parseInt(v, 10)),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -317,7 +319,8 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
+  (_params, searchParams) => `/app/workspace/calendar?${searchParams}`,
+  ParamsSchema,
   {
     error: () =>
       `There was an error creating the event in day! Please try again!`,

@@ -41,7 +41,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   period: z.nativeEnum(RecurringTaskPeriod),
@@ -58,9 +60,7 @@ const CreateFormSchema = {
     .or(z.literal("none"))
     .optional(),
   repeatsInPeriodCount: z.string().optional(),
-};
-
-const ParamsSchema = z.object({});
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,

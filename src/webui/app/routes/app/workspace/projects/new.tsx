@@ -29,12 +29,12 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   parentProjectRefId: z.string(),
   name: z.string(),
-};
-
-const ParamsSchema = z.object({});
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,

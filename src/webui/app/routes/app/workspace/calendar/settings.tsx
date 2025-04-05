@@ -51,10 +51,12 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ScheduleExternalSyncFormSchema = {
+const ParamsSchema = z.object({});
+
+const ScheduleExternalSyncFormSchema = z.object({
   scheduleStreamRefIds: selectZod(z.string()),
   syncEvenIfNotModified: CheckboxAsString,
-};
+});
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -240,7 +242,8 @@ export default function CalendarSettings() {
 }
 
 export const ErrorBoundary = makeBranchErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
+  (_params, searchParams) => `/app/workspace/calendar?${searchParams}`,
+  ParamsSchema,
   {
     error: () =>
       `There was an error creating the event in day! Please try again!`,

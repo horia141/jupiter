@@ -31,9 +31,11 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const UpdateFormSchema = {
+const ParamsSchema = z.object({});
+
+const UpdateFormSchema = z.object({
   project: z.string().optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -145,6 +147,7 @@ export default function SlackTasksSettings() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/slack-tasks",
+  ParamsSchema,
   {
     error: () =>
       `There was an error upserting Slack task settings! Please try again!`,

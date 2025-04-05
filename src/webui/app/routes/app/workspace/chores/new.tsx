@@ -41,7 +41,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   period: z.nativeEnum(RecurringTaskPeriod),
@@ -55,7 +57,7 @@ const CreateFormSchema = {
   skipRule: z.string().optional(),
   startAtDate: z.string().optional(),
   endAtDate: z.string().optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -236,6 +238,10 @@ export default function NewChore() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/chores", {
-  error: () => `There was an error creating the chore! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/chores",
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the chore! Please try again!`,
+  },
+);

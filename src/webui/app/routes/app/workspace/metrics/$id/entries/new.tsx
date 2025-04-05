@@ -30,14 +30,14 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   collectionTime: z.string(),
   value: z.string().transform(parseFloat),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -160,7 +160,8 @@ export default function NewMetricEntry() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
+  (params) => `/app/workspace/metrics/${params.id}`,
+  ParamsSchema,
   {
     error: () =>
       `There was an error creating the metric entry! Please try again!`,

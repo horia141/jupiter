@@ -41,12 +41,14 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const ParamsSchema = z.object({});
+
+const QuerySchema = z.object({
   timePlanReason: z.literal("for-time-plan").optional(),
   timePlanRefId: z.string().optional(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   actionableDate: z.string().optional(),
@@ -55,9 +57,7 @@ const CreateFormSchema = {
   timePlanActivityFeasability: z
     .nativeEnum(TimePlanActivityFeasability)
     .optional(),
-};
-
-const ParamsSchema = z.object({});
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,

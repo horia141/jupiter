@@ -63,7 +63,7 @@ const ParamsSchema = z.object({
   id: z.string(),
 });
 
-const QuerySchema = {
+const QuerySchema = z.object({
   catchUpTasksRetrieveOffset: z
     .string()
     .transform((s) => parseInt(s, 10))
@@ -72,7 +72,7 @@ const QuerySchema = {
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({

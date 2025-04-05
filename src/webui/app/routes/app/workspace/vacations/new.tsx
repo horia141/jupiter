@@ -26,11 +26,13 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   startDate: z.string(),
   endDate: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -139,6 +141,10 @@ export default function NewVacation() {
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary("/app/workspace/vacations", {
-  error: () => `There was an error creating the vacation! Please try again!`,
-});
+export const ErrorBoundary = makeLeafErrorBoundary(
+  "/app/workspace/vacations",
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the vacation! Please try again!`,
+  },
+);

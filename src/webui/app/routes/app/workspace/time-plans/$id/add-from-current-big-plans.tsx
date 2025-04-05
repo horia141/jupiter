@@ -68,13 +68,13 @@ const ParamsSchema = z.object({
   id: z.string(),
 });
 
-const CommonParamsSchema = z.object({
+const CommonParamsSchema = {
   targetBigPlanRefIds: z
     .string()
     .transform((s) => (s === "" ? [] : s.split(","))),
   kind: z.nativeEnum(TimePlanActivityKind),
   feasability: z.nativeEnum(TimePlanActivityFeasability),
-});
+};
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
