@@ -35,7 +35,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = z.object({})
+const ParamsSchema = z.object({});
 
 const CreateFormSchema = z.object({
   sourceIcalUrl: z.string(),

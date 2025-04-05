@@ -10,5 +10,5 @@ poetry run ruff check --cache-dir=.build-cache/ruff --config=./scripts/check/lin
 
 # Check Node+TS
 (cd src/webui && npx tsc)
-npx prettier --check --list-different src/webui src/desktop src/mobile
+npx prettier --check src/webui src/desktop src/mobile
 npx eslint src/webui

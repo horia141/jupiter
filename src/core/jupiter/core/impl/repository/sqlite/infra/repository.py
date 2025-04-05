@@ -72,7 +72,6 @@ from sqlalchemy import (
     select,
     update,
 )
-from sqlalchemy.engine.row import Row
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncConnection
 

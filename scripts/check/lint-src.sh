@@ -18,5 +18,5 @@ poetry run vulture src/core src/cli src/webapi itests \
 
 # TS+Node
 (cd src/webui && npx tsc)
-npx prettier --check --list-different src/webui src/desktop src/mobile
+npx prettier --check src/webui src/desktop src/mobile
 npx eslint src/webui

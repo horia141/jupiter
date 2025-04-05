@@ -1,4 +1,5 @@
 """Row type infra."""
+
 from typing import Any
 
 from sqlalchemy.engine import Row

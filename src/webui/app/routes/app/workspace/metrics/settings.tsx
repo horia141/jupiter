@@ -33,7 +33,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
 
-const UpdateFormSchema = z.object({ 
+const UpdateFormSchema = z.object({
   project: z.string(),
 });
 

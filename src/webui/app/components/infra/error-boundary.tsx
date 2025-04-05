@@ -68,11 +68,20 @@ export function makeRootErrorBoundary(labelsFor: { error?: () => string }) {
 export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
   returnLocation:
     | string
-    | ((params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string),
+    | ((
+        params: z.infer<typeof paramsParser>,
+        searchParams: URLSearchParams,
+      ) => string),
   paramsParser: z.ZodObject<K>,
   labelsFor: {
-    notFound?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
-    error?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
+    notFound?: (
+      params: z.infer<typeof paramsParser>,
+      searchParams: URLSearchParams,
+    ) => string;
+    error?: (
+      params: z.infer<typeof paramsParser>,
+      searchParams: URLSearchParams,
+    ) => string;
   },
 ) {
   function ErrorBoundary() {
@@ -151,11 +160,22 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
 }
 
 export function makeBranchErrorBoundary<K extends z.ZodRawShape>(
-  returnLocation: string | ((params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string),
+  returnLocation:
+    | string
+    | ((
+        params: z.infer<typeof paramsParser>,
+        searchParams: URLSearchParams,
+      ) => string),
   paramsParser: z.ZodObject<K>,
   labelsFor: {
-    notFound?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
-    error?: (params: z.infer<typeof paramsParser>, searchParams: URLSearchParams) => string;
+    notFound?: (
+      params: z.infer<typeof paramsParser>,
+      searchParams: URLSearchParams,
+    ) => string;
+    error?: (
+      params: z.infer<typeof paramsParser>,
+      searchParams: URLSearchParams,
+    ) => string;
   },
 ) {
   function ErrorBoundary() {

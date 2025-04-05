@@ -75,9 +75,12 @@ class SqliteMutationUseCaseInvocationRecordRepository(
                     invocation_record.timestamp
                 ),
                 name=invocation_record.name,
-                args=cast(Mapping[str, RealmThing], self._realm_codec_registry.db_encode(
-                    invocation_record.args, EventStoreRealm
-                )),
+                args=cast(
+                    Mapping[str, RealmThing],
+                    self._realm_codec_registry.db_encode(
+                        invocation_record.args, EventStoreRealm
+                    ),
+                ),
                 result=str(invocation_record.result.value),
                 error_str=invocation_record.error_str,
             ),

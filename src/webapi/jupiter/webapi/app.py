@@ -1017,7 +1017,8 @@ class WebServiceApp:
             required = [
                 build_field_name(f, f.type)
                 for f in dataclasses.fields(composite_value_type)
-                if f.name != "events" and not normalize_optional(f.type)[1]
+                if f.name != "events"
+                and not normalize_optional(cast(type[object], f.type))[1]
             ]
             result: dict[str, None | str | list[str] | dict[str, Any]] = {
                 "title": composite_value_type.__name__,

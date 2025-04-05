@@ -18,7 +18,6 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.use_cases.concept.time_plans.load import (
     TimePlanLoadResult,
     TimePlanLoadUseCase,
@@ -113,7 +112,7 @@ class TimePlanLoad(LoggedInReadonlyCommand[TimePlanLoadUseCase, TimePlanLoadResu
                     it.eisen,
                     it.status,
                     it.due_date or ADate.from_str("2100-01-01"),
-                    it.difficulty or Difficulty.EASY,
+                    it.difficulty,
                 ),
             )
 

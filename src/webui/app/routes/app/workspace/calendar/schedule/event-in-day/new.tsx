@@ -40,7 +40,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = z.object({})
+const ParamsSchema = z.object({});
 
 const QuerySchema = z.object({
   date: z

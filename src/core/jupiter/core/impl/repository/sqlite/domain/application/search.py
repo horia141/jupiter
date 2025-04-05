@@ -19,7 +19,6 @@ from jupiter.core.framework.entity import CrownEntity
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.impl.repository.sqlite.infra.repository import SqliteRepository
-from jupiter.core.impl.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
     Boolean,
     Column,
@@ -27,6 +26,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     MetaData,
+    RowMapping,
     String,
     Table,
     delete,
@@ -255,9 +255,10 @@ class SqliteSearchRepository(SqliteRepository, SearchRepository):
             self._search_index_table.c.last_modified_time.desc()
         )
         results = await self._connection.execute(query_stmt)
-        return [self._row_to_match(row) for row in results]
+        rows = results.mappings().all()
+        return [self._row_to_match(row) for row in rows]
 
-    def _row_to_match(self, row: RowType) -> SearchMatch:
+    def _row_to_match(self, row: RowMapping) -> SearchMatch:
         return SearchMatch(
             summary=EntitySummary(
                 entity_tag=self._realm_codec_registry.get_decoder(

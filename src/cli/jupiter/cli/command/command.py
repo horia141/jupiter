@@ -453,7 +453,9 @@ class UseCaseCommand(Generic[UseCaseT], Command, abc.ABC):
             all_fields = dataclasses.fields(a_thing)
 
             for field in all_fields:
-                field_type, field_optional = extract_field_type(field.type)
+                field_type, field_optional = extract_field_type(
+                    cast(type[object], field.type)
+                )
 
                 if field_type is bool:
                     add_bool_field(field)
