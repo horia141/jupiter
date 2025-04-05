@@ -1,7 +1,7 @@
-const { createRoutesFromFolders } = require("@remix-run/v1-route-convention");
+import type { AppConfig } from "@remix-run/dev";
+import { createRoutesFromFolders } from "@remix-run/v1-route-convention";
 
-/** @type {import('@remix-run/dev').AppConfig} */
-module.exports = {
+const config: AppConfig = {
   ignoredRouteFiles: ["**/.*"],
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
@@ -13,3 +13,5 @@ module.exports = {
     return createRoutesFromFolders(defineRoutes);
   },
 };
+
+export default config;
