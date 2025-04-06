@@ -20,7 +20,8 @@ module.exports = {
         log_file: "$WEBUI_LOG_FILE",
         env: {
             LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",
-            PORT: "$WEBUI_PORT"
+            PORT: "$WEBUI_PORT",
+            NODE_OPTIONS: "--trace-warnings"
         }
     }]
   }
