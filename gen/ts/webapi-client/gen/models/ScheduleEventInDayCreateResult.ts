@@ -1,10 +1,9 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ScheduleEventInDay } from './ScheduleEventInDay';
 import type { TimeEventInDayBlock } from './TimeEventInDayBlock';
-
 /**
  * Result.
  */

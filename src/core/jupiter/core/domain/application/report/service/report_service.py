@@ -1,4 +1,5 @@
 """The domain service which constructs a report."""
+
 from collections import defaultdict
 from collections.abc import Iterable
 from itertools import groupby
@@ -232,7 +233,7 @@ class ReportService:
 
             raw_all_inbox_tasks = await uow.get(
                 InboxTaskRepository
-            ).find_all_with_filters(
+            ).find_modified_in_range(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_sources=sources,
@@ -249,67 +250,46 @@ class ReportService:
                     it.source is InboxTaskSource.BIG_PLAN
                     and (
                         not (filter_big_plan_ref_ids is not None)
-                        or (
-                            it.big_plan_ref_id is not None
-                            and it.big_plan_ref_id in filter_big_plan_ref_ids
-                        )
+                        or it.source_entity_ref_id_for_sure in filter_big_plan_ref_ids
                     )
                 )
                 or (
                     it.source is InboxTaskSource.HABIT
                     and (
                         not (filter_habit_ref_ids is not None)
-                        or (
-                            it.habit_ref_id is not None
-                            and it.habit_ref_id in filter_habit_ref_ids
-                        )
+                        or it.source_entity_ref_id_for_sure in filter_habit_ref_ids
                     )
                 )
                 or (
                     it.source is InboxTaskSource.CHORE
                     and (
                         not (filter_chore_ref_ids is not None)
-                        or (
-                            it.chore_ref_id is not None
-                            and it.chore_ref_id in filter_chore_ref_ids
-                        )
+                        or it.source_entity_ref_id_for_sure in filter_chore_ref_ids
                     )
                 )
                 or (
                     it.source is InboxTaskSource.METRIC
-                    and (
-                        not (filter_metric_ref_ids is not None)
-                        or it.metric_ref_id in metrics_by_ref_id
-                    )
+                    and it.source_entity_ref_id_for_sure in metrics_by_ref_id
                 )
                 or (
                     (
                         it.source is InboxTaskSource.PERSON_CATCH_UP
                         or it.source is InboxTaskSource.PERSON_BIRTHDAY
                     )
-                    and (
-                        not (filter_person_ref_ids is not None)
-                        or it.person_ref_id in persons_by_ref_id
-                    )
+                    and it.source_entity_ref_id_for_sure in persons_by_ref_id
                 )
                 or (
                     it.source is InboxTaskSource.SLACK_TASK
                     and (
                         not (filter_slack_task_ref_ids is not None)
-                        or (
-                            it.slack_task_ref_id is not None
-                            and it.slack_task_ref_id in filter_slack_task_ref_ids
-                        )
+                        or it.source_entity_ref_id_for_sure in filter_slack_task_ref_ids
                     )
                 )
                 or (
                     it.source is InboxTaskSource.EMAIL_TASK
                     and (
                         not (filter_email_task_ref_ids is not None)
-                        or (
-                            it.email_task_ref_id is not None
-                            and it.email_task_ref_id in filter_email_task_ref_ids
-                        )
+                        or it.source_entity_ref_id_for_sure in filter_email_task_ref_ids
                     )
                 )
             ]
@@ -357,7 +337,7 @@ class ReportService:
         else:
             global_big_plans_summary = WorkableSummary(
                 created_cnt=0,
-                accepted_cnt=0,
+                not_started_cnt=0,
                 working_cnt=0,
                 not_done_cnt=0,
                 done_cnt=0,
@@ -477,9 +457,9 @@ class ReportService:
                     for (k, v) in groupby(
                         sorted(
                             [
-                                (it.habit_ref_id, it)
+                                (it.source_entity_ref_id, it)
                                 for it in all_inbox_tasks
-                                if it.habit_ref_id
+                                if it.source == InboxTaskSource.HABIT
                             ],
                             key=itemgetter(0),
                         ),
@@ -512,9 +492,9 @@ class ReportService:
                     for (k, v) in groupby(
                         sorted(
                             [
-                                (it.chore_ref_id, it)
+                                (it.source_entity_ref_id, it)
                                 for it in all_inbox_tasks
-                                if it.chore_ref_id
+                                if it.source == InboxTaskSource.CHORE
                             ],
                             key=itemgetter(0),
                         ),
@@ -545,9 +525,9 @@ class ReportService:
                     for (k, v) in groupby(
                         sorted(
                             [
-                                (it.big_plan_ref_id, it)
+                                (it.source_entity_ref_id, it)
                                 for it in all_inbox_tasks
-                                if it.big_plan_ref_id
+                                if it.source == InboxTaskSource.BIG_PLAN
                             ],
                             key=itemgetter(0),
                         ),
@@ -590,8 +570,8 @@ class ReportService:
     ) -> InboxTasksSummary:
         created_cnt_total = 0
         created_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
-        accepted_cnt_total = 0
-        accepted_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
+        not_started_cnt_total = 0
+        not_started_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
         working_cnt_total = 0
         working_per_source_cnt: defaultdict[InboxTaskSource, int] = defaultdict(int)
         done_cnt_total = 0
@@ -603,9 +583,6 @@ class ReportService:
             if schedule.contains_timestamp(inbox_task.created_time):
                 created_cnt_total += 1
                 created_per_source_cnt[inbox_task.source] += 1
-
-            if inbox_task.status.is_accepted and inbox_task.accepted_time is None:
-                raise Exception(f"Invalid state for {inbox_task}")
 
             if inbox_task.status.is_completed and schedule.contains_timestamp(
                 cast(Timestamp, inbox_task.completed_time),
@@ -621,11 +598,9 @@ class ReportService:
             ):
                 working_cnt_total += 1
                 working_per_source_cnt[inbox_task.source] += 1
-            elif inbox_task.status.is_accepted and schedule.contains_timestamp(
-                cast(Timestamp, inbox_task.accepted_time),
-            ):
-                accepted_cnt_total += 1
-                accepted_per_source_cnt[inbox_task.source] += 1
+            else:
+                not_started_cnt_total += 1
+                not_started_per_source_cnt[inbox_task.source] += 1
 
         return InboxTasksSummary(
             created=NestedResult(
@@ -635,11 +610,11 @@ class ReportService:
                     for a, b in created_per_source_cnt.items()
                 ),
             ),
-            accepted=NestedResult(
-                total_cnt=accepted_cnt_total,
+            not_started=NestedResult(
+                total_cnt=not_started_cnt_total,
                 per_source_cnt=list(
                     NestedResultPerSource(a, b)
-                    for a, b in accepted_per_source_cnt.items()
+                    for a, b in not_started_per_source_cnt.items()
                 ),
             ),
             working=NestedResult(
@@ -670,7 +645,7 @@ class ReportService:
         inbox_tasks: Iterable[InboxTask],
     ) -> BigPlanWorkSummary:
         created_cnt = 0
-        accepted_cnt = 0
+        not_started_cnt = 0
         working_cnt = 0
         done_cnt = 0
         not_done_cnt = 0
@@ -690,19 +665,17 @@ class ReportService:
                 cast(Timestamp, inbox_task.working_time),
             ):
                 working_cnt += 1
-            elif inbox_task.status.is_accepted and schedule.contains_timestamp(
-                cast(Timestamp, inbox_task.accepted_time),
-            ):
-                accepted_cnt += 1
+            else:
+                not_started_cnt += 1
 
         return BigPlanWorkSummary(
             created_cnt=created_cnt,
-            accepted_cnt=accepted_cnt,
+            not_started_cnt=not_started_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(created_cnt)
-            if created_cnt > 0
-            else 0.0,
+            not_done_ratio=(
+                not_done_cnt / float(created_cnt) if created_cnt > 0 else 0.0
+            ),
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0,
         )
@@ -714,7 +687,7 @@ class ReportService:
     ) -> RecurringTaskWorkSummary:
         # The simple summary computations here.
         created_cnt = 0
-        accepted_cnt = 0
+        not_started_cnt = 0
         working_cnt = 0
         done_cnt = 0
         not_done_cnt = 0
@@ -734,10 +707,8 @@ class ReportService:
                 cast(Timestamp, inbox_task.working_time),
             ):
                 working_cnt += 1
-            elif inbox_task.status.is_accepted and schedule.contains_timestamp(
-                cast(Timestamp, inbox_task.accepted_time),
-            ):
-                accepted_cnt += 1
+            else:
+                not_started_cnt += 1
 
         # The streak computations here.
         sorted_inbox_tasks = sorted(
@@ -776,25 +747,29 @@ class ReportService:
                     used_skip_once = False
                     if inbox_task.recurring_repeat_index is None:
                         streak_plot.append(
-                            "."
-                            if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                            else "?",
+                            (
+                                "."
+                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
+                                else "?"
+                            ),
                         )
                     elif inbox_task.recurring_repeat_index == 0:
                         streak_plot.append(
-                            "0"
-                            if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                            else "?",
+                            (
+                                "0"
+                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
+                                else "?"
+                            ),
                         )
 
         return RecurringTaskWorkSummary(
             created_cnt=created_cnt,
-            accepted_cnt=accepted_cnt,
+            not_started_cnt=not_started_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(created_cnt)
-            if created_cnt > 0
-            else 0.0,
+            not_done_ratio=(
+                not_done_cnt / float(created_cnt) if created_cnt > 0 else 0.0
+            ),
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
             streak_plot="".join(streak_plot),
@@ -806,7 +781,7 @@ class ReportService:
         big_plans: Iterable[BigPlan],
     ) -> "WorkableSummary":
         created_cnt = 0
-        accepted_cnt = 0
+        not_started_cnt = 0
         working_cnt = 0
         not_done_cnt = 0
         done_cnt = 0
@@ -842,14 +817,12 @@ class ReportService:
                 cast(Timestamp, big_plan.working_time),
             ):
                 working_cnt += 1
-            elif big_plan.status.is_accepted and schedule.contains_timestamp(
-                cast(Timestamp, big_plan.accepted_time),
-            ):
-                accepted_cnt += 1
+            else:
+                not_started_cnt += 1
 
         return WorkableSummary(
             created_cnt=created_cnt,
-            accepted_cnt=accepted_cnt,
+            not_started_cnt=not_started_cnt,
             working_cnt=working_cnt,
             done_cnt=done_cnt,
             not_done_cnt=not_done_cnt,

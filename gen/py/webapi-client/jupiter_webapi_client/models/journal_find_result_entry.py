@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,15 +28,15 @@ class JournalFindResultEntry:
     journal: "Journal"
     note: Union["Note", None, Unset] = UNSET
     writing_task: Union["InboxTask", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
 
         journal = self.journal.to_dict()
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -43,7 +44,7 @@ class JournalFindResultEntry:
         else:
             note = self.note
 
-        writing_task: Union[Dict[str, Any], None, Unset]
+        writing_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.writing_task, Unset):
             writing_task = UNSET
         elif isinstance(self.writing_task, InboxTask):
@@ -51,7 +52,7 @@ class JournalFindResultEntry:
         else:
             writing_task = self.writing_task
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -66,12 +67,12 @@ class JournalFindResultEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task import InboxTask
         from ..models.journal import Journal
         from ..models.note import Note
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         journal = Journal.from_dict(d.pop("journal"))
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
@@ -118,7 +119,7 @@ class JournalFindResultEntry:
         return journal_find_result_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

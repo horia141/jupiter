@@ -45,6 +45,7 @@ out/
 
 # Gradle files
 .gradle/
+src/mobile/android/build/
 src/mobile/android/app/build/
 src/mobile/android/app/src/main/assets
 

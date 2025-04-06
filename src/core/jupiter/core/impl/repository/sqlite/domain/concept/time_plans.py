@@ -1,4 +1,5 @@
 """The SQLite based time plans repository."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import (
     TimePlan,
     TimePlanExistsForDatePeriodCombinationError,
@@ -164,7 +165,10 @@ class SqliteTimePlanActivityRepository(
         )
 
     async def find_all_with_target(
-        self, target: TimePlanActivityTarget, target_ref_id: EntityId
+        self,
+        target: TimePlanActivityTarget,
+        target_ref_id: EntityId,
+        allow_archived: bool = False,
     ) -> list[EntityId]:
         """Find all time plan activities with a target."""
         query_stmt = (
@@ -175,10 +179,10 @@ class SqliteTimePlanActivityRepository(
             .where(
                 self._table.c.target_ref_id == target_ref_id.as_int(),
             )
-            .where(
-                self._table.c.archived.is_(False),
-            )
         )
+
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
 
         results = await self._connection.execute(query_stmt)
 

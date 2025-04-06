@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
@@ -10,7 +10,6 @@ import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 import type { SlackChannelName } from './SlackChannelName';
 import type { SlackUserName } from './SlackUserName';
-
 /**
  * PersonFindArgs.
  */
@@ -38,11 +37,11 @@ export type SlackTaskUpdateArgs = {
     };
     generation_eisen: {
         should_change: boolean;
-        value?: (Eisen | null);
+        value?: Eisen;
     };
     generation_difficulty: {
         should_change: boolean;
-        value?: (Difficulty | null);
+        value?: Difficulty;
     };
     generation_actionable_date: {
         should_change: boolean;

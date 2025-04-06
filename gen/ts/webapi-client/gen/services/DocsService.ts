@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -11,14 +12,10 @@ import type { DocLoadArgs } from '../models/DocLoadArgs';
 import type { DocLoadResult } from '../models/DocLoadResult';
 import type { DocRemoveArgs } from '../models/DocRemoveArgs';
 import type { DocUpdateArgs } from '../models/DocUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class DocsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a doc.
      * Use case for archiving a doc.
@@ -41,7 +38,6 @@ export class DocsService {
             },
         });
     }
-
     /**
      * The command for changing the parent for a doc .
      * The command for changing the parent for a doc .
@@ -64,7 +60,6 @@ export class DocsService {
             },
         });
     }
-
     /**
      * Use case for creating a doc.
      * Use case for creating a doc.
@@ -87,7 +82,6 @@ export class DocsService {
             },
         });
     }
-
     /**
      * The use case for finding docs.
      * The use case for finding docs.
@@ -110,7 +104,6 @@ export class DocsService {
             },
         });
     }
-
     /**
      * Use case for loading a particular doc.
      * Use case for loading a particular doc.
@@ -133,7 +126,6 @@ export class DocsService {
             },
         });
     }
-
     /**
      * The command for removing a doc.
      * The command for removing a doc.
@@ -156,7 +148,6 @@ export class DocsService {
             },
         });
     }
-
     /**
      * Update a doc use case.
      * Update a doc use case.
@@ -179,5 +170,4 @@ export class DocsService {
             },
         });
     }
-
 }

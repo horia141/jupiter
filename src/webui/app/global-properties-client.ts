@@ -7,12 +7,14 @@ import {
   Hosting,
 } from "@jupiter/webapi-client";
 import { createContext } from "react";
+
 import type { GlobalPropertiesServer } from "./global-properties-server";
 import type { FrontDoorInfo } from "./logic/frontdoor";
 
 export interface GlobalPropertiesClient {
   env: Env;
   hosting: Hosting;
+  hostingName: string;
   version: string;
   appCore: AppCore;
   frontDoorInfo: FrontDoorInfo;
@@ -21,6 +23,7 @@ export interface GlobalPropertiesClient {
   description: string;
   webApiProgressReporterUrl: string;
   docsUrl: string;
+  hostedGlobalDomain: string;
   communityUrl: string;
   termsOfServiceUrl: string;
   privacyPolicyUrl: string;
@@ -33,12 +36,13 @@ export interface GlobalPropertiesClient {
 export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   env: Env.LOCAL,
   hosting: Hosting.LOCAL,
+  hostingName: "FAKE-FAKE",
   version: "FAKE-FAKE",
   appCore: AppCore.WEBUI,
   frontDoorInfo: {
     clientVersion: "FAKE-FAKE",
     appShell: AppShell.BROWSER,
-    appPlatform: AppPlatform.DESKTOP,
+    appPlatform: AppPlatform.DESKTOP_MACOS,
     appDistribution: AppDistribution.WEB,
     initialWindowWidth: undefined,
   },
@@ -47,6 +51,7 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   description: "FAKE-FAKE",
   webApiProgressReporterUrl: "FAKE-FAKE",
   docsUrl: "FAKE-FAKE",
+  hostedGlobalDomain: "FAKE-FAKE",
   communityUrl: "FAKE-FAKE",
   termsOfServiceUrl: "FAKE-FAKE",
   privacyPolicyUrl: "FAKE-FAKE",
@@ -58,11 +63,12 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
 
 export function serverToClientGlobalProperties(
   globalPropertiesServer: GlobalPropertiesServer,
-  frontDoorInfo: FrontDoorInfo
+  frontDoorInfo: FrontDoorInfo,
 ): GlobalPropertiesClient {
   return {
     env: globalPropertiesServer.env,
     hosting: globalPropertiesServer.hosting,
+    hostingName: globalPropertiesServer.hostingName,
     version: globalPropertiesServer.version,
     appCore: AppCore.WEBUI,
     frontDoorInfo: frontDoorInfo,
@@ -70,10 +76,12 @@ export function serverToClientGlobalProperties(
     title: globalPropertiesServer.title,
     description: globalPropertiesServer.description,
     webApiProgressReporterUrl:
-      globalPropertiesServer.hosting === Hosting.LOCAL
-        ? globalPropertiesServer.localWebApiProgressReporterUrl
+      globalPropertiesServer.hosting === Hosting.LOCAL ||
+      globalPropertiesServer.hosting === Hosting.SELF_HOSTED
+        ? globalPropertiesServer.localOrSelfHostedWebApiProgressReporterUrl
         : globalPropertiesServer.hostedGlobalWebApiProgressReporterUrl,
     docsUrl: globalPropertiesServer.docsUrl,
+    hostedGlobalDomain: globalPropertiesServer.hostedGlobalWebUiUrl,
     communityUrl: globalPropertiesServer.communityUrl,
     termsOfServiceUrl: globalPropertiesServer.termsOfServiceUrl,
     privacyPolicyUrl: globalPropertiesServer.privacyPolicyUrl,

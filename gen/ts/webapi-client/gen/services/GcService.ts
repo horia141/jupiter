@@ -1,17 +1,14 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { GCDoArgs } from '../models/GCDoArgs';
 import type { GCLoadRunsArgs } from '../models/GCLoadRunsArgs';
 import type { GCLoadRunsResult } from '../models/GCLoadRunsResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class GcService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for doing a garbage collection run.
      * The command for doing a garbage collection run.
@@ -34,7 +31,6 @@ export class GcService {
             },
         });
     }
-
     /**
      * Load previous runs of GC.
      * Load previous runs of GC.
@@ -57,5 +53,4 @@ export class GcService {
             },
         });
     }
-
 }

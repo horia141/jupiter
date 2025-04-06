@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -16,16 +17,16 @@ class TableBlock:
         correlation_id (str): A generic entity id.
         kind (TableBlockKind):
         with_header (bool):
-        contents (List[List[str]]):
+        contents (list[list[str]]):
     """
 
     correlation_id: str
     kind: TableBlockKind
     with_header: bool
-    contents: List[List[str]]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    contents: list[list[str]]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         correlation_id = self.correlation_id
 
         kind = self.kind.value
@@ -38,7 +39,7 @@ class TableBlock:
 
             contents.append(contents_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -52,8 +53,8 @@ class TableBlock:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         correlation_id = d.pop("correlation_id")
 
         kind = TableBlockKind(d.pop("kind"))
@@ -63,7 +64,7 @@ class TableBlock:
         contents = []
         _contents = d.pop("contents")
         for contents_item_data in _contents:
-            contents_item = cast(List[str], contents_item_data)
+            contents_item = cast(list[str], contents_item_data)
 
             contents.append(contents_item)
 
@@ -78,7 +79,7 @@ class TableBlock:
         return table_block
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

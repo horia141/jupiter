@@ -9,6 +9,7 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import { FormControl, FormControlLabel, Switch, Tooltip } from "@mui/material";
+
 import {
   featureControlImpliesReadonly,
   userFeatureName,
@@ -17,6 +18,7 @@ import {
   workspaceFeatureToDocsHelpSubject,
 } from "~/logic/domain/feature";
 import { hostingName } from "~/logic/domain/hosting";
+
 import { DocsHelp } from "./docs-help";
 
 interface UserFeatureFlagsEditorProps {
@@ -41,7 +43,7 @@ export function UserFeatureFlagsEditor(props: UserFeatureFlagsEditorProps) {
             break;
           case FeatureControl.ALWAYS_OFF_HOSTING:
             extraLabel = `Cannot enable, due to the hosting mode being ${hostingName(
-              props.hosting
+              props.hosting,
             )}`;
             break;
           case FeatureControl.ALWAYS_OFF_TECH:
@@ -83,7 +85,7 @@ export function UserFeatureFlagsEditor(props: UserFeatureFlagsEditorProps) {
                     <DocsHelp
                       size="small"
                       subject={userFeatureToDocsHelpSubject(
-                        feature as UserFeature
+                        feature as UserFeature,
                       )}
                     />
                   </span>
@@ -106,7 +108,7 @@ interface WorkspaceFeatureFlagsEditorProps {
 }
 
 export function WorkspaceFeatureFlagsEditor(
-  props: WorkspaceFeatureFlagsEditorProps
+  props: WorkspaceFeatureFlagsEditorProps,
 ) {
   return (
     <>
@@ -121,7 +123,7 @@ export function WorkspaceFeatureFlagsEditor(
             break;
           case FeatureControl.ALWAYS_OFF_HOSTING:
             extraLabel = `Cannot enable, due to the hosting mode being ${hostingName(
-              props.hosting
+              props.hosting,
             )}`;
             break;
           case FeatureControl.ALWAYS_OFF_TECH:
@@ -163,7 +165,7 @@ export function WorkspaceFeatureFlagsEditor(
                     <DocsHelp
                       size="small"
                       subject={workspaceFeatureToDocsHelpSubject(
-                        feature as WorkspaceFeature
+                        feature as WorkspaceFeature,
                       )}
                     />
                   </span>

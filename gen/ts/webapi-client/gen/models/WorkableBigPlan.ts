@@ -1,11 +1,10 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { BigPlanName } from './BigPlanName';
 import type { EntityId } from './EntityId';
-
 /**
  * The view of a big plan via a workable.
  */

@@ -1,11 +1,10 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { CorrelationId } from './CorrelationId';
 import type { EntityId } from './EntityId';
 import type { NamedEntityTag } from './NamedEntityTag';
-
 /**
  * A link.
  */
@@ -15,13 +14,9 @@ export type EntityReferenceBlock = {
     entity_tag: NamedEntityTag;
     ref_id: EntityId;
 };
-
 export namespace EntityReferenceBlock {
-
     export enum kind {
         ENTITY_REFERENCE = 'entity-reference',
     }
-
-
 }
 

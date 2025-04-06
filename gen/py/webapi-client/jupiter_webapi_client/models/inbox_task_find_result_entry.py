@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
     from ..models.project import Project
     from ..models.slack_task import SlackTask
     from ..models.time_event_in_day_block import TimeEventInDayBlock
+    from ..models.working_mem import WorkingMem
 
 
 T = TypeVar("T", bound="InboxTaskFindResultEntry")
@@ -30,7 +32,8 @@ class InboxTaskFindResultEntry:
         inbox_task (InboxTask): An inbox task.
         project (Project): The project.
         note (Union['Note', None, Unset]):
-        time_event_blocks (Union[List['TimeEventInDayBlock'], None, Unset]):
+        time_event_blocks (Union[None, Unset, list['TimeEventInDayBlock']]):
+        working_mem (Union['WorkingMem', None, Unset]):
         habit (Union['Habit', None, Unset]):
         chore (Union['Chore', None, Unset]):
         big_plan (Union['BigPlan', None, Unset]):
@@ -43,7 +46,8 @@ class InboxTaskFindResultEntry:
     inbox_task: "InboxTask"
     project: "Project"
     note: Union["Note", None, Unset] = UNSET
-    time_event_blocks: Union[List["TimeEventInDayBlock"], None, Unset] = UNSET
+    time_event_blocks: Union[None, Unset, list["TimeEventInDayBlock"]] = UNSET
+    working_mem: Union["WorkingMem", None, Unset] = UNSET
     habit: Union["Habit", None, Unset] = UNSET
     chore: Union["Chore", None, Unset] = UNSET
     big_plan: Union["BigPlan", None, Unset] = UNSET
@@ -51,9 +55,9 @@ class InboxTaskFindResultEntry:
     person: Union["Person", None, Unset] = UNSET
     slack_task: Union["SlackTask", None, Unset] = UNSET
     email_task: Union["EmailTask", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.big_plan import BigPlan
         from ..models.chore import Chore
         from ..models.email_task import EmailTask
@@ -62,12 +66,13 @@ class InboxTaskFindResultEntry:
         from ..models.note import Note
         from ..models.person import Person
         from ..models.slack_task import SlackTask
+        from ..models.working_mem import WorkingMem
 
         inbox_task = self.inbox_task.to_dict()
 
         project = self.project.to_dict()
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -75,7 +80,7 @@ class InboxTaskFindResultEntry:
         else:
             note = self.note
 
-        time_event_blocks: Union[List[Dict[str, Any]], None, Unset]
+        time_event_blocks: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.time_event_blocks, Unset):
             time_event_blocks = UNSET
         elif isinstance(self.time_event_blocks, list):
@@ -87,7 +92,15 @@ class InboxTaskFindResultEntry:
         else:
             time_event_blocks = self.time_event_blocks
 
-        habit: Union[Dict[str, Any], None, Unset]
+        working_mem: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.working_mem, Unset):
+            working_mem = UNSET
+        elif isinstance(self.working_mem, WorkingMem):
+            working_mem = self.working_mem.to_dict()
+        else:
+            working_mem = self.working_mem
+
+        habit: Union[None, Unset, dict[str, Any]]
         if isinstance(self.habit, Unset):
             habit = UNSET
         elif isinstance(self.habit, Habit):
@@ -95,7 +108,7 @@ class InboxTaskFindResultEntry:
         else:
             habit = self.habit
 
-        chore: Union[Dict[str, Any], None, Unset]
+        chore: Union[None, Unset, dict[str, Any]]
         if isinstance(self.chore, Unset):
             chore = UNSET
         elif isinstance(self.chore, Chore):
@@ -103,7 +116,7 @@ class InboxTaskFindResultEntry:
         else:
             chore = self.chore
 
-        big_plan: Union[Dict[str, Any], None, Unset]
+        big_plan: Union[None, Unset, dict[str, Any]]
         if isinstance(self.big_plan, Unset):
             big_plan = UNSET
         elif isinstance(self.big_plan, BigPlan):
@@ -111,7 +124,7 @@ class InboxTaskFindResultEntry:
         else:
             big_plan = self.big_plan
 
-        metric: Union[Dict[str, Any], None, Unset]
+        metric: Union[None, Unset, dict[str, Any]]
         if isinstance(self.metric, Unset):
             metric = UNSET
         elif isinstance(self.metric, Metric):
@@ -119,7 +132,7 @@ class InboxTaskFindResultEntry:
         else:
             metric = self.metric
 
-        person: Union[Dict[str, Any], None, Unset]
+        person: Union[None, Unset, dict[str, Any]]
         if isinstance(self.person, Unset):
             person = UNSET
         elif isinstance(self.person, Person):
@@ -127,7 +140,7 @@ class InboxTaskFindResultEntry:
         else:
             person = self.person
 
-        slack_task: Union[Dict[str, Any], None, Unset]
+        slack_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.slack_task, Unset):
             slack_task = UNSET
         elif isinstance(self.slack_task, SlackTask):
@@ -135,7 +148,7 @@ class InboxTaskFindResultEntry:
         else:
             slack_task = self.slack_task
 
-        email_task: Union[Dict[str, Any], None, Unset]
+        email_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.email_task, Unset):
             email_task = UNSET
         elif isinstance(self.email_task, EmailTask):
@@ -143,7 +156,7 @@ class InboxTaskFindResultEntry:
         else:
             email_task = self.email_task
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -155,6 +168,8 @@ class InboxTaskFindResultEntry:
             field_dict["note"] = note
         if time_event_blocks is not UNSET:
             field_dict["time_event_blocks"] = time_event_blocks
+        if working_mem is not UNSET:
+            field_dict["working_mem"] = working_mem
         if habit is not UNSET:
             field_dict["habit"] = habit
         if chore is not UNSET:
@@ -173,7 +188,7 @@ class InboxTaskFindResultEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
         from ..models.chore import Chore
         from ..models.email_task import EmailTask
@@ -185,8 +200,9 @@ class InboxTaskFindResultEntry:
         from ..models.project import Project
         from ..models.slack_task import SlackTask
         from ..models.time_event_in_day_block import TimeEventInDayBlock
+        from ..models.working_mem import WorkingMem
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         inbox_task = InboxTask.from_dict(d.pop("inbox_task"))
 
         project = Project.from_dict(d.pop("project"))
@@ -208,7 +224,7 @@ class InboxTaskFindResultEntry:
 
         note = _parse_note(d.pop("note", UNSET))
 
-        def _parse_time_event_blocks(data: object) -> Union[List["TimeEventInDayBlock"], None, Unset]:
+        def _parse_time_event_blocks(data: object) -> Union[None, Unset, list["TimeEventInDayBlock"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -226,9 +242,26 @@ class InboxTaskFindResultEntry:
                 return time_event_blocks_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["TimeEventInDayBlock"], None, Unset], data)
+            return cast(Union[None, Unset, list["TimeEventInDayBlock"]], data)
 
         time_event_blocks = _parse_time_event_blocks(d.pop("time_event_blocks", UNSET))
+
+        def _parse_working_mem(data: object) -> Union["WorkingMem", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                working_mem_type_0 = WorkingMem.from_dict(data)
+
+                return working_mem_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["WorkingMem", None, Unset], data)
+
+        working_mem = _parse_working_mem(d.pop("working_mem", UNSET))
 
         def _parse_habit(data: object) -> Union["Habit", None, Unset]:
             if data is None:
@@ -354,6 +387,7 @@ class InboxTaskFindResultEntry:
             project=project,
             note=note,
             time_event_blocks=time_event_blocks,
+            working_mem=working_mem,
             habit=habit,
             chore=chore,
             big_plan=big_plan,
@@ -367,7 +401,7 @@ class InboxTaskFindResultEntry:
         return inbox_task_find_result_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

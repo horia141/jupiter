@@ -1,4 +1,5 @@
 """Update the persons catch up project."""
+
 from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
@@ -69,13 +70,13 @@ class PersonChangeCatchUpProjectUseCase(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.PERSON_CATCH_UP],
-            person_ref_id=[p.ref_id for p in persons],
+            source_entity_ref_id=[p.ref_id for p in persons],
         )
         all_birthday_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.PERSON_BIRTHDAY],
-            person_ref_id=[p.ref_id for p in persons],
+            source_entity_ref_id=[p.ref_id for p in persons],
         )
 
         if (
@@ -98,7 +99,7 @@ class PersonChangeCatchUpProjectUseCase(
                 await progress_reporter.mark_updated(inbox_task)
 
             for inbox_task in all_birthday_inbox_tasks:
-                person = persons_by_ref_id[cast(EntityId, inbox_task.person_ref_id)]
+                person = persons_by_ref_id[inbox_task.source_entity_ref_id_for_sure]
                 inbox_task = inbox_task.update_link_to_person_birthday(
                     ctx=context.domain_context,
                     project_ref_id=args.catch_up_project_ref_id,

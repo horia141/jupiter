@@ -1,6 +1,5 @@
 """UseCase for updating big plans."""
 
-
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.core.use_cases.concept.big_plans.update import (
     BigPlanUpdateResult,

@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -9,14 +10,10 @@ import type { ScheduleEventFullDaysLoadArgs } from '../models/ScheduleEventFullD
 import type { ScheduleEventFullDaysLoadResult } from '../models/ScheduleEventFullDaysLoadResult';
 import type { ScheduleEventFullDaysRemoveArgs } from '../models/ScheduleEventFullDaysRemoveArgs';
 import type { ScheduleEventFullDaysUpdateArgs } from '../models/ScheduleEventFullDaysUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class EventFullDaysService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a schedule full day event.
      * Use case for archiving a schedule full day event.
@@ -39,7 +36,6 @@ export class EventFullDaysService {
             },
         });
     }
-
     /**
      * Use case for changing the schedule stream of an event.
      * Use case for changing the schedule stream of an event.
@@ -62,7 +58,6 @@ export class EventFullDaysService {
             },
         });
     }
-
     /**
      * Use case for creating a full day event in the schedule.
      * Use case for creating a full day event in the schedule.
@@ -85,7 +80,6 @@ export class EventFullDaysService {
             },
         });
     }
-
     /**
      * Use case for loading a schedule full days event.
      * Use case for loading a schedule full days event.
@@ -108,7 +102,6 @@ export class EventFullDaysService {
             },
         });
     }
-
     /**
      * Use case for removing a full day event.
      * Use case for removing a full day event.
@@ -131,7 +124,6 @@ export class EventFullDaysService {
             },
         });
     }
-
     /**
      * Use case for updating a full day block in the schedule.
      * Use case for updating a full day block in the schedule.
@@ -154,5 +146,4 @@ export class EventFullDaysService {
             },
         });
     }
-
 }

@@ -1,4 +1,5 @@
 """A client facing application."""
+
 from jupiter.core.framework.value import AtomicValue, EnumValue, enum_value, value
 
 
@@ -29,14 +30,14 @@ class AppShell(EnumValue):
     BROWSER = "browser"
     DESKTOP_ELECTRON = "desktop-electron"
     MOBILE_CAPACITOR = "mobile-capacitor"
-    MOBILE_PWA = "mobile-pwa"
+    PWA = "pwa"
 
 
 @enum_value
 class AppPlatform(EnumValue):
     """The platform on which the app is running."""
 
-    DESKTOP = "desktop"
+    DESKTOP_MACOS = "desktop-macos"
     MOBILE_IOS = "mobile-ios"
     MOBILE_ANDROID = "mobile-android"
     TABLET_IOS = "tablet-ios"

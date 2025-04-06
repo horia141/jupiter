@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,15 +28,15 @@ class TimePlanActivityLoadResult:
     time_plan_activity: "TimePlanActivity"
     target_inbox_task: Union["InboxTask", None, Unset] = UNSET
     target_big_plan: Union["BigPlan", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.big_plan import BigPlan
         from ..models.inbox_task import InboxTask
 
         time_plan_activity = self.time_plan_activity.to_dict()
 
-        target_inbox_task: Union[Dict[str, Any], None, Unset]
+        target_inbox_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.target_inbox_task, Unset):
             target_inbox_task = UNSET
         elif isinstance(self.target_inbox_task, InboxTask):
@@ -43,7 +44,7 @@ class TimePlanActivityLoadResult:
         else:
             target_inbox_task = self.target_inbox_task
 
-        target_big_plan: Union[Dict[str, Any], None, Unset]
+        target_big_plan: Union[None, Unset, dict[str, Any]]
         if isinstance(self.target_big_plan, Unset):
             target_big_plan = UNSET
         elif isinstance(self.target_big_plan, BigPlan):
@@ -51,7 +52,7 @@ class TimePlanActivityLoadResult:
         else:
             target_big_plan = self.target_big_plan
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -66,12 +67,12 @@ class TimePlanActivityLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
         from ..models.inbox_task import InboxTask
         from ..models.time_plan_activity import TimePlanActivity
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         time_plan_activity = TimePlanActivity.from_dict(d.pop("time_plan_activity"))
 
         def _parse_target_inbox_task(data: object) -> Union["InboxTask", None, Unset]:
@@ -118,7 +119,7 @@ class TimePlanActivityLoadResult:
         return time_plan_activity_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

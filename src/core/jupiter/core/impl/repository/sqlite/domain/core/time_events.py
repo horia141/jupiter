@@ -1,4 +1,7 @@
 """Sqltite implementation of the time events repository."""
+
+from typing import cast
+
 from jupiter.core.domain.core.adate import ADate, ADateDatabaseDecoder
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
     TimeEventFullDaysBlock,
@@ -90,7 +93,7 @@ class SqliteTimeEventInDayBlockRepository(
                 TimeEventInDayBlockStatsPerGroup(
                     date=_ADATE_DECODER.decode(row.start_date),
                     namespace=TimeEventNamespace(row.namespace),
-                    cnt=row.count,
+                    cnt=cast(int, row.count),
                 )
             )
         return TimeEventInDayBlockStats(per_groups=per_groups)
@@ -211,7 +214,7 @@ class SqliteTimeEventFullDaysBlockRepository(
                 TimeEventFullDaysBlockStatsPerGroup(
                     date=_ADATE_DECODER.decode(row.start_date),
                     namespace=TimeEventNamespace(row.namespace),
-                    cnt=row.count,
+                    cnt=cast(int, row.count),
                 )
             )
         return TimeEventFullDaysBlockStats(per_groups=per_groups)

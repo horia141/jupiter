@@ -5,6 +5,7 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import {
   Autocomplete,
+  Box,
   Button,
   ButtonGroup,
   Checkbox,
@@ -13,17 +14,21 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   Grow,
+  InputLabel,
   MenuItem,
   MenuList,
   Paper,
   Popper,
+  Select,
   Stack,
   TextField,
   useTheme,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
-import React, { useState } from "react";
+import { Fragment, useRef, useState } from "react";
+
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
@@ -46,6 +51,7 @@ interface NavMultipleDesc {
 
 interface ActionSingleDesc {
   kind: "action-single";
+  id?: string;
   text?: string;
   icon?: JSX.Element;
   value: string;
@@ -69,6 +75,8 @@ interface FilterOption<K> {
 
 interface FilterFewOptionsDesc<K> {
   kind: "filter-few-options";
+  title: string;
+  approach: "spread" | "compact";
   defaultOption: K;
   options: Array<FilterOption<K>>;
   onSelect: (selected: K) => void;
@@ -88,7 +96,9 @@ type ActionDesc =
   | NavMultipleDesc // A group of buttons, as a navigation
   | ActionSingleDesc // A single button, as an action
   | ActionMultipleDesc // A group of buttons, as an action
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | FilterFewOptionsDesc<any> // A group to filter on, can be a navigation or a callback
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | FilterManyOptionsDesc<any>; // A group to filter on, with many options
 
 export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
@@ -99,7 +109,7 @@ export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
 }
 
 export function NavMultipleSpread(
-  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">
+  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">,
 ): NavMultipleDesc {
   return {
     kind: "nav-multiple",
@@ -109,7 +119,7 @@ export function NavMultipleSpread(
 }
 
 export function NavMultipleCompact(
-  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">
+  desc: Omit<Omit<NavMultipleDesc, "kind">, "approach">,
 ): NavMultipleDesc {
   return {
     kind: "nav-multiple",
@@ -119,7 +129,7 @@ export function NavMultipleCompact(
 }
 
 export function ActionSingle(
-  desc: Omit<ActionSingleDesc, "kind">
+  desc: Omit<ActionSingleDesc, "kind">,
 ): ActionSingleDesc {
   return {
     kind: "action-single",
@@ -128,7 +138,7 @@ export function ActionSingle(
 }
 
 export function ActionMultipleSpread(
-  desc: Omit<Omit<ActionMultipleDesc, "kind">, "approach">
+  desc: Omit<Omit<ActionMultipleDesc, "kind">, "approach">,
 ): ActionMultipleDesc {
   return {
     kind: "action-multiple",
@@ -137,13 +147,33 @@ export function ActionMultipleSpread(
   };
 }
 
-export function FilterFewOptions<K>(
+export function FilterFewOptionsSpread<K>(
+  title: string,
   defaultOption: K,
   options: Array<FilterOption<K>>,
-  onSelect: (selected: K) => void
+  onSelect: (selected: K) => void,
 ): FilterFewOptionsDesc<K> {
   return {
     kind: "filter-few-options",
+    approach: "spread",
+    title: title,
+    defaultOption: defaultOption,
+    options: options,
+    onSelect: onSelect,
+    hideIfOneOption: true,
+  };
+}
+
+export function FilterFewOptionsCompact<K>(
+  title: string,
+  defaultOption: K,
+  options: Array<FilterOption<K>>,
+  onSelect: (selected: K) => void,
+): FilterFewOptionsDesc<K> {
+  return {
+    kind: "filter-few-options",
+    approach: "compact",
+    title: title,
     defaultOption: defaultOption,
     options: options,
     onSelect: onSelect,
@@ -154,7 +184,7 @@ export function FilterFewOptions<K>(
 export function FilterManyOptions<K>(
   title: string,
   options: Array<FilterOption<K>>,
-  onSelect: (selected: Array<K>) => void
+  onSelect: (selected: Array<K>) => void,
 ): FilterManyOptionsDesc<K> {
   return {
     kind: "filter-many-options",
@@ -189,7 +219,11 @@ export function SectionActions(props: SectionActionsProps) {
   }
 
   return (
-    <Stack direction="row" spacing={1} sx={{ padding: "0.25rem" }}>
+    <Stack
+      direction="row"
+      spacing={1}
+      sx={{ padding: "0.25rem", height: "fit-content" }}
+    >
       {props.actions.map((action, index) => (
         <ActionView
           key={`action-${props.id}-${index}`}
@@ -389,9 +423,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
         if (nav.gatedOn) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, nav.gatedOn)) {
-            return (
-              <React.Fragment key={`nav-multiple-${index}`}></React.Fragment>
-            );
+            return <Fragment key={`nav-multiple-${index}`}></Fragment>;
           }
         }
 
@@ -418,7 +450,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
 
 function NavMultipleCompactView(props: NavMultipleViewProps) {
   const [open, setOpen] = useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
@@ -435,12 +467,10 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
 
   const selectedIndex = Math.max(
     0,
-    realActions.findIndex((nav) => nav.highlight)
+    realActions.findIndex((nav) => nav.highlight),
   );
 
-  function handleMenuItemClick(
-    event: React.MouseEvent<HTMLElement, MouseEvent>
-  ) {
+  function handleMenuItemClick() {
     setOpen(false);
   }
 
@@ -539,6 +569,7 @@ function ActionSingleView(props: ActionSingleViewProps) {
       type="submit"
       name="intent"
       value={props.action.value}
+      id={props.action.id}
     >
       {props.action.text}
     </Button>
@@ -568,9 +599,7 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
         if (action.gatedOn) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, action.gatedOn)) {
-            return (
-              <React.Fragment key={`action-multiple-${index}`}></React.Fragment>
-            );
+            return <Fragment key={`action-multiple-${index}`}></Fragment>;
           }
         }
 
@@ -587,6 +616,7 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
             type="submit"
             name="intent"
             value={action.value}
+            id={action.id}
           >
             {action.text}
           </Button>
@@ -598,8 +628,8 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
 
 function ActionMultipleCompactView(props: ActionMultipleViewProps) {
   const [open, setOpen] = useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const theme = useTheme();
   const isBigScreen = useBigScreen();
 
@@ -614,10 +644,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
     realActions.push(action);
   }
 
-  function handleMenuItemClick(
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-    index: number
-  ) {
+  function handleMenuItemClick(index: number) {
     setSelectedIndex(index);
     setOpen(false);
   }
@@ -646,6 +673,7 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
           type="submit"
           name="intent"
           value={realActions[selectedIndex].value}
+          id={realActions[selectedIndex].id}
         >
           {realActions[selectedIndex].text}
         </Button>
@@ -680,10 +708,11 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
                 <MenuList id="split-button-menu" autoFocusItem>
                   {realActions.map((option, index) => (
                     <MenuItem
+                      id={option.id}
                       key={`action-multiple-${index}`}
                       selected={index === selectedIndex}
                       disabled={!props.inputsEnabled || option.disabled}
-                      onClick={(event) => handleMenuItemClick(event, index)}
+                      onClick={() => handleMenuItemClick(index)}
                     >
                       {option.text}
                     </MenuItem>
@@ -706,6 +735,15 @@ interface FilterFewOptionsViewProps<K> {
 }
 
 function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
+  switch (props.action.approach) {
+    case "spread":
+      return <FilterFewOptionsSpreadView {...props} />;
+    case "compact":
+      return <FilterFewOptionsCompactView {...props} />;
+  }
+}
+
+function FilterFewOptionsSpreadView<K>(props: FilterFewOptionsViewProps<K>) {
   const [selected, setSelected] = useState<K>(props.action.defaultOption);
 
   const realOptions: FilterOption<K>[] = [];
@@ -733,11 +771,7 @@ function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
         if (option.gatedOn) {
           const workspace = props.topLevelInfo.workspace;
           if (!isWorkspaceFeatureAvailable(workspace, option.gatedOn)) {
-            return (
-              <React.Fragment
-                key={`filter-few-options-${index}`}
-              ></React.Fragment>
-            );
+            return <Fragment key={`filter-few-options-${index}`}></Fragment>;
           }
         }
 
@@ -757,6 +791,64 @@ function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
         );
       })}
     </ButtonGroup>
+  );
+}
+
+function FilterFewOptionsCompactView<K>(props: FilterFewOptionsViewProps<K>) {
+  const realOptions: FilterOption<K>[] = [];
+  for (const option of props.action.options) {
+    if (option.gatedOn) {
+      const workspace = props.topLevelInfo.workspace;
+      if (!isWorkspaceFeatureAvailable(workspace, option.gatedOn)) {
+        continue;
+      }
+    }
+    realOptions.push(option);
+  }
+
+  const [selectedIndex, setSelectedIndex] = useState(
+    Math.max(
+      0,
+      realOptions.findIndex((opt) => opt.value === props.action.defaultOption),
+    ),
+  );
+
+  if (realOptions.length === 0) {
+    return <></>;
+  }
+
+  if (props.action.hideIfOneOption && realOptions.length === 1) {
+    return <></>;
+  }
+
+  return (
+    <FormControl size="small">
+      <InputLabel id="section-action-filter-few-multiple-compact-label">
+        {props.action.title}
+      </InputLabel>
+      <Select
+        labelId="section-action-filter-few-multiple-compact-label"
+        id="section-action-filter-few-multiple-compact"
+        label={props.action.title}
+        readOnly={!props.inputsEnabled}
+        value={selectedIndex}
+        onChange={(e) => {
+          setSelectedIndex(e.target.value as number);
+          props.action.onSelect(realOptions[e.target.value as number].value);
+        }}
+        renderValue={() => (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {realOptions[selectedIndex].icon} {realOptions[selectedIndex].text}
+          </Box>
+        )}
+      >
+        {realOptions.map((option, index) => (
+          <MenuItem key={`filter-few-multiple-${index}`} value={index}>
+            {option.icon} {option.text}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   );
 }
 

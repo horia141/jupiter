@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -6,14 +7,10 @@ import type { NoteCreateArgs } from '../models/NoteCreateArgs';
 import type { NoteCreateResult } from '../models/NoteCreateResult';
 import type { NoteRemoveArgs } from '../models/NoteRemoveArgs';
 import type { NoteUpdateArgs } from '../models/NoteUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class NotesService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a note.
      * Use case for archiving a note.
@@ -36,7 +33,6 @@ export class NotesService {
             },
         });
     }
-
     /**
      * Use case for creating a note.
      * Use case for creating a note.
@@ -59,7 +55,6 @@ export class NotesService {
             },
         });
     }
-
     /**
      * The command for removing a note.
      * The command for removing a note.
@@ -82,7 +77,6 @@ export class NotesService {
             },
         });
     }
-
     /**
      * Update a note use case.
      * Update a note use case.
@@ -105,5 +99,4 @@ export class NotesService {
             },
         });
     }
-
 }

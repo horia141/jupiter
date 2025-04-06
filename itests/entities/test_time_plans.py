@@ -1,4 +1,5 @@
 """Tests about time plans."""
+
 import re
 import time
 from collections.abc import Iterator
@@ -9,9 +10,6 @@ from jupiter_webapi_client.api.big_plans.big_plan_create import (
 )
 from jupiter_webapi_client.api.big_plans.big_plan_update import (
     sync_detailed as big_plan_update_sync,
-)
-from jupiter_webapi_client.api.inbox_tasks.inbox_task_associate_with_big_plan import (
-    sync_detailed as inbox_task_associate_with_big_plan_sync,
 )
 from jupiter_webapi_client.api.inbox_tasks.inbox_task_create import (
     sync_detailed as inbox_task_create_sync,
@@ -43,18 +41,23 @@ from jupiter_webapi_client.models.big_plan_update_args_due_date import (
     BigPlanUpdateArgsDueDate,
 )
 from jupiter_webapi_client.models.big_plan_update_args_name import BigPlanUpdateArgsName
+from jupiter_webapi_client.models.big_plan_update_args_project_ref_id import (
+    BigPlanUpdateArgsProjectRefId,
+)
 from jupiter_webapi_client.models.big_plan_update_args_status import (
     BigPlanUpdateArgsStatus,
 )
+from jupiter_webapi_client.models.difficulty import Difficulty
+from jupiter_webapi_client.models.eisen import Eisen
 from jupiter_webapi_client.models.inbox_task import InboxTask
-from jupiter_webapi_client.models.inbox_task_associate_with_big_plan_args import (
-    InboxTaskAssociateWithBigPlanArgs,
-)
 from jupiter_webapi_client.models.inbox_task_create_args import InboxTaskCreateArgs
 from jupiter_webapi_client.models.inbox_task_status import InboxTaskStatus
 from jupiter_webapi_client.models.inbox_task_update_args import InboxTaskUpdateArgs
 from jupiter_webapi_client.models.inbox_task_update_args_actionable_date import (
     InboxTaskUpdateArgsActionableDate,
+)
+from jupiter_webapi_client.models.inbox_task_update_args_big_plan_ref_id import (
+    InboxTaskUpdateArgsBigPlanRefId,
 )
 from jupiter_webapi_client.models.inbox_task_update_args_difficulty import (
     InboxTaskUpdateArgsDifficulty,
@@ -68,11 +71,18 @@ from jupiter_webapi_client.models.inbox_task_update_args_eisen import (
 from jupiter_webapi_client.models.inbox_task_update_args_name import (
     InboxTaskUpdateArgsName,
 )
+from jupiter_webapi_client.models.inbox_task_update_args_project_ref_id import (
+    InboxTaskUpdateArgsProjectRefId,
+)
 from jupiter_webapi_client.models.inbox_task_update_args_status import (
     InboxTaskUpdateArgsStatus,
 )
 from jupiter_webapi_client.models.recurring_task_period import RecurringTaskPeriod
 from jupiter_webapi_client.models.time_plan import TimePlan
+from jupiter_webapi_client.models.time_plan_activity_feasability import (
+    TimePlanActivityFeasability,
+)
+from jupiter_webapi_client.models.time_plan_activity_kind import TimePlanActivityKind
 from jupiter_webapi_client.models.time_plan_associate_with_big_plans_args import (
     TimePlanAssociateWithBigPlansArgs,
 )
@@ -132,6 +142,8 @@ def create_time_plan_activity_from_big_plan(logged_in_client: AuthenticatedClien
                 ref_id=time_plan_id,
                 big_plan_ref_ids=[big_plan_id],
                 override_existing_dates=False,
+                kind=TimePlanActivityKind.FINISH,
+                feasability=TimePlanActivityFeasability.MUST_DO,
             ),
         )
         if result.status_code != 200:
@@ -150,6 +162,8 @@ def create_time_plan_activity_from_inbox_task(logged_in_client: AuthenticatedCli
                 ref_id=time_plan_id,
                 inbox_task_ref_ids=[inbox_task_id],
                 override_existing_dates=False,
+                kind=TimePlanActivityKind.FINISH,
+                feasability=TimePlanActivityFeasability.MUST_DO,
             ),
         )
         if result.status_code != 200:
@@ -170,6 +184,8 @@ def create_inbox_task(logged_in_client: AuthenticatedClient):
                 name=name,
                 big_plan_ref_id=big_plan_id or UNSET,
                 due_date=due_date or UNSET,
+                eisen=Eisen.REGULAR,
+                difficulty=Difficulty.EASY,
             ),
         )
         if result.status_code != 200:
@@ -204,7 +220,7 @@ def test_time_plan_view_all(page: Page, create_time_plan) -> None:
     time_plan2 = create_time_plan("2024-06-19", RecurringTaskPeriod.DAILY)
     time_plan3 = create_time_plan("2024-06-19", RecurringTaskPeriod.WEEKLY)
 
-    page.goto("/workspace/time-plans")
+    page.goto("/app/workspace/time-plans")
 
     expect(page.locator(f"#time-plan-{time_plan1.ref_id}")).to_contain_text(
         "Daily plan for 2024-06-18"
@@ -219,7 +235,7 @@ def test_time_plan_view_all(page: Page, create_time_plan) -> None:
 
 def test_time_plan_view_one(page: Page, create_time_plan) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     expect(page.locator('input[name="rightNow"]')).to_have_value("2024-06-18")
@@ -227,46 +243,48 @@ def test_time_plan_view_one(page: Page, create_time_plan) -> None:
 
 
 def test_time_plan_create(page: Page, create_time_plan) -> None:
-    page.goto("/workspace/time-plans/new")
+    page.goto("/app/workspace/time-plans/new")
     page.wait_for_selector("#leaf-panel")
 
     page.locator('input[name="rightNow"]').fill("2024-06-18")
-    page.locator('input[name="period"]').fill("weekly")
+    page.locator('button[id="period-weekly"]').click()
     page.locator("#time-plan-create").click()
 
-    page.wait_for_url(re.compile(r"/workspace/time-plans/\d+"))
+    page.wait_for_url(re.compile(r"/app/workspace/time-plans/\d+"))
 
     page.wait_for_selector("#branch-panel")
     expect(page.locator('input[name="rightNow"]')).to_have_value("2024-06-18")
-    expect(page.locator('input[name="period"]')).to_have_value("weekly")
+    expect(page.locator('button[aria-pressed="true"]')).to_have_text("Weekly")
 
 
 def test_time_plan_update(page: Page, create_time_plan) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     page.locator('input[name="rightNow"]').fill("2024-06-19")
-    page.locator('input[name="period"]').fill("daily")
-    page.locator("#time-plan-update").click()
+    page.locator('button[id="period-daily"]').click()
+    page.locator("#time-plan-change-time-config").click()
 
-    page.wait_for_url(re.compile(r"/workspace/time-plans/\d+"))
+    page.wait_for_url(re.compile(r"/app/workspace/time-plans/\d+"))
 
     page.wait_for_selector("#branch-panel")
     expect(page.locator('input[name="rightNow"]')).to_have_value("2024-06-19")
-    expect(page.locator('input[name="period"]')).to_have_value("daily")
+    expect(page.locator("button[id='period-daily']")).to_have_attribute(
+        "aria-pressed", "true"
+    )
 
 
 def test_time_plan_change_note(page: Page, create_time_plan) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     page.wait_for_selector("#entity-block-editor")
 
     page.locator('#editorjs div[contenteditable="true"]').first.fill("This is a note.")
 
-    page.wait_for_url(re.compile(r"/workspace/time-plans/\d+"))
+    page.wait_for_url(re.compile(r"/app/workspace/time-plans/\d+"))
 
     expect(page.locator('#editorjs div[contenteditable="true"]').first).to_contain_text(
         "This is a note."
@@ -284,13 +302,13 @@ def test_time_plan_change_note(page: Page, create_time_plan) -> None:
 
 def test_time_plan_archive(page: Page, create_time_plan) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     page.locator("#branch-entity-archive").click()
+    page.locator("#branch-entity-archive-confirm").click()
 
-    expect(page.locator("#time-plan-update")).to_be_disabled()
-    expect(page.locator("#branch-entity-archive")).to_be_disabled()
+    expect(page.locator("#time-plan-change-time-config")).to_be_disabled()
 
     entity_id = page.url.split("/")[-1]
     expect(page.locator(f"#time-plan-{entity_id}")).to_have_count(0)
@@ -306,7 +324,7 @@ def test_time_plan_link_untracked_inbox_tasks(
     inbox_task = create_inbox_task("Untracked Inbox Task")
     _mark_inbox_task_done(logged_in_client, inbox_task)
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     expect(page.locator("#time-plan-untracked-inbox-tasks")).to_contain_text(
@@ -321,7 +339,7 @@ def test_time_plan_link_untracked_big_plans(
     big_plan = create_big_plan("Untracked Big Plan")
     _mark_big_plan_done(logged_in_client, big_plan)
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     expect(page.locator("#time-plan-untracked-big-plans")).to_contain_text(
@@ -334,7 +352,7 @@ def test_time_plan_link_lower_time_plans(page: Page, create_time_plan) -> None:
     _ = create_time_plan("2024-06-19", RecurringTaskPeriod.DAILY)
     time_plan2 = create_time_plan("2024-06-19", RecurringTaskPeriod.WEEKLY)
 
-    page.goto(f"/workspace/time-plans/{time_plan2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan2.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     expect(page.locator("#time-plan-lower")).to_contain_text(
@@ -350,7 +368,7 @@ def test_time_plan_link_higher_time_plan(page: Page, create_time_plan) -> None:
     _ = create_time_plan("2024-06-19", RecurringTaskPeriod.DAILY)
     _ = create_time_plan("2024-06-19", RecurringTaskPeriod.WEEKLY)
 
-    page.goto(f"/workspace/time-plans/{time_plan1.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan1.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     expect(page.locator("#time-plan-higher")).to_contain_text(
@@ -363,7 +381,7 @@ def test_time_plan_link_previous_time_plan(page: Page, create_time_plan) -> None
     time_plan1 = create_time_plan("2024-06-19", RecurringTaskPeriod.DAILY)
     _ = create_time_plan("2024-06-19", RecurringTaskPeriod.WEEKLY)
 
-    page.goto(f"/workspace/time-plans/{time_plan1.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan1.ref_id}")
     page.wait_for_selector("#branch-panel")
 
     expect(page.locator("#time-plan-previous")).to_contain_text(
@@ -373,21 +391,27 @@ def test_time_plan_link_previous_time_plan(page: Page, create_time_plan) -> None
 
 def test_time_plan_create_new_inbox_task_activity(page: Page, create_time_plan) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("a", has_text="New Inbox Task").click()
 
-    page.wait_for_url(re.compile("/workspace/inbox-tasks/new"))
+    page.wait_for_url(re.compile("/app/workspace/inbox-tasks/new"))
 
     page.locator('input[name="name"]').fill("New Inbox Task")
     page.locator("#inbox-task-create").click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
-    expect(page.locator("#target")).to_contain_text("New Inbox Task")
+    expect(page.locator("input[name='targetInboxTaskName']")).to_have_value(
+        "New Inbox Task"
+    )
 
 
 def test_time_plan_create_new_inbox_task_with_big_plan_activity(
@@ -395,11 +419,11 @@ def test_time_plan_create_new_inbox_task_with_big_plan_activity(
 ) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
     _ = create_big_plan("The Big Plan")
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("a", has_text="New Inbox Task").click()
 
-    page.wait_for_url(re.compile("/workspace/inbox-tasks/new"))
+    page.wait_for_url(re.compile("/app/workspace/inbox-tasks/new"))
 
     page.locator('input[name="name"]').fill("New Inbox Task")
     page.locator("#bigPlan").locator("..").click()
@@ -407,44 +431,58 @@ def test_time_plan_create_new_inbox_task_with_big_plan_activity(
 
     page.locator("#inbox-task-create").click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
-    expect(page.locator("#target")).to_contain_text("New Inbox Task")
+    expect(page.locator("input[name='targetInboxTaskName']")).to_have_value(
+        "New Inbox Task"
+    )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("New Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
     page.locator("#time-plan-activities").locator("a", has_text="The Big Plan").click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("make-progress")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
 
 def test_time_plan_create_new_big_plan_activity(
     page: Page, create_time_plan, create_big_plan
 ) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="New Big Plan").click()
 
-    page.wait_for_url(re.compile("/workspace/big-plans/new"))
+    page.wait_for_url(re.compile("/app/workspace/big-plans/new"))
 
     page.locator('input[name="name"]').fill("New Big Plan")
     page.locator("#big-plan-create").click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("make-progress")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-nice-to-have']")
+    ).to_have_attribute("aria-pressed", "true")
 
     expect(page.locator("#target")).to_contain_text("New Big Plan")
 
@@ -461,29 +499,35 @@ def test_time_plan_create_new_inbox_task_from_big_plan_activity(
         time_plan.ref_id, big_plan.ref_id
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}"
+    )
 
     page.locator("#leaf-panel").locator("a", has_text="New Inbox Task").click()
 
-    page.wait_for_url(re.compile(r"/workspace/inbox-tasks/new"))
+    page.wait_for_url(re.compile(r"/app/workspace/inbox-tasks/new"))
 
     page.locator('input[name="name"]').fill("The New Inbox Task")
     page.locator("#inbox-task-create").click()
 
     expect(page.locator("input[id='bigPlan']")).to_have_value("The Big Plan")
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The New Inbox Task")
 
     page.locator("#time-plan-activities").locator(
         "a", has_text="The New Inbox Task"
-    ).click()
+    ).click(force=True)
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    expect(
+        page.locator("button[id='time-plan-activity-kind-finish']")
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator("button[id='time-plan-activity-feasability-must-do']")
+    ).to_have_attribute("aria-pressed", "true")
 
 
 def test_time_plan_create_activities_from_inbox_tasks_of_an_associated_big_plan(
@@ -501,7 +545,9 @@ def test_time_plan_create_activities_from_inbox_tasks_of_an_associated_big_plan(
         time_plan.ref_id, big_plan.ref_id
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}"
+    )
 
     page.locator("#leaf-panel").locator(
         "a", has_text="From Current Inbox Tasks"
@@ -521,9 +567,9 @@ def test_time_plan_create_activities_from_inbox_tasks_of_an_associated_big_plan(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}/\d+"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}/\d+"))
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).not_to_contain_text(
@@ -537,13 +583,13 @@ def test_time_plan_associate_with_inbox_task(
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
     inbox_task = create_inbox_task("The Inbox Task", due_date="2024-06-18")
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -554,11 +600,11 @@ def test_time_plan_associate_with_inbox_task(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/workspace/inbox-tasks/{inbox_task.ref_id}")
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-18")
 
@@ -569,13 +615,13 @@ def test_time_plan_associate_with_inbox_task_no_dates(
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     inbox_task = create_inbox_task("The Inbox Task")
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -586,11 +632,11 @@ def test_time_plan_associate_with_inbox_task_no_dates(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/workspace/inbox-tasks/{inbox_task.ref_id}")
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
 
@@ -601,13 +647,13 @@ def test_time_plan_associate_with_inbox_task_and_override_dates(
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     inbox_task = create_inbox_task("The Inbox Task", due_date="2024-06-18")
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -618,11 +664,11 @@ def test_time_plan_associate_with_inbox_task_and_override_dates(
         "button", has_text=re.compile(r"^Add And Override Dates$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/workspace/inbox-tasks/{inbox_task.ref_id}")
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
 
@@ -636,13 +682,13 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan(
     )
     _ = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -653,12 +699,12 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
 
@@ -670,13 +716,13 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan_no_dates(
     big_plan = create_big_plan("The Big Plan")
     _ = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -687,12 +733,12 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan_no_dates(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
 
@@ -706,13 +752,13 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan_but_overwrites_d
     )
     _ = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -723,12 +769,12 @@ def test_time_plan_associate_with_inbox_task_and_pulls_big_plan_but_overwrites_d
         "button", has_text=re.compile(r"^Add And Override Dates$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
 
@@ -741,13 +787,13 @@ def test_time_plan_associate_with_two_out_of_three_inbox_tasks(
     _ = create_inbox_task("The Inbox Task 2", due_date="2024-06-18")
     _ = create_inbox_task("The Inbox Task 3", due_date="2024-06-19")
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -761,7 +807,7 @@ def test_time_plan_associate_with_two_out_of_three_inbox_tasks(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 2")
@@ -787,13 +833,13 @@ def test_time_plan_associate_with_tasks_that_pull_in_some_more_big_plans(
         "The Big Plan 3", actionable_date="2024-06-10", due_date="2024-06-19"
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Inbox Tasks").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-inbox-tasks")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-inbox-tasks")
     )
 
     page.locator("#time-plan-current-inbox-tasks").locator(
@@ -807,7 +853,7 @@ def test_time_plan_associate_with_tasks_that_pull_in_some_more_big_plans(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
     expect(page.locator("#time-plan-activities")).not_to_contain_text(
@@ -827,13 +873,13 @@ def test_time_plan_associate_with_big_plan(
         "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Big Plans").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-big-plans")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-big-plans")
     )
 
     page.locator("#time-plan-current-big-plans").locator(
@@ -844,11 +890,11 @@ def test_time_plan_associate_with_big_plan(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
 
@@ -859,13 +905,13 @@ def test_time_plan_associate_with_big_plan_no_dates(
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     big_plan = create_big_plan("The Big Plan")
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Big Plans").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-big-plans")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-big-plans")
     )
 
     page.locator("#time-plan-current-big-plans").locator(
@@ -876,11 +922,11 @@ def test_time_plan_associate_with_big_plan_no_dates(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
 
@@ -893,13 +939,13 @@ def test_time_plan_associate_with_big_plan_and_override_dates(
         "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Current Big Plans").click()
 
     page.wait_for_url(
-        re.compile(r"/workspace/time-plans/\d+/add-from-current-big-plans")
+        re.compile(r"/app/workspace/time-plans/\d+/add-from-current-big-plans")
     )
 
     page.locator("#time-plan-current-big-plans").locator(
@@ -910,11 +956,11 @@ def test_time_plan_associate_with_big_plan_and_override_dates(
         "button", has_text=re.compile(r"^Add And Override Dates$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
 
@@ -930,14 +976,14 @@ def test_time_plan_associate_previous_activity_inbox_task(
     inbox_task = create_inbox_task("The Inbox Task", due_date="2024-06-18")
     _ = create_time_plan_activity_from_inbox_task(time_plan_1.ref_id, inbox_task.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -947,7 +993,7 @@ def test_time_plan_associate_previous_activity_inbox_task(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -959,11 +1005,11 @@ def test_time_plan_associate_previous_activity_inbox_task(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/workspace/inbox-tasks/{inbox_task.ref_id}")
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-18")
@@ -982,14 +1028,14 @@ def test_time_plan_associate_previous_activity_inbox_task_no_dates(
     _ = create_time_plan_activity_from_inbox_task(time_plan_1.ref_id, inbox_task.ref_id)
     _clear_inbox_task_dates(logged_in_client, inbox_task)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -999,7 +1045,7 @@ def test_time_plan_associate_previous_activity_inbox_task_no_dates(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1011,11 +1057,11 @@ def test_time_plan_associate_previous_activity_inbox_task_no_dates(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/workspace/inbox-tasks/{inbox_task.ref_id}")
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-30")
@@ -1032,14 +1078,14 @@ def test_time_plan_associate_previous_activity_inbox_task_override_dates(
     inbox_task = create_inbox_task("The Inbox Task", due_date="2024-06-18")
     _ = create_time_plan_activity_from_inbox_task(time_plan_1.ref_id, inbox_task.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1049,7 +1095,7 @@ def test_time_plan_associate_previous_activity_inbox_task_override_dates(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1061,11 +1107,11 @@ def test_time_plan_associate_previous_activity_inbox_task_override_dates(
         "button", has_text=re.compile(r"^Add And Override Dates$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/workspace/inbox-tasks/{inbox_task.ref_id}")
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-30")
@@ -1086,14 +1132,14 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan(
     inbox_task = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
     _ = create_time_plan_activity_from_inbox_task(time_plan_1.ref_id, inbox_task.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1103,7 +1149,7 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1115,12 +1161,12 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
 
@@ -1140,14 +1186,14 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_no_
     _ = create_time_plan_activity_from_inbox_task(time_plan_1.ref_id, inbox_task.ref_id)
     _clear_big_plan_dates(logged_in_client, big_plan)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1157,7 +1203,7 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_no_
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1169,12 +1215,12 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_no_
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-24")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-30")
 
@@ -1194,14 +1240,14 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_but
     inbox_task = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
     _ = create_time_plan_activity_from_inbox_task(time_plan_1.ref_id, inbox_task.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1211,7 +1257,7 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_but
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1223,12 +1269,12 @@ def test_time_plan_associate_previous_activity_inbox_task_and_pulls_big_plan_but
         "button", has_text=re.compile(r"^Add And Override Dates$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
 
@@ -1254,14 +1300,14 @@ def test_time_plan_associate_previous_activity_two_of_three_inbox_tasks(
         time_plan_1.ref_id, inbox_task3.ref_id
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1271,7 +1317,7 @@ def test_time_plan_associate_previous_activity_two_of_three_inbox_tasks(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1286,7 +1332,7 @@ def test_time_plan_associate_previous_activity_two_of_three_inbox_tasks(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
     expect(page.locator("#time-plan-activities")).not_to_contain_text(
@@ -1328,14 +1374,14 @@ def test_time_plan_associate_previous_activity_tasks_that_pull_in_some_more_big_
     )
     _ = create_time_plan_activity_from_big_plan(time_plan_1.ref_id, big_plan3.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1345,7 +1391,7 @@ def test_time_plan_associate_previous_activity_tasks_that_pull_in_some_more_big_
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1360,7 +1406,7 @@ def test_time_plan_associate_previous_activity_tasks_that_pull_in_some_more_big_
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
     expect(page.locator("#time-plan-activities")).not_to_contain_text(
@@ -1385,14 +1431,14 @@ def test_time_plan_associate_previous_activity_big_plan(
     )
     _ = create_time_plan_activity_from_big_plan(time_plan_1.ref_id, big_plan.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1402,7 +1448,7 @@ def test_time_plan_associate_previous_activity_big_plan(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1414,11 +1460,11 @@ def test_time_plan_associate_previous_activity_big_plan(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
 
@@ -1436,14 +1482,14 @@ def test_time_plan_associate_previous_activity_big_plan_no_dates(
     _ = create_time_plan_activity_from_big_plan(time_plan_1.ref_id, big_plan.ref_id)
     _clear_big_plan_dates(logged_in_client, big_plan)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1453,7 +1499,7 @@ def test_time_plan_associate_previous_activity_big_plan_no_dates(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1465,11 +1511,11 @@ def test_time_plan_associate_previous_activity_big_plan_no_dates(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-24")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-30")
 
@@ -1487,14 +1533,14 @@ def test_time_plan_associate_previous_activity_big_plan_and_override_dates(
     )
     _ = create_time_plan_activity_from_big_plan(time_plan_1.ref_id, big_plan.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1504,7 +1550,7 @@ def test_time_plan_associate_previous_activity_big_plan_and_override_dates(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1516,11 +1562,11 @@ def test_time_plan_associate_previous_activity_big_plan_and_override_dates(
         "button", has_text=re.compile(r"^Add And Override Dates$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/big-plans/{big_plan.ref_id}")
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-24")
     expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-30")
 
@@ -1549,14 +1595,14 @@ def test_time_plan_associate_previous_activity_some_already_associated(
         time_plan_2.ref_id, inbox_task2.ref_id
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     page.locator("#section-action-nav-multiple-compact-button").click()
     page.locator("a", has_text="From Time Plans").click()
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_2.ref_id}"
         )
     )
 
@@ -1566,7 +1612,7 @@ def test_time_plan_associate_previous_activity_some_already_associated(
 
     page.wait_for_url(
         re.compile(
-            rf"/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
+            rf"/app/workspace/time-plans/{time_plan_2.ref_id}/add-from-current-time-plans/{time_plan_1.ref_id}"
         )
     )
 
@@ -1581,7 +1627,7 @@ def test_time_plan_associate_previous_activity_some_already_associated(
         "button", has_text=re.compile(r"^Add$")
     ).click()
 
-    page.wait_for_url(re.compile(rf"/workspace/time-plans/{time_plan_2.ref_id}"))
+    page.wait_for_url(re.compile(rf"/app/workspace/time-plans/{time_plan_2.ref_id}"))
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 2")
@@ -1605,24 +1651,24 @@ def test_time_plan_add_an_inbox_task_to_a_big_plan_updates_all_time_plans(
     _ = create_time_plan_activity_from_inbox_task(time_plan_1.ref_id, inbox_task.ref_id)
     _ = create_time_plan_activity_from_inbox_task(time_plan_2.ref_id, inbox_task.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan_1.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_1.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Big Plan")
 
     _associate_inbox_task_with_big_plan(logged_in_client, inbox_task, big_plan)
 
-    page.goto(f"/workspace/time-plans/{time_plan_1.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_1.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/time-plans/{time_plan_2.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan_2.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
@@ -1639,7 +1685,7 @@ def test_time_plan_show_activity_doneness(
     inbox_task = create_inbox_task("The Inbox Task")
     _ = create_time_plan_activity_from_inbox_task(time_plan.ref_id, inbox_task.ref_id)
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     expect(
         page.locator("#time-plan-activities").locator("p", has_text="The Inbox Task")
@@ -1665,10 +1711,9 @@ def test_time_plan_activity_update(
         time_plan.ref_id, inbox_task.ref_id
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
-
-    expect(page.locator("input[name='kind']")).to_have_value("finish")
-    expect(page.locator("input[name='feasability']")).to_have_value("must-do")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}"
+    )
 
     page.locator("#time-plan-activity-kind-make-progress").click()
     page.locator("#time-plan-activity-feasability-stretch").click()
@@ -1678,8 +1723,21 @@ def test_time_plan_activity_update(
 
     page.reload()
 
-    expect(page.locator("input[name='kind']")).to_have_value("make-progress")
-    expect(page.locator("input[name='feasability']")).to_have_value("stretch")
+    expect(
+        page.locator('button[id="time-plan-activity-kind-finish"]')
+    ).to_have_attribute("aria-pressed", "false")
+    expect(
+        page.locator('button[id="time-plan-activity-kind-make-progress"]')
+    ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator('button[id="time-plan-activity-feasability-must-do"]')
+    ).to_have_attribute("aria-pressed", "false")
+    expect(
+        page.locator('button[id="time-plan-activity-feasability-nice-to-have"]')
+    ).to_have_attribute("aria-pressed", "false")
+    expect(
+        page.locator('button[id="time-plan-activity-feasability-stretch"]')
+    ).to_have_attribute("aria-pressed", "true")
 
 
 def test_time_plan_activity_archive_inbox_task(
@@ -1695,17 +1753,20 @@ def test_time_plan_activity_archive_inbox_task(
         time_plan.ref_id, inbox_task.ref_id
     )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}"
+    )
 
     page.locator("#leaf-entity-archive").click()
+    page.locator("#leaf-entity-archive-confirm").click()
 
     expect(page.locator("#leaf-entity-archive")).to_be_disabled()
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Inbox Task")
 
@@ -1725,20 +1786,29 @@ def test_time_plan_activity_archive_big_plan_with_inbox_task(
     big_plan_activity = create_time_plan_activity_from_big_plan(
         time_plan.ref_id, big_plan.ref_id
     )
-    _ = create_time_plan_activity_from_inbox_task(time_plan.ref_id, inbox_task.ref_id)
+    inbox_task_activity = create_time_plan_activity_from_inbox_task(
+        time_plan.ref_id, inbox_task.ref_id
+    )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}")
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{big_plan_activity.ref_id}"
+    )
 
     page.locator("#leaf-entity-archive").click()
+    page.locator("#leaf-entity-archive-confirm").click()
 
-    expect(page.locator("#leaf-entity-archive")).to_be_disabled()
+    page.goto(
+        f"/app/workspace/time-plans/{time_plan.ref_id}/{inbox_task_activity.ref_id}"
+    )
 
-    page.goto(f"/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#inbox-task-editor-save")).to_be_disabled()
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
 
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Big Plan")
@@ -1759,6 +1829,8 @@ def _mark_inbox_task_done(
             difficulty=InboxTaskUpdateArgsDifficulty(should_change=False),
             actionable_date=InboxTaskUpdateArgsActionableDate(should_change=False),
             due_date=InboxTaskUpdateArgsDueDate(should_change=False),
+            project_ref_id=InboxTaskUpdateArgsProjectRefId(should_change=False),
+            big_plan_ref_id=InboxTaskUpdateArgsBigPlanRefId(should_change=False),
         ),
     )
 
@@ -1778,6 +1850,8 @@ def _clear_inbox_task_dates(
                 should_change=True, value=None
             ),
             due_date=InboxTaskUpdateArgsDueDate(should_change=True, value=None),
+            project_ref_id=InboxTaskUpdateArgsProjectRefId(should_change=False),
+            big_plan_ref_id=InboxTaskUpdateArgsBigPlanRefId(should_change=False),
         ),
     )
 
@@ -1785,10 +1859,20 @@ def _clear_inbox_task_dates(
 def _associate_inbox_task_with_big_plan(
     logged_in_client: AuthenticatedClient, inbox_task: InboxTask, big_plan: BigPlan
 ) -> None:
-    inbox_task_associate_with_big_plan_sync(
+    inbox_task_update_sync(
         client=logged_in_client,
-        body=InboxTaskAssociateWithBigPlanArgs(
-            ref_id=inbox_task.ref_id, big_plan_ref_id=big_plan.ref_id
+        body=InboxTaskUpdateArgs(
+            ref_id=inbox_task.ref_id,
+            name=InboxTaskUpdateArgsName(should_change=False),
+            status=InboxTaskUpdateArgsStatus(should_change=False),
+            eisen=InboxTaskUpdateArgsEisen(should_change=False),
+            difficulty=InboxTaskUpdateArgsDifficulty(should_change=False),
+            actionable_date=InboxTaskUpdateArgsActionableDate(should_change=False),
+            due_date=InboxTaskUpdateArgsDueDate(should_change=False),
+            project_ref_id=InboxTaskUpdateArgsProjectRefId(should_change=False),
+            big_plan_ref_id=InboxTaskUpdateArgsBigPlanRefId(
+                should_change=True, value=big_plan.ref_id
+            ),
         ),
     )
 
@@ -1806,6 +1890,7 @@ def _mark_big_plan_done(
             ),
             actionable_date=BigPlanUpdateArgsActionableDate(should_change=False),
             due_date=BigPlanUpdateArgsDueDate(should_change=False),
+            project_ref_id=BigPlanUpdateArgsProjectRefId(should_change=False),
         ),
     )
 
@@ -1823,6 +1908,7 @@ def _clear_big_plan_dates(
                 should_change=True, value=None
             ),
             due_date=BigPlanUpdateArgsDueDate(should_change=True, value=None),
+            project_ref_id=BigPlanUpdateArgsProjectRefId(should_change=False),
         ),
     )
 

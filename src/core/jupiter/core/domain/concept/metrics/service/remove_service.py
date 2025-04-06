@@ -1,9 +1,10 @@
 """Shared service for removing a metric."""
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
@@ -38,10 +39,13 @@ class MetricRemoveService:
             workspace.ref_id,
         )
 
-        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        all_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            metric_ref_id=[metric.ref_id],
+            source=InboxTaskSource.METRIC,
+            source_entity_ref_id=metric.ref_id,
         )
 
         inbox_task_remove_service = InboxTaskRemoveService()

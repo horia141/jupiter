@@ -1,4 +1,5 @@
 """Usecase for finding schedule streams."""
+
 from collections import defaultdict
 
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain

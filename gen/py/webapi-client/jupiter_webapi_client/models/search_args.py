@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,7 +18,7 @@ class SearchArgs:
         query (str): A search query parameter for searches.
         limit (int): A search limit parameter for searches.
         include_archived (bool):
-        filter_entity_tags (Union[List[NamedEntityTag], None, Unset]):
+        filter_entity_tags (Union[None, Unset, list[NamedEntityTag]]):
         filter_created_time_after (Union[None, Unset, str]):
         filter_created_time_before (Union[None, Unset, str]):
         filter_last_modified_time_after (Union[None, Unset, str]):
@@ -29,23 +30,23 @@ class SearchArgs:
     query: str
     limit: int
     include_archived: bool
-    filter_entity_tags: Union[List[NamedEntityTag], None, Unset] = UNSET
+    filter_entity_tags: Union[None, Unset, list[NamedEntityTag]] = UNSET
     filter_created_time_after: Union[None, Unset, str] = UNSET
     filter_created_time_before: Union[None, Unset, str] = UNSET
     filter_last_modified_time_after: Union[None, Unset, str] = UNSET
     filter_last_modified_time_before: Union[None, Unset, str] = UNSET
     filter_archived_time_after: Union[None, Unset, str] = UNSET
     filter_archived_time_before: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         query = self.query
 
         limit = self.limit
 
         include_archived = self.include_archived
 
-        filter_entity_tags: Union[List[str], None, Unset]
+        filter_entity_tags: Union[None, Unset, list[str]]
         if isinstance(self.filter_entity_tags, Unset):
             filter_entity_tags = UNSET
         elif isinstance(self.filter_entity_tags, list):
@@ -93,7 +94,7 @@ class SearchArgs:
         else:
             filter_archived_time_before = self.filter_archived_time_before
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -120,15 +121,15 @@ class SearchArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         query = d.pop("query")
 
         limit = d.pop("limit")
 
         include_archived = d.pop("include_archived")
 
-        def _parse_filter_entity_tags(data: object) -> Union[List[NamedEntityTag], None, Unset]:
+        def _parse_filter_entity_tags(data: object) -> Union[None, Unset, list[NamedEntityTag]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -146,7 +147,7 @@ class SearchArgs:
                 return filter_entity_tags_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[NamedEntityTag], None, Unset], data)
+            return cast(Union[None, Unset, list[NamedEntityTag]], data)
 
         filter_entity_tags = _parse_filter_entity_tags(d.pop("filter_entity_tags", UNSET))
 
@@ -225,7 +226,7 @@ class SearchArgs:
         return search_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

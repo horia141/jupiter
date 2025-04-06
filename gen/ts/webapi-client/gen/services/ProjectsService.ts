@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -12,14 +13,10 @@ import type { ProjectLoadResult } from '../models/ProjectLoadResult';
 import type { ProjectRemoveArgs } from '../models/ProjectRemoveArgs';
 import type { ProjectReorderChildrenArgs } from '../models/ProjectReorderChildrenArgs';
 import type { ProjectUpdateArgs } from '../models/ProjectUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ProjectsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a project.
      * The command for archiving a project.
@@ -42,7 +39,6 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for changing the parent project of a project.
      * The command for changing the parent project of a project.
@@ -65,7 +61,6 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for creating a project.
      * The command for creating a project.
@@ -88,7 +83,6 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for finding projects.
      * The command for finding projects.
@@ -111,7 +105,6 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * Use case for loading a particular project.
      * Use case for loading a particular project.
@@ -134,7 +127,6 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for removing a project.
      * The command for removing a project.
@@ -157,7 +149,6 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * Reorder the children of a project.
      * Reorder the children of a project.
@@ -180,7 +171,6 @@ export class ProjectsService {
             },
         });
     }
-
     /**
      * The command for updating a project.
      * The command for updating a project.
@@ -203,5 +193,4 @@ export class ProjectsService {
             },
         });
     }
-
 }

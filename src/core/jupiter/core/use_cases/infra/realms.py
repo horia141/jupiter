@@ -1,4 +1,5 @@
 """Application-specific realm helpers."""
+
 import abc
 import dataclasses
 import types
@@ -303,10 +304,13 @@ class _UnionDecoder(Generic[_RealmT], RealmDecoder[DomainThing, _RealmT]):
         """Decode a realm from a string."""
         for attempt_type in self._the_types:
             try:
-                return self._realm_codec_registry.get_decoder(
+                the_decoder = self._realm_codec_registry.get_decoder(
                     attempt_type, self._realm, self._root_type
-                ).decode(value)
-            except (InputValidationError, RealmDecodingError):
+                )
+                the_val = the_decoder.decode(value)
+
+                return the_val
+            except RealmDecodingError:
                 pass
 
         raise RealmDecodingError(
@@ -1157,6 +1161,11 @@ class _StandardUseCaseArgsWebDecoder(
 
         for field in all_fields:
             try:
+                if isinstance(field.type, str):
+                    raise RealmDecodingError(
+                        f"Cannot decode field {field.name} of {self._the_type.__name__} because it's a virtual field"
+                    )
+
                 field_type, is_optional = normalize_optional(field.type)
                 if field.name not in value:
                     if is_optional:
@@ -1794,7 +1803,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         r"""Get all types registered that derive from base type."""
         yielded_types: set[type[Thing]] = set()
 
-        for (the_type, type_realm) in self._encoders_registry.keys():
+        for the_type, type_realm in self._encoders_registry.keys():
             if the_type in yielded_types:
                 continue
             if not allowed_in_realm(the_type, realm):
@@ -1805,7 +1814,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 yielded_types.add(the_type)
                 yield the_type
 
-        for (the_type, type_realm) in self._decoders_registry.keys():
+        for the_type, type_realm in self._decoders_registry.keys():
             if the_type in yielded_types:
                 continue
             if not allowed_in_realm(the_type, realm):
@@ -1820,7 +1829,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         self,
         thing_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-        root_type: type[_DomainThingT] | None = None,
+        root_type: type[DomainThing] | None = None,
     ) -> RealmEncoder[_DomainThingT, _RealmT]:
         """Get a codec for a realm and a thing type."""
         if isinstance(thing_type, typing._GenericAlias) and thing_type.__name__ == "Literal":  # type: ignore
@@ -1835,7 +1844,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_encoder(root_type, realm, root_type)
+            return self.get_encoder(
+                cast(type[_DomainThingT], root_type), realm, root_type
+            )
         elif isinstance(thing_type, str):
             if root_type is None:
                 raise Exception("Cannot infer the type of a string without a root type")
@@ -1843,7 +1854,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_encoder(root_type, realm, root_type)
+            return self.get_encoder(
+                cast(type[_DomainThingT], root_type), realm, root_type
+            )
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._encoders_registry:
                 if (thing_type, DatabaseRealm) not in self._encoders_registry:
@@ -1950,7 +1963,7 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
         self,
         thing_type: type[_DomainThingT] | ForwardRef | str,
         realm: type[_RealmT],
-        root_type: type[_DomainThingT] | None = None,
+        root_type: type[DomainThing] | None = None,
     ) -> RealmDecoder[_DomainThingT, _RealmT]:
         """Get a codec for a realm and a thing type."""
         if isinstance(thing_type, typing._GenericAlias) and thing_type.__name__ == "Literal":  # type: ignore
@@ -1962,7 +1975,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_decoder(root_type, realm, root_type)
+            return self.get_decoder(
+                cast(type[_DomainThingT], root_type), realm, root_type
+            )
         elif isinstance(thing_type, str):
             if root_type is None:
                 raise Exception("Cannot infer the type of a string without a root type")
@@ -1970,7 +1985,9 @@ class ModuleExplorerRealmCodecRegistry(RealmCodecRegistry):
                 raise Exception(
                     f"Recursive types are only allowed to be encoded as root types, but {thing_type} is not the root type {root_type.__name__}"
                 )
-            return self.get_decoder(root_type, realm, root_type)
+            return self.get_decoder(
+                cast(type[_DomainThingT], root_type), realm, root_type
+            )
         elif is_thing_ish_type(thing_type):
             if (thing_type, realm) not in self._decoders_registry:
                 if (thing_type, DatabaseRealm) not in self._decoders_registry:

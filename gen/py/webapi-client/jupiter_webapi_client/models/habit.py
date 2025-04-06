@@ -1,8 +1,10 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.habit_repeats_strategy import HabitRepeatsStrategy
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -28,7 +30,7 @@ class Habit:
         gen_params (RecurringTaskGenParams): Parameters for metric collection.
         suspended (bool):
         archived_time (Union[None, Unset, str]):
-        skip_rule (Union[None, Unset, str]):
+        repeats_strategy (Union[HabitRepeatsStrategy, None, Unset]):
         repeats_in_period_count (Union[None, Unset, int]):
     """
 
@@ -43,11 +45,11 @@ class Habit:
     gen_params: "RecurringTaskGenParams"
     suspended: bool
     archived_time: Union[None, Unset, str] = UNSET
-    skip_rule: Union[None, Unset, str] = UNSET
+    repeats_strategy: Union[HabitRepeatsStrategy, None, Unset] = UNSET
     repeats_in_period_count: Union[None, Unset, int] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         version = self.version
@@ -74,11 +76,13 @@ class Habit:
         else:
             archived_time = self.archived_time
 
-        skip_rule: Union[None, Unset, str]
-        if isinstance(self.skip_rule, Unset):
-            skip_rule = UNSET
+        repeats_strategy: Union[None, Unset, str]
+        if isinstance(self.repeats_strategy, Unset):
+            repeats_strategy = UNSET
+        elif isinstance(self.repeats_strategy, HabitRepeatsStrategy):
+            repeats_strategy = self.repeats_strategy.value
         else:
-            skip_rule = self.skip_rule
+            repeats_strategy = self.repeats_strategy
 
         repeats_in_period_count: Union[None, Unset, int]
         if isinstance(self.repeats_in_period_count, Unset):
@@ -86,7 +90,7 @@ class Habit:
         else:
             repeats_in_period_count = self.repeats_in_period_count
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -104,18 +108,18 @@ class Habit:
         )
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
-        if skip_rule is not UNSET:
-            field_dict["skip_rule"] = skip_rule
+        if repeats_strategy is not UNSET:
+            field_dict["repeats_strategy"] = repeats_strategy
         if repeats_in_period_count is not UNSET:
             field_dict["repeats_in_period_count"] = repeats_in_period_count
 
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -145,14 +149,22 @@ class Habit:
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
+        def _parse_repeats_strategy(data: object) -> Union[HabitRepeatsStrategy, None, Unset]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(Union[None, Unset, str], data)
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                repeats_strategy_type_0 = HabitRepeatsStrategy(data)
 
-        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
+                return repeats_strategy_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[HabitRepeatsStrategy, None, Unset], data)
+
+        repeats_strategy = _parse_repeats_strategy(d.pop("repeats_strategy", UNSET))
 
         def _parse_repeats_in_period_count(data: object) -> Union[None, Unset, int]:
             if data is None:
@@ -175,7 +187,7 @@ class Habit:
             gen_params=gen_params,
             suspended=suspended,
             archived_time=archived_time,
-            skip_rule=skip_rule,
+            repeats_strategy=repeats_strategy,
             repeats_in_period_count=repeats_in_period_count,
         )
 
@@ -183,7 +195,7 @@ class Habit:
         return habit
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

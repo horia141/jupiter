@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,9 +28,9 @@ class ScheduleEventFullDaysUpdateArgs:
     name: "ScheduleEventFullDaysUpdateArgsName"
     start_date: "ScheduleEventFullDaysUpdateArgsStartDate"
     duration_days: "ScheduleEventFullDaysUpdateArgsDurationDays"
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         name = self.name.to_dict()
@@ -38,7 +39,7 @@ class ScheduleEventFullDaysUpdateArgs:
 
         duration_days = self.duration_days.to_dict()
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -52,14 +53,14 @@ class ScheduleEventFullDaysUpdateArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.schedule_event_full_days_update_args_duration_days import (
             ScheduleEventFullDaysUpdateArgsDurationDays,
         )
         from ..models.schedule_event_full_days_update_args_name import ScheduleEventFullDaysUpdateArgsName
         from ..models.schedule_event_full_days_update_args_start_date import ScheduleEventFullDaysUpdateArgsStartDate
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         name = ScheduleEventFullDaysUpdateArgsName.from_dict(d.pop("name"))
@@ -79,7 +80,7 @@ class ScheduleEventFullDaysUpdateArgs:
         return schedule_event_full_days_update_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,15 +28,15 @@ class VacationFindResultEntry:
     vacation: "Vacation"
     note: Union["Note", None, Unset] = UNSET
     time_event_block: Union["TimeEventFullDaysBlock", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.note import Note
         from ..models.time_event_full_days_block import TimeEventFullDaysBlock
 
         vacation = self.vacation.to_dict()
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -43,7 +44,7 @@ class VacationFindResultEntry:
         else:
             note = self.note
 
-        time_event_block: Union[Dict[str, Any], None, Unset]
+        time_event_block: Union[None, Unset, dict[str, Any]]
         if isinstance(self.time_event_block, Unset):
             time_event_block = UNSET
         elif isinstance(self.time_event_block, TimeEventFullDaysBlock):
@@ -51,7 +52,7 @@ class VacationFindResultEntry:
         else:
             time_event_block = self.time_event_block
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -66,12 +67,12 @@ class VacationFindResultEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.note import Note
         from ..models.time_event_full_days_block import TimeEventFullDaysBlock
         from ..models.vacation import Vacation
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         vacation = Vacation.from_dict(d.pop("vacation"))
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
@@ -118,7 +119,7 @@ class VacationFindResultEntry:
         return vacation_find_result_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

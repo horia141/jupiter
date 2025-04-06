@@ -1,13 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Difficulty } from './Difficulty';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { ScoreSource } from './ScoreSource';
 import type { Timestamp } from './Timestamp';
-
 /**
  * A record of a win or loss in accomplishing a task.
  */

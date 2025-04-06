@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -22,17 +23,21 @@ class HabitLoadResult:
     Attributes:
         habit (Habit): A habit.
         project (Project): The project.
-        inbox_tasks (List['InboxTask']):
+        inbox_tasks (list['InboxTask']):
+        inbox_tasks_total_cnt (int):
+        inbox_tasks_page_size (int):
         note (Union['Note', None, Unset]):
     """
 
     habit: "Habit"
     project: "Project"
-    inbox_tasks: List["InboxTask"]
+    inbox_tasks: list["InboxTask"]
+    inbox_tasks_total_cnt: int
+    inbox_tasks_page_size: int
     note: Union["Note", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.note import Note
 
         habit = self.habit.to_dict()
@@ -44,7 +49,11 @@ class HabitLoadResult:
             inbox_tasks_item = inbox_tasks_item_data.to_dict()
             inbox_tasks.append(inbox_tasks_item)
 
-        note: Union[Dict[str, Any], None, Unset]
+        inbox_tasks_total_cnt = self.inbox_tasks_total_cnt
+
+        inbox_tasks_page_size = self.inbox_tasks_page_size
+
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -52,13 +61,15 @@ class HabitLoadResult:
         else:
             note = self.note
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "habit": habit,
                 "project": project,
                 "inbox_tasks": inbox_tasks,
+                "inbox_tasks_total_cnt": inbox_tasks_total_cnt,
+                "inbox_tasks_page_size": inbox_tasks_page_size,
             }
         )
         if note is not UNSET:
@@ -67,13 +78,13 @@ class HabitLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.habit import Habit
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.project import Project
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         habit = Habit.from_dict(d.pop("habit"))
 
         project = Project.from_dict(d.pop("project"))
@@ -84,6 +95,10 @@ class HabitLoadResult:
             inbox_tasks_item = InboxTask.from_dict(inbox_tasks_item_data)
 
             inbox_tasks.append(inbox_tasks_item)
+
+        inbox_tasks_total_cnt = d.pop("inbox_tasks_total_cnt")
+
+        inbox_tasks_page_size = d.pop("inbox_tasks_page_size")
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
@@ -106,6 +121,8 @@ class HabitLoadResult:
             habit=habit,
             project=project,
             inbox_tasks=inbox_tasks,
+            inbox_tasks_total_cnt=inbox_tasks_total_cnt,
+            inbox_tasks_page_size=inbox_tasks_page_size,
             note=note,
         )
 
@@ -113,7 +130,7 @@ class HabitLoadResult:
         return habit_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

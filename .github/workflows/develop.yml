@@ -15,25 +15,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.10
+      - name: Set up Python 3.13
         id: setup-python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
-      - name: Set up Node 19
+          python-version: "3.13"
+      - name: Set up Node 22
         id: setup-node
         uses: actions/setup-node@v3
         with:
-          node-version: "19"
+          node-version: "22"
       - name: Set up Ruby 2.7
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "2.7"
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: "stable"
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.3.1
+          version: 2.1.1
       - name: Prepare for CI
         run: ./scripts/setup-for-ci.sh
       - name: Check scripts
-        run: ./scripts/check.sh
+        run: ./scripts/check/check.sh

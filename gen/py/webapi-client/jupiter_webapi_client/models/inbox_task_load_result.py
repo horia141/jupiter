@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -30,7 +31,7 @@ class InboxTaskLoadResult:
     Attributes:
         inbox_task (InboxTask): An inbox task.
         project (Project): The project.
-        time_event_blocks (List['TimeEventInDayBlock']):
+        time_event_blocks (list['TimeEventInDayBlock']):
         working_mem (Union['WorkingMem', None, Unset]):
         habit (Union['Habit', None, Unset]):
         chore (Union['Chore', None, Unset]):
@@ -44,7 +45,7 @@ class InboxTaskLoadResult:
 
     inbox_task: "InboxTask"
     project: "Project"
-    time_event_blocks: List["TimeEventInDayBlock"]
+    time_event_blocks: list["TimeEventInDayBlock"]
     working_mem: Union["WorkingMem", None, Unset] = UNSET
     habit: Union["Habit", None, Unset] = UNSET
     chore: Union["Chore", None, Unset] = UNSET
@@ -54,9 +55,9 @@ class InboxTaskLoadResult:
     slack_task: Union["SlackTask", None, Unset] = UNSET
     email_task: Union["EmailTask", None, Unset] = UNSET
     note: Union["Note", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.big_plan import BigPlan
         from ..models.chore import Chore
         from ..models.email_task import EmailTask
@@ -76,7 +77,7 @@ class InboxTaskLoadResult:
             time_event_blocks_item = time_event_blocks_item_data.to_dict()
             time_event_blocks.append(time_event_blocks_item)
 
-        working_mem: Union[Dict[str, Any], None, Unset]
+        working_mem: Union[None, Unset, dict[str, Any]]
         if isinstance(self.working_mem, Unset):
             working_mem = UNSET
         elif isinstance(self.working_mem, WorkingMem):
@@ -84,7 +85,7 @@ class InboxTaskLoadResult:
         else:
             working_mem = self.working_mem
 
-        habit: Union[Dict[str, Any], None, Unset]
+        habit: Union[None, Unset, dict[str, Any]]
         if isinstance(self.habit, Unset):
             habit = UNSET
         elif isinstance(self.habit, Habit):
@@ -92,7 +93,7 @@ class InboxTaskLoadResult:
         else:
             habit = self.habit
 
-        chore: Union[Dict[str, Any], None, Unset]
+        chore: Union[None, Unset, dict[str, Any]]
         if isinstance(self.chore, Unset):
             chore = UNSET
         elif isinstance(self.chore, Chore):
@@ -100,7 +101,7 @@ class InboxTaskLoadResult:
         else:
             chore = self.chore
 
-        big_plan: Union[Dict[str, Any], None, Unset]
+        big_plan: Union[None, Unset, dict[str, Any]]
         if isinstance(self.big_plan, Unset):
             big_plan = UNSET
         elif isinstance(self.big_plan, BigPlan):
@@ -108,7 +109,7 @@ class InboxTaskLoadResult:
         else:
             big_plan = self.big_plan
 
-        metric: Union[Dict[str, Any], None, Unset]
+        metric: Union[None, Unset, dict[str, Any]]
         if isinstance(self.metric, Unset):
             metric = UNSET
         elif isinstance(self.metric, Metric):
@@ -116,7 +117,7 @@ class InboxTaskLoadResult:
         else:
             metric = self.metric
 
-        person: Union[Dict[str, Any], None, Unset]
+        person: Union[None, Unset, dict[str, Any]]
         if isinstance(self.person, Unset):
             person = UNSET
         elif isinstance(self.person, Person):
@@ -124,7 +125,7 @@ class InboxTaskLoadResult:
         else:
             person = self.person
 
-        slack_task: Union[Dict[str, Any], None, Unset]
+        slack_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.slack_task, Unset):
             slack_task = UNSET
         elif isinstance(self.slack_task, SlackTask):
@@ -132,7 +133,7 @@ class InboxTaskLoadResult:
         else:
             slack_task = self.slack_task
 
-        email_task: Union[Dict[str, Any], None, Unset]
+        email_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.email_task, Unset):
             email_task = UNSET
         elif isinstance(self.email_task, EmailTask):
@@ -140,7 +141,7 @@ class InboxTaskLoadResult:
         else:
             email_task = self.email_task
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -148,7 +149,7 @@ class InboxTaskLoadResult:
         else:
             note = self.note
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -179,7 +180,7 @@ class InboxTaskLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
         from ..models.chore import Chore
         from ..models.email_task import EmailTask
@@ -193,7 +194,7 @@ class InboxTaskLoadResult:
         from ..models.time_event_in_day_block import TimeEventInDayBlock
         from ..models.working_mem import WorkingMem
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         inbox_task = InboxTask.from_dict(d.pop("inbox_task"))
 
         project = Project.from_dict(d.pop("project"))
@@ -377,7 +378,7 @@ class InboxTaskLoadResult:
         return inbox_task_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

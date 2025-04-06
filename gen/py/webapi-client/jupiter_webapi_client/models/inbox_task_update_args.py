@@ -1,14 +1,17 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
     from ..models.inbox_task_update_args_actionable_date import InboxTaskUpdateArgsActionableDate
+    from ..models.inbox_task_update_args_big_plan_ref_id import InboxTaskUpdateArgsBigPlanRefId
     from ..models.inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
     from ..models.inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
     from ..models.inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
     from ..models.inbox_task_update_args_name import InboxTaskUpdateArgsName
+    from ..models.inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
     from ..models.inbox_task_update_args_status import InboxTaskUpdateArgsStatus
 
 
@@ -23,6 +26,8 @@ class InboxTaskUpdateArgs:
         ref_id (str): A generic entity id.
         name (InboxTaskUpdateArgsName):
         status (InboxTaskUpdateArgsStatus):
+        project_ref_id (InboxTaskUpdateArgsProjectRefId):
+        big_plan_ref_id (InboxTaskUpdateArgsBigPlanRefId):
         eisen (InboxTaskUpdateArgsEisen):
         difficulty (InboxTaskUpdateArgsDifficulty):
         actionable_date (InboxTaskUpdateArgsActionableDate):
@@ -32,18 +37,24 @@ class InboxTaskUpdateArgs:
     ref_id: str
     name: "InboxTaskUpdateArgsName"
     status: "InboxTaskUpdateArgsStatus"
+    project_ref_id: "InboxTaskUpdateArgsProjectRefId"
+    big_plan_ref_id: "InboxTaskUpdateArgsBigPlanRefId"
     eisen: "InboxTaskUpdateArgsEisen"
     difficulty: "InboxTaskUpdateArgsDifficulty"
     actionable_date: "InboxTaskUpdateArgsActionableDate"
     due_date: "InboxTaskUpdateArgsDueDate"
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         name = self.name.to_dict()
 
         status = self.status.to_dict()
+
+        project_ref_id = self.project_ref_id.to_dict()
+
+        big_plan_ref_id = self.big_plan_ref_id.to_dict()
 
         eisen = self.eisen.to_dict()
 
@@ -53,13 +64,15 @@ class InboxTaskUpdateArgs:
 
         due_date = self.due_date.to_dict()
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "ref_id": ref_id,
                 "name": name,
                 "status": status,
+                "project_ref_id": project_ref_id,
+                "big_plan_ref_id": big_plan_ref_id,
                 "eisen": eisen,
                 "difficulty": difficulty,
                 "actionable_date": actionable_date,
@@ -70,20 +83,26 @@ class InboxTaskUpdateArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task_update_args_actionable_date import InboxTaskUpdateArgsActionableDate
+        from ..models.inbox_task_update_args_big_plan_ref_id import InboxTaskUpdateArgsBigPlanRefId
         from ..models.inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
         from ..models.inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
         from ..models.inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
         from ..models.inbox_task_update_args_name import InboxTaskUpdateArgsName
+        from ..models.inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
         from ..models.inbox_task_update_args_status import InboxTaskUpdateArgsStatus
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         name = InboxTaskUpdateArgsName.from_dict(d.pop("name"))
 
         status = InboxTaskUpdateArgsStatus.from_dict(d.pop("status"))
+
+        project_ref_id = InboxTaskUpdateArgsProjectRefId.from_dict(d.pop("project_ref_id"))
+
+        big_plan_ref_id = InboxTaskUpdateArgsBigPlanRefId.from_dict(d.pop("big_plan_ref_id"))
 
         eisen = InboxTaskUpdateArgsEisen.from_dict(d.pop("eisen"))
 
@@ -97,6 +116,8 @@ class InboxTaskUpdateArgs:
             ref_id=ref_id,
             name=name,
             status=status,
+            project_ref_id=project_ref_id,
+            big_plan_ref_id=big_plan_ref_id,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -107,7 +128,7 @@ class InboxTaskUpdateArgs:
         return inbox_task_update_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

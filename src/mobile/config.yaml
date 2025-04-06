@@ -6,17 +6,17 @@ vars:
 platforms:
   android:
     versionName: $VERSION
-    versionCode: $VERSION
+    incrementVersionCode: true
     appName: $PUBLIC_NAME
     packageName: $BUNDLE_ID
   ios:
     targets:
       App:
         version: $VERSION
-        buildNumber: $VERSION
+        incrementBuild: true
         bundleId: $BUNDLE_ID
         displayName: $PUBLIC_NAME
         productName: App
         copy:
-        - src: ../../PrivacyInfo.xcprivacy
-          dest: PrivacyInfo.xcprivacy
+          - src: ../../PrivacyInfo.xcprivacy
+            dest: PrivacyInfo.xcprivacy

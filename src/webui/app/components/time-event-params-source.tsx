@@ -16,7 +16,7 @@ export function TimeEventParamsSource(props: TimeEventParamsSourceParams) {
     newSearchParams.set("sourceStartDate", props.startDate.toString());
     newSearchParams.set(
       "sourceStartTimeInDay",
-      props.startTimeInDay.toString()
+      props.startTimeInDay.toString(),
     );
     newSearchParams.set("sourceDurationMins", props.durationMins.toString());
     setSearchParms(newSearchParams, {

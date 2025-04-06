@@ -20,7 +20,7 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
           variant="outlined"
           size="small"
           component={Link}
-          to={`/workspace/calendar/schedule/event-full-days/${props.timeEvent.source_entity_ref_id}`}
+          to={`/app/workspace/calendar/schedule/event-full-days/${props.timeEvent.source_entity_ref_id}`}
         >
           Link
         </Button>
@@ -34,7 +34,7 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
           variant="outlined"
           size="small"
           component={Link}
-          to={`/workspace/calendar/schedule/event-in-day/${props.timeEvent.source_entity_ref_id}`}
+          to={`/app/workspace/calendar/schedule/event-in-day/${props.timeEvent.source_entity_ref_id}`}
         >
           Link
         </Button>
@@ -48,7 +48,7 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
           variant="outlined"
           size="small"
           component={Link}
-          to={`/workspace/persons/${props.timeEvent.source_entity_ref_id}`}
+          to={`/app/workspace/persons/${props.timeEvent.source_entity_ref_id}`}
         >
           Link
         </Button>
@@ -62,7 +62,7 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
           variant="outlined"
           size="small"
           component={Link}
-          to={`/workspace/inbox-tasks/${props.timeEvent.source_entity_ref_id}`}
+          to={`/app/workspace/inbox-tasks/${props.timeEvent.source_entity_ref_id}`}
         >
           Link
         </Button>
@@ -76,7 +76,7 @@ export function TimeEventSourceLink(props: TimeEventSourceLinkProps) {
           variant="outlined"
           size="small"
           component={Link}
-          to={`/workspace/vacations/${props.timeEvent.source_entity_ref_id}`}
+          to={`/app/workspace/vacations/${props.timeEvent.source_entity_ref_id}`}
         >
           Link
         </Button>

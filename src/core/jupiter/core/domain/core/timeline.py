@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.timestamp import Timestamp
+from pendulum import DateTime
 
 
 def infer_timeline(period: RecurringTaskPeriod | None, right_now: Timestamp) -> str:
@@ -14,7 +15,7 @@ def infer_timeline(period: RecurringTaskPeriod | None, right_now: Timestamp) -> 
         quarter = _month_to_quarter(right_now)
         month = _month_to_month(right_now)
         week = f"W{right_now.value.week_of_year}"
-        day = f"D{right_now.value.day_of_week}"
+        day = f"D{right_now.value.isoweekday()}"
 
         return f"{year},{quarter},{month},{week},{day}"
     elif period == RecurringTaskPeriod.WEEKLY:
@@ -43,7 +44,7 @@ def infer_timeline(period: RecurringTaskPeriod | None, right_now: Timestamp) -> 
         return year
 
 
-def _month_to_quarter(date: Timestamp) -> str:
+def _month_to_quarter(date: Timestamp | DateTime) -> str:
     """Map a date to the name of four quarters from the year."""
     month_to_quarter = {
         1: "Q1",
@@ -63,7 +64,7 @@ def _month_to_quarter(date: Timestamp) -> str:
     return month_to_quarter[date.month]
 
 
-def _month_to_month(date: Timestamp) -> str:
+def _month_to_month(date: Timestamp | DateTime) -> str:
     """Map a month to the name it has."""
     month_to_month = {
         1: "Jan",

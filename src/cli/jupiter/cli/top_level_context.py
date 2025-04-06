@@ -1,4 +1,5 @@
 """Top level context for the application."""
+
 from dataclasses import dataclass
 
 from jupiter.core.domain.concept.projects.project_name import ProjectName

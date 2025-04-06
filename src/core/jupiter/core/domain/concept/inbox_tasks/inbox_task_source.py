@@ -22,6 +22,7 @@ class InboxTaskSource(EnumValue):
     @property
     def allow_user_changes(self) -> bool:
         """Allow user changes for an inbox task."""
+        # Keep synced with ts:inbox-task-source.ts
         return self in (
             InboxTaskSource.USER,
             InboxTaskSource.BIG_PLAN,

@@ -1,9 +1,11 @@
 import type { BigPlan, Project } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import { Divider } from "@mui/material";
+
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { ADateTag } from "./adate-tag";
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameComponent } from "./entity-name";
@@ -60,37 +62,37 @@ export function BigPlanCard(props: BigPlanCardProps) {
       }
     >
       <EntityLink
-        to={`/workspace/big-plans/${props.bigPlan.ref_id}`}
+        to={`/app/workspace/big-plans/${props.bigPlan.ref_id}`}
         block={props.onClick !== undefined}
       >
         <EntityNameComponent
           compact={props.compact}
           name={props.bigPlan.name}
         />
-      </EntityLink>
-      <Divider />
-      {props.showOptions.showStatus && (
-        <BigPlanStatusTag status={props.bigPlan.status} />
-      )}
-      {props.showOptions.showParent &&
-        isWorkspaceFeatureAvailable(
-          props.topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
-        ) &&
-        props.parent && (
-          <ProjectTag project={props.parent.project as Project} />
+        <Divider />
+        {props.showOptions.showStatus && (
+          <BigPlanStatusTag status={props.bigPlan.status} />
         )}
+        {props.showOptions.showParent &&
+          isWorkspaceFeatureAvailable(
+            props.topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS,
+          ) &&
+          props.parent && (
+            <ProjectTag project={props.parent.project as Project} />
+          )}
 
-      {props.showOptions.showActionableDate &&
-        props.bigPlan.actionable_date && (
-          <ADateTag
-            label="Actionable Date"
-            date={props.bigPlan.actionable_date}
-          />
+        {props.showOptions.showActionableDate &&
+          props.bigPlan.actionable_date && (
+            <ADateTag
+              label="Actionable Date"
+              date={props.bigPlan.actionable_date}
+            />
+          )}
+        {props.showOptions.showDueDate && props.bigPlan.due_date && (
+          <ADateTag label="Due Date" date={props.bigPlan.due_date} />
         )}
-      {props.showOptions.showDueDate && props.bigPlan.due_date && (
-        <ADateTag label="Due Date" date={props.bigPlan.due_date} />
-      )}
+      </EntityLink>
     </EntityCard>
   );
 }

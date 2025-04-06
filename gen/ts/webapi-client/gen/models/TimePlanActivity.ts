@@ -1,14 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { TimePlanActivityFeasability } from './TimePlanActivityFeasability';
 import type { TimePlanActivityKind } from './TimePlanActivityKind';
 import type { TimePlanActivityTarget } from './TimePlanActivityTarget';
 import type { Timestamp } from './Timestamp';
-
 /**
  * A certain activity that happens in a plan.
  */

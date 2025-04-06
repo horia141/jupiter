@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,14 +18,14 @@ class SlackTaskFindResult:
 
     Attributes:
         generation_project (Project): The project.
-        entries (List['SlackTaskFindResultEntry']):
+        entries (list['SlackTaskFindResultEntry']):
     """
 
     generation_project: "Project"
-    entries: List["SlackTaskFindResultEntry"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    entries: list["SlackTaskFindResultEntry"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         generation_project = self.generation_project.to_dict()
 
         entries = []
@@ -32,7 +33,7 @@ class SlackTaskFindResult:
             entries_item = entries_item_data.to_dict()
             entries.append(entries_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -44,11 +45,11 @@ class SlackTaskFindResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.project import Project
         from ..models.slack_task_find_result_entry import SlackTaskFindResultEntry
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         generation_project = Project.from_dict(d.pop("generation_project"))
 
         entries = []
@@ -67,7 +68,7 @@ class SlackTaskFindResult:
         return slack_task_find_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

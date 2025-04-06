@@ -17,7 +17,7 @@ def test_recover_password(
     webapi_server_url: str,
     new_user_and_workspace: InitResult,
 ):
-    page.goto("/workspace")
+    page.goto("/app/workspace")
 
     page.locator("#reset-password").click()
 

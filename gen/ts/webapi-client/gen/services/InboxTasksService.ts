@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { InboxTaskArchiveArgs } from '../models/InboxTaskArchiveArgs';
-import type { InboxTaskAssociateWithBigPlanArgs } from '../models/InboxTaskAssociateWithBigPlanArgs';
-import type { InboxTaskChangeProjectArgs } from '../models/InboxTaskChangeProjectArgs';
 import type { InboxTaskCreateArgs } from '../models/InboxTaskCreateArgs';
 import type { InboxTaskCreateResult } from '../models/InboxTaskCreateResult';
 import type { InboxTaskFindArgs } from '../models/InboxTaskFindArgs';
@@ -13,14 +12,10 @@ import type { InboxTaskLoadResult } from '../models/InboxTaskLoadResult';
 import type { InboxTaskRemoveArgs } from '../models/InboxTaskRemoveArgs';
 import type { InboxTaskUpdateArgs } from '../models/InboxTaskUpdateArgs';
 import type { InboxTaskUpdateResult } from '../models/InboxTaskUpdateResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class InboxTasksService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a inbox task.
      * The command for archiving a inbox task.
@@ -43,53 +38,6 @@ export class InboxTasksService {
             },
         });
     }
-
-    /**
-     * The command for associating a inbox task with a big plan.
-     * The command for associating a inbox task with a big plan.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public inboxTaskAssociateWithBigPlan(
-        requestBody?: InboxTaskAssociateWithBigPlanArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/inbox-task-associate-with-big-plan',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * The command for changing the project of a inbox task.
-     * The command for changing the project of a inbox task.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public inboxTaskChangeProject(
-        requestBody?: InboxTaskChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/inbox-task-change-project',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
     /**
      * The command for creating a inbox task.
      * The command for creating a inbox task.
@@ -112,7 +60,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The command for finding a inbox task.
      * The command for finding a inbox task.
@@ -135,7 +82,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The use case for loading a particular inbox task.
      * The use case for loading a particular inbox task.
@@ -158,7 +104,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The command for removing a inbox task.
      * The command for removing a inbox task.
@@ -181,7 +126,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The command for updating a inbox task.
      * The command for updating a inbox task.
@@ -204,5 +148,4 @@ export class InboxTasksService {
             },
         });
     }
-
 }

@@ -34,9 +34,11 @@ class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase, PersonFindResult]):
             key=lambda p: (
                 p.person.archived,
                 p.person.relationship,
-                p.person.catch_up_params.period
-                if p.person.catch_up_params
-                else RecurringTaskPeriod.YEARLY,
+                (
+                    p.person.catch_up_params.period
+                    if p.person.catch_up_params
+                    else RecurringTaskPeriod.YEARLY
+                ),
             ),
         )
 

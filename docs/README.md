@@ -190,7 +190,7 @@ We aim to keep this under 30 seconds.
 
 ## Fixing Issues
 
-Run `make fix-style` to fix many linting issues.
+Run `./scripts/check/fix-style.sh` to fix many linting issues.
 
 ### Integration Tests
 
@@ -284,6 +284,14 @@ There's some trickyness that's easy to miss.
   in shell specific data here, and frondoor stores them in a way that's
   accessible to the rest of the app. Not entering through the frontdoor
   means that the assumptions will be made by the system (ie you're a browser).
+  There's a bunch of trickiness here. Frontdoor is the first URL a shell
+  accesses, and it does a hard redirect to a static page (outside Remix's control)
+  called frontdoor-redirect-hack-{something}.html that then meta redirects to
+  something like `/app/workspace`. The reason for this is wonky handling of
+  cookies on redirects in browsers (ie the redirected URL will not see the new
+  cookies that frondoor sets). Checkout
+  [this answer](https://stackoverflow.com/questions/4694089/sending-browser-cookies-during-a-302-redirect)
+  for more details.
 * `render-fix` is a special view in `webui`. We're handling some sort of React
   hydration error because of mismatches in SSR and client-side rendering.
   These mostly occur because of the many time manipulations we do client-side.

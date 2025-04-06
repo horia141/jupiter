@@ -1,4 +1,5 @@
 """The primitive types."""
+
 from datetime import date, datetime
 
 from pendulum.date import Date

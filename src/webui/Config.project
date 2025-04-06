@@ -1,20 +1,23 @@
 ENV=local
 HOSTING=local
+HOSTING_NAME=Main
 BASENAME=jupiter-webui
 TITLE="Thrive - Dev"
 DESCRIPTION="The Thrive Web application"
-LOCAL_WEBAPI_SERVER_URL="http://127.0.0.1:8010"
-LOCAL_WEBAPI_PROGRESS_REPORTER_URL="ws://localhost:8010/progress-reporter"
+LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL="http://127.0.0.1:8010"
+LOCAL_OR_SELF_HOSTED_WEBAPI_PROGRESS_REPORTER_URL="ws://localhost:8010/progress-reporter"
 _HOSTED_GLOBAL_WEBAPI_SERVER_HOST=WILL-BE-FILLED-BY-RENDER
 _HOSTED_GLOBAL_WEBAPI_SERVER_PORT=WILL-BE-FILLED-BY-RENDER
 DOCS_URL=http://localhost:8000/
-TERMS_OF_SERVICE_URL=https://www.get-thriving.com/terms-conditions
-PRIVACY_POLICY_URL=https://www.get-thriving.com/privacy-policy
+PWA_START_URL=/frontdoor?clientVersion=to-fill&appShell=pwa&appPlatform=to-fill&appDistribution=web
+TERMS_OF_SERVICE_URL=https://get-thriving.com/terms-conditions
+PRIVACY_POLICY_URL=https://get-thriving.com/privacy-policy
 COMMUNITY_URL=https://discord.gg/Y6PS7ZZ976
 APPS_STORAGE_URL=https://github.com/horia141/jupiter/releases/download/
 MAC_STORE_URL=https://apps.apple.com/ro/app/bestcat-the-game/id6738962220?mt=12
-APP_STORE_URL=https://apps.apple.com/ro/app/bestcat-the-game/id6738962220?mt=12
-GOOGLE_PLAY_STORE_URL=https://apps.apple.com/ro/app/bestcat-the-game/id6738962220?mt=12
+APP_STORE_URL=https://apps.apple.com/ro/app/thrive-life-planning/id6739754399
+GOOGLE_PLAY_STORE_URL=https://play.google.com/store/apps/details?id=io.jupiter.app
+SESSION_COOKIE_SECURE=false
 SESSION_COOKIE_SECRET=L833PUM3M4M3QQQKWCS3V2EPCQC48VAECMZJNVNM689CINYMH4FCQN5159C171Q6
 INBOX_TASKS_TO_ASK_FOR_GC=20
 OVERDUE_INFO_DAYS=1

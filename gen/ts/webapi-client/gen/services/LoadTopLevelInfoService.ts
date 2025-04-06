@@ -1,16 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { LoadTopLevelInfoArgs } from '../models/LoadTopLevelInfoArgs';
 import type { LoadTopLevelInfoResult } from '../models/LoadTopLevelInfoResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class LoadTopLevelInfoService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for loading a user and workspace if they exist and other data too.
      * The command for loading a user and workspace if they exist and other data too.
@@ -33,5 +30,4 @@ export class LoadTopLevelInfoService {
             },
         });
     }
-
 }

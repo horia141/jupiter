@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -11,14 +12,10 @@ import type { SlackTaskLoadSettingsArgs } from '../models/SlackTaskLoadSettingsA
 import type { SlackTaskLoadSettingsResult } from '../models/SlackTaskLoadSettingsResult';
 import type { SlackTaskRemoveArgs } from '../models/SlackTaskRemoveArgs';
 import type { SlackTaskUpdateArgs } from '../models/SlackTaskUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class SlackService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a slack task.
      * The command for archiving a slack task.
@@ -41,7 +38,6 @@ export class SlackService {
             },
         });
     }
-
     /**
      * The command for updating the generation up project for slack tasks.
      * The command for updating the generation up project for slack tasks.
@@ -64,7 +60,6 @@ export class SlackService {
             },
         });
     }
-
     /**
      * The command for finding a slack task.
      * The command for finding a slack task.
@@ -87,7 +82,6 @@ export class SlackService {
             },
         });
     }
-
     /**
      * Use case for loading a particular slack task.
      * Use case for loading a particular slack task.
@@ -110,7 +104,6 @@ export class SlackService {
             },
         });
     }
-
     /**
      * The command for loading the settings around slack tasks.
      * The command for loading the settings around slack tasks.
@@ -133,7 +126,6 @@ export class SlackService {
             },
         });
     }
-
     /**
      * The command for archiving a slack task.
      * The command for archiving a slack task.
@@ -156,7 +148,6 @@ export class SlackService {
             },
         });
     }
-
     /**
      * The command for updating a slack task.
      * The command for updating a slack task.
@@ -179,5 +170,4 @@ export class SlackService {
             },
         });
     }
-
 }

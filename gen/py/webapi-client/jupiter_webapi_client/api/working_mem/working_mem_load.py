@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Optional, Union, cast
 
 import httpx
 
@@ -13,10 +13,10 @@ from ...types import Response
 def _get_kwargs(
     *,
     body: WorkingMemLoadArgs,
-) -> Dict[str, Any]:
-    headers: Dict[str, Any] = {}
+) -> dict[str, Any]:
+    headers: dict[str, Any] = {}
 
-    _kwargs: Dict[str, Any] = {
+    _kwargs: dict[str, Any] = {
         "method": "post",
         "url": "/working-mem-load",
     }
@@ -33,17 +33,17 @@ def _get_kwargs(
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
 ) -> Optional[Union[Any, WorkingMemLoadResult]]:
-    if response.status_code == HTTPStatus.OK:
+    if response.status_code == 200:
         response_200 = WorkingMemLoadResult.from_dict(response.json())
 
         return response_200
-    if response.status_code == HTTPStatus.GONE:
+    if response.status_code == 410:
         response_410 = cast(Any, None)
         return response_410
-    if response.status_code == HTTPStatus.NOT_ACCEPTABLE:
+    if response.status_code == 406:
         response_406 = cast(Any, None)
         return response_406
-    if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
+    if response.status_code == 422:
         response_422 = cast(Any, None)
         return response_422
     if client.raise_on_unexpected_status:
@@ -68,9 +68,9 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Response[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.
@@ -99,9 +99,9 @@ def sync(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Optional[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.
@@ -125,9 +125,9 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Response[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.
@@ -154,9 +154,9 @@ async def asyncio(
     client: AuthenticatedClient,
     body: WorkingMemLoadArgs,
 ) -> Optional[Union[Any, WorkingMemLoadResult]]:
-    """The command for loading the  working mem.
+    """The command for loading the working mem.
 
-     The command for loading the  working mem.
+     The command for loading the working mem.
 
     Args:
         body (WorkingMemLoadArgs): Working mem find args.

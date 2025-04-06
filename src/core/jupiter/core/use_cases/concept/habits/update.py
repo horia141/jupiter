@@ -1,14 +1,23 @@
 """The command for updating a habit."""
-from typing import cast
+
+from typing import Sequence, cast
 
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_name import HabitName
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
+    HabitRepeatsStrategy,
+)
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core import schedules
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -16,7 +25,7 @@ from jupiter.core.domain.core.recurring_task_due_at_month import RecurringTaskDu
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -38,14 +47,16 @@ class HabitUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     name: UpdateAction[HabitName]
+    project_ref_id: UpdateAction[EntityId]
     period: UpdateAction[RecurringTaskPeriod]
-    eisen: UpdateAction[Eisen | None]
-    difficulty: UpdateAction[Difficulty | None]
+    eisen: UpdateAction[Eisen]
+    difficulty: UpdateAction[Difficulty]
     actionable_from_day: UpdateAction[RecurringTaskDueAtDay | None]
     actionable_from_month: UpdateAction[RecurringTaskDueAtMonth | None]
     due_at_day: UpdateAction[RecurringTaskDueAtDay | None]
     due_at_month: UpdateAction[RecurringTaskDueAtMonth | None]
     skip_rule: UpdateAction[RecurringTaskSkipRule | None]
+    repeats_strategy: UpdateAction[HabitRepeatsStrategy | None]
     repeats_in_period_count: UpdateAction[int | None]
 
 
@@ -67,10 +78,16 @@ class HabitUpdateUseCase(
 
         habit = await uow.get_for(Habit).load_by_id(args.ref_id)
 
-        project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
+        if (
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
+            and args.project_ref_id.should_change
+            and args.project_ref_id.just_the_value != habit.project_ref_id
+        ):
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
         need_to_change_inbox_tasks = (
             args.name.should_change
+            or args.project_ref_id.should_change
             or args.period.should_change
             or args.eisen.should_change
             or args.difficulty.should_change
@@ -78,6 +95,7 @@ class HabitUpdateUseCase(
             or args.actionable_from_month.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
+            or args.repeats_strategy.should_change
             or args.repeats_in_period_count.should_change
         )
 
@@ -89,6 +107,7 @@ class HabitUpdateUseCase(
             or args.actionable_from_month.should_change
             or args.due_at_day.should_change
             or args.due_at_month.should_change
+            or args.skip_rule.should_change
         ):
             need_to_change_inbox_tasks = True
             habit_gen_params = UpdateAction.change_to(
@@ -104,6 +123,7 @@ class HabitUpdateUseCase(
                     ),
                     args.due_at_day.or_else(habit.gen_params.due_at_day),
                     args.due_at_month.or_else(habit.gen_params.due_at_month),
+                    args.skip_rule.or_else(habit.gen_params.skip_rule),
                 ),
             )
         else:
@@ -111,14 +131,17 @@ class HabitUpdateUseCase(
 
         habit = habit.update(
             ctx=context.domain_context,
+            project_ref_id=args.project_ref_id,
             name=args.name,
             gen_params=habit_gen_params,
-            skip_rule=args.skip_rule,
+            repeats_strategy=args.repeats_strategy,
             repeats_in_period_count=args.repeats_in_period_count,
         )
 
         await uow.get_for(Habit).save(habit)
         await progress_reporter.mark_updated(habit)
+
+        project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
 
         if need_to_change_inbox_tasks:
             inbox_task_collection = await uow.get_for(
@@ -126,10 +149,13 @@ class HabitUpdateUseCase(
             ).load_by_parent(
                 workspace.ref_id,
             )
-            all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+            all_inbox_tasks = await uow.get(
+                InboxTaskRepository
+            ).find_all_for_source_created_desc(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
-                habit_ref_id=[habit.ref_id],
+                source=InboxTaskSource.HABIT,
+                source_entity_ref_id=habit.ref_id,
             )
 
             for inbox_task in all_inbox_tasks:
@@ -137,12 +163,24 @@ class HabitUpdateUseCase(
                     habit.gen_params.period,
                     habit.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    habit.skip_rule,
+                    habit.gen_params.skip_rule,
                     habit.gen_params.actionable_from_day,
                     habit.gen_params.actionable_from_month,
                     habit.gen_params.due_at_day,
                     habit.gen_params.due_at_month,
                 )
+
+                task_ranges: Sequence[tuple[ADate | None, ADate]]
+                if habit.repeats_in_period_count is not None:
+                    if habit.repeats_strategy is None:
+                        raise ValueError("Repeats strategy is not set")
+                    task_ranges = habit.repeats_strategy.spread_tasks(
+                        start_date=schedule.first_day,
+                        end_date=schedule.end_day,
+                        repeats_in_period=habit.repeats_in_period_count,
+                    )
+                else:
+                    task_ranges = [(schedule.actionable_date, schedule.due_date)]
 
                 inbox_task = inbox_task.update_link_to_habit(
                     ctx=context.domain_context,
@@ -150,8 +188,10 @@ class HabitUpdateUseCase(
                     name=schedule.full_name,
                     timeline=schedule.timeline,
                     repeat_index=inbox_task.recurring_repeat_index,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_date,
+                    actionable_date=task_ranges[inbox_task.recurring_repeat_index or 0][
+                        0
+                    ],
+                    due_date=task_ranges[inbox_task.recurring_repeat_index or 0][1],
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                 )

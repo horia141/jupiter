@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -14,25 +15,21 @@ class HabitUpdateArgsEisen:
     """
     Attributes:
         should_change (bool):
-        value (Union[Eisen, None, Unset]):
+        value (Union[Unset, Eisen]): The Eisenhower status of a particular task.
     """
 
     should_change: bool
-    value: Union[Eisen, None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    value: Union[Unset, Eisen] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         should_change = self.should_change
 
-        value: Union[None, Unset, str]
-        if isinstance(self.value, Unset):
-            value = UNSET
-        elif isinstance(self.value, Eisen):
+        value: Union[Unset, str] = UNSET
+        if not isinstance(self.value, Unset):
             value = self.value.value
-        else:
-            value = self.value
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -45,26 +42,16 @@ class HabitUpdateArgsEisen:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         should_change = d.pop("should_change")
 
-        def _parse_value(data: object) -> Union[Eisen, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                value_type_0 = Eisen(data)
-
-                return value_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Eisen, None, Unset], data)
-
-        value = _parse_value(d.pop("value", UNSET))
+        _value = d.pop("value", UNSET)
+        value: Union[Unset, Eisen]
+        if isinstance(_value, Unset):
+            value = UNSET
+        else:
+            value = Eisen(_value)
 
         habit_update_args_eisen = cls(
             should_change=should_change,
@@ -75,7 +62,7 @@ class HabitUpdateArgsEisen:
         return habit_update_args_eisen
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

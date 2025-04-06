@@ -1,16 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { CalendarLoadForDateAndPeriodArgs } from '../models/CalendarLoadForDateAndPeriodArgs';
 import type { CalendarLoadForDateAndPeriodResult } from '../models/CalendarLoadForDateAndPeriodResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class CalendarService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for loading all the calendar entities for a given date and period.
      * Use case for loading all the calendar entities for a given date and period.
@@ -33,5 +30,4 @@ export class CalendarService {
             },
         });
     }
-
 }

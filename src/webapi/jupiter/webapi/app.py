@@ -1,4 +1,5 @@
 """The app, part of the framework."""
+
 import abc
 import dataclasses
 import types
@@ -123,14 +124,14 @@ OAUTH2_LOGGED_IN_SCHEMA = OAuth2PasswordBearer(tokenUrl="old-skool-login")
 
 
 def construct_guest_auth_token_ext(
-    token_raw: Annotated[str | None, Depends(OAUTH2_GUEST_SCHEMA)]
+    token_raw: Annotated[str | None, Depends(OAUTH2_GUEST_SCHEMA)],
 ) -> AuthTokenExt | None:
     """Construct a Token from the raw token string."""
     return AUTH_TOKEN_EXT_DECODER.decode(token_raw) if token_raw else None
 
 
 def construct_logged_in_auth_token_ext(
-    token_raw: Annotated[str, Depends(OAUTH2_LOGGED_IN_SCHEMA)]
+    token_raw: Annotated[str, Depends(OAUTH2_LOGGED_IN_SCHEMA)],
 ) -> AuthTokenExt:
     """Construct a Token from the raw token string."""
     return AUTH_TOKEN_EXT_DECODER.decode(token_raw)
@@ -146,7 +147,7 @@ def construct_guest_session(
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
     app_client_version = AppVersion("0.0.1")
     app_shell = AppShell.BROWSER
-    app_platform = AppPlatform.DESKTOP
+    app_platform = AppPlatform.DESKTOP_MACOS
     app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
@@ -170,7 +171,7 @@ def construct_logged_in_session(
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
     app_client_version = AppVersion("0.0.1")
     app_shell = AppShell.BROWSER
-    app_platform = AppPlatform.DESKTOP
+    app_platform = AppPlatform.DESKTOP_MACOS
     app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
@@ -539,9 +540,9 @@ class WebServiceApp:
         self._exception_handlers = {}
         self._fast_app = FastAPI(
             generate_unique_id_function=self._custom_generate_unique_id,
-            openapi_url="/openapi.json"
-            if global_properties.env.is_development
-            else None,
+            openapi_url=(
+                "/openapi.json" if global_properties.env.is_development else None
+            ),
             docs_url="/docs" if global_properties.env.is_development else None,
             redoc_url="/redoc" if global_properties.env.is_development else None,
         )
@@ -673,7 +674,7 @@ class WebServiceApp:
                     auth_token_ext=None,
                     app_client_version=global_properties.version,
                     app_shell=AppShell.BROWSER,
-                    app_platform=AppPlatform.DESKTOP,
+                    app_platform=AppPlatform.DESKTOP_MACOS,
                     app_distribution=AppDistribution.WEB,
                 ),
                 LoginArgs(email_address=email_address, password=password),
@@ -1016,7 +1017,8 @@ class WebServiceApp:
             required = [
                 build_field_name(f, f.type)
                 for f in dataclasses.fields(composite_value_type)
-                if f.name != "events" and not normalize_optional(f.type)[1]
+                if f.name != "events"
+                and not normalize_optional(cast(type[object], f.type))[1]
             ]
             result: dict[str, None | str | list[str] | dict[str, Any]] = {
                 "title": composite_value_type.__name__,
@@ -1057,56 +1059,56 @@ class WebServiceApp:
         for enum_value_type in self._realm_codec_registry.get_all_registered_types(
             EnumValue, WebRealm
         ):
-            openapi_schema["components"]["schemas"][
-                enum_value_type.__name__
-            ] = build_enum_value_schema(enum_value_type)
+            openapi_schema["components"]["schemas"][enum_value_type.__name__] = (
+                build_enum_value_schema(enum_value_type)
+            )
 
         for atomic_value_type in self._realm_codec_registry.get_all_registered_types(AtomicValue, WebRealm):  # type: ignore[type-abstract]
-            openapi_schema["components"]["schemas"][
-                atomic_value_type.__name__
-            ] = build_atomic_value_schema(atomic_value_type)
+            openapi_schema["components"]["schemas"][atomic_value_type.__name__] = (
+                build_atomic_value_schema(atomic_value_type)
+            )
 
         for composite_value_type in self._realm_codec_registry.get_all_registered_types(
             CompositeValue, WebRealm
         ):
-            openapi_schema["components"]["schemas"][
-                composite_value_type.__name__
-            ] = build_composite_schema(composite_value_type)
+            openapi_schema["components"]["schemas"][composite_value_type.__name__] = (
+                build_composite_schema(composite_value_type)
+            )
 
         for secret_value_type in self._realm_codec_registry.get_all_registered_types(
             SecretValue, WebRealm
         ):
-            openapi_schema["components"]["schemas"][
-                secret_value_type.__name__
-            ] = build_secret_value_schema(secret_value_type)
+            openapi_schema["components"]["schemas"][secret_value_type.__name__] = (
+                build_secret_value_schema(secret_value_type)
+            )
 
         for entity_type in self._realm_codec_registry.get_all_registered_types(
             Entity, WebRealm
         ):
-            openapi_schema["components"]["schemas"][
-                entity_type.__name__
-            ] = build_composite_schema(entity_type)
+            openapi_schema["components"]["schemas"][entity_type.__name__] = (
+                build_composite_schema(entity_type)
+            )
 
         for record_type in self._realm_codec_registry.get_all_registered_types(
             Record, WebRealm
         ):
-            openapi_schema["components"]["schemas"][
-                record_type.__name__
-            ] = build_composite_schema(record_type)
+            openapi_schema["components"]["schemas"][record_type.__name__] = (
+                build_composite_schema(record_type)
+            )
 
         for use_case_args_type in self._realm_codec_registry.get_all_registered_types(
             UseCaseArgsBase, WebRealm
         ):
-            openapi_schema["components"]["schemas"][
-                use_case_args_type.__name__
-            ] = build_composite_schema(use_case_args_type)
+            openapi_schema["components"]["schemas"][use_case_args_type.__name__] = (
+                build_composite_schema(use_case_args_type)
+            )
 
         for use_case_result_type in self._realm_codec_registry.get_all_registered_types(
             UseCaseResultBase, WebRealm
         ):
-            openapi_schema["components"]["schemas"][
-                use_case_result_type.__name__
-            ] = build_composite_schema(use_case_result_type)
+            openapi_schema["components"]["schemas"][use_case_result_type.__name__] = (
+                build_composite_schema(use_case_result_type)
+            )
 
         # Link api with components
 

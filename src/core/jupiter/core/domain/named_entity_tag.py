@@ -19,6 +19,9 @@ class NamedEntityTag(EnumValue):
     SCHEDULE_EVENT_FULL_DAYS_BLOCK = (
         "ScheduleEventFullDays"  # ScheduleEventFullDays.__name__
     )
+    SCHEDULE_EXTERNAL_SYNC_LOG = (
+        "ScheduleExternalSyncLog"  # ScheduleExternalSyncLog.__name__
+    )
     HABIT = "Habit"  # Habit.__name__
     CHORE = "Chore"  # Chore.__name__
     BIG_PLAN = "BigPlan"  # BigPlan.__name__

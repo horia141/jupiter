@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -28,13 +29,13 @@ class DocCreateArgs:
 
     Attributes:
         name (str): The doc name.
-        content (List[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock', 'EntityReferenceBlock',
+        content (list[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock', 'EntityReferenceBlock',
             'HeadingBlock', 'LinkBlock', 'NumberedListBlock', 'ParagraphBlock', 'QuoteBlock', 'TableBlock']]):
         parent_doc_ref_id (Union[None, Unset, str]):
     """
 
     name: str
-    content: List[
+    content: list[
         Union[
             "BulletedListBlock",
             "ChecklistBlock",
@@ -50,9 +51,9 @@ class DocCreateArgs:
         ]
     ]
     parent_doc_ref_id: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.bulleted_list_block import BulletedListBlock
         from ..models.checklist_block import ChecklistBlock
         from ..models.code_block import CodeBlock
@@ -68,7 +69,7 @@ class DocCreateArgs:
 
         content = []
         for content_item_data in self.content:
-            content_item: Dict[str, Any]
+            content_item: dict[str, Any]
             if isinstance(content_item_data, ParagraphBlock):
                 content_item = content_item_data.to_dict()
             elif isinstance(content_item_data, HeadingBlock):
@@ -100,7 +101,7 @@ class DocCreateArgs:
         else:
             parent_doc_ref_id = self.parent_doc_ref_id
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -114,7 +115,7 @@ class DocCreateArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.bulleted_list_block import BulletedListBlock
         from ..models.checklist_block import ChecklistBlock
         from ..models.code_block import CodeBlock
@@ -127,7 +128,7 @@ class DocCreateArgs:
         from ..models.quote_block import QuoteBlock
         from ..models.table_block import TableBlock
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         name = d.pop("name")
 
         content = []
@@ -258,7 +259,7 @@ class DocCreateArgs:
         return doc_create_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

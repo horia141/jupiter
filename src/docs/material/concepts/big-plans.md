@@ -23,8 +23,6 @@ Big plans have a _status_, which can be one of:
   and forth to "In Progress", and then to "Not Done" or "Done".
 * _Done_: the big plan is finished, with the desired outcome.
 * _Not Done_: the big plan is finished, but not with the desired outcome.
-* _Archived_: the big plan has been archived, currently just a manual operation.
-* _No Status_: some big plans don't have a status for various reasons.
 
 In the big plan page, you can see big plans in a sort of timeline board, organised by project.
 

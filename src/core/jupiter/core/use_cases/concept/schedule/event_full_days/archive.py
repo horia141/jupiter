@@ -1,9 +1,10 @@
 """Use case for archiving a schedule full day event."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
 )
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
@@ -42,7 +43,7 @@ class ScheduleEventFullDaysArchiveUseCase(
         )
         if not schedule_event_full_days.can_be_modified_independently:
             raise InputValidationError("Cannot archive a non-user schedule event")
-        await generic_archiver(
+        await generic_crown_archiver(
             context.domain_context,
             uow,
             progress_reporter,

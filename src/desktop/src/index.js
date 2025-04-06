@@ -1,10 +1,14 @@
-import { getWebUiUrl } from "./config";
-
 document.addEventListener("DOMContentLoaded", async () => {
-  const webUiUrl = await getWebUiUrl();
+  const hostedGlobal = new URL(window.location.href).searchParams.get(
+    "hostedGlobal",
+  );
+  const webUiUrl =
+    hostedGlobal === "true"
+      ? await pickServer.getHostedGlobalWebUiUrl()
+      : await pickServer.getWebUiUrl();
 
   try {
-    await loadURLWithTimeout(webUiUrl.toString());
+    await loadURLWithTimeout(webUiUrl);
   } catch (err) {
     console.error(`Error loading URL: ${err.message}`);
     window.location.href = "/error.html";

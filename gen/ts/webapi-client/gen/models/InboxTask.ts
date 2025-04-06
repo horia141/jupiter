@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
@@ -10,7 +10,6 @@ import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskSource } from './InboxTaskSource';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 import type { Timestamp } from './Timestamp';
-
 /**
  * An inbox task.
  */
@@ -27,23 +26,14 @@ export type InboxTask = {
     project_ref_id: EntityId;
     status: InboxTaskStatus;
     eisen: Eisen;
-    difficulty?: (Difficulty | null);
+    difficulty: Difficulty;
     actionable_date?: (ADate | null);
     due_date?: (ADate | null);
     notes?: (string | null);
-    working_mem_ref_id?: (EntityId | null);
-    habit_ref_id?: (EntityId | null);
-    chore_ref_id?: (EntityId | null);
-    big_plan_ref_id?: (EntityId | null);
-    journal_ref_id?: (EntityId | null);
-    metric_ref_id?: (EntityId | null);
-    person_ref_id?: (EntityId | null);
-    slack_task_ref_id?: (EntityId | null);
-    email_task_ref_id?: (EntityId | null);
+    source_entity_ref_id?: (EntityId | null);
     recurring_timeline?: (string | null);
     recurring_repeat_index?: (number | null);
     recurring_gen_right_now?: (Timestamp | null);
-    accepted_time?: (Timestamp | null);
     working_time?: (Timestamp | null);
     completed_time?: (Timestamp | null);
 };

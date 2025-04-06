@@ -1,4 +1,5 @@
 """Use case for removing a schedule stream."""
+
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.schedule.schedule_source import (
     ScheduleSource,

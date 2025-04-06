@@ -1,6 +1,9 @@
 import { RecurringTaskPeriod } from "@jupiter/webapi-client";
+
 import { periodName } from "~/logic/domain/period";
+
 import { SlimChip } from "./infra/chips";
+
 interface Props {
   period: RecurringTaskPeriod;
 }
@@ -12,7 +15,7 @@ export function PeriodTag(props: Props) {
 }
 
 function periodToClass(
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): "info" | "success" | "primary" | "warning" | "error" {
   switch (period) {
     case RecurringTaskPeriod.DAILY:

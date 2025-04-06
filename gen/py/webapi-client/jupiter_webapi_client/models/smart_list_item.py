@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,7 +22,7 @@ class SmartListItem:
         name (str): The smart list item name.
         smart_list_ref_id (str):
         is_done (bool):
-        tags_ref_id (List[str]):
+        tags_ref_id (list[str]):
         archived_time (Union[None, Unset, str]):
         url (Union[None, Unset, str]):
     """
@@ -34,12 +35,12 @@ class SmartListItem:
     name: str
     smart_list_ref_id: str
     is_done: bool
-    tags_ref_id: List[str]
+    tags_ref_id: list[str]
     archived_time: Union[None, Unset, str] = UNSET
     url: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         version = self.version
@@ -70,7 +71,7 @@ class SmartListItem:
         else:
             url = self.url
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -93,8 +94,8 @@ class SmartListItem:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -111,7 +112,7 @@ class SmartListItem:
 
         is_done = d.pop("is_done")
 
-        tags_ref_id = cast(List[str], d.pop("tags_ref_id"))
+        tags_ref_id = cast(list[str], d.pop("tags_ref_id"))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -149,7 +150,7 @@ class SmartListItem:
         return smart_list_item
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

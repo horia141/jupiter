@@ -1,17 +1,14 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { ClearAllArgs } from '../models/ClearAllArgs';
 import type { RemoveAllArgs } from '../models/RemoveAllArgs';
 import type { WorkspaceSetFeatureArgs } from '../models/WorkspaceSetFeatureArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class TestHelperService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for clearing all branch and leaf type entities.
      * The command for clearing all branch and leaf type entities.
@@ -34,7 +31,6 @@ export class TestHelperService {
             },
         });
     }
-
     /**
      * The command for removeing all branch and leaf type entities.
      * The command for removeing all branch and leaf type entities.
@@ -57,7 +53,6 @@ export class TestHelperService {
             },
         });
     }
-
     /**
      * Set a particular feature in the workspace.
      * Set a particular feature in the workspace.
@@ -80,5 +75,4 @@ export class TestHelperService {
             },
         });
     }
-
 }

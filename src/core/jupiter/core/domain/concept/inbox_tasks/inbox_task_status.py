@@ -1,4 +1,5 @@
 """The status of an inbox task."""
+
 from functools import total_ordering
 
 from jupiter.core.framework.value import EnumValue, enum_value
@@ -9,11 +10,9 @@ from jupiter.core.framework.value import EnumValue, enum_value
 class InboxTaskStatus(EnumValue):
     """The status of an inbox task."""
 
-    # Created
-    NOT_STARTED = "not-started"
     # Accepted
-    ACCEPTED = "accepted"
-    RECURRING = "recurring"
+    NOT_STARTED = "not-started"
+    NOT_STARTED_GEN = "not-started-gen"
     # Working
     IN_PROGRESS = "in-progress"
     BLOCKED = "blocked"
@@ -27,14 +26,9 @@ class InboxTaskStatus(EnumValue):
         return not self.is_completed
 
     @property
-    def is_accepted(self) -> bool:
+    def is_not_started(self) -> bool:
         """Whether the status means work has been accepted on the inbox task."""
-        return self in (InboxTaskStatus.ACCEPTED, InboxTaskStatus.RECURRING)
-
-    @property
-    def is_accepted_or_more(self) -> bool:
-        """Whether the status means work has been accepted, or is ongoing, or is completed."""
-        return self.is_accepted or self.is_working or self.is_completed
+        return self in (InboxTaskStatus.NOT_STARTED, InboxTaskStatus.NOT_STARTED_GEN)
 
     @property
     def is_working(self) -> bool:

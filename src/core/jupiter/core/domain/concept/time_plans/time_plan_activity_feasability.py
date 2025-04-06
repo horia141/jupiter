@@ -1,4 +1,5 @@
 """The feasability of a particular activity within a plan."""
+
 from jupiter.core.framework.value import EnumValue, enum_value
 
 

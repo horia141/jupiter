@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -18,7 +19,7 @@ class PersonFindArgs:
         include_birthday_time_event_blocks (bool):
         include_catch_up_inbox_tasks (bool):
         include_birthday_inbox_tasks (bool):
-        filter_person_ref_ids (Union[List[str], None, Unset]):
+        filter_person_ref_ids (Union[None, Unset, list[str]]):
     """
 
     allow_archived: bool
@@ -26,10 +27,10 @@ class PersonFindArgs:
     include_birthday_time_event_blocks: bool
     include_catch_up_inbox_tasks: bool
     include_birthday_inbox_tasks: bool
-    filter_person_ref_ids: Union[List[str], None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    filter_person_ref_ids: Union[None, Unset, list[str]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         allow_archived = self.allow_archived
 
         include_notes = self.include_notes
@@ -40,7 +41,7 @@ class PersonFindArgs:
 
         include_birthday_inbox_tasks = self.include_birthday_inbox_tasks
 
-        filter_person_ref_ids: Union[List[str], None, Unset]
+        filter_person_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_person_ref_ids, Unset):
             filter_person_ref_ids = UNSET
         elif isinstance(self.filter_person_ref_ids, list):
@@ -49,7 +50,7 @@ class PersonFindArgs:
         else:
             filter_person_ref_ids = self.filter_person_ref_ids
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -66,8 +67,8 @@ class PersonFindArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         allow_archived = d.pop("allow_archived")
 
         include_notes = d.pop("include_notes")
@@ -78,7 +79,7 @@ class PersonFindArgs:
 
         include_birthday_inbox_tasks = d.pop("include_birthday_inbox_tasks")
 
-        def _parse_filter_person_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_person_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -86,12 +87,12 @@ class PersonFindArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_person_ref_ids_type_0 = cast(List[str], data)
+                filter_person_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_person_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_person_ref_ids = _parse_filter_person_ref_ids(d.pop("filter_person_ref_ids", UNSET))
 
@@ -108,7 +109,7 @@ class PersonFindArgs:
         return person_find_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

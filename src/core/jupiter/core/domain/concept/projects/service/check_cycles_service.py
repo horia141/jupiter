@@ -1,4 +1,5 @@
 """A service that checks for cycles in the project graph."""
+
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

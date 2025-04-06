@@ -1,13 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { BigPlanName } from './BigPlanName';
 import type { BigPlanStatus } from './BigPlanStatus';
 import type { EntityId } from './EntityId';
 import type { Timestamp } from './Timestamp';
-
 /**
  * A big plan.
  */
@@ -24,7 +23,6 @@ export type BigPlan = {
     status: BigPlanStatus;
     actionable_date?: (ADate | null);
     due_date?: (ADate | null);
-    accepted_time?: (Timestamp | null);
     working_time?: (Timestamp | null);
     completed_time?: (Timestamp | null);
 };

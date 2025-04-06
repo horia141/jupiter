@@ -1,6 +1,6 @@
 """An entry in the working_mem.txt system."""
+
 import abc
-from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -24,7 +24,6 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityRepository
-from pendulum.date import Date
 
 
 @entity
@@ -41,7 +40,7 @@ class WorkingMem(LeafEntity):
     cleanup_task = OwnsOne(
         InboxTask,
         source=InboxTaskSource.WORKING_MEM_CLEANUP,
-        working_mem_ref_id=IsRefId(),
+        source_entity_ref_id=IsRefId(),
     )
 
     @staticmethod
@@ -81,7 +80,7 @@ class WorkingMem(LeafEntity):
 
     def can_be_archived_at(self, current_time: Timestamp) -> bool:
         """Can this working mem be archived at a given time."""
-        return self.right_now <= ADate.from_date(cast(Date, current_time.as_date()).add(days=-14))  # type: ignore
+        return self.right_now <= ADate.from_date(current_time.as_date().add(days=-14))
 
     @staticmethod
     def build_name(right_now: ADate, period: RecurringTaskPeriod) -> EntityName:

@@ -9,7 +9,7 @@ export enum ActionableTime {
 
 export function actionableTimeToDateTime(
   actionableTime: ActionableTime,
-  timezone: Timezone
+  timezone: Timezone,
 ): DateTime {
   switch (actionableTime) {
     case ActionableTime.NOW:

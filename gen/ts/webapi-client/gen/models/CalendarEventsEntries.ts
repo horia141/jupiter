@@ -1,13 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { InboxTaskEntry } from './InboxTaskEntry';
 import type { PersonEntry } from './PersonEntry';
 import type { ScheduleFullDaysEventEntry } from './ScheduleFullDaysEventEntry';
 import type { ScheduleInDayEventEntry } from './ScheduleInDayEventEntry';
 import type { VacationEntry } from './VacationEntry';
-
 /**
  * Full entries for results.
  */

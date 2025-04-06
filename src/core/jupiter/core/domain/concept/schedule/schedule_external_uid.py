@@ -1,4 +1,5 @@
 """An external UID for a schedule."""
+
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import AtomicValue, value
 from jupiter.core.use_cases.infra.realms import (

@@ -1,5 +1,6 @@
 ENV=local
 HOSTING=local
+HOSTING_NAME=Main
 BASENAME=jupiter-webapi
 HOST=127.0.0.1
 PORT=8010

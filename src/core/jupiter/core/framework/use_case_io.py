@@ -1,4 +1,5 @@
 """Use case classes and decorators for defining use case inputs and outputs."""
+
 from dataclasses import dataclass
 from typing import TypeVar
 

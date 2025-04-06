@@ -12,12 +12,10 @@ import {
 } from "@jupiter/webapi-client";
 import {
   Box,
-  Divider,
   List,
   ListItem,
   ListItemText,
   Stack,
-  styled,
   Tab,
   Table,
   TableBody,
@@ -27,8 +25,9 @@ import {
   TableRow,
   Tabs,
   Typography,
+  styled,
 } from "@mui/material";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { ScoreOverview } from "~/components/gamification/score-overview";
@@ -47,6 +46,8 @@ import {
 } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+
+import { StandardDivider } from "./standard-divider";
 import { TabPanel } from "./tab-panel";
 
 const _SOURCES_TO_REPORT = [
@@ -88,7 +89,7 @@ export function ShowReport({
   if (
     !isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.PROJECTS
+      WorkspaceFeature.PROJECTS,
     )
   ) {
     tabIndicesMap["by-habits"] -= 1;
@@ -98,7 +99,7 @@ export function ShowReport({
   if (
     !isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.HABITS
+      WorkspaceFeature.HABITS,
     )
   ) {
     tabIndicesMap["by-chores"] -= 1;
@@ -107,7 +108,7 @@ export function ShowReport({
   if (
     !isWorkspaceFeatureAvailable(
       topLevelInfo.workspace,
-      WorkspaceFeature.CHORES
+      WorkspaceFeature.CHORES,
     )
   ) {
     tabIndicesMap["by-big-plans"] -= 1;
@@ -115,7 +116,7 @@ export function ShowReport({
 
   const allProjectsSorted = sortProjectsByTreeOrder(allProjects);
   const allProjectsByRefId = new Map<string, ProjectSummary>(
-    allProjects.map((p) => [p.ref_id, p])
+    allProjects.map((p) => [p.ref_id, p]),
   );
 
   return (
@@ -137,9 +138,7 @@ export function ShowReport({
       {isUserFeatureAvailable(topLevelInfo.user, UserFeature.GAMIFICATION) &&
         report.user_score_overview && (
           <>
-            <Divider>
-              <Typography variant="h6">💪 Score</Typography>
-            </Divider>
+            <StandardDivider title="💪 Score" size="large" />
             <ScoreOverview scoreOverview={report.user_score_overview} />
           </>
         )}
@@ -155,19 +154,19 @@ export function ShowReport({
         <Tab label="⌛ By Periods" />
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
+          WorkspaceFeature.PROJECTS,
         ) && <Tab label="💡 By Projects" />}
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.HABITS
+          WorkspaceFeature.HABITS,
         ) && <Tab label="💪 By Habits" />}
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.CHORES
+          WorkspaceFeature.CHORES,
         ) && <Tab label="♻️ By Chore" />}
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.BIG_PLANS
+          WorkspaceFeature.BIG_PLANS,
         ) && <Tab label="🌍 By Big Plan" />}
       </Tabs>
 
@@ -182,29 +181,27 @@ export function ShowReport({
       <TabPanel value={showTab} index={tabIndicesMap["by-periods"]}>
         <Stack spacing={2} useFlexGap>
           {report.per_period_breakdown.map((pp) => (
-            <Box key={pp.name}>
-              <Divider>
-                <Typography variant="h5">{pp.name}</Typography>
-              </Divider>
+            <Fragment key={pp.name}>
+              <StandardDivider title={pp.name} size="large" />
               <OverviewReport
                 topLevelInfo={topLevelInfo}
                 inboxTasksSummary={pp.inbox_tasks_summary}
                 bigPlansSummary={pp.big_plans_summary}
               />
-            </Box>
+            </Fragment>
           ))}
         </Stack>
       </TabPanel>
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-projects"]}>
           <Stack spacing={2} useFlexGap>
             {allProjectsSorted.map((project) => {
               const pb = report.per_project_breakdown.find(
-                (pb) => pb.ref_id === project.ref_id
+                (pb) => pb.ref_id === project.ref_id,
               );
 
               if (pb === undefined) {
@@ -213,29 +210,18 @@ export function ShowReport({
 
               const fullProjectName = computeProjectHierarchicalNameFromRoot(
                 project,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
 
               return (
-                <Box key={pb.ref_id}>
-                  <Divider variant="fullWidth">
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        maxWidth: "calc(100vw - 2rem)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {fullProjectName}
-                    </Typography>
-                  </Divider>
+                <Fragment key={pb.ref_id}>
+                  <StandardDivider title={fullProjectName} size="large" />
                   <OverviewReport
                     topLevelInfo={topLevelInfo}
                     inboxTasksSummary={pb.inbox_tasks_summary}
                     bigPlansSummary={pb.big_plans_summary}
                   />
-                </Box>
+                </Fragment>
               );
             })}
           </Stack>
@@ -244,13 +230,13 @@ export function ShowReport({
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.HABITS
+        WorkspaceFeature.HABITS,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-habits"]}>
           <Stack spacing={2} useFlexGap>
             {Object.values(RecurringTaskPeriod).map((period) => {
               const periodHabits = report.per_habit_breakdown.filter(
-                (phb) => phb.period === period
+                (phb) => phb.period === period,
               );
 
               if (periodHabits.length === 0) {
@@ -258,10 +244,8 @@ export function ShowReport({
               }
 
               return (
-                <Box key={period}>
-                  <Divider>
-                    <Typography variant="h5">{periodName(period)}</Typography>
-                  </Divider>
+                <Fragment key={period}>
+                  <StandardDivider title={periodName(period)} size="large" />
                   <TableContainer component={Box}>
                     <Table sx={{ tableLayout: "fixed" }}>
                       <TableHead>
@@ -278,7 +262,7 @@ export function ShowReport({
                             📥 {isBigScreen && "Created"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
-                            🔧 {isBigScreen && "Accepted"}
+                            🔧 {isBigScreen && "Not Started"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
                             🚧 {isBigScreen && "Working"}
@@ -297,7 +281,7 @@ export function ShowReport({
                           <TableRow key={`${period}-${phb.ref_id}`}>
                             <SmallTableCell>
                               <EntityLink
-                                to={`/workspace/habits/${phb.ref_id}`}
+                                to={`/app/workspace/habits/${phb.ref_id}`}
                               >
                                 <EntityNameOneLineComponent name={phb.name} />
                               </EntityLink>
@@ -314,7 +298,7 @@ export function ShowReport({
                               {phb.summary.created_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
-                              {phb.summary.accepted_cnt}
+                              {phb.summary.not_started_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
                               {phb.summary.working_cnt}
@@ -330,7 +314,7 @@ export function ShowReport({
                       </TableBody>
                     </Table>
                   </TableContainer>
-                </Box>
+                </Fragment>
               );
             })}
           </Stack>
@@ -339,13 +323,13 @@ export function ShowReport({
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.CHORES
+        WorkspaceFeature.CHORES,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-chores"]}>
           <Stack spacing={2} useFlexGap>
             {Object.values(RecurringTaskPeriod).map((period) => {
               const periodChores = report.per_chore_breakdown.filter(
-                (pcb) => pcb.period === period
+                (pcb) => pcb.period === period,
               );
 
               if (periodChores.length === 0) {
@@ -353,10 +337,8 @@ export function ShowReport({
               }
 
               return (
-                <Box key={period}>
-                  <Divider>
-                    <Typography variant="h5">{periodName(period)}</Typography>
-                  </Divider>
+                <Fragment key={period}>
+                  <StandardDivider title={periodName(period)} size="large" />
                   <TableContainer component={Box}>
                     <Table sx={{ tableLayout: "fixed" }}>
                       <TableHead>
@@ -366,7 +348,7 @@ export function ShowReport({
                             📥 {isBigScreen && "Created"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
-                            🔧 {isBigScreen && "Accepted"}
+                            🔧 {isBigScreen && "Not Started"}
                           </SmallTableCell>
                           <SmallTableCell width="10%">
                             🚧 {isBigScreen && "Working"}
@@ -385,7 +367,7 @@ export function ShowReport({
                           <TableRow key={`${period}-${pcb.ref_id}`}>
                             <SmallTableCell className="name-value">
                               <EntityLink
-                                to={`/workspace/chores/${pcb.ref_id}`}
+                                to={`/app/workspace/chores/${pcb.ref_id}`}
                               >
                                 <EntityNameOneLineComponent name={pcb.name} />
                               </EntityLink>
@@ -394,7 +376,7 @@ export function ShowReport({
                               {pcb.summary.created_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
-                              {pcb.summary.accepted_cnt}
+                              {pcb.summary.not_started_cnt}
                             </SmallTableCell>
                             <SmallTableCell>
                               {pcb.summary.working_cnt}
@@ -410,7 +392,7 @@ export function ShowReport({
                       </TableBody>
                     </Table>
                   </TableContainer>
-                </Box>
+                </Fragment>
               );
             })}
           </Stack>
@@ -419,7 +401,7 @@ export function ShowReport({
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.BIG_PLANS
+        WorkspaceFeature.BIG_PLANS,
       ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-big-plans"]}>
           <TableContainer component={Box}>
@@ -431,7 +413,7 @@ export function ShowReport({
                     📥 {isBigScreen && "Created"}
                   </SmallTableCell>
                   <SmallTableCell width="10%">
-                    🔧 {isBigScreen && "Accepted"}
+                    🔧 {isBigScreen && "Not Started"}
                   </SmallTableCell>
                   <SmallTableCell width="10%">
                     🚧 {isBigScreen && "Working"}
@@ -449,12 +431,14 @@ export function ShowReport({
                 {report.per_big_plan_breakdown.map((pbb) => (
                   <TableRow key={pbb.ref_id}>
                     <SmallTableCell className="name-value">
-                      <EntityLink to={`/workspace/big-plans/${pbb.ref_id}`}>
+                      <EntityLink to={`/app/workspace/big-plans/${pbb.ref_id}`}>
                         <EntityNameOneLineComponent name={pbb.name} />
                       </EntityLink>
                     </SmallTableCell>
                     <SmallTableCell>{pbb.summary.created_cnt}</SmallTableCell>
-                    <SmallTableCell>{pbb.summary.accepted_cnt}</SmallTableCell>
+                    <SmallTableCell>
+                      {pbb.summary.not_started_cnt}
+                    </SmallTableCell>
                     <SmallTableCell>{pbb.summary.working_cnt}</SmallTableCell>
                     <SmallTableCell>{pbb.summary.not_done_cnt}</SmallTableCell>
                     <SmallTableCell>{pbb.summary.done_cnt}</SmallTableCell>
@@ -479,16 +463,14 @@ function OverviewReport(props: OverviewReportProps) {
   const isBigScreen = useBigScreen();
   const filteredSource = inferSourcesForEnabledFeatures(
     props.topLevelInfo.workspace,
-    _SOURCES_TO_REPORT
+    _SOURCES_TO_REPORT,
   );
 
   return (
     <Stack spacing={2} useFlexGap>
-      <Divider>
-        <Typography variant="h6">📥 Inbox Tasks</Typography>
-      </Divider>
+      <StandardDivider title="📥 Inbox Tasks" size="large" />
       <TableContainer>
-        <Table sx={{ tableLayout: "fixed " }}>
+        <Table sx={{ tableLayout: "fixed", width: "97%" }}>
           <TableHead>
             <TableRow>
               <SmallTableCell width="50%">Name</SmallTableCell>
@@ -496,7 +478,7 @@ function OverviewReport(props: OverviewReportProps) {
                 📥 {isBigScreen && "Created"}
               </SmallTableCell>
               <SmallTableCell width="10%">
-                🔧 {isBigScreen && "Accepted"}
+                🔧 {isBigScreen && "Not Started"}
               </SmallTableCell>
               <SmallTableCell width="10%">
                 🚧 {isBigScreen && "Working"}
@@ -517,7 +499,7 @@ function OverviewReport(props: OverviewReportProps) {
                 {props.inboxTasksSummary.created.total_cnt}
               </SmallTableCell>
               <SmallTableCell>
-                {props.inboxTasksSummary.accepted.total_cnt}
+                {props.inboxTasksSummary.not_started.total_cnt}
               </SmallTableCell>
               <SmallTableCell>
                 {props.inboxTasksSummary.working.total_cnt}
@@ -534,27 +516,27 @@ function OverviewReport(props: OverviewReportProps) {
                 <SmallTableCell>{inboxTaskSourceName(source)}</SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.created.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
-                  {props.inboxTasksSummary.accepted.per_source_cnt.find(
-                    (s) => s.source === source
+                  {props.inboxTasksSummary.not_started.per_source_cnt.find(
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.working.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.not_done.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
                 <SmallTableCell>
                   {props.inboxTasksSummary.done.per_source_cnt.find(
-                    (s) => s.source === source
+                    (s) => s.source === source,
                   )?.count || 0}
                 </SmallTableCell>
               </TableRow>
@@ -565,12 +547,10 @@ function OverviewReport(props: OverviewReportProps) {
 
       {isWorkspaceFeatureAvailable(
         props.topLevelInfo.workspace,
-        WorkspaceFeature.BIG_PLANS
+        WorkspaceFeature.BIG_PLANS,
       ) && (
         <>
-          <Divider>
-            <Typography variant="h6">🌍 Big Plans</Typography>
-          </Divider>
+          <StandardDivider title="🌍 Big Plans" size="large" />
 
           <Typography variant="h6">Summary</Typography>
 
@@ -582,7 +562,7 @@ function OverviewReport(props: OverviewReportProps) {
             </ListItem>
             <ListItem>
               <ListItemText
-                primary={`🔧 Accepted: ${props.bigPlansSummary.accepted_cnt}`}
+                primary={`🔧 Not Started: ${props.bigPlansSummary.not_started_cnt}`}
               />
             </ListItem>
             <ListItem>
@@ -609,7 +589,7 @@ function OverviewReport(props: OverviewReportProps) {
               <List>
                 {props.bigPlansSummary.not_done_big_plans.map((bp) => (
                   <ListItem key={bp.ref_id}>
-                    <EntityLink to={`/workspace/big-plans/${bp.ref_id}`}>
+                    <EntityLink to={`/app/workspace/big-plans/${bp.ref_id}`}>
                       <EntityNameOneLineComponent name={bp.name} />
                     </EntityLink>
                   </ListItem>
@@ -625,7 +605,7 @@ function OverviewReport(props: OverviewReportProps) {
               <List>
                 {props.bigPlansSummary.done_big_plans.map((bp) => (
                   <ListItem key={bp.ref_id}>
-                    <EntityLink to={`/workspace/big-plans/${bp.ref_id}`}>
+                    <EntityLink to={`/app/workspace/big-plans/${bp.ref_id}`}>
                       <EntityNameOneLineComponent name={bp.name} />
                     </EntityLink>
                   </ListItem>

@@ -5,9 +5,9 @@ set -ex
 source src/Config.global
 source secrets/Config.secrets
 
-mkdir -p .build-cache/cloc
+mkdir -p .build-cache/cloc/$VERSION
 
-CLOC_FILE=.build-cache/cloc/$VERSION
+CLOC_FILE=.build-cache/cloc/$VERSION/cloc.txt
 
 cloc \
   --report-file="${CLOC_FILE}" \

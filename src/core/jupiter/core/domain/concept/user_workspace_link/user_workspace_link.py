@@ -1,4 +1,5 @@
 """A 1:1 link between users and workspaces."""
+
 import abc
 
 from jupiter.core.framework.base.entity_id import EntityId

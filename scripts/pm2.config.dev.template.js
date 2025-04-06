@@ -4,7 +4,7 @@ module.exports = {
       cwd: "src/webapi",
       interpreter: "none",
       script: "python",
-      args: "-m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
+      args: " -W always::DeprecationWarning -m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
       log_file: "$WEBAPI_LOG_FILE",
       env: {
         PY_COLORS: "1",
@@ -15,12 +15,13 @@ module.exports = {
         name: "${NAMESPACE}:webui",
         cwd: "src/webui",
         interpreter: "none",
-        script: "remix",
-        args: "dev",
+        script: "npx",
+        args: "remix dev",
         log_file: "$WEBUI_LOG_FILE",
         env: {
-            LOCAL_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",
-            PORT: "$WEBUI_PORT"
+            LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL: "$WEBAPI_SERVER_URL",
+            PORT: "$WEBUI_PORT",
+            NODE_OPTIONS: "--trace-warnings"
         }
     }]
   }

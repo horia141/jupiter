@@ -7,9 +7,14 @@ import type {
   TimePlanActivityFeasability,
   TimePlanActivityKind,
 } from "@jupiter/webapi-client";
-import { TimePlanActivityTarget } from "@jupiter/webapi-client";
+import {
+  InboxTaskSource,
+  TimePlanActivityTarget,
+} from "@jupiter/webapi-client";
+
 import { sortTimePlanActivitiesNaturally } from "~/logic/domain/time-plan-activity";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { EntityStack } from "./infra/entity-stack";
 import { TimePlanActivityCard } from "./time-plan-activity-card";
 
@@ -31,7 +36,6 @@ export function TimePlanActivityList(props: TimePlanActivityListProps) {
   const sortedActivities = sortTimePlanActivitiesNaturally(
     props.activities,
     props.inboxTasksByRefId,
-    props.bigPlansByRefId
   );
 
   return (
@@ -69,8 +73,8 @@ export function TimePlanActivityList(props: TimePlanActivityListProps) {
             indent={
               props.fullInfo
                 ? entry.target === TimePlanActivityTarget.INBOX_TASK &&
-                  props.inboxTasksByRefId.get(entry.target_ref_id)
-                    ?.big_plan_ref_id
+                  props.inboxTasksByRefId.get(entry.target_ref_id)?.source ===
+                    InboxTaskSource.BIG_PLAN
                   ? 2
                   : 0
                 : 0

@@ -4,17 +4,20 @@
 
 Thrive is a tool for _life planning_. It provides goals management, task tracking, work planning,
 habit building, a journal, chores management, lists, metrics, a personal relationship manager, and
-much more all in a unified package.
+much more. All in a unified package.
 
 I built it to [solve an issue I had](http://www.paulgraham.com/organic.html) - making sure everything
 I wanted to get done actually got done, while juggling the standard complexities of life - family, kids, career, etc.
 
 Inspiration comes from [Getting Things Done](https://gettingthingsdone.com/what-is-gtd/),
 [The Deep Life Stack](https://www.thedeeplife.com/podcasts/episodes/ep-252-the-deep-life-stack/),
-existentialist philosophy, [Notion](https://notion.so), and many others.
+existentialist philosophy, [Notion](https://notion.so), Todoist, and many others.
 
-The current version is both a [webapp](https://get-thriving.com) and a
-[CLI application](how-tos/install.md).
+The current version is both a [webapp](https://get-thriving.com), a desktop app,
+a mobile app, a PWA, and a [CLI application](how-tos/install.md). You can even [self-host](how-tos/self-hosting.md) it.
+
+Checkout the full list of [features](features.md), but here's a sneak peek at
+what it can do.
 
 Here's a picture from the "inbox" view:
 

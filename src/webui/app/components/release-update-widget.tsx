@@ -10,11 +10,12 @@ import {
   Card,
   CardActions,
   CardContent,
-  styled,
   Typography,
+  styled,
 } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
 import { useContext, useEffect, useState } from "react";
+
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import type { ReleaseManifestResult } from "~/logic/release";
 
@@ -41,8 +42,14 @@ export function ReleaseUpdateWidget() {
     return <></>;
   }
 
-  const releaseManifestResult: ReleaseManifestResult =
-    releaseManifestFetcher.data;
+  if (
+    releaseManifestFetcher.data.ok === false ||
+    !releaseManifestFetcher.data.res
+  ) {
+    return <></>;
+  }
+
+  const releaseManifestResult = releaseManifestFetcher.data.res;
 
   // First thing we check is if the latest server version is different from the client version.
   //   * Typically, we release a new version of the app much rarer than we do a new release of webui.
@@ -60,7 +67,7 @@ export function ReleaseUpdateWidget() {
 
     switch (globalProperties.frontDoorInfo.appShell) {
       case AppShell.BROWSER:
-      case AppShell.MOBILE_PWA:
+      case AppShell.PWA:
         break;
 
       case AppShell.DESKTOP_ELECTRON:

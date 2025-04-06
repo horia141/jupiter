@@ -1,7 +1,12 @@
 """The command for updating a metric's properties."""
+
 import typing
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.application.gen.service.gen_service import GenService
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -23,6 +28,7 @@ from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenP
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.update_action import UpdateAction
@@ -94,16 +100,18 @@ class MetricUpdateUseCase(
                 new_collection_period = metric.collection_params.period
 
             if new_collection_period is not None:
-                new_collection_eisen = None
+                new_collection_eisen = Eisen.REGULAR
                 if args.collection_eisen.should_change:
-                    new_collection_eisen = args.collection_eisen.just_the_value
+                    new_collection_eisen = (
+                        args.collection_eisen.just_the_value or Eisen.REGULAR
+                    )
                 elif metric.collection_params is not None:
                     new_collection_eisen = metric.collection_params.eisen
 
-                new_collection_difficulty = None
+                new_collection_difficulty = Difficulty.EASY
                 if args.collection_difficulty.should_change:
                     new_collection_difficulty = (
-                        args.collection_difficulty.just_the_value
+                        args.collection_difficulty.just_the_value or Difficulty.EASY
                     )
                 elif metric.collection_params is not None:
                     new_collection_difficulty = metric.collection_params.difficulty
@@ -153,6 +161,7 @@ class MetricUpdateUseCase(
                         actionable_from_month=new_collection_actionable_from_month,
                         due_at_day=new_collection_due_at_day,
                         due_at_month=new_collection_due_at_month,
+                        skip_rule=None,
                     ),
                 )
             else:
@@ -164,11 +173,13 @@ class MetricUpdateUseCase(
             workspace.ref_id,
         )
 
-        metric_collection_tasks = await uow.get_for(InboxTask).find_all_generic(
+        metric_collection_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
-            source=[InboxTaskSource.METRIC],
             allow_archived=True,
-            metric_ref_id=[metric.ref_id],
+            source=InboxTaskSource.METRIC,
+            source_entity_ref_id=metric.ref_id,
         )
 
         metric = metric.update(
@@ -220,3 +231,30 @@ class MetricUpdateUseCase(
 
                 await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: MetricUpdateArgs,
+        result: None,
+    ) -> None:
+        """Execute the command's post-mutation work."""
+        await GenService(self._domain_storage_engine).do_it(
+            context.domain_context,
+            progress_reporter=progress_reporter,
+            user=context.user,
+            workspace=context.workspace,
+            gen_even_if_not_modified=False,
+            today=self._time_provider.get_current_date(),
+            gen_targets=[SyncTarget.METRICS],
+            period=(
+                [args.collection_period.just_the_value]
+                if (
+                    args.collection_period.should_change
+                    and args.collection_period.just_the_value is not None
+                )
+                else None
+            ),
+            filter_metric_ref_ids=[args.ref_id],
+        )

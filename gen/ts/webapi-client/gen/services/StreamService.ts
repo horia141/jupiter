@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -12,14 +13,10 @@ import type { ScheduleStreamLoadArgs } from '../models/ScheduleStreamLoadArgs';
 import type { ScheduleStreamLoadResult } from '../models/ScheduleStreamLoadResult';
 import type { ScheduleStreamRemoveArgs } from '../models/ScheduleStreamRemoveArgs';
 import type { ScheduleStreamUpdateArgs } from '../models/ScheduleStreamUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class StreamService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a schedule stream.
      * Use case for archiving a schedule stream.
@@ -42,7 +39,6 @@ export class StreamService {
             },
         });
     }
-
     /**
      * Use case for creating a schedule stream from an external iCal.
      * Use case for creating a schedule stream from an external iCal.
@@ -65,7 +61,6 @@ export class StreamService {
             },
         });
     }
-
     /**
      * Use case for creating a schedule stream.
      * Use case for creating a schedule stream.
@@ -88,7 +83,6 @@ export class StreamService {
             },
         });
     }
-
     /**
      * Usecase for finding schedule streams.
      * Usecase for finding schedule streams.
@@ -111,7 +105,6 @@ export class StreamService {
             },
         });
     }
-
     /**
      * Use case for loading a particular stream.
      * Use case for loading a particular stream.
@@ -134,7 +127,6 @@ export class StreamService {
             },
         });
     }
-
     /**
      * Use case for removing a schedule stream.
      * Use case for removing a schedule stream.
@@ -157,7 +149,6 @@ export class StreamService {
             },
         });
     }
-
     /**
      * Use case for updating a schedule stream.
      * Use case for updating a schedule stream.
@@ -180,5 +171,4 @@ export class StreamService {
             },
         });
     }
-
 }

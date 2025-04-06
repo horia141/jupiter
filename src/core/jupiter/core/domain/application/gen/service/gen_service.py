@@ -2,7 +2,7 @@
 
 import typing
 from collections import defaultdict
-from typing import Final
+from typing import Final, Sequence
 
 from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
@@ -90,13 +90,13 @@ class GenService:
         today: ADate,
         gen_targets: list[SyncTarget],
         period: list[RecurringTaskPeriod] | None,
-        filter_project_ref_ids: list[EntityId] | None,
-        filter_habit_ref_ids: list[EntityId] | None,
-        filter_chore_ref_ids: list[EntityId] | None,
-        filter_metric_ref_ids: list[EntityId] | None,
-        filter_person_ref_ids: list[EntityId] | None,
-        filter_slack_task_ref_ids: list[EntityId] | None,
-        filter_email_task_ref_ids: list[EntityId] | None,
+        filter_project_ref_ids: list[EntityId] | None = None,
+        filter_habit_ref_ids: list[EntityId] | None = None,
+        filter_chore_ref_ids: list[EntityId] | None = None,
+        filter_metric_ref_ids: list[EntityId] | None = None,
+        filter_person_ref_ids: list[EntityId] | None = None,
+        filter_slack_task_ref_ids: list[EntityId] | None = None,
+        filter_email_task_ref_ids: list[EntityId] | None = None,
     ) -> None:
         """Execute the service's action."""
         big_diff = list(
@@ -227,14 +227,16 @@ class GenService:
                         parent_ref_id=note_collection.ref_id,
                         allow_archived=False,
                         domain=NoteDomain.WORKING_MEM,
-                        source_entity_ref_id=[wm.ref_id for wm in all_working_mem]
-                        if all_working_mem
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [wm.ref_id for wm in all_working_mem]
+                            if all_working_mem
+                            else NoFilter()
+                        ),
                     )
                     for note in all_notes:
-                        all_notes_by_working_mem_ref_id[
-                            note.source_entity_ref_id
-                        ] = note
+                        all_notes_by_working_mem_ref_id[note.source_entity_ref_id] = (
+                            note
+                        )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_cleanup_inbox_tasks = await uow.get_for(
@@ -243,22 +245,24 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.WORKING_MEM_CLEANUP],
                         allow_archived=True,
-                        working_mem_ref_id=[rt.ref_id for rt in all_working_mem]
-                        if all_working_mem
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [rt.ref_id for rt in all_working_mem]
+                            if all_working_mem
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_working_mem_ref_id_and_timeline = {}
                 for inbox_task in all_cleanup_inbox_tasks:
                     if (
-                        inbox_task.working_mem_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_inbox_tasks_by_working_mem_ref_id_and_timeline[
-                        (inbox_task.working_mem_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 gen_log_entry = await self._generate_working_mem_and_inbox_task(
@@ -297,9 +301,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.HABIT],
                         allow_archived=True,
-                        habit_ref_id=[rt.ref_id for rt in all_habits]
-                        if all_habits
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [rt.ref_id for rt in all_habits]
+                            if all_habits
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_habit_ref_id_and_timeline: dict[
@@ -308,14 +314,14 @@ class GenService:
                 ] = defaultdict(list)
                 for inbox_task in all_collection_inbox_tasks:
                     if (
-                        inbox_task.habit_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_inbox_tasks_by_habit_ref_id_and_timeline[
-                        (inbox_task.habit_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ].append(inbox_task)
 
                 for habit in all_habits:
@@ -354,22 +360,24 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.CHORE],
                         allow_archived=True,
-                        chore_ref_id=[rt.ref_id for rt in all_chores]
-                        if all_chores
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [rt.ref_id for rt in all_chores]
+                            if all_chores
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_chore_ref_id_and_timeline = {}
                 for inbox_task in all_collection_inbox_tasks:
                     if (
-                        inbox_task.chore_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_inbox_tasks_by_chore_ref_id_and_timeline[
-                        (inbox_task.chore_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 for chore in all_chores:
@@ -412,23 +420,25 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.METRIC],
                         allow_archived=True,
-                        metric_ref_id=[m.ref_id for m in all_metrics]
-                        if all_metrics
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_metrics]
+                            if all_metrics
+                            else NoFilter()
+                        ),
                     )
 
                 all_collection_inbox_tasks_by_metric_ref_id_and_timeline = {}
 
                 for inbox_task in all_collection_inbox_tasks:
                     if (
-                        inbox_task.metric_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_collection_inbox_tasks_by_metric_ref_id_and_timeline[
-                        (inbox_task.metric_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 for metric in all_metrics:
@@ -476,9 +486,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_CATCH_UP],
-                        person_ref_id=[m.ref_id for m in all_persons]
-                        if all_persons
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_persons]
+                            if all_persons
+                            else NoFilter()
+                        ),
                     )
                     all_birthday_inbox_tasks = await uow.get_for(
                         InboxTask
@@ -486,9 +498,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_BIRTHDAY],
-                        person_ref_id=[m.ref_id for m in all_persons]
-                        if all_persons
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_persons]
+                            if all_persons
+                            else NoFilter()
+                        ),
                     )
                     all_birthday_time_event_blocks = await uow.get_for(
                         TimeEventFullDaysBlock
@@ -496,22 +510,24 @@ class GenService:
                         parent_ref_id=time_event_domain.ref_id,
                         allow_archived=False,
                         namespace=TimeEventNamespace.PERSON_BIRTHDAY,
-                        source_entity_ref_id=[m.ref_id for m in all_persons]
-                        if all_persons
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_persons]
+                            if all_persons
+                            else NoFilter()
+                        ),
                     )
 
                 all_catch_up_inbox_tasks_by_person_ref_id_and_timeline = {}
                 for inbox_task in all_catch_up_inbox_tasks:
                     if (
-                        inbox_task.person_ref_id is None
+                        inbox_task.source_entity_ref_id is None
                         or inbox_task.recurring_timeline is None
                     ):
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
                     all_catch_up_inbox_tasks_by_person_ref_id_and_timeline[
-                        (inbox_task.person_ref_id, inbox_task.recurring_timeline)
+                        (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                     ] = inbox_task
 
                 project = all_projects_by_ref_id[
@@ -542,14 +558,14 @@ class GenService:
             all_birthday_inbox_tasks_by_person_ref_id_and_timeline = {}
             for inbox_task in all_birthday_inbox_tasks:
                 if (
-                    inbox_task.person_ref_id is None
+                    inbox_task.source_entity_ref_id is None
                     or inbox_task.recurring_timeline is None
                 ):
                     raise Exception(
                         f"Expected that inbox task with id='{inbox_task.ref_id}'",
                     )
                 all_birthday_inbox_tasks_by_person_ref_id_and_timeline[
-                    (inbox_task.person_ref_id, inbox_task.recurring_timeline)
+                    (inbox_task.source_entity_ref_id, inbox_task.recurring_timeline)
                 ] = inbox_task
 
             all_birthday_time_event_blocks_by_person_ref_id_and_start_date = {}
@@ -615,13 +631,15 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.SLACK_TASK],
-                        slack_task_ref_id=[st.ref_id for st in all_slack_tasks]
-                        if all_slack_tasks
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [st.ref_id for st in all_slack_tasks]
+                            if all_slack_tasks
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_slack_task_ref_id = {
-                    it.slack_task_ref_id: it for it in all_slack_inbox_tasks
+                    it.source_entity_ref_id_for_sure: it for it in all_slack_inbox_tasks
                 }
                 for slack_task in all_slack_tasks:
                     project = all_projects_by_ref_id[
@@ -670,13 +688,15 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.EMAIL_TASK],
-                        email_task_ref_id=[st.ref_id for st in all_email_tasks]
-                        if all_email_tasks
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [st.ref_id for st in all_email_tasks]
+                            if all_email_tasks
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_email_task_ref_id = {
-                    it.email_task_ref_id: it for it in all_email_inbox_tasks
+                    it.source_entity_ref_id_for_sure: it for it in all_email_inbox_tasks
                 }
                 for email_task in all_email_tasks:
                     project = all_projects_by_ref_id[
@@ -855,14 +875,14 @@ class GenService:
             habit.gen_params.period,
             habit.name,
             today.to_timestamp_at_end_of_day(),
-            habit.skip_rule,
+            habit.gen_params.skip_rule,
             habit.gen_params.actionable_from_day,
             habit.gen_params.actionable_from_month,
             habit.gen_params.due_at_day,
             habit.gen_params.due_at_month,
         )
 
-        if schedule.should_skip:
+        if not schedule.should_keep:
             return gen_log_entry
 
         all_found_tasks_by_repeat_index: dict[int | None, InboxTask] = {
@@ -873,6 +893,18 @@ class GenService:
             )
         }
         repeat_idx_to_keep: set[int | None] = set()
+
+        task_ranges: Sequence[tuple[ADate | None, ADate]]
+        if habit.repeats_in_period_count is not None:
+            if habit.repeats_strategy is None:
+                raise ValueError("Repeats strategy is not set")
+            task_ranges = habit.repeats_strategy.spread_tasks(
+                start_date=schedule.first_day,
+                end_date=schedule.end_day,
+                repeats_in_period=habit.repeats_in_period_count,
+            )
+        else:
+            task_ranges = [(schedule.actionable_date, schedule.due_date)]
 
         for task_idx in range(habit.repeats_in_period_count or 1):
             real_task_idx = (
@@ -895,8 +927,8 @@ class GenService:
                     name=schedule.full_name,
                     timeline=schedule.timeline,
                     repeat_index=real_task_idx,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_date,
+                    actionable_date=task_ranges[task_idx][0],
+                    due_date=task_ranges[task_idx][1],
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                 )
@@ -920,8 +952,8 @@ class GenService:
                     recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_date,
+                    actionable_date=task_ranges[task_idx][0],
+                    due_date=task_ranges[task_idx][1],
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -978,7 +1010,7 @@ class GenService:
             chore.gen_params.period,
             chore.name,
             today.to_timestamp_at_end_of_day(),
-            chore.skip_rule,
+            chore.gen_params.skip_rule,
             chore.gen_params.actionable_from_day,
             chore.gen_params.actionable_from_month,
             chore.gen_params.due_at_day,
@@ -994,7 +1026,7 @@ class GenService:
         if not chore.is_in_active_interval(schedule.first_day, schedule.end_day):
             return gen_log_entry
 
-        if schedule.should_skip:
+        if not schedule.should_keep:
             return gen_log_entry
 
         found_task = all_inbox_tasks_by_chore_ref_id_and_timeline.get(

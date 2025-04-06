@@ -3,12 +3,15 @@ import { z } from "zod";
 
 export const RELEASE_MANIFEST_SCHEMA = z.record(
   z.nativeEnum(AppDistribution),
-  z.nativeEnum(AppDistributionState)
+  z.nativeEnum(AppDistributionState),
 );
 
 export type ReleaseManifest = Record<AppDistribution, AppDistributionState>;
 
 export interface ReleaseManifestResult {
-  latestServerVersion: string;
-  manifest: ReleaseManifest;
+  ok: boolean;
+  res?: {
+    latestServerVersion: string;
+    manifest: ReleaseManifest;
+  };
 }

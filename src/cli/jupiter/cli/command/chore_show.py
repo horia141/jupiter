@@ -1,4 +1,5 @@
 """UseCase for showing the chores."""
+
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -19,8 +20,6 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.difficulty import Difficulty
-from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.use_cases.concept.chores.find import ChoreFindResult, ChoreFindUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
@@ -47,7 +46,7 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
                 ce.chore.suspended,
                 ce.chore.gen_params.period,
                 ce.chore.gen_params.eisen,
-                ce.chore.gen_params.difficulty or Difficulty.EASY,
+                ce.chore.gen_params.difficulty,
             ),
         )
 
@@ -63,9 +62,7 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
             chore_info_text = Text("")
             chore_info_text.append(period_to_rich_text(chore.gen_params.period))
             chore_info_text.append(" ")
-            chore_info_text.append(
-                eisen_to_rich_text(chore.gen_params.eisen or Eisen.REGULAR)
-            )
+            chore_info_text.append(eisen_to_rich_text(chore.gen_params.eisen))
 
             if chore.gen_params.difficulty:
                 chore_info_text.append(" ")
@@ -73,9 +70,11 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
                     difficulty_to_rich_text(chore.gen_params.difficulty),
                 )
 
-            if chore.skip_rule and str(chore.skip_rule) != "none":
+            if chore.gen_params.skip_rule:
                 chore_info_text.append(" ")
-                chore_info_text.append(skip_rule_to_rich_text(chore.skip_rule))
+                chore_info_text.append(
+                    skip_rule_to_rich_text(chore.gen_params.skip_rule)
+                )
 
             if chore.gen_params.actionable_from_day:
                 chore_info_text.append(" ")

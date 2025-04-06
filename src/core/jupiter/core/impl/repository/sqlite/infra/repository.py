@@ -9,6 +9,7 @@ from datetime import date, datetime
 from typing import (
     Final,
     Generic,
+    Mapping,
     Protocol,
     TypeGuard,
     TypeVar,
@@ -34,7 +35,7 @@ from jupiter.core.framework.entity import (
     TrunkEntity,
 )
 from jupiter.core.framework.primitive import Primitive
-from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
+from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry, RealmThing
 from jupiter.core.framework.record import Record
 from jupiter.core.framework.repository import (
     EntityAlreadyExistsError,
@@ -71,7 +72,6 @@ from sqlalchemy import (
     select,
     update,
 )
-from sqlalchemy.engine.row import Row
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
@@ -85,6 +85,7 @@ class SqliteRepository(abc.ABC):
 
     _realm_codec_registry: Final[RealmCodecRegistry]
     _connection: Final[AsyncConnection]
+    _metadata: Final[MetaData]
 
     def __init__(
         self,
@@ -95,6 +96,7 @@ class SqliteRepository(abc.ABC):
         """Initialize the repository."""
         self._realm_codec_registry = realm_codec_registry
         self._connection = connection
+        self._metadata = metadata
 
 
 class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
@@ -121,13 +123,15 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
         """Initialize the repository."""
         super().__init__(realm_codec_registry, connection, metadata)
         entity_type = self._infer_entity_class() if entity_type is None else entity_type
-        self._table = (
-            table
-            if table is not None
-            else SqliteEntityRepository._build_table_for_entity(
-                table_name, metadata, entity_type
+        the_table_name = table_name or inflection.underscore(entity_type.__name__)
+        the_table = table
+        if the_table is None:
+            the_table = metadata.tables.get(the_table_name)
+        if the_table is None:
+            the_table = SqliteEntityRepository._build_table_for_entity(
+                the_table_name, metadata, entity_type
             )
-        )
+        self._table = the_table
         self._event_table = build_event_table(self._table, metadata)
         self._entity_type = entity_type
         self._already_exists_err_cls = already_exists_err_cls
@@ -214,11 +218,11 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
         )
         return cast(RowType, encoder.encode(entity))
 
-    def _row_to_entity(self, row: Row) -> _EntityT:
+    def _row_to_entity(self, row: RowType) -> _EntityT:
         decoder = self._realm_codec_registry.get_decoder(
             self._entity_type, DatabaseRealm
         )
-        return decoder.decode(row._mapping)
+        return decoder.decode(cast(Mapping[str, RealmThing], row._mapping))
 
     def _infer_entity_class(self) -> type[_EntityT]:
         """Infer the entity class from the table."""
@@ -249,16 +253,13 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
 
     @staticmethod
     def _build_table_for_entity(
-        table_name: str | None, metadata: MetaData, entity_type: type[_EntityT]
+        entity_table_name: str, metadata: MetaData, entity_type: type[_EntityT]
     ) -> Table:
         """Build the table for an entity."""
 
-        def extract_entity_table_name() -> str:
-            return inflection.underscore(entity_type.__name__)
-
         def extract_field_type(
             field: dataclasses.Field[Primitive | object],
-        ) -> tuple[type[object], bool]:
+        ) -> tuple[type[object] | str, bool]:
             field_type_origin = get_origin(field.type)
             if field_type_origin is None:
                 return field.type, False
@@ -282,8 +283,6 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
                 return field.type, False
 
         all_fields = dataclasses.fields(entity_type)
-
-        entity_table_name = table_name or extract_entity_table_name()
 
         table = Table(
             entity_table_name,
@@ -475,11 +474,15 @@ class SqliteRootEntityRepository(
 ):
     """A repository for root entities backed by SQLite, meant to be used as a mixin."""
 
-    async def load_by_id(self, entity_id: EntityId) -> _RootEntityT:
+    async def load_by_id(
+        self, entity_id: EntityId, allow_archived: bool = False
+    ) -> _RootEntityT:
         """Loads the root entity."""
         query_stmt = select(self._table).where(
             self._table.c.ref_id == entity_id.as_int(),
         )
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(

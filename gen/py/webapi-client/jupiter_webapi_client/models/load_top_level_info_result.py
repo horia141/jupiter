@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -76,9 +77,9 @@ class LoadTopLevelInfoResult:
     app_platform_hack: Union[AppPlatform, None, Unset] = UNSET
     app_distribution_hack: Union[AppDistribution, None, Unset] = UNSET
     app_distribution_state_hack: Union[AppDistributionState, None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.user import User
         from ..models.user_score_overview import UserScoreOverview
         from ..models.workspace import Workspace
@@ -103,7 +104,7 @@ class LoadTopLevelInfoResult:
 
         workspace_feature_hack = self.workspace_feature_hack.value
 
-        user: Union[Dict[str, Any], None, Unset]
+        user: Union[None, Unset, dict[str, Any]]
         if isinstance(self.user, Unset):
             user = UNSET
         elif isinstance(self.user, User):
@@ -111,7 +112,7 @@ class LoadTopLevelInfoResult:
         else:
             user = self.user
 
-        user_score_overview: Union[Dict[str, Any], None, Unset]
+        user_score_overview: Union[None, Unset, dict[str, Any]]
         if isinstance(self.user_score_overview, Unset):
             user_score_overview = UNSET
         elif isinstance(self.user_score_overview, UserScoreOverview):
@@ -119,7 +120,7 @@ class LoadTopLevelInfoResult:
         else:
             user_score_overview = self.user_score_overview
 
-        workspace: Union[Dict[str, Any], None, Unset]
+        workspace: Union[None, Unset, dict[str, Any]]
         if isinstance(self.workspace, Unset):
             workspace = UNSET
         elif isinstance(self.workspace, Workspace):
@@ -175,7 +176,7 @@ class LoadTopLevelInfoResult:
         else:
             app_distribution_state_hack = self.app_distribution_state_hack
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -213,7 +214,7 @@ class LoadTopLevelInfoResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.load_top_level_info_result_default_user_feature_flags import (
             LoadTopLevelInfoResultDefaultUserFeatureFlags,
         )
@@ -226,7 +227,7 @@ class LoadTopLevelInfoResult:
         from ..models.workspace import Workspace
         from ..models.workspace_feature_flags_controls import WorkspaceFeatureFlagsControls
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         env = Env(d.pop("env"))
 
         hosting = Hosting(d.pop("hosting"))
@@ -432,7 +433,7 @@ class LoadTopLevelInfoResult:
         return load_top_level_info_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

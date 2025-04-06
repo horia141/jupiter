@@ -1,4 +1,5 @@
 """Command for free form searching across all of jupiter."""
+
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand

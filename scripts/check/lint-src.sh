@@ -18,5 +18,5 @@ poetry run pydocstyle --config=./scripts/check/lint/pydocstyle src/core src/cli 
 
 # TS+Node
 (cd src/webui && npx tsc)
-# (cd src/desktop && npx tsc) # TODO(horia141): fix this
-npx eslint src/webui # src/desktop # TODO(horia141): fix this
+npx prettier --check src/webui src/desktop src/mobile
+npx eslint src/webui

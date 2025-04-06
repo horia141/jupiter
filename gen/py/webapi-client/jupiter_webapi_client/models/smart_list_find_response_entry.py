@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -22,24 +23,24 @@ class SmartListFindResponseEntry:
     Attributes:
         smart_list (SmartList): A smart list.
         note (Union['Note', None, Unset]):
-        smart_list_tags (Union[List['SmartListTag'], None, Unset]):
-        smart_list_items (Union[List['SmartListItem'], None, Unset]):
-        smart_list_item_notes (Union[List['Note'], None, Unset]):
+        smart_list_tags (Union[None, Unset, list['SmartListTag']]):
+        smart_list_items (Union[None, Unset, list['SmartListItem']]):
+        smart_list_item_notes (Union[None, Unset, list['Note']]):
     """
 
     smart_list: "SmartList"
     note: Union["Note", None, Unset] = UNSET
-    smart_list_tags: Union[List["SmartListTag"], None, Unset] = UNSET
-    smart_list_items: Union[List["SmartListItem"], None, Unset] = UNSET
-    smart_list_item_notes: Union[List["Note"], None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    smart_list_tags: Union[None, Unset, list["SmartListTag"]] = UNSET
+    smart_list_items: Union[None, Unset, list["SmartListItem"]] = UNSET
+    smart_list_item_notes: Union[None, Unset, list["Note"]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.note import Note
 
         smart_list = self.smart_list.to_dict()
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -47,7 +48,7 @@ class SmartListFindResponseEntry:
         else:
             note = self.note
 
-        smart_list_tags: Union[List[Dict[str, Any]], None, Unset]
+        smart_list_tags: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.smart_list_tags, Unset):
             smart_list_tags = UNSET
         elif isinstance(self.smart_list_tags, list):
@@ -59,7 +60,7 @@ class SmartListFindResponseEntry:
         else:
             smart_list_tags = self.smart_list_tags
 
-        smart_list_items: Union[List[Dict[str, Any]], None, Unset]
+        smart_list_items: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.smart_list_items, Unset):
             smart_list_items = UNSET
         elif isinstance(self.smart_list_items, list):
@@ -71,7 +72,7 @@ class SmartListFindResponseEntry:
         else:
             smart_list_items = self.smart_list_items
 
-        smart_list_item_notes: Union[List[Dict[str, Any]], None, Unset]
+        smart_list_item_notes: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.smart_list_item_notes, Unset):
             smart_list_item_notes = UNSET
         elif isinstance(self.smart_list_item_notes, list):
@@ -83,7 +84,7 @@ class SmartListFindResponseEntry:
         else:
             smart_list_item_notes = self.smart_list_item_notes
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -102,13 +103,13 @@ class SmartListFindResponseEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.note import Note
         from ..models.smart_list import SmartList
         from ..models.smart_list_item import SmartListItem
         from ..models.smart_list_tag import SmartListTag
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         smart_list = SmartList.from_dict(d.pop("smart_list"))
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
@@ -128,7 +129,7 @@ class SmartListFindResponseEntry:
 
         note = _parse_note(d.pop("note", UNSET))
 
-        def _parse_smart_list_tags(data: object) -> Union[List["SmartListTag"], None, Unset]:
+        def _parse_smart_list_tags(data: object) -> Union[None, Unset, list["SmartListTag"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -146,11 +147,11 @@ class SmartListFindResponseEntry:
                 return smart_list_tags_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["SmartListTag"], None, Unset], data)
+            return cast(Union[None, Unset, list["SmartListTag"]], data)
 
         smart_list_tags = _parse_smart_list_tags(d.pop("smart_list_tags", UNSET))
 
-        def _parse_smart_list_items(data: object) -> Union[List["SmartListItem"], None, Unset]:
+        def _parse_smart_list_items(data: object) -> Union[None, Unset, list["SmartListItem"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -168,11 +169,11 @@ class SmartListFindResponseEntry:
                 return smart_list_items_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["SmartListItem"], None, Unset], data)
+            return cast(Union[None, Unset, list["SmartListItem"]], data)
 
         smart_list_items = _parse_smart_list_items(d.pop("smart_list_items", UNSET))
 
-        def _parse_smart_list_item_notes(data: object) -> Union[List["Note"], None, Unset]:
+        def _parse_smart_list_item_notes(data: object) -> Union[None, Unset, list["Note"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -190,7 +191,7 @@ class SmartListFindResponseEntry:
                 return smart_list_item_notes_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["Note"], None, Unset], data)
+            return cast(Union[None, Unset, list["Note"]], data)
 
         smart_list_item_notes = _parse_smart_list_item_notes(d.pop("smart_list_item_notes", UNSET))
 
@@ -206,7 +207,7 @@ class SmartListFindResponseEntry:
         return smart_list_find_response_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

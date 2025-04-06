@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { PasswordNewPlain } from './PasswordNewPlain';
 import type { PasswordPlain } from './PasswordPlain';
 import type { ProjectName } from './ProjectName';
@@ -10,7 +10,6 @@ import type { UserFeature } from './UserFeature';
 import type { UserName } from './UserName';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceName } from './WorkspaceName';
-
 /**
  * PersonFindArgs.
  */

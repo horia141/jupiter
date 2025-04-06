@@ -1,4 +1,4 @@
-# The Thrive Goal Management System ![Develop](https://github.com/horia141/jupiter/workflows/Develop/badge.svg) ![Release](https://github.com/horia141/jupiter/workflows/Release/badge.svg) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+# The Thrive Goal Management System ![Release](https://img.shields.io/github/v/release/horia141/jupiter) ![Develop](https://github.com/horia141/jupiter/workflows/Develop/badge.svg) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Thrive is a tool for _life planning_. It provides goals management, task tracking,
 habit building, chores management, lists, metrics, a personal relationship manager, and
@@ -11,16 +11,16 @@ The current version is both a [webapp](https://get-thriving.com) and a CLI appli
 
 Here's a picture from the "inbox" view:
 
-![Inbox Tasks](assets/showcase-inbox-tasks.png)
+![Inbox Tasks](assets/showcase-desktop-inbox-tasks.png)
 
 And the calendar view:
 
-![Calendars](assets/showcase-calendar.png)
+![Calendars](assets/showcase-desktop-calendar.png)
 
 And a metric feature:
 
-![Metrics](assets/showcase-metrics.png)
+![Metrics](assets/showcase-desktop-metrics.png)
 
 And finally, a timeplan feature:
 
-![Time Plans](assets/showcase-timeplan.png)
+![Time Plans](assets/showcase-desktop-timeplan.png)

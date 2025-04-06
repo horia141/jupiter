@@ -1,5 +1,4 @@
 """The command for finding a email task."""
-from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
@@ -95,10 +94,10 @@ class EmailTaskFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.EMAIL_TASK],
-                email_task_ref_id=[st.ref_id for st in email_tasks],
+                source_entity_ref_id=[st.ref_id for st in email_tasks],
             )
             inbox_tasks_by_email_task_ref_id = {
-                cast(EntityId, it.email_task_ref_id): it for it in inbox_tasks
+                it.source_entity_ref_id_for_sure: it for it in inbox_tasks
             }
         else:
             inbox_tasks_by_email_task_ref_id = None
@@ -108,9 +107,11 @@ class EmailTaskFindUseCase(
             entries=[
                 EmailTaskFindResultEntry(
                     email_task=st,
-                    inbox_task=inbox_tasks_by_email_task_ref_id.get(st.ref_id, None)
-                    if inbox_tasks_by_email_task_ref_id
-                    else None,
+                    inbox_task=(
+                        inbox_tasks_by_email_task_ref_id.get(st.ref_id, None)
+                        if inbox_tasks_by_email_task_ref_id
+                        else None
+                    ),
                 )
                 for st in email_tasks
             ],

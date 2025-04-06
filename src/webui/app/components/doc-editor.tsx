@@ -3,18 +3,23 @@ import { TextField } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
 import { Buffer } from "buffer-polyfill";
 import type { ComponentType } from "react";
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { ClientOnly } from "remix-utils";
-import type { NoErrorSomeData, SomeErrorNoData } from "~/logic/action-result";
-import { isNoErrorSomeData } from "~/logic/action-result";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+
+import { ClientOnly } from "~/components/infra/client-only";
+import {
+  NoErrorSomeData,
+  SomeErrorNoData,
+  isNoErrorSomeData,
+} from "~/logic/action-result";
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
+
 import type { BlockEditorProps } from "./infra/block-editor";
 import { FieldError, GlobalError } from "./infra/errors";
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
     default: module.default as unknown as ComponentType<BlockEditorProps>,
-  }))
+  })),
 );
 
 interface DocEditorProps {
@@ -38,17 +43,17 @@ export function DocEditor({
   const [docId, setDocId] = useState(initialDoc ? initialDoc.ref_id : null);
   const [noteId, setNoteId] = useState(initialNote ? initialNote.ref_id : null);
   const [noteName, setNoteName] = useState<string>(
-    initialDoc ? initialDoc.name : ""
+    initialDoc ? initialDoc.name : "",
   );
   const [noteContent, setNoteContent] = useState<Array<OneOfNoteContentBlock>>(
-    initialNote ? initialNote.content : []
+    initialNote ? initialNote.content : [],
   );
 
   const act = useCallback(() => {
     setIsActing(true);
     const base64Content = Buffer.from(
       JSON.stringify(noteContent),
-      "utf-8"
+      "utf-8",
     ).toString("base64");
     if (docId && noteId) {
       // We already created this thing, we just need to update!
@@ -61,8 +66,8 @@ export function DocEditor({
         },
         {
           method: "post",
-          action: "/workspace/docs/update-action",
-        }
+          action: "/app/workspace/docs/update-action",
+        },
       );
     } else {
       // We need to create it!
@@ -73,8 +78,8 @@ export function DocEditor({
         },
         {
           method: "post",
-          action: "/workspace/docs/create-action",
-        }
+          action: "/app/workspace/docs/create-action",
+        },
       );
     }
     setDataModified(false);
@@ -92,7 +97,7 @@ export function DocEditor({
 
   useEffect(() => {
     if (
-      cardActionFetcher.submission?.action.endsWith("/create-action") &&
+      cardActionFetcher.formAction?.endsWith("/create-action") &&
       cardActionFetcher.data &&
       isNoErrorSomeData(cardActionFetcher.data)
     ) {
@@ -100,10 +105,7 @@ export function DocEditor({
       setNoteId(cardActionFetcher.data?.data.new_note.ref_id);
     }
 
-    if (
-      cardActionFetcher.state === "idle" &&
-      cardActionFetcher.type === "done"
-    ) {
+    if (cardActionFetcher.state === "idle" && cardActionFetcher.data !== null) {
       setIsActing(false);
       if (shouldAct) {
         act();
@@ -136,6 +138,7 @@ export function DocEditor({
         {() => (
           <Suspense fallback={<div>Loading...</div>}>
             <BlockEditor
+              autofocus={true}
               initialContent={noteContent}
               inputsEnabled={inputsEnabled}
               onChange={(c) => {

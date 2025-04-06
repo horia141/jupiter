@@ -1,4 +1,5 @@
 """Framework level elements for entity events."""
+
 import enum
 from dataclasses import dataclass
 

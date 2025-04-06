@@ -1,4 +1,5 @@
 """The schedule domain."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
 )

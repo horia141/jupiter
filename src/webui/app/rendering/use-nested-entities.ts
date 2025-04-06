@@ -1,4 +1,4 @@
-import { useMatches } from "@remix-run/react";
+import { UIMatch, useMatches } from "@remix-run/react";
 
 export enum DisplayType {
   ROOT,
@@ -8,14 +8,21 @@ export enum DisplayType {
   TOOL,
 }
 
+function checkMatchIs(match: UIMatch, displayType: DisplayType): boolean {
+  return (
+    typeof match.handle === "object" &&
+    match.handle !== null &&
+    "displayType" in match.handle &&
+    match.handle.displayType === displayType
+  );
+}
+
 export function useRootNeedsToShowTrunk() {
   const matches = useMatches();
 
   for (const match of [...matches].reverse()) {
-    if (match.handle && match.handle.displayType) {
-      if (match.handle.displayType === DisplayType.TRUNK) {
-        return true;
-      }
+    if (checkMatchIs(match, DisplayType.TRUNK)) {
+      return true;
     }
   }
 
@@ -26,10 +33,8 @@ export function useBranchNeedsToShowLeaf() {
   const matches = useMatches();
   const lastMatch = matches[matches.length - 1];
 
-  if (lastMatch.handle && lastMatch.handle.displayType) {
-    if (lastMatch.handle.displayType === DisplayType.LEAF) {
-      return true;
-    }
+  if (checkMatchIs(lastMatch, DisplayType.LEAF)) {
+    return true;
   }
   return false;
 }
@@ -38,10 +43,8 @@ export function useTrunkNeedsToShowBranch() {
   const matches = useMatches();
 
   for (const match of [...matches].reverse()) {
-    if (match.handle && match.handle.displayType) {
-      if (match.handle.displayType === DisplayType.BRANCH) {
-        return true;
-      }
+    if (checkMatchIs(match, DisplayType.BRANCH)) {
+      return true;
     }
   }
 

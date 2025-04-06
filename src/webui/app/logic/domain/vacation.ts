@@ -1,4 +1,5 @@
 import type { Vacation } from "@jupiter/webapi-client";
+
 import { aDateToDate } from "./adate";
 
 export function sortVacationsNaturally(vacations: Vacation[]) {

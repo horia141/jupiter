@@ -1,4 +1,5 @@
 """Fixtures for integration tests."""
+
 import os
 import re
 import uuid
@@ -6,6 +7,12 @@ from dataclasses import dataclass
 
 import pytest
 import validators
+
+
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    """Browser context args."""
+    return {**browser_context_args, "ignore_https_errors": True}
 
 
 @dataclass
@@ -37,7 +44,7 @@ def new_random_user() -> TestUser:
 @pytest.fixture(autouse=True, scope="package")
 def webapi_server_url() -> str:
     """The URL of the local Web API server."""
-    local_webapi_server_url = os.getenv("LOCAL_WEBAPI_SERVER_URL")
+    local_webapi_server_url = os.getenv("LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL")
     if re.match(r"^http://0[.]0[.]0[.]0:\d+$", local_webapi_server_url):
         return local_webapi_server_url
     validation_result = validators.url(local_webapi_server_url)

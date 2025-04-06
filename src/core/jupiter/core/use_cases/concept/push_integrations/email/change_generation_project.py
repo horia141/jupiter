@@ -1,5 +1,4 @@
 """Update the email tasks generation project."""
-from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
@@ -76,7 +75,7 @@ class EmailTaskChangeGenerationProjectUseCase(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
             source=[InboxTaskSource.EMAIL_TASK],
-            email_task_ref_id=[m.ref_id for m in email_tasks],
+            source_entity_ref_id=[m.ref_id for m in email_tasks],
         )
 
         if (
@@ -87,7 +86,7 @@ class EmailTaskChangeGenerationProjectUseCase(
 
             for inbox_task in all_generated_inbox_tasks:
                 email_task = email_tasks_by_ref_id[
-                    cast(EntityId, inbox_task.email_task_ref_id)
+                    inbox_task.source_entity_ref_id_for_sure
                 ]
                 update_inbox_task = inbox_task.update_link_to_email_task(
                     ctx=context.domain_context,

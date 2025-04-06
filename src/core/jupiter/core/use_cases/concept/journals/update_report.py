@@ -1,4 +1,5 @@
 """Use case for updating a journal entry."""
+
 from jupiter.core.domain.application.report.service.report_service import ReportService
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.features import WorkspaceFeature

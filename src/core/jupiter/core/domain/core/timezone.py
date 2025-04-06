@@ -1,4 +1,5 @@
 """An timezone in this domain."""
+
 from functools import total_ordering
 from typing import cast
 
@@ -10,7 +11,6 @@ from jupiter.core.use_cases.infra.realms import (
     PrimitiveAtomicValueDatabaseDecoder,
     PrimitiveAtomicValueDatabaseEncoder,
 )
-from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
 
 @value
@@ -49,8 +49,8 @@ class TimezoneDatabaseDecoder(PrimitiveAtomicValueDatabaseDecoder[Timezone]):
         timezone_str: str = value.strip()
 
         try:
-            return Timezone(cast(str, pendulum.tz.timezone(timezone_str).name))
-        except InvalidTimezone as err:
+            return Timezone(cast(str, pendulum.timezone(timezone_str).name))
+        except ValueError as err:
             raise InputValidationError(f"Invalid timezone '{value}'") from err
 
 

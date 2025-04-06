@@ -1,11 +1,10 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityName } from './EntityName';
 import type { InboxTasksSummary } from './InboxTasksSummary';
 import type { WorkableSummary } from './WorkableSummary';
-
 /**
  * The report for a particular time period.
  */

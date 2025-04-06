@@ -1,4 +1,5 @@
 """An email task which needs to be converted into an inbox task."""
+
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.push_integrations.email.email_user_name import (
@@ -38,7 +39,7 @@ class EmailTask(LeafEntity):
     has_generated_task: bool
 
     generated_task = OwnsAtMostOne(
-        InboxTask, source=InboxTaskSource.EMAIL_TASK, email_task_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.EMAIL_TASK, source_entity_ref_id=IsRefId()
     )
 
     @staticmethod

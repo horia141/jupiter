@@ -1,4 +1,5 @@
 """Extra information for how to generate an inbox task."""
+
 import argparse
 import shlex
 
@@ -27,8 +28,8 @@ class PushGenerationExtraInfo(CompositeValue):
     timezone: Timezone
     name: InboxTaskName | None
     status: InboxTaskStatus | None
-    eisen: Eisen | None
-    difficulty: Difficulty | None
+    eisen: Eisen
+    difficulty: Difficulty
     actionable_date: ADate | None
     due_date: ADate | None
 
@@ -79,8 +80,8 @@ class PushGenerationExtraInfoDatabaseDecoder(
                 timezone=UTC,
                 name=None,
                 status=None,
-                eisen=None,
-                difficulty=None,
+                eisen=Eisen.REGULAR,
+                difficulty=Difficulty.EASY,
                 actionable_date=None,
                 due_date=None,
             )
@@ -128,36 +129,48 @@ class PushGenerationExtraInfoDatabaseDecoder(
 
             return PushGenerationExtraInfo(
                 timezone=UTC,
-                name=self._realm_codec_registry.get_decoder(
-                    InboxTaskName, DatabaseRealm
-                ).decode(args.name)
-                if args.name
-                else None,
-                status=self._realm_codec_registry.get_decoder(
-                    InboxTaskStatus, DatabaseRealm
-                ).decode(args.status)
-                if args.status
-                else None,
-                eisen=self._realm_codec_registry.get_decoder(
-                    Eisen, DatabaseRealm
-                ).decode(args.eisen)
-                if args.eisen
-                else None,
-                difficulty=self._realm_codec_registry.get_decoder(
-                    Difficulty, DatabaseRealm
-                ).decode(args.difficulty)
-                if args.difficulty
-                else None,
-                actionable_date=self._realm_codec_registry.get_decoder(
-                    ADate, DatabaseRealm
-                ).decode(args.actionable_date)
-                if args.actionable_date
-                else None,
-                due_date=self._realm_codec_registry.get_decoder(
-                    ADate, DatabaseRealm
-                ).decode(args.due_date)
-                if args.due_date
-                else None,
+                name=(
+                    self._realm_codec_registry.get_decoder(
+                        InboxTaskName, DatabaseRealm
+                    ).decode(args.name)
+                    if args.name
+                    else None
+                ),
+                status=(
+                    self._realm_codec_registry.get_decoder(
+                        InboxTaskStatus, DatabaseRealm
+                    ).decode(args.status)
+                    if args.status
+                    else None
+                ),
+                eisen=(
+                    self._realm_codec_registry.get_decoder(Eisen, DatabaseRealm).decode(
+                        args.eisen
+                    )
+                    if args.eisen
+                    else Eisen.REGULAR
+                ),
+                difficulty=(
+                    self._realm_codec_registry.get_decoder(
+                        Difficulty, DatabaseRealm
+                    ).decode(args.difficulty)
+                    if args.difficulty
+                    else Difficulty.EASY
+                ),
+                actionable_date=(
+                    self._realm_codec_registry.get_decoder(ADate, DatabaseRealm).decode(
+                        args.actionable_date
+                    )
+                    if args.actionable_date
+                    else None
+                ),
+                due_date=(
+                    self._realm_codec_registry.get_decoder(ADate, DatabaseRealm).decode(
+                        args.due_date
+                    )
+                    if args.due_date
+                    else None
+                ),
             )
         except ValueError as err:
             raise RealmDecodingError(

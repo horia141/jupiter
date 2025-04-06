@@ -82,16 +82,46 @@ interval, at midnight. You can override it however to specify, via the `due_at_d
 Habits can be configured to skip certain periods via a skip rule. This is
 specified via the `skip_rule` property, which can be one of:
 
-* `odd`: skips the odd numbered intervals for the period. More precisely, the day/week/
-  month/quarter number within the year is checked to be odd. For yearly periods, the year
-  itself should be odd.
-* `even`: skips the even numbered intervals for the period. Same rules apply as above.
-* A set of values: skips the intervals within this set. For example, if the property is
-  `skip_rule: [1, 4, 7]` and `period: "weekly"`then the 1st, 4th and 7th weeks of the year
-  are skipped.
+Chores can be configured to skip certain periods via a skip rule. This is
+specified via the `skip_rule` property, which can be one of:
+
+* `odd`: keeps the odd numbered intervals for the period. For days
+  this means every other day relative to the first day since Jan 1st 1970,
+  for weeks and months and quarters things are relative to the year,
+  and for years the year itself should be odd.
+* `even`: keeps the even numbered intervals for the period. Same rules apply as above.
+* `every n k`: keeps just one interval in a consecutive group of `n`.
+  Then `k` determines which one. `every 3 1` means that the first interval
+  in a group of three will be kept. `every 5 2` means that the second
+  interval in a group of five will be kept.
+* `custom_day_rel_weekly x y z ...`: keeps only certain days of the week.
+  Applicable for daily chores.
+* `custom_day_rel_monthly x y z ...`: keeps only certian days of the month.
+  Applicable for daily chores.
+* `custom_week_rel_yearly x y z ...`: keeps only certain weeks in the year.
+  Applicable for weekly chores.
+* `custom_month_rel_yearly x y z ...`: keeps only certain months in the
+  year. Applicable for monthly chores.
+* `custom_quarter_rel_yearlly x y z ...`: keeps only certain quarters
+  in the year. Applicable for quarterly chores.
 
 A habit can have a repeat count. This makes the task actually be generated multiple times
 in a given time period. It's easier to model some habits - like reading 10 books in a year.
+
+How tasks are generated is further controlled by a _repeat strategy_. This determines how
+the repeats are spread out in the period. There are currently two optins:
+
+* `All Same`: every task generated will have an actionable data that is the start of the
+  particular period's interval, and an due date that is the end of the interval.
+* `Spread Out No Overlap`: tasks will be placed in the interval in order such that the
+  due date of one is the actionable date of the other, perfectly partinioning the period's
+  interval. The number of days in the period must be larger than the repeat count. Even so
+  there isn't a guarantee each one will receive the same number of days. For example, if
+  for a weekly period and a repeat count of `4`, the generated tasks will each have
+  `2`, `2`, `2`, and `1` days in duration respectively.
+
+Repeat count and stragies are not available when the period is `daily`. And you of
+course need to specify both one and the other, or neither.
 
 A habit can be suspended, via the `Suspended` property. Being marked as such means
 that the task won't be generated at all. For example, going to the gym might be suspended while

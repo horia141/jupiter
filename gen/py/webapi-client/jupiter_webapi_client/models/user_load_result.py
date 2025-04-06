@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,15 +28,15 @@ class UserLoadResult:
     user: "User"
     user_score_overview: Union["UserScoreOverview", None, Unset] = UNSET
     user_score_history: Union["UserScoreHistory", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.user_score_history import UserScoreHistory
         from ..models.user_score_overview import UserScoreOverview
 
         user = self.user.to_dict()
 
-        user_score_overview: Union[Dict[str, Any], None, Unset]
+        user_score_overview: Union[None, Unset, dict[str, Any]]
         if isinstance(self.user_score_overview, Unset):
             user_score_overview = UNSET
         elif isinstance(self.user_score_overview, UserScoreOverview):
@@ -43,7 +44,7 @@ class UserLoadResult:
         else:
             user_score_overview = self.user_score_overview
 
-        user_score_history: Union[Dict[str, Any], None, Unset]
+        user_score_history: Union[None, Unset, dict[str, Any]]
         if isinstance(self.user_score_history, Unset):
             user_score_history = UNSET
         elif isinstance(self.user_score_history, UserScoreHistory):
@@ -51,7 +52,7 @@ class UserLoadResult:
         else:
             user_score_history = self.user_score_history
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -66,12 +67,12 @@ class UserLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.user import User
         from ..models.user_score_history import UserScoreHistory
         from ..models.user_score_overview import UserScoreOverview
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         user = User.from_dict(d.pop("user"))
 
         def _parse_user_score_overview(data: object) -> Union["UserScoreOverview", None, Unset]:
@@ -118,7 +119,7 @@ class UserLoadResult:
         return user_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

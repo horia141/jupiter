@@ -1,4 +1,5 @@
 """Fixtures for lifecycle tests."""
+
 from typing import Iterator
 
 import pytest
@@ -23,13 +24,13 @@ from jupiter_webapi_client.models.remove_all_args import RemoveAllArgs
 from itests.conftest import TestUser
 
 
-@pytest.fixture(autouse=True, scope="package")
+@pytest.fixture(autouse=True)
 def new_user() -> TestUser:
     """Create a new random test user."""
     return TestUser.new_random()
 
 
-@pytest.fixture(autouse=True, scope="package")
+@pytest.fixture(autouse=True)
 def new_user_and_workspace(
     webapi_server_url: str, new_user: TestUser
 ) -> Iterator[InitResult]:

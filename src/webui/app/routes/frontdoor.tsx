@@ -1,6 +1,7 @@
-import type { LoaderArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { redirectDocument } from "@remix-run/node";
 import { parseQuery } from "zodix";
+
 import { getGuestApiClient } from "~/api-clients.server";
 import { FRONT_DOOR_INFO_SCHEMA } from "~/logic/frontdoor";
 import { saveFrontDoorInfo } from "~/logic/frontdoor.server";
@@ -16,7 +17,7 @@ export const handle = {
 // in shell specific data here, and frondoor stores them in a way that's
 // accessible to the rest of the app. Not entering through the frontdoor
 // means that the assumptions will be made by the system (ie you're a browser).
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const params = parseQuery(request, FRONT_DOOR_INFO_SCHEMA);
 
@@ -26,7 +27,7 @@ export async function loader({ request }: LoaderArgs) {
 
     if (result.user || result.workspace) {
       const cookie = await saveFrontDoorInfo(params);
-      return redirect("/workspace", {
+      return redirectDocument("/frontdoor-redirect-hack-workspace.html", {
         headers: {
           "Set-Cookie": cookie,
         },
@@ -34,7 +35,7 @@ export async function loader({ request }: LoaderArgs) {
     }
   }
 
-  return redirect("/login", {
+  return redirectDocument("/frontdoor-redirect-hack-init.html", {
     headers: {
       "Set-Cookie": await saveFrontDoorInfo(params),
     },

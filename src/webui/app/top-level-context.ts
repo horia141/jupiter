@@ -1,6 +1,6 @@
 import {
-  UserCategory,
   type User,
+  UserCategory,
   type UserFeatureFlagsControls,
   type UserScoreOverview,
   type Workspace,

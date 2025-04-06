@@ -1,6 +1,6 @@
 """The command for finding metrics."""
+
 import itertools
-import typing
 from collections import defaultdict
 from typing import cast
 
@@ -147,12 +147,12 @@ class MetricFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=[InboxTaskSource.METRIC],
-                metric_ref_id=[m.ref_id for m in metrics],
+                source_entity_ref_id=[m.ref_id for m in metrics],
             )
 
             for inbox_task in all_inbox_tasks:
                 metric_collection_inbox_tasks_by_ref_id[
-                    typing.cast(EntityId, inbox_task.metric_ref_id)
+                    inbox_task.source_entity_ref_id_for_sure
                 ].append(inbox_task)
         else:
             metric_collection_inbox_tasks_by_ref_id = defaultdict(list)
@@ -181,15 +181,19 @@ class MetricFindUseCase(
                 MetricFindResponseEntry(
                     metric=m,
                     note=all_notes_by_metric_ref_id.get(m.ref_id, None),
-                    metric_entries=metric_entries_by_ref_ids.get(m.ref_id, [])
-                    if len(metric_entries_by_ref_ids) > 0
-                    else None,
-                    metric_collection_inbox_tasks=metric_collection_inbox_tasks_by_ref_id.get(
-                        m.ref_id,
-                        [],
-                    )
-                    if len(metric_collection_inbox_tasks_by_ref_id) > 0
-                    else None,
+                    metric_entries=(
+                        metric_entries_by_ref_ids.get(m.ref_id, [])
+                        if len(metric_entries_by_ref_ids) > 0
+                        else None
+                    ),
+                    metric_collection_inbox_tasks=(
+                        metric_collection_inbox_tasks_by_ref_id.get(
+                            m.ref_id,
+                            [],
+                        )
+                        if len(metric_collection_inbox_tasks_by_ref_id) > 0
+                        else None
+                    ),
                     metric_entry_notes=[
                         all_notes_by_metric_entry_ref_id[me.ref_id]
                         for me in metric_entries_by_ref_ids.get(m.ref_id, [])

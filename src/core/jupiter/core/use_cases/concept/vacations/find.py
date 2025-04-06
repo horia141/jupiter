@@ -1,4 +1,5 @@
 """The command for finding vacations."""
+
 from collections import defaultdict
 
 from jupiter.core.domain.concept.vacations.vacation import Vacation

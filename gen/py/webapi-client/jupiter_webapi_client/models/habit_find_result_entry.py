@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -22,23 +23,23 @@ class HabitFindResultEntry:
     Attributes:
         habit (Habit): A habit.
         project (Union['Project', None, Unset]):
-        inbox_tasks (Union[List['InboxTask'], None, Unset]):
+        inbox_tasks (Union[None, Unset, list['InboxTask']]):
         note (Union['Note', None, Unset]):
     """
 
     habit: "Habit"
     project: Union["Project", None, Unset] = UNSET
-    inbox_tasks: Union[List["InboxTask"], None, Unset] = UNSET
+    inbox_tasks: Union[None, Unset, list["InboxTask"]] = UNSET
     note: Union["Note", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.note import Note
         from ..models.project import Project
 
         habit = self.habit.to_dict()
 
-        project: Union[Dict[str, Any], None, Unset]
+        project: Union[None, Unset, dict[str, Any]]
         if isinstance(self.project, Unset):
             project = UNSET
         elif isinstance(self.project, Project):
@@ -46,7 +47,7 @@ class HabitFindResultEntry:
         else:
             project = self.project
 
-        inbox_tasks: Union[List[Dict[str, Any]], None, Unset]
+        inbox_tasks: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.inbox_tasks, Unset):
             inbox_tasks = UNSET
         elif isinstance(self.inbox_tasks, list):
@@ -58,7 +59,7 @@ class HabitFindResultEntry:
         else:
             inbox_tasks = self.inbox_tasks
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -66,7 +67,7 @@ class HabitFindResultEntry:
         else:
             note = self.note
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -83,13 +84,13 @@ class HabitFindResultEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.habit import Habit
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.project import Project
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         habit = Habit.from_dict(d.pop("habit"))
 
         def _parse_project(data: object) -> Union["Project", None, Unset]:
@@ -109,7 +110,7 @@ class HabitFindResultEntry:
 
         project = _parse_project(d.pop("project", UNSET))
 
-        def _parse_inbox_tasks(data: object) -> Union[List["InboxTask"], None, Unset]:
+        def _parse_inbox_tasks(data: object) -> Union[None, Unset, list["InboxTask"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -127,7 +128,7 @@ class HabitFindResultEntry:
                 return inbox_tasks_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["InboxTask"], None, Unset], data)
+            return cast(Union[None, Unset, list["InboxTask"]], data)
 
         inbox_tasks = _parse_inbox_tasks(d.pop("inbox_tasks", UNSET))
 
@@ -159,7 +160,7 @@ class HabitFindResultEntry:
         return habit_find_result_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

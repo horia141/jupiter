@@ -4,9 +4,11 @@ import {
   UserFeature,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
+
 import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 import { EntityStack } from "./infra/entity-stack";
@@ -34,13 +36,13 @@ export function JournalStack(props: JournalStackProps) {
             props.onMarkNotDone && props.onMarkNotDone(journal)
           }
         >
-          <EntityLink to={`/workspace/journals/${journal.ref_id}`}>
+          <EntityLink to={`/app/workspace/journals/${journal.ref_id}`}>
             <EntityNameComponent name={journal.name} />
             <JournalSourceTag source={journal.source} />
             <PeriodTag period={journal.period} />
             {isUserFeatureAvailable(
               props.topLevelInfo.user,
-              UserFeature.GAMIFICATION
+              UserFeature.GAMIFICATION,
             ) && (
               <GamificationTag
                 period={journal.period}
@@ -51,7 +53,7 @@ export function JournalStack(props: JournalStackProps) {
             done
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.BIG_PLANS
+              WorkspaceFeature.BIG_PLANS,
             ) && (
               <>
                 {" "}
@@ -92,7 +94,8 @@ function GamificationTag({ period, report }: GamificationTagProps) {
     case RecurringTaskPeriod.QUARTERLY:
       return (
         <>
-          {report.user_score_overview.quarterly_score.total_score} points from{" "}
+          {report.user_score_overview.quarterly_score.total_score} points
+          from{" "}
         </>
       );
     case RecurringTaskPeriod.YEARLY:

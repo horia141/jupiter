@@ -6,7 +6,7 @@ class AppShell(str, Enum):
     CLI = "cli"
     DESKTOP_ELECTRON = "desktop-electron"
     MOBILE_CAPACITOR = "mobile-capacitor"
-    MOBILE_PWA = "mobile-pwa"
+    PWA = "pwa"
 
     def __str__(self) -> str:
         return str(self.value)

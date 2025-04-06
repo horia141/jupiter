@@ -43,6 +43,7 @@ class InboxTaskRemoveUseCase(
             args.ref_id,
             allow_archived=True,
         )
+
         await InboxTaskRemoveService().do_it(
             context.domain_context, uow, progress_reporter, inbox_task
         )

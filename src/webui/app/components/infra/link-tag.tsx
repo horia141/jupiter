@@ -1,8 +1,6 @@
 import { SlimChip } from "./chips";
-import { EntityLink } from "./entity-card";
 
 interface LinkTagProps {
-  to: string;
   color:
     | "default"
     | "primary"
@@ -15,9 +13,5 @@ interface LinkTagProps {
 }
 
 export function LinkTag(props: LinkTagProps) {
-  return (
-    <EntityLink to={props.to} inline>
-      <SlimChip label={props.label} color={props.color} size="small" />
-    </EntityLink>
-  );
+  return <SlimChip label={props.label} color={props.color} size="small" />;
 }

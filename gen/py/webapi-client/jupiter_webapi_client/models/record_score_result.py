@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -25,9 +26,9 @@ class RecordScoreResult:
     latest_task_score: int
     score_overview: "UserScoreOverview"
     has_lucky_puppy_bonus: Union[None, Unset, bool] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         latest_task_score = self.latest_task_score
 
         score_overview = self.score_overview.to_dict()
@@ -38,7 +39,7 @@ class RecordScoreResult:
         else:
             has_lucky_puppy_bonus = self.has_lucky_puppy_bonus
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -52,10 +53,10 @@ class RecordScoreResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.user_score_overview import UserScoreOverview
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         latest_task_score = d.pop("latest_task_score")
 
         score_overview = UserScoreOverview.from_dict(d.pop("score_overview"))
@@ -79,7 +80,7 @@ class RecordScoreResult:
         return record_score_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

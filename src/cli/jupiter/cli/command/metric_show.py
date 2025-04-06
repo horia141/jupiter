@@ -1,4 +1,5 @@
 """UseCase for showing metrics."""
+
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand

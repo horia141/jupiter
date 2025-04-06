@@ -1,4 +1,5 @@
 """The command for creating a big plan."""
+
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
@@ -14,7 +15,6 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
     TimePlanActivityKind,
 )
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -22,6 +22,7 @@ from jupiter.core.domain.features import (
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -44,6 +45,8 @@ class BigPlanCreateArgs(UseCaseArgsBase):
 
     name: BigPlanName
     time_plan_ref_id: EntityId | None
+    time_plan_activity_kind: TimePlanActivityKind | None
+    time_plan_activity_feasability: TimePlanActivityFeasability | None
     project_ref_id: EntityId | None
     actionable_date: ADate | None
     due_date: ADate | None
@@ -109,7 +112,7 @@ class BigPlanCreateUseCase(
             big_plan_collection_ref_id=big_plan_collection.ref_id,
             project_ref_id=project_ref_id,
             name=args.name,
-            status=BigPlanStatus.ACCEPTED,
+            status=BigPlanStatus.NOT_STARTED,
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )
@@ -117,14 +120,19 @@ class BigPlanCreateUseCase(
 
         new_time_plan_activity = None
         if time_plan:
+            time_plan_activity_kind = args.time_plan_activity_kind
+            time_plan_activity_feasability = args.time_plan_activity_feasability
+            if not time_plan_activity_kind:
+                raise InputValidationError("An activity kind is required")
+            if not time_plan_activity_feasability:
+                raise InputValidationError("An activity feasability is required")
+
             new_time_plan_activity = TimePlanActivity.new_activity_for_big_plan(
                 context.domain_context,
                 time_plan_ref_id=time_plan.ref_id,
                 big_plan_ref_id=new_big_plan.ref_id,
-                kind=TimePlanActivityKind.FINISH
-                if time_plan.period >= RecurringTaskPeriod.MONTHLY
-                else TimePlanActivityKind.MAKE_PROGRESS,
-                feasability=TimePlanActivityFeasability.MUST_DO,
+                kind=time_plan_activity_kind,
+                feasability=time_plan_activity_feasability,
             )
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity

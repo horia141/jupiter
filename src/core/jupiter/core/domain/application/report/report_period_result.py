@@ -1,4 +1,5 @@
 """The result of a report."""
+
 from dataclasses import field
 
 from jupiter.core.domain.application.gamification.user_score_overview import (
@@ -35,7 +36,7 @@ class InboxTasksSummary(CompositeValue):
     """A bigger summary for inbox tasks."""
 
     created: NestedResult
-    accepted: NestedResult
+    not_started: NestedResult
     working: NestedResult
     not_done: NestedResult
     done: NestedResult
@@ -55,7 +56,7 @@ class WorkableSummary(CompositeValue):
     """The reporting summary."""
 
     created_cnt: int
-    accepted_cnt: int
+    not_started_cnt: int
     working_cnt: int
     not_done_cnt: int
     done_cnt: int
@@ -68,7 +69,7 @@ class BigPlanWorkSummary(CompositeValue):
     """The report for a big plan."""
 
     created_cnt: int
-    accepted_cnt: int
+    not_started_cnt: int
     working_cnt: int
     not_done_cnt: int
     not_done_ratio: float
@@ -81,7 +82,7 @@ class RecurringTaskWorkSummary(CompositeValue):
     """The reporting summary."""
 
     created_cnt: int
-    accepted_cnt: int
+    not_started_cnt: int
     working_cnt: int
     not_done_cnt: int
     not_done_ratio: float
@@ -180,7 +181,7 @@ class ReportPeriodResult(CompositeValue):
                         for s in InboxTaskSource
                     ],
                 ),
-                accepted=NestedResult(
+                not_started=NestedResult(
                     total_cnt=0,
                     per_source_cnt=[
                         NestedResultPerSource(source=s, count=0)
@@ -211,7 +212,7 @@ class ReportPeriodResult(CompositeValue):
             ),
             global_big_plans_summary=WorkableSummary(
                 created_cnt=0,
-                accepted_cnt=0,
+                not_started_cnt=0,
                 working_cnt=0,
                 not_done_cnt=0,
                 done_cnt=0,

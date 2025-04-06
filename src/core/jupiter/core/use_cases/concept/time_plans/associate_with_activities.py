@@ -1,5 +1,4 @@
 """Use case for creating time plan actitivities for already existin activities."""
-from typing import cast
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
@@ -46,6 +45,8 @@ class TimePlanAssociateWithActivitiesArgs(UseCaseArgsBase):
     ref_id: EntityId
     other_time_plan_ref_id: EntityId
     activity_ref_ids: list[EntityId]
+    kind: TimePlanActivityKind
+    feasability: TimePlanActivityFeasability
     override_existing_dates: bool
 
 
@@ -97,8 +98,8 @@ class TimePlanAssociateWithActivitiesUseCase(
                     existing_activity_name=activity.name,
                     existing_activity_target=activity.target,
                     existing_activity_target_ref_id=inbox_task.ref_id,
-                    existing_activity_kind=activity.kind,
-                    existing_activity_feasability=activity.feasability,
+                    existing_activity_kind=args.kind,
+                    existing_activity_feasability=args.feasability,
                 )
                 new_time_plan_activity = await generic_creator(
                     uow, progress_reporter, new_time_plan_activity
@@ -116,7 +117,7 @@ class TimePlanAssociateWithActivitiesUseCase(
 
                 if inbox_task.source == InboxTaskSource.BIG_PLAN:
                     big_plan = await uow.get_for(BigPlan).load_by_id(
-                        cast(EntityId, inbox_task.big_plan_ref_id)
+                        inbox_task.source_entity_ref_id_for_sure
                     )
 
                     try:
@@ -126,7 +127,7 @@ class TimePlanAssociateWithActivitiesUseCase(
                                 time_plan_ref_id=args.ref_id,
                                 big_plan_ref_id=big_plan.ref_id,
                                 kind=TimePlanActivityKind.MAKE_PROGRESS,
-                                feasability=TimePlanActivityFeasability.MUST_DO,
+                                feasability=args.feasability,
                             )
                         )
                         new_big_plan_time_plan_activity = await generic_creator(
@@ -157,8 +158,8 @@ class TimePlanAssociateWithActivitiesUseCase(
                     existing_activity_name=activity.name,
                     existing_activity_target=activity.target,
                     existing_activity_target_ref_id=big_plan.ref_id,
-                    existing_activity_kind=activity.kind,
-                    existing_activity_feasability=activity.feasability,
+                    existing_activity_kind=args.kind,
+                    existing_activity_feasability=args.feasability,
                 )
                 new_time_plan_activity = await generic_creator(
                     uow, progress_reporter, new_time_plan_activity

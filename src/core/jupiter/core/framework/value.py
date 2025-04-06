@@ -1,4 +1,5 @@
 """Framework level elements for value object."""
+
 import enum
 from dataclasses import dataclass
 from typing import Generic, TypeVar, cast, get_args
@@ -45,10 +46,24 @@ class AtomicValue(
         """Get the base type of this value."""
         return cast(type[_PrimitiveT_co], get_args(cls.__orig_bases__[0])[0])  # type: ignore[attr-defined]
 
+    def _validate(self) -> None:
+        """Validate this value."""
+
+    def __post_init__(self) -> None:
+        """Post init hook."""
+        self._validate()
+
 
 @dataclass(frozen=True)
 class CompositeValue(Value):
     """An composite value object in the domain."""
+
+    def _validate(self) -> None:
+        """Validate this value."""
+
+    def __post_init__(self) -> None:
+        """Post init hook."""
+        self._validate()
 
 
 @enum.unique

@@ -1,12 +1,11 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { BigPlanName } from './BigPlanName';
 import type { BigPlanStatus } from './BigPlanStatus';
 import type { EntityId } from './EntityId';
-
 /**
  * PersonFindArgs.
  */
@@ -19,6 +18,10 @@ export type BigPlanUpdateArgs = {
     status: {
         should_change: boolean;
         value?: BigPlanStatus;
+    };
+    project_ref_id: {
+        should_change: boolean;
+        value?: EntityId;
     };
     actionable_date: {
         should_change: boolean;

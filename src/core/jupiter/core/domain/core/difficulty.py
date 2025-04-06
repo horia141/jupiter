@@ -1,4 +1,5 @@
 """The difficulty of a particular task."""
+
 from functools import total_ordering
 
 from jupiter.core.framework.value import EnumValue, enum_value

@@ -4,9 +4,9 @@ set -ex
 
 # Prepare environment
 
-# Assume brew, python 3.10+, ruby 3.3.x+, JDK, poetry, node, gem, npm, npx, 
-# bundler, gh (the GitHub command line), cocoapods, Android Studio, XCode, and
-# Docker are already present.
+# Assume brew, python 3.13+, ruby 3.3.x+, JDK, gcloud cli, poetry, node, gem,
+# npm, npx, bundler, gh (the GitHub command line), cocoapods, Android Studio,
+# XCode, rust, cargo, and Docker are already present.
 # Will modify globals nonetheless.
 
 mkdir -p .build-cache
@@ -21,13 +21,16 @@ docker pull hadolint/hadolint:latest-debian
 bundle install
 
 poetry install --no-interaction --no-ansi
+(cd src/core && poetry install --no-interaction --no-ansi)
 (cd src/cli && poetry install --no-interaction --no-ansi)
 (cd src/webapi && poetry install --no-interaction --no-ansi)
-(cd src/core && poetry install --no-interaction --no-ansi)
-(cd tests && poetry install --no-interaction --no-ansi)
-npm install --ws --include-workspace-root
-(cd src/desktop && npm install --no-ansi)
-(cd src/mobile && npm install --no-ansi)
+(cd src/docs && poetry install --no-interaction --no-ansi)
+(cd itests && poetry install --no-interaction --no-ansi)
+
+npm install --no-save
+(cd src/desktop && npm install --no-save)
+(cd src/mobile && npm install --no-save)
 
 playwright install
+
 (cd gen/ts/webapi-client && npx tsc)

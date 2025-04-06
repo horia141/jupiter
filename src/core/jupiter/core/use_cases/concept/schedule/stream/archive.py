@@ -1,11 +1,12 @@
 """Use case for archiving a schedule stream."""
+
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.schedule.schedule_source import (
     ScheduleSource,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
@@ -54,6 +55,6 @@ class ScheduleStreamArchiveUseCase(
             if len(all_user_schedules) == 1:
                 raise InputValidationError("You cannot archive the last user schedule")
 
-        await generic_archiver(
+        await generic_crown_archiver(
             context.domain_context, uow, progress_reporter, ScheduleStream, args.ref_id
         )

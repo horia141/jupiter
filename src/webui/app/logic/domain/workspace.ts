@@ -8,14 +8,14 @@ import {
 
 export function isWorkspaceFeatureAvailable(
   workspace: Workspace,
-  feature: WorkspaceFeature
+  feature: WorkspaceFeature,
 ): boolean {
   return workspace.feature_flags[feature];
 }
 
 export function inferEntityTagsForEnabledFeatures(
   workspace: Workspace,
-  entityTags: Array<NamedEntityTag>
+  entityTags: Array<NamedEntityTag>,
 ): Array<NamedEntityTag> {
   // Keep in sync with python:core:infer_entity_tags_for_enabled_features
   const inferredEntityTags: Array<NamedEntityTag> = [];
@@ -136,7 +136,7 @@ export function inferEntityTagsForEnabledFeatures(
 
 export function inferSourcesForEnabledFeatures(
   workspace: Workspace,
-  sources: Array<InboxTaskSource>
+  sources: Array<InboxTaskSource>,
 ): Array<InboxTaskSource> {
   // Keep in sync with python:core:infer_sources_for_enabled_features
   const inferredSources: Array<InboxTaskSource> = [];
@@ -202,7 +202,7 @@ export function inferSourcesForEnabledFeatures(
 
 export function inferSyncTargetsForEnabledFeatures(
   workspace: Workspace,
-  syncTargets: Array<SyncTarget>
+  syncTargets: Array<SyncTarget>,
 ): Array<SyncTarget> {
   // Keep in sync with python:core:infer_sync_targets_for_enabled_features
   const inferredSyncTargets: Array<SyncTarget> = [];

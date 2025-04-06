@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -19,21 +20,21 @@ class CalendarEventsEntries:
     """Full entries for results.
 
     Attributes:
-        schedule_event_full_days_entries (List['ScheduleFullDaysEventEntry']):
-        schedule_event_in_day_entries (List['ScheduleInDayEventEntry']):
-        inbox_task_entries (List['InboxTaskEntry']):
-        person_entries (List['PersonEntry']):
-        vacation_entries (List['VacationEntry']):
+        schedule_event_full_days_entries (list['ScheduleFullDaysEventEntry']):
+        schedule_event_in_day_entries (list['ScheduleInDayEventEntry']):
+        inbox_task_entries (list['InboxTaskEntry']):
+        person_entries (list['PersonEntry']):
+        vacation_entries (list['VacationEntry']):
     """
 
-    schedule_event_full_days_entries: List["ScheduleFullDaysEventEntry"]
-    schedule_event_in_day_entries: List["ScheduleInDayEventEntry"]
-    inbox_task_entries: List["InboxTaskEntry"]
-    person_entries: List["PersonEntry"]
-    vacation_entries: List["VacationEntry"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    schedule_event_full_days_entries: list["ScheduleFullDaysEventEntry"]
+    schedule_event_in_day_entries: list["ScheduleInDayEventEntry"]
+    inbox_task_entries: list["InboxTaskEntry"]
+    person_entries: list["PersonEntry"]
+    vacation_entries: list["VacationEntry"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         schedule_event_full_days_entries = []
         for schedule_event_full_days_entries_item_data in self.schedule_event_full_days_entries:
             schedule_event_full_days_entries_item = schedule_event_full_days_entries_item_data.to_dict()
@@ -59,7 +60,7 @@ class CalendarEventsEntries:
             vacation_entries_item = vacation_entries_item_data.to_dict()
             vacation_entries.append(vacation_entries_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -74,14 +75,14 @@ class CalendarEventsEntries:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task_entry import InboxTaskEntry
         from ..models.person_entry import PersonEntry
         from ..models.schedule_full_days_event_entry import ScheduleFullDaysEventEntry
         from ..models.schedule_in_day_event_entry import ScheduleInDayEventEntry
         from ..models.vacation_entry import VacationEntry
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         schedule_event_full_days_entries = []
         _schedule_event_full_days_entries = d.pop("schedule_event_full_days_entries")
         for schedule_event_full_days_entries_item_data in _schedule_event_full_days_entries:
@@ -133,7 +134,7 @@ class CalendarEventsEntries:
         return calendar_events_entries
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

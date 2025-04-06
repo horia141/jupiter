@@ -1,4 +1,5 @@
 """Exceptions handling for the webapi module."""
+
 from fastapi.responses import JSONResponse
 from jupiter.core.domain.concept.auth.auth_token import (
     ExpiredAuthTokenError,
@@ -231,7 +232,8 @@ class TimePlanExistsForDatePeriodCombinationHandler(
         """Handle time plan exists for date period combination errors."""
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content="Time plan already exists for this date and period combination",
+            content="Time plan already exists for this date and period combination"
+            + str(exception),
         )
 
 

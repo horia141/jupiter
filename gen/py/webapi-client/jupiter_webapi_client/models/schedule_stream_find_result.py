@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -15,19 +16,19 @@ class ScheduleStreamFindResult:
     """The result.
 
     Attributes:
-        entries (List['ScheduleStreamFindResultEntry']):
+        entries (list['ScheduleStreamFindResultEntry']):
     """
 
-    entries: List["ScheduleStreamFindResultEntry"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    entries: list["ScheduleStreamFindResultEntry"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         entries = []
         for entries_item_data in self.entries:
             entries_item = entries_item_data.to_dict()
             entries.append(entries_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -38,10 +39,10 @@ class ScheduleStreamFindResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.schedule_stream_find_result_entry import ScheduleStreamFindResultEntry
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         entries = []
         _entries = d.pop("entries")
         for entries_item_data in _entries:
@@ -57,7 +58,7 @@ class ScheduleStreamFindResult:
         return schedule_stream_find_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

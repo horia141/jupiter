@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -31,7 +32,6 @@ class Chore:
         start_at_date (str): A date or possibly a datetime for the application.
         archived_time (Union[None, Unset, str]):
         end_at_date (Union[None, Unset, str]):
-        skip_rule (Union[None, Unset, str]):
     """
 
     ref_id: str
@@ -48,10 +48,9 @@ class Chore:
     start_at_date: str
     archived_time: Union[None, Unset, str] = UNSET
     end_at_date: Union[None, Unset, str] = UNSET
-    skip_rule: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         version = self.version
@@ -88,13 +87,7 @@ class Chore:
         else:
             end_at_date = self.end_at_date
 
-        skip_rule: Union[None, Unset, str]
-        if isinstance(self.skip_rule, Unset):
-            skip_rule = UNSET
-        else:
-            skip_rule = self.skip_rule
-
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -116,16 +109,14 @@ class Chore:
             field_dict["archived_time"] = archived_time
         if end_at_date is not UNSET:
             field_dict["end_at_date"] = end_at_date
-        if skip_rule is not UNSET:
-            field_dict["skip_rule"] = skip_rule
 
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -168,15 +159,6 @@ class Chore:
 
         end_at_date = _parse_end_at_date(d.pop("end_at_date", UNSET))
 
-        def _parse_skip_rule(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        skip_rule = _parse_skip_rule(d.pop("skip_rule", UNSET))
-
         chore = cls(
             ref_id=ref_id,
             version=version,
@@ -192,14 +174,13 @@ class Chore:
             start_at_date=start_at_date,
             archived_time=archived_time,
             end_at_date=end_at_date,
-            skip_rule=skip_rule,
         )
 
         chore.additional_properties = d
         return chore
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

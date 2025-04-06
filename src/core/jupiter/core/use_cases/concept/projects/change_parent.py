@@ -1,4 +1,7 @@
 """Change the parent project of the project."""
+
+from typing import cast
+
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.projects.service.check_cycles_service import (
     ProjectCheckCyclesService,
@@ -42,6 +45,12 @@ class ProjectChangeParentUseCase(
         project = await uow.get_for(Project).load_by_id(args.ref_id)
         if project.is_root:
             raise InputValidationError("Root projects cannot have a parent project.")
+
+        current_parent = await uow.get_for(Project).load_by_id(
+            cast(EntityId, project.parent_project_ref_id)  # Null on root projects
+        )
+        new_parent = await uow.get_for(Project).load_by_id(args.parent_project_ref_id)
+
         project = project.change_parent(
             ctx=context.domain_context,
             parent_project_ref_id=args.parent_project_ref_id,
@@ -49,6 +58,18 @@ class ProjectChangeParentUseCase(
 
         await uow.get_for(Project).save(project)
         await progress_reporter.mark_updated(project)
+
+        current_parent = current_parent.remove_child_project(
+            context.domain_context, project.ref_id
+        )
+        await uow.get_for(Project).save(current_parent)
+        await progress_reporter.mark_updated(current_parent)
+
+        new_parent = new_parent.add_child_project(
+            context.domain_context, project.ref_id
+        )
+        await uow.get_for(Project).save(new_parent)
+        await progress_reporter.mark_updated(new_parent)
 
         try:
             await ProjectCheckCyclesService().check_for_cycles(uow, project)

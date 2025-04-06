@@ -1,9 +1,10 @@
 """Remove a person."""
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
@@ -31,11 +32,23 @@ class PersonRemoveService:
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             person_collection.workspace.ref_id,
         )
-        all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        all_birthday_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            person_ref_id=[person.ref_id],
+            source=InboxTaskSource.PERSON_BIRTHDAY,
+            source_entity_ref_id=person.ref_id,
         )
+        all_catch_up_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=True,
+            source=InboxTaskSource.PERSON_CATCH_UP,
+            source_entity_ref_id=person.ref_id,
+        )
+        all_inbox_tasks = all_birthday_inbox_tasks + all_catch_up_inbox_tasks
 
         inbox_task_remove_service = InboxTaskRemoveService()
         for inbox_task in all_inbox_tasks:

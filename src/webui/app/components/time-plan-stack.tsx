@@ -1,5 +1,7 @@
 import type { TimePlan } from "@jupiter/webapi-client";
+
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { EntityStack } from "./infra/entity-stack";
 import { TimePlanCard } from "./time-plan-card";
 

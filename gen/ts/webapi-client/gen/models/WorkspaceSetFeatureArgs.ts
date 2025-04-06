@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { WorkspaceFeature } from './WorkspaceFeature';
-
 /**
  * Arguments for setting a feature in the workspace.
  */

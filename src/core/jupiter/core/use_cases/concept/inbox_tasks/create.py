@@ -30,6 +30,7 @@ from jupiter.core.domain.features import (
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -52,10 +53,12 @@ class InboxTaskCreateArgs(UseCaseArgsBase):
 
     name: InboxTaskName
     time_plan_ref_id: EntityId | None
+    time_plan_activity_kind: TimePlanActivityKind | None
+    time_plan_activity_feasability: TimePlanActivityFeasability | None
     project_ref_id: EntityId | None
     big_plan_ref_id: EntityId | None
-    eisen: Eisen | None
-    difficulty: Difficulty | None
+    eisen: Eisen
+    difficulty: Difficulty
     actionable_date: ADate | None
     due_date: ADate | None
 
@@ -130,7 +133,7 @@ class InboxTaskCreateUseCase(
             ctx=context.domain_context,
             inbox_task_collection_ref_id=inbox_task_collection.ref_id,
             name=args.name,
-            status=InboxTaskStatus.ACCEPTED,
+            status=InboxTaskStatus.NOT_STARTED,
             project_ref_id=project_ref_id,
             eisen=args.eisen,
             difficulty=args.difficulty,
@@ -146,12 +149,18 @@ class InboxTaskCreateUseCase(
 
         new_time_plan_activity = None
         if time_plan:
+            time_plan_activity_kind = args.time_plan_activity_kind
+            time_plan_activity_feasability = args.time_plan_activity_feasability
+            if not time_plan_activity_kind:
+                raise InputValidationError("An activity kind is required")
+            if not time_plan_activity_feasability:
+                raise InputValidationError("An activity feasability is required")
             new_time_plan_activity = TimePlanActivity.new_activity_for_inbox_task(
                 context.domain_context,
                 time_plan_ref_id=time_plan.ref_id,
                 inbox_task_ref_id=new_inbox_task.ref_id,
-                kind=TimePlanActivityKind.FINISH,
-                feasability=TimePlanActivityFeasability.MUST_DO,
+                kind=time_plan_activity_kind,
+                feasability=time_plan_activity_feasability,
             )
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity
@@ -164,8 +173,8 @@ class InboxTaskCreateUseCase(
                             context.domain_context,
                             time_plan_ref_id=time_plan.ref_id,
                             big_plan_ref_id=big_plan.ref_id,
-                            kind=TimePlanActivityKind.MAKE_PROGRESS,
-                            feasability=TimePlanActivityFeasability.MUST_DO,
+                            kind=time_plan_activity_kind,
+                            feasability=time_plan_activity_feasability,
                         )
                     )
                     new_big_plan_time_plan_activity = await generic_creator(

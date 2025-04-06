@@ -1,4 +1,5 @@
 """Use case for logging in as a particular user."""
+
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.concept.auth.password_plain import PasswordPlain

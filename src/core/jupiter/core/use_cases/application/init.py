@@ -1,4 +1,5 @@
 """UseCase for initialising the workspace."""
+
 from jupiter.core.domain.application.gamification.score_log import ScoreLog
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
@@ -29,6 +30,9 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
     SlackTaskCollection,
 )
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
+from jupiter.core.domain.concept.schedule.schedule_external_sync_log import (
+    ScheduleExternalSyncLog,
+)
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (
     ScheduleStreamColor,
@@ -137,23 +141,25 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 )
             )
 
+        for_app_review = False  # args.for_app_review
+
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            # if args.for_app_review:
-            #     new_user = User.new_app_store_review_user(
-            #         ctx=context.domain_context,
-            #         email_address=args.user_email_address,
-            #         name=args.user_name,
-            #         feature_flag_controls=user_feature_flags_controls,
-            #     )
-            # else:
-            new_user = User.new_standard_user(
-                ctx=context.domain_context,
-                email_address=args.user_email_address,
-                name=args.user_name,
-                timezone=args.user_timezone,
-                feature_flag_controls=user_feature_flags_controls,
-                feature_flags=user_feature_flags,
-            )
+            if for_app_review:
+                new_user = User.new_app_store_review_user(
+                    ctx=context.domain_context,
+                    email_address=args.user_email_address,
+                    name=args.user_name,
+                    feature_flag_controls=user_feature_flags_controls,
+                )
+            else:
+                new_user = User.new_standard_user(
+                    ctx=context.domain_context,
+                    email_address=args.user_email_address,
+                    name=args.user_name,
+                    timezone=args.user_timezone,
+                    feature_flag_controls=user_feature_flags_controls,
+                    feature_flags=user_feature_flags,
+                )
             new_user = await uow.get_for(User).create(new_user)
 
             new_auth, new_recovery_token = Auth.new_auth(
@@ -239,6 +245,16 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_schedule_domain = await uow.get_for(ScheduleDomain).create(
                 new_schedule_domain,
             )
+
+            new_schedule_external_sync_log = (
+                ScheduleExternalSyncLog.new_schedule_external_sync_log(
+                    ctx=context.domain_context,
+                    schedule_domain_ref_id=new_schedule_domain.ref_id,
+                )
+            )
+            new_schedule_external_sync_log = await uow.get_for(
+                ScheduleExternalSyncLog
+            ).create(new_schedule_external_sync_log)
 
             new_first_schedule_stream = ScheduleStream.new_schedule_stream_for_user(
                 ctx=context.domain_context,

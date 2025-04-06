@@ -1,6 +1,7 @@
 """Garbage collect a workspace."""
+
 from collections.abc import Iterable
-from typing import Final, cast
+from typing import Final
 
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gc.gc_log_entry import GCLogEntry
@@ -37,13 +38,12 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
 from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
 )
 from jupiter.core.domain.sync_target import SyncTarget
-from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
@@ -173,7 +173,7 @@ class GCService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         sources=[InboxTaskSource.SLACK_TASK],
-                        slack_task_ref_ids=[st.ref_id for st in slack_tasks],
+                        source_entity_ref_id=[st.ref_id for st in slack_tasks],
                     )
                 gc_log_entry = await self._archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
                     ctx,
@@ -197,7 +197,7 @@ class GCService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.EMAIL_TASK],
-                        email_task_ref_id=[et.ref_id for et in email_tasks],
+                        source_entity_ref_id=[et.ref_id for et in email_tasks],
                     )
                 gc_log_entry = await self._archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
                     ctx,
@@ -247,7 +247,7 @@ class GCService:
             ):
                 continue
             async with self._domain_storage_engine.get_unit_of_work() as uow:
-                await generic_archiver(
+                await generic_crown_archiver(
                     ctx, uow, progress_reporter, WorkingMem, working_mem.ref_id
                 )
             gc_log_entry = gc_log_entry.add_entity(ctx, working_mem)
@@ -298,15 +298,13 @@ class GCService:
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):
                 continue
-            slack_task = slack_tasks_by_ref_id[
-                cast(EntityId, inbox_task.slack_task_ref_id)
-            ]
+            slack_task = slack_tasks_by_ref_id[inbox_task.source_entity_ref_id_for_sure]
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 result = await slack_task_arhive_service.do_it(
                     ctx,
                     uow,
                     progress_reporter,
-                    slack_tasks_by_ref_id[cast(EntityId, inbox_task.slack_task_ref_id)],
+                    slack_tasks_by_ref_id[inbox_task.source_entity_ref_id_for_sure],
                 )
 
             gc_log_entry = gc_log_entry.add_entity(
@@ -335,9 +333,7 @@ class GCService:
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):
                 continue
-            email_task = email_tasks_by_ref_id[
-                cast(EntityId, inbox_task.email_task_ref_id)
-            ]
+            email_task = email_tasks_by_ref_id[inbox_task.source_entity_ref_id_for_sure]
             async with self._domain_storage_engine.get_unit_of_work() as uow:
                 result = await email_task_arhive_service.do_it(
                     ctx,

@@ -4,8 +4,10 @@ import type {
   VacationEntry,
 } from "@jupiter/webapi-client";
 import { TimeEventNamespace } from "@jupiter/webapi-client";
+
 import type { CombinedTimeEventFullDaysEntry } from "~/logic/domain/time-event";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
+
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 
@@ -14,7 +16,7 @@ interface TimeEventFullDaysBlockCardProps {
 }
 
 export function TimeEventFullDaysBlockCard(
-  props: TimeEventFullDaysBlockCardProps
+  props: TimeEventFullDaysBlockCardProps,
 ) {
   let name = null;
   switch (props.entry.time_event.namespace) {
@@ -46,7 +48,7 @@ export function TimeEventFullDaysBlockCard(
       showAsArchived={props.entry.time_event.archived}
     >
       <EntityLink
-        to={`/workspace/calendar/time-event/full-days-block/${props.entry.time_event.ref_id}`}
+        to={`/app/workspace/calendar/time-event/full-days-block/${props.entry.time_event.ref_id}`}
       >
         <EntityNameComponent name={name} />
       </EntityLink>

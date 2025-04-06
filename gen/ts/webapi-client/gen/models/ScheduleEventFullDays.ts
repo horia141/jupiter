@@ -1,13 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
 import type { ScheduleEventName } from './ScheduleEventName';
 import type { ScheduleExternalUid } from './ScheduleExternalUid';
 import type { ScheduleSource } from './ScheduleSource';
 import type { Timestamp } from './Timestamp';
-
 /**
  * A full day block in a schedule.
  */

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -24,31 +25,31 @@ class TimePlanLoadResult:
     Attributes:
         time_plan (TimePlan): A plan for a particular period of time.
         note (Note): A note in the notebook.
-        activities (List['TimePlanActivity']):
-        target_inbox_tasks (Union[List['InboxTask'], None, Unset]):
-        target_big_plans (Union[List['BigPlan'], None, Unset]):
+        activities (list['TimePlanActivity']):
+        target_inbox_tasks (Union[None, Unset, list['InboxTask']]):
+        target_big_plans (Union[None, Unset, list['BigPlan']]):
         activity_doneness (Union['TimePlanLoadResultActivityDonenessType0', None, Unset]):
-        completed_nontarget_inbox_tasks (Union[List['InboxTask'], None, Unset]):
-        completed_nottarget_big_plans (Union[List['BigPlan'], None, Unset]):
-        sub_period_time_plans (Union[List['TimePlan'], None, Unset]):
+        completed_nontarget_inbox_tasks (Union[None, Unset, list['InboxTask']]):
+        completed_nottarget_big_plans (Union[None, Unset, list['BigPlan']]):
+        sub_period_time_plans (Union[None, Unset, list['TimePlan']]):
         higher_time_plan (Union['TimePlan', None, Unset]):
         previous_time_plan (Union['TimePlan', None, Unset]):
     """
 
     time_plan: "TimePlan"
     note: "Note"
-    activities: List["TimePlanActivity"]
-    target_inbox_tasks: Union[List["InboxTask"], None, Unset] = UNSET
-    target_big_plans: Union[List["BigPlan"], None, Unset] = UNSET
+    activities: list["TimePlanActivity"]
+    target_inbox_tasks: Union[None, Unset, list["InboxTask"]] = UNSET
+    target_big_plans: Union[None, Unset, list["BigPlan"]] = UNSET
     activity_doneness: Union["TimePlanLoadResultActivityDonenessType0", None, Unset] = UNSET
-    completed_nontarget_inbox_tasks: Union[List["InboxTask"], None, Unset] = UNSET
-    completed_nottarget_big_plans: Union[List["BigPlan"], None, Unset] = UNSET
-    sub_period_time_plans: Union[List["TimePlan"], None, Unset] = UNSET
+    completed_nontarget_inbox_tasks: Union[None, Unset, list["InboxTask"]] = UNSET
+    completed_nottarget_big_plans: Union[None, Unset, list["BigPlan"]] = UNSET
+    sub_period_time_plans: Union[None, Unset, list["TimePlan"]] = UNSET
     higher_time_plan: Union["TimePlan", None, Unset] = UNSET
     previous_time_plan: Union["TimePlan", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.time_plan import TimePlan
         from ..models.time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
 
@@ -61,7 +62,7 @@ class TimePlanLoadResult:
             activities_item = activities_item_data.to_dict()
             activities.append(activities_item)
 
-        target_inbox_tasks: Union[List[Dict[str, Any]], None, Unset]
+        target_inbox_tasks: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.target_inbox_tasks, Unset):
             target_inbox_tasks = UNSET
         elif isinstance(self.target_inbox_tasks, list):
@@ -73,7 +74,7 @@ class TimePlanLoadResult:
         else:
             target_inbox_tasks = self.target_inbox_tasks
 
-        target_big_plans: Union[List[Dict[str, Any]], None, Unset]
+        target_big_plans: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.target_big_plans, Unset):
             target_big_plans = UNSET
         elif isinstance(self.target_big_plans, list):
@@ -85,7 +86,7 @@ class TimePlanLoadResult:
         else:
             target_big_plans = self.target_big_plans
 
-        activity_doneness: Union[Dict[str, Any], None, Unset]
+        activity_doneness: Union[None, Unset, dict[str, Any]]
         if isinstance(self.activity_doneness, Unset):
             activity_doneness = UNSET
         elif isinstance(self.activity_doneness, TimePlanLoadResultActivityDonenessType0):
@@ -93,7 +94,7 @@ class TimePlanLoadResult:
         else:
             activity_doneness = self.activity_doneness
 
-        completed_nontarget_inbox_tasks: Union[List[Dict[str, Any]], None, Unset]
+        completed_nontarget_inbox_tasks: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.completed_nontarget_inbox_tasks, Unset):
             completed_nontarget_inbox_tasks = UNSET
         elif isinstance(self.completed_nontarget_inbox_tasks, list):
@@ -105,7 +106,7 @@ class TimePlanLoadResult:
         else:
             completed_nontarget_inbox_tasks = self.completed_nontarget_inbox_tasks
 
-        completed_nottarget_big_plans: Union[List[Dict[str, Any]], None, Unset]
+        completed_nottarget_big_plans: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.completed_nottarget_big_plans, Unset):
             completed_nottarget_big_plans = UNSET
         elif isinstance(self.completed_nottarget_big_plans, list):
@@ -117,7 +118,7 @@ class TimePlanLoadResult:
         else:
             completed_nottarget_big_plans = self.completed_nottarget_big_plans
 
-        sub_period_time_plans: Union[List[Dict[str, Any]], None, Unset]
+        sub_period_time_plans: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.sub_period_time_plans, Unset):
             sub_period_time_plans = UNSET
         elif isinstance(self.sub_period_time_plans, list):
@@ -129,7 +130,7 @@ class TimePlanLoadResult:
         else:
             sub_period_time_plans = self.sub_period_time_plans
 
-        higher_time_plan: Union[Dict[str, Any], None, Unset]
+        higher_time_plan: Union[None, Unset, dict[str, Any]]
         if isinstance(self.higher_time_plan, Unset):
             higher_time_plan = UNSET
         elif isinstance(self.higher_time_plan, TimePlan):
@@ -137,7 +138,7 @@ class TimePlanLoadResult:
         else:
             higher_time_plan = self.higher_time_plan
 
-        previous_time_plan: Union[Dict[str, Any], None, Unset]
+        previous_time_plan: Union[None, Unset, dict[str, Any]]
         if isinstance(self.previous_time_plan, Unset):
             previous_time_plan = UNSET
         elif isinstance(self.previous_time_plan, TimePlan):
@@ -145,7 +146,7 @@ class TimePlanLoadResult:
         else:
             previous_time_plan = self.previous_time_plan
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -174,7 +175,7 @@ class TimePlanLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
@@ -182,7 +183,7 @@ class TimePlanLoadResult:
         from ..models.time_plan_activity import TimePlanActivity
         from ..models.time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         time_plan = TimePlan.from_dict(d.pop("time_plan"))
 
         note = Note.from_dict(d.pop("note"))
@@ -194,7 +195,7 @@ class TimePlanLoadResult:
 
             activities.append(activities_item)
 
-        def _parse_target_inbox_tasks(data: object) -> Union[List["InboxTask"], None, Unset]:
+        def _parse_target_inbox_tasks(data: object) -> Union[None, Unset, list["InboxTask"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -212,11 +213,11 @@ class TimePlanLoadResult:
                 return target_inbox_tasks_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["InboxTask"], None, Unset], data)
+            return cast(Union[None, Unset, list["InboxTask"]], data)
 
         target_inbox_tasks = _parse_target_inbox_tasks(d.pop("target_inbox_tasks", UNSET))
 
-        def _parse_target_big_plans(data: object) -> Union[List["BigPlan"], None, Unset]:
+        def _parse_target_big_plans(data: object) -> Union[None, Unset, list["BigPlan"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -234,7 +235,7 @@ class TimePlanLoadResult:
                 return target_big_plans_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["BigPlan"], None, Unset], data)
+            return cast(Union[None, Unset, list["BigPlan"]], data)
 
         target_big_plans = _parse_target_big_plans(d.pop("target_big_plans", UNSET))
 
@@ -255,7 +256,7 @@ class TimePlanLoadResult:
 
         activity_doneness = _parse_activity_doneness(d.pop("activity_doneness", UNSET))
 
-        def _parse_completed_nontarget_inbox_tasks(data: object) -> Union[List["InboxTask"], None, Unset]:
+        def _parse_completed_nontarget_inbox_tasks(data: object) -> Union[None, Unset, list["InboxTask"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -275,13 +276,13 @@ class TimePlanLoadResult:
                 return completed_nontarget_inbox_tasks_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["InboxTask"], None, Unset], data)
+            return cast(Union[None, Unset, list["InboxTask"]], data)
 
         completed_nontarget_inbox_tasks = _parse_completed_nontarget_inbox_tasks(
             d.pop("completed_nontarget_inbox_tasks", UNSET)
         )
 
-        def _parse_completed_nottarget_big_plans(data: object) -> Union[List["BigPlan"], None, Unset]:
+        def _parse_completed_nottarget_big_plans(data: object) -> Union[None, Unset, list["BigPlan"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -301,13 +302,13 @@ class TimePlanLoadResult:
                 return completed_nottarget_big_plans_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["BigPlan"], None, Unset], data)
+            return cast(Union[None, Unset, list["BigPlan"]], data)
 
         completed_nottarget_big_plans = _parse_completed_nottarget_big_plans(
             d.pop("completed_nottarget_big_plans", UNSET)
         )
 
-        def _parse_sub_period_time_plans(data: object) -> Union[List["TimePlan"], None, Unset]:
+        def _parse_sub_period_time_plans(data: object) -> Union[None, Unset, list["TimePlan"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -325,7 +326,7 @@ class TimePlanLoadResult:
                 return sub_period_time_plans_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["TimePlan"], None, Unset], data)
+            return cast(Union[None, Unset, list["TimePlan"]], data)
 
         sub_period_time_plans = _parse_sub_period_time_plans(d.pop("sub_period_time_plans", UNSET))
 
@@ -381,7 +382,7 @@ class TimePlanLoadResult:
         return time_plan_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

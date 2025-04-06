@@ -1,7 +1,12 @@
 """Update a person."""
+
 import typing
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.application.gen.service.gen_service import GenService
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -28,6 +33,7 @@ from jupiter.core.domain.core.time_events.time_event_full_days_block import (
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.update_action import UpdateAction
@@ -98,15 +104,19 @@ class PersonUpdateUseCase(
                 new_catch_up_period = person.catch_up_params.period
 
             if new_catch_up_period is not None:
-                new_catch_up_eisen = None
+                new_catch_up_eisen = Eisen.REGULAR
                 if args.catch_up_eisen.should_change:
-                    new_catch_up_eisen = args.catch_up_eisen.just_the_value
+                    new_catch_up_eisen = (
+                        args.catch_up_eisen.just_the_value or Eisen.REGULAR
+                    )
                 elif person.catch_up_params is not None:
                     new_catch_up_eisen = person.catch_up_params.eisen
 
-                new_catch_up_difficulty = None
+                new_catch_up_difficulty = Difficulty.EASY
                 if args.catch_up_difficulty.should_change:
-                    new_catch_up_difficulty = args.catch_up_difficulty.just_the_value
+                    new_catch_up_difficulty = (
+                        args.catch_up_difficulty.just_the_value or Difficulty.EASY
+                    )
                 elif person.catch_up_params is not None:
                     new_catch_up_difficulty = person.catch_up_params.difficulty
 
@@ -153,6 +163,7 @@ class PersonUpdateUseCase(
                         actionable_from_month=new_catch_up_actionable_from_month,
                         due_at_day=new_catch_up_due_at_day,
                         due_at_month=new_catch_up_due_at_month,
+                        skip_rule=None,
                     ),
                 )
             else:
@@ -166,17 +177,21 @@ class PersonUpdateUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        person_catch_up_tasks = await uow.get_for(InboxTask).find_all_generic(
+        person_catch_up_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            source=[InboxTaskSource.PERSON_CATCH_UP],
-            person_ref_id=[person.ref_id],
+            source=InboxTaskSource.PERSON_CATCH_UP,
+            source_entity_ref_id=person.ref_id,
         )
-        person_birthday_tasks = await uow.get_for(InboxTask).find_all_generic(
+        person_birthday_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            source=[InboxTaskSource.PERSON_BIRTHDAY],
-            person_ref_id=[person.ref_id],
+            source=InboxTaskSource.PERSON_BIRTHDAY,
+            source_entity_ref_id=person.ref_id,
         )
         birthday_time_event_blocks = await uow.get(
             TimeEventFullDaysBlockRepository
@@ -293,3 +308,23 @@ class PersonUpdateUseCase(
                 await uow.get(TimeEventFullDaysBlockRepository).save(
                     birthday_time_event_block
                 )
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: PersonUpdateArgs,
+        result: None,
+    ) -> None:
+        """Execute the command's post-mutation work."""
+        await GenService(self._domain_storage_engine).do_it(
+            context.domain_context,
+            progress_reporter=progress_reporter,
+            user=context.user,
+            workspace=context.workspace,
+            gen_even_if_not_modified=False,
+            today=self._time_provider.get_current_date(),
+            gen_targets=[SyncTarget.PERSONS],
+            period=[],
+            filter_person_ref_ids=[args.ref_id],
+        )

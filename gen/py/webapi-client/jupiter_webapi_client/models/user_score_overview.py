@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -53,9 +54,9 @@ class UserScoreOverview:
     best_lifetime_monthly_score: "UserScore"
     best_lifetime_quarterly_score: "UserScore"
     best_lifetime_yearly_score: "UserScore"
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         daily_score = self.daily_score.to_dict()
 
         weekly_score = self.weekly_score.to_dict()
@@ -92,7 +93,7 @@ class UserScoreOverview:
 
         best_lifetime_yearly_score = self.best_lifetime_yearly_score.to_dict()
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -120,10 +121,10 @@ class UserScoreOverview:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.user_score import UserScore
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         daily_score = UserScore.from_dict(d.pop("daily_score"))
 
         weekly_score = UserScore.from_dict(d.pop("weekly_score"))
@@ -185,7 +186,7 @@ class UserScoreOverview:
         return user_score_overview
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

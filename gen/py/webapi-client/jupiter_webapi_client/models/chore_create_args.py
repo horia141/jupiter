@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -18,10 +19,10 @@ class ChoreCreateArgs:
     Attributes:
         name (str): The chore name.
         period (RecurringTaskPeriod): A period for a particular task.
+        eisen (Eisen): The Eisenhower status of a particular task.
+        difficulty (Difficulty): The difficulty of a particular task.
         must_do (bool):
         project_ref_id (Union[None, Unset, str]):
-        eisen (Union[Eisen, None, Unset]):
-        difficulty (Union[Difficulty, None, Unset]):
         actionable_from_day (Union[None, Unset, int]):
         actionable_from_month (Union[None, Unset, int]):
         due_at_day (Union[None, Unset, int]):
@@ -33,10 +34,10 @@ class ChoreCreateArgs:
 
     name: str
     period: RecurringTaskPeriod
+    eisen: Eisen
+    difficulty: Difficulty
     must_do: bool
     project_ref_id: Union[None, Unset, str] = UNSET
-    eisen: Union[Eisen, None, Unset] = UNSET
-    difficulty: Union[Difficulty, None, Unset] = UNSET
     actionable_from_day: Union[None, Unset, int] = UNSET
     actionable_from_month: Union[None, Unset, int] = UNSET
     due_at_day: Union[None, Unset, int] = UNSET
@@ -44,12 +45,16 @@ class ChoreCreateArgs:
     skip_rule: Union[None, Unset, str] = UNSET
     start_at_date: Union[None, Unset, str] = UNSET
     end_at_date: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         name = self.name
 
         period = self.period.value
+
+        eisen = self.eisen.value
+
+        difficulty = self.difficulty.value
 
         must_do = self.must_do
 
@@ -58,22 +63,6 @@ class ChoreCreateArgs:
             project_ref_id = UNSET
         else:
             project_ref_id = self.project_ref_id
-
-        eisen: Union[None, Unset, str]
-        if isinstance(self.eisen, Unset):
-            eisen = UNSET
-        elif isinstance(self.eisen, Eisen):
-            eisen = self.eisen.value
-        else:
-            eisen = self.eisen
-
-        difficulty: Union[None, Unset, str]
-        if isinstance(self.difficulty, Unset):
-            difficulty = UNSET
-        elif isinstance(self.difficulty, Difficulty):
-            difficulty = self.difficulty.value
-        else:
-            difficulty = self.difficulty
 
         actionable_from_day: Union[None, Unset, int]
         if isinstance(self.actionable_from_day, Unset):
@@ -117,21 +106,19 @@ class ChoreCreateArgs:
         else:
             end_at_date = self.end_at_date
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "name": name,
                 "period": period,
+                "eisen": eisen,
+                "difficulty": difficulty,
                 "must_do": must_do,
             }
         )
         if project_ref_id is not UNSET:
             field_dict["project_ref_id"] = project_ref_id
-        if eisen is not UNSET:
-            field_dict["eisen"] = eisen
-        if difficulty is not UNSET:
-            field_dict["difficulty"] = difficulty
         if actionable_from_day is not UNSET:
             field_dict["actionable_from_day"] = actionable_from_day
         if actionable_from_month is not UNSET:
@@ -150,11 +137,15 @@ class ChoreCreateArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         name = d.pop("name")
 
         period = RecurringTaskPeriod(d.pop("period"))
+
+        eisen = Eisen(d.pop("eisen"))
+
+        difficulty = Difficulty(d.pop("difficulty"))
 
         must_do = d.pop("must_do")
 
@@ -166,40 +157,6 @@ class ChoreCreateArgs:
             return cast(Union[None, Unset, str], data)
 
         project_ref_id = _parse_project_ref_id(d.pop("project_ref_id", UNSET))
-
-        def _parse_eisen(data: object) -> Union[Eisen, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                eisen_type_0 = Eisen(data)
-
-                return eisen_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Eisen, None, Unset], data)
-
-        eisen = _parse_eisen(d.pop("eisen", UNSET))
-
-        def _parse_difficulty(data: object) -> Union[Difficulty, None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                difficulty_type_0 = Difficulty(data)
-
-                return difficulty_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[Difficulty, None, Unset], data)
-
-        difficulty = _parse_difficulty(d.pop("difficulty", UNSET))
 
         def _parse_actionable_from_day(data: object) -> Union[None, Unset, int]:
             if data is None:
@@ -267,10 +224,10 @@ class ChoreCreateArgs:
         chore_create_args = cls(
             name=name,
             period=period,
-            must_do=must_do,
-            project_ref_id=project_ref_id,
             eisen=eisen,
             difficulty=difficulty,
+            must_do=must_do,
+            project_ref_id=project_ref_id,
             actionable_from_day=actionable_from_day,
             actionable_from_month=actionable_from_month,
             due_at_day=due_at_day,
@@ -284,7 +241,7 @@ class ChoreCreateArgs:
         return chore_create_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

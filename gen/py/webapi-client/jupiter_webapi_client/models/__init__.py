@@ -8,7 +8,6 @@ from .app_shell import AppShell
 from .big_plan import BigPlan
 from .big_plan_archive_args import BigPlanArchiveArgs
 from .big_plan_archive_service_result import BigPlanArchiveServiceResult
-from .big_plan_change_project_args import BigPlanChangeProjectArgs
 from .big_plan_collection import BigPlanCollection
 from .big_plan_create_args import BigPlanCreateArgs
 from .big_plan_create_result import BigPlanCreateResult
@@ -24,6 +23,7 @@ from .big_plan_update_args import BigPlanUpdateArgs
 from .big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
 from .big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
 from .big_plan_update_args_name import BigPlanUpdateArgsName
+from .big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
 from .big_plan_update_args_status import BigPlanUpdateArgsStatus
 from .big_plan_update_result import BigPlanUpdateResult
 from .big_plan_work_summary import BigPlanWorkSummary
@@ -40,7 +40,6 @@ from .checklist_block_kind import ChecklistBlockKind
 from .checklist_item import ChecklistItem
 from .chore import Chore
 from .chore_archive_args import ChoreArchiveArgs
-from .chore_change_project_args import ChoreChangeProjectArgs
 from .chore_collection import ChoreCollection
 from .chore_create_args import ChoreCreateArgs
 from .chore_create_result import ChoreCreateResult
@@ -49,6 +48,7 @@ from .chore_find_result import ChoreFindResult
 from .chore_find_result_entry import ChoreFindResultEntry
 from .chore_load_args import ChoreLoadArgs
 from .chore_load_result import ChoreLoadResult
+from .chore_regen_args import ChoreRegenArgs
 from .chore_remove_args import ChoreRemoveArgs
 from .chore_summary import ChoreSummary
 from .chore_suspend_args import ChoreSuspendArgs
@@ -64,9 +64,11 @@ from .chore_update_args_end_at_date import ChoreUpdateArgsEndAtDate
 from .chore_update_args_must_do import ChoreUpdateArgsMustDo
 from .chore_update_args_name import ChoreUpdateArgsName
 from .chore_update_args_period import ChoreUpdateArgsPeriod
+from .chore_update_args_project_ref_id import ChoreUpdateArgsProjectRefId
 from .chore_update_args_skip_rule import ChoreUpdateArgsSkipRule
 from .chore_update_args_start_at_date import ChoreUpdateArgsStartAtDate
 from .clear_all_args import ClearAllArgs
+from .close_account_args import CloseAccountArgs
 from .code_block import CodeBlock
 from .code_block_kind import CodeBlockKind
 from .difficulty import Difficulty
@@ -134,7 +136,6 @@ from .get_summaries_args import GetSummariesArgs
 from .get_summaries_result import GetSummariesResult
 from .habit import Habit
 from .habit_archive_args import HabitArchiveArgs
-from .habit_change_project_args import HabitChangeProjectArgs
 from .habit_collection import HabitCollection
 from .habit_create_args import HabitCreateArgs
 from .habit_create_result import HabitCreateResult
@@ -143,7 +144,9 @@ from .habit_find_result import HabitFindResult
 from .habit_find_result_entry import HabitFindResultEntry
 from .habit_load_args import HabitLoadArgs
 from .habit_load_result import HabitLoadResult
+from .habit_regen_args import HabitRegenArgs
 from .habit_remove_args import HabitRemoveArgs
+from .habit_repeats_strategy import HabitRepeatsStrategy
 from .habit_summary import HabitSummary
 from .habit_suspend_args import HabitSuspendArgs
 from .habit_unsuspend_args import HabitUnsuspendArgs
@@ -156,15 +159,15 @@ from .habit_update_args_due_at_month import HabitUpdateArgsDueAtMonth
 from .habit_update_args_eisen import HabitUpdateArgsEisen
 from .habit_update_args_name import HabitUpdateArgsName
 from .habit_update_args_period import HabitUpdateArgsPeriod
+from .habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
 from .habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount
+from .habit_update_args_repeats_strategy import HabitUpdateArgsRepeatsStrategy
 from .habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 from .heading_block import HeadingBlock
 from .heading_block_kind import HeadingBlockKind
 from .hosting import Hosting
 from .inbox_task import InboxTask
 from .inbox_task_archive_args import InboxTaskArchiveArgs
-from .inbox_task_associate_with_big_plan_args import InboxTaskAssociateWithBigPlanArgs
-from .inbox_task_change_project_args import InboxTaskChangeProjectArgs
 from .inbox_task_collection import InboxTaskCollection
 from .inbox_task_create_args import InboxTaskCreateArgs
 from .inbox_task_create_result import InboxTaskCreateResult
@@ -180,10 +183,12 @@ from .inbox_task_status import InboxTaskStatus
 from .inbox_task_summary import InboxTaskSummary
 from .inbox_task_update_args import InboxTaskUpdateArgs
 from .inbox_task_update_args_actionable_date import InboxTaskUpdateArgsActionableDate
+from .inbox_task_update_args_big_plan_ref_id import InboxTaskUpdateArgsBigPlanRefId
 from .inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
 from .inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
 from .inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
 from .inbox_task_update_args_name import InboxTaskUpdateArgsName
+from .inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
 from .inbox_task_update_args_status import InboxTaskUpdateArgsStatus
 from .inbox_task_update_result import InboxTaskUpdateResult
 from .inbox_tasks_summary import InboxTasksSummary
@@ -202,6 +207,8 @@ from .journal_find_args import JournalFindArgs
 from .journal_find_result import JournalFindResult
 from .journal_find_result_entry import JournalFindResultEntry
 from .journal_load_args import JournalLoadArgs
+from .journal_load_for_date_and_period_args import JournalLoadForDateAndPeriodArgs
+from .journal_load_for_date_and_period_result import JournalLoadForDateAndPeriodResult
 from .journal_load_result import JournalLoadResult
 from .journal_load_settings_args import JournalLoadSettingsArgs
 from .journal_load_settings_result import JournalLoadSettingsResult
@@ -244,6 +251,7 @@ from .metric_load_args import MetricLoadArgs
 from .metric_load_result import MetricLoadResult
 from .metric_load_settings_args import MetricLoadSettingsArgs
 from .metric_load_settings_result import MetricLoadSettingsResult
+from .metric_regen_args import MetricRegenArgs
 from .metric_remove_args import MetricRemoveArgs
 from .metric_summary import MetricSummary
 from .metric_unit import MetricUnit
@@ -293,6 +301,7 @@ from .person_load_args import PersonLoadArgs
 from .person_load_result import PersonLoadResult
 from .person_load_settings_args import PersonLoadSettingsArgs
 from .person_load_settings_result import PersonLoadSettingsResult
+from .person_regen_args import PersonRegenArgs
 from .person_relationship import PersonRelationship
 from .person_remove_args import PersonRemoveArgs
 from .person_summary import PersonSummary
@@ -512,7 +521,10 @@ from .time_plan_domain import TimePlanDomain
 from .time_plan_find_args import TimePlanFindArgs
 from .time_plan_find_result import TimePlanFindResult
 from .time_plan_find_result_entry import TimePlanFindResultEntry
+from .time_plan_gen_for_time_plan_args import TimePlanGenForTimePlanArgs
 from .time_plan_load_args import TimePlanLoadArgs
+from .time_plan_load_for_date_and_period_args import TimePlanLoadForDateAndPeriodArgs
+from .time_plan_load_for_date_and_period_result import TimePlanLoadForDateAndPeriodResult
 from .time_plan_load_result import TimePlanLoadResult
 from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
 from .time_plan_remove_args import TimePlanRemoveArgs
@@ -589,7 +601,6 @@ __all__ = (
     "BigPlan",
     "BigPlanArchiveArgs",
     "BigPlanArchiveServiceResult",
-    "BigPlanChangeProjectArgs",
     "BigPlanCollection",
     "BigPlanCreateArgs",
     "BigPlanCreateResult",
@@ -605,6 +616,7 @@ __all__ = (
     "BigPlanUpdateArgsActionableDate",
     "BigPlanUpdateArgsDueDate",
     "BigPlanUpdateArgsName",
+    "BigPlanUpdateArgsProjectRefId",
     "BigPlanUpdateArgsStatus",
     "BigPlanUpdateResult",
     "BigPlanWorkSummary",
@@ -621,7 +633,6 @@ __all__ = (
     "ChecklistItem",
     "Chore",
     "ChoreArchiveArgs",
-    "ChoreChangeProjectArgs",
     "ChoreCollection",
     "ChoreCreateArgs",
     "ChoreCreateResult",
@@ -630,6 +641,7 @@ __all__ = (
     "ChoreFindResultEntry",
     "ChoreLoadArgs",
     "ChoreLoadResult",
+    "ChoreRegenArgs",
     "ChoreRemoveArgs",
     "ChoreSummary",
     "ChoreSuspendArgs",
@@ -645,9 +657,11 @@ __all__ = (
     "ChoreUpdateArgsMustDo",
     "ChoreUpdateArgsName",
     "ChoreUpdateArgsPeriod",
+    "ChoreUpdateArgsProjectRefId",
     "ChoreUpdateArgsSkipRule",
     "ChoreUpdateArgsStartAtDate",
     "ClearAllArgs",
+    "CloseAccountArgs",
     "CodeBlock",
     "CodeBlockKind",
     "Difficulty",
@@ -715,7 +729,6 @@ __all__ = (
     "GetSummariesResult",
     "Habit",
     "HabitArchiveArgs",
-    "HabitChangeProjectArgs",
     "HabitCollection",
     "HabitCreateArgs",
     "HabitCreateResult",
@@ -724,7 +737,9 @@ __all__ = (
     "HabitFindResultEntry",
     "HabitLoadArgs",
     "HabitLoadResult",
+    "HabitRegenArgs",
     "HabitRemoveArgs",
+    "HabitRepeatsStrategy",
     "HabitSummary",
     "HabitSuspendArgs",
     "HabitUnsuspendArgs",
@@ -737,15 +752,15 @@ __all__ = (
     "HabitUpdateArgsEisen",
     "HabitUpdateArgsName",
     "HabitUpdateArgsPeriod",
+    "HabitUpdateArgsProjectRefId",
     "HabitUpdateArgsRepeatsInPeriodCount",
+    "HabitUpdateArgsRepeatsStrategy",
     "HabitUpdateArgsSkipRule",
     "HeadingBlock",
     "HeadingBlockKind",
     "Hosting",
     "InboxTask",
     "InboxTaskArchiveArgs",
-    "InboxTaskAssociateWithBigPlanArgs",
-    "InboxTaskChangeProjectArgs",
     "InboxTaskCollection",
     "InboxTaskCreateArgs",
     "InboxTaskCreateResult",
@@ -762,10 +777,12 @@ __all__ = (
     "InboxTaskSummary",
     "InboxTaskUpdateArgs",
     "InboxTaskUpdateArgsActionableDate",
+    "InboxTaskUpdateArgsBigPlanRefId",
     "InboxTaskUpdateArgsDifficulty",
     "InboxTaskUpdateArgsDueDate",
     "InboxTaskUpdateArgsEisen",
     "InboxTaskUpdateArgsName",
+    "InboxTaskUpdateArgsProjectRefId",
     "InboxTaskUpdateArgsStatus",
     "InboxTaskUpdateResult",
     "InitArgs",
@@ -783,6 +800,8 @@ __all__ = (
     "JournalFindResult",
     "JournalFindResultEntry",
     "JournalLoadArgs",
+    "JournalLoadForDateAndPeriodArgs",
+    "JournalLoadForDateAndPeriodResult",
     "JournalLoadResult",
     "JournalLoadSettingsArgs",
     "JournalLoadSettingsResult",
@@ -823,6 +842,7 @@ __all__ = (
     "MetricLoadResult",
     "MetricLoadSettingsArgs",
     "MetricLoadSettingsResult",
+    "MetricRegenArgs",
     "MetricRemoveArgs",
     "MetricSummary",
     "MetricUnit",
@@ -872,6 +892,7 @@ __all__ = (
     "PersonLoadResult",
     "PersonLoadSettingsArgs",
     "PersonLoadSettingsResult",
+    "PersonRegenArgs",
     "PersonRelationship",
     "PersonRemoveArgs",
     "PersonSummary",
@@ -1091,7 +1112,10 @@ __all__ = (
     "TimePlanFindArgs",
     "TimePlanFindResult",
     "TimePlanFindResultEntry",
+    "TimePlanGenForTimePlanArgs",
     "TimePlanLoadArgs",
+    "TimePlanLoadForDateAndPeriodArgs",
+    "TimePlanLoadForDateAndPeriodResult",
     "TimePlanLoadResult",
     "TimePlanLoadResultActivityDonenessType0",
     "TimePlanRemoveArgs",

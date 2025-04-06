@@ -1,4 +1,5 @@
 """A Slack channel name."""
+
 import re
 from typing import Final
 

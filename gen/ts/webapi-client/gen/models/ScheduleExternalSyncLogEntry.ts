@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
@@ -9,7 +9,6 @@ import type { EntitySummary } from './EntitySummary';
 import type { EventSource } from './EventSource';
 import type { ScheduleExternalSyncLogPerStreamResult } from './ScheduleExternalSyncLogPerStreamResult';
 import type { Timestamp } from './Timestamp';
-
 /**
  * An entry in a sync log.
  */

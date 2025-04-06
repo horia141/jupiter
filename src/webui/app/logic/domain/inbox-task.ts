@@ -19,6 +19,7 @@ import {
   InboxTaskStatus,
 } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
+
 import { aDateToDate, compareADate } from "./adate";
 import { compareDifficulty } from "./difficulty";
 import { compareEisen } from "./eisen";
@@ -40,7 +41,7 @@ export interface InboxTaskParent {
 }
 
 export function inboxTaskFindEntryToParent(
-  entry: InboxTaskFindResultEntry
+  entry: InboxTaskFindResultEntry,
 ): InboxTaskParent {
   return {
     project: entry.project,
@@ -75,7 +76,7 @@ export function filterInboxTasksForDisplay(
   inboxTasks: Array<InboxTask>,
   entriesByRefId: { [key: string]: InboxTaskParent },
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState },
-  options: InboxTaskFilterOptions
+  options: InboxTaskFilterOptions,
 ): Array<InboxTask> {
   return inboxTasks.filter((inboxTask) => {
     if (!options.allowArchived && inboxTask.archived) {
@@ -98,7 +99,7 @@ export function filterInboxTasksForDisplay(
       if (inboxTask.ref_id in optimisticUpdates) {
         if (
           !options.allowStatuses.includes(
-            optimisticUpdates[inboxTask.ref_id].status
+            optimisticUpdates[inboxTask.ref_id].status,
           )
         ) {
           return false;
@@ -115,7 +116,7 @@ export function filterInboxTasksForDisplay(
       ) {
         if (
           !options.allowEisens.includes(
-            optimisticUpdates[inboxTask.ref_id].eisen as Eisen
+            optimisticUpdates[inboxTask.ref_id].eisen as Eisen,
           )
         ) {
           return false;
@@ -203,7 +204,7 @@ interface InboxTaskSortOptions {
 
 export function sortInboxTasksNaturally(
   inboxTasks: Array<InboxTask>,
-  options?: InboxTaskSortOptions
+  options?: InboxTaskSortOptions,
 ): Array<InboxTask> {
   let cleanOptions: InboxTaskSortOptions = {
     dueDateAscending: true,
@@ -228,7 +229,7 @@ export function sortInboxTasksNaturally(
       -1 *
         compareDifficulty(
           i1.difficulty ?? Difficulty.EASY,
-          i2.difficulty ?? Difficulty.EASY
+          i2.difficulty ?? Difficulty.EASY,
         )
     );
   });
@@ -236,7 +237,7 @@ export function sortInboxTasksNaturally(
 
 export function sortInboxTasksByEisenAndDifficulty(
   inboxTasks: Array<InboxTask>,
-  options?: InboxTaskSortOptions
+  options?: InboxTaskSortOptions,
 ): Array<InboxTask> {
   let cleanOptions: InboxTaskSortOptions = {
     dueDateAscending: true,
@@ -251,7 +252,7 @@ export function sortInboxTasksByEisenAndDifficulty(
       -1 *
         compareDifficulty(
           i1.difficulty ?? Difficulty.EASY,
-          i2.difficulty ?? Difficulty.EASY
+          i2.difficulty ?? Difficulty.EASY,
         ) ||
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date)
@@ -265,12 +266,12 @@ export function isInboxTaskCoreFieldEditable(source: InboxTaskSource): boolean {
 
 export function canInboxTaskBeInStatus(
   inboxTasks: InboxTask,
-  status: InboxTaskStatus
+  status: InboxTaskStatus,
 ): boolean {
   switch (inboxTasks.source) {
     case InboxTaskSource.USER:
     case InboxTaskSource.BIG_PLAN:
-      if (status === InboxTaskStatus.RECURRING) {
+      if (status === InboxTaskStatus.NOT_STARTED_GEN) {
         return false;
       }
 
@@ -284,7 +285,7 @@ export function canInboxTaskBeInStatus(
     case InboxTaskSource.PERSON_CATCH_UP:
     case InboxTaskSource.SLACK_TASK:
     case InboxTaskSource.EMAIL_TASK:
-      if (status === InboxTaskStatus.ACCEPTED) {
+      if (status === InboxTaskStatus.NOT_STARTED) {
         return false;
       }
 
@@ -293,13 +294,13 @@ export function canInboxTaskBeInStatus(
 }
 
 export function doesInboxTaskAllowChangingProject(
-  source: InboxTaskSource
+  source: InboxTaskSource,
 ): boolean {
   return source === InboxTaskSource.USER || source === InboxTaskSource.BIG_PLAN;
 }
 
 export function doesInboxTaskAllowChangingBigPlan(
-  source: InboxTaskSource
+  source: InboxTaskSource,
 ): boolean {
   return source === InboxTaskSource.USER || source === InboxTaskSource.BIG_PLAN;
 }

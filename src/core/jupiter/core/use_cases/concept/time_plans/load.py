@@ -1,4 +1,5 @@
 """Retrieve details about a time plan."""
+
 from collections import defaultdict
 from typing import cast
 
@@ -176,9 +177,9 @@ class TimePlanLoadUseCase(
             target_big_plans_by_ref_id = (
                 {bp.ref_id: bp for bp in target_big_plans} if target_big_plans else {}
             )
-            activities_by_big_plan_ref_id: defaultdict[
-                EntityId, list[EntityId]
-            ] = defaultdict(list)
+            activities_by_big_plan_ref_id: defaultdict[EntityId, list[EntityId]] = (
+                defaultdict(list)
+            )
 
             for activity in activities:
                 if activity.target != TimePlanActivityTarget.INBOX_TASK:
@@ -208,7 +209,7 @@ class TimePlanLoadUseCase(
 
                 if inbox_task.source == InboxTaskSource.BIG_PLAN:
                     activities_by_big_plan_ref_id[
-                        cast(EntityId, inbox_task.big_plan_ref_id)
+                        inbox_task.source_entity_ref_id_for_sure
                     ].append(activity.ref_id)
 
             for activity in activities:

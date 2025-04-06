@@ -1,17 +1,14 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { ChangePasswordArgs } from '../models/ChangePasswordArgs';
 import type { ResetPasswordArgs } from '../models/ResetPasswordArgs';
 import type { ResetPasswordResult } from '../models/ResetPasswordResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class AuthService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for changing a password.
      * Use case for changing a password.
@@ -34,7 +31,6 @@ export class AuthService {
             },
         });
     }
-
     /**
      * Use case for reseting a password.
      * Use case for reseting a password.
@@ -57,5 +53,4 @@ export class AuthService {
             },
         });
     }
-
 }

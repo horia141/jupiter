@@ -1,4 +1,5 @@
 """Use case for updating a schedule stream."""
+
 from jupiter.core.domain.concept.schedule.schedule_stream import (
     ScheduleStream,
 )

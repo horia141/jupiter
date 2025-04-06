@@ -1,4 +1,5 @@
 """Command for loading the time plans."""
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     big_plan_status_to_rich_text,
@@ -17,7 +18,6 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.use_cases.concept.time_plans.load import (
     TimePlanLoadResult,
     TimePlanLoadUseCase,
@@ -112,7 +112,7 @@ class TimePlanLoad(LoggedInReadonlyCommand[TimePlanLoadUseCase, TimePlanLoadResu
                     it.eisen,
                     it.status,
                     it.due_date or ADate.from_str("2100-01-01"),
-                    it.difficulty or Difficulty.EASY,
+                    it.difficulty,
                 ),
             )
 
@@ -149,9 +149,11 @@ class TimePlanLoad(LoggedInReadonlyCommand[TimePlanLoadUseCase, TimePlanLoadResu
                 key=lambda bpe: (
                     bpe.archived,
                     bpe.status,
-                    bpe.actionable_date
-                    if bpe.actionable_date
-                    else ADate.from_str("2100-01-01"),
+                    (
+                        bpe.actionable_date
+                        if bpe.actionable_date
+                        else ADate.from_str("2100-01-01")
+                    ),
                 ),
             )
 

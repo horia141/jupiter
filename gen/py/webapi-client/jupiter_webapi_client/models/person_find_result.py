@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,14 +18,14 @@ class PersonFindResult:
 
     Attributes:
         catch_up_project (Project): The project.
-        entries (List['PersonFindResultEntry']):
+        entries (list['PersonFindResultEntry']):
     """
 
     catch_up_project: "Project"
-    entries: List["PersonFindResultEntry"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    entries: list["PersonFindResultEntry"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         catch_up_project = self.catch_up_project.to_dict()
 
         entries = []
@@ -32,7 +33,7 @@ class PersonFindResult:
             entries_item = entries_item_data.to_dict()
             entries.append(entries_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -44,11 +45,11 @@ class PersonFindResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.person_find_result_entry import PersonFindResultEntry
         from ..models.project import Project
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         catch_up_project = Project.from_dict(d.pop("catch_up_project"))
 
         entries = []
@@ -67,7 +68,7 @@ class PersonFindResult:
         return person_find_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -30,16 +31,16 @@ class TimeEventFullDaysBlockLoadResult:
     schedule_event: Union["ScheduleEventFullDays", None, Unset] = UNSET
     person: Union["Person", None, Unset] = UNSET
     vacation: Union["Vacation", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.person import Person
         from ..models.schedule_event_full_days import ScheduleEventFullDays
         from ..models.vacation import Vacation
 
         full_days_block = self.full_days_block.to_dict()
 
-        schedule_event: Union[Dict[str, Any], None, Unset]
+        schedule_event: Union[None, Unset, dict[str, Any]]
         if isinstance(self.schedule_event, Unset):
             schedule_event = UNSET
         elif isinstance(self.schedule_event, ScheduleEventFullDays):
@@ -47,7 +48,7 @@ class TimeEventFullDaysBlockLoadResult:
         else:
             schedule_event = self.schedule_event
 
-        person: Union[Dict[str, Any], None, Unset]
+        person: Union[None, Unset, dict[str, Any]]
         if isinstance(self.person, Unset):
             person = UNSET
         elif isinstance(self.person, Person):
@@ -55,7 +56,7 @@ class TimeEventFullDaysBlockLoadResult:
         else:
             person = self.person
 
-        vacation: Union[Dict[str, Any], None, Unset]
+        vacation: Union[None, Unset, dict[str, Any]]
         if isinstance(self.vacation, Unset):
             vacation = UNSET
         elif isinstance(self.vacation, Vacation):
@@ -63,7 +64,7 @@ class TimeEventFullDaysBlockLoadResult:
         else:
             vacation = self.vacation
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -80,13 +81,13 @@ class TimeEventFullDaysBlockLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.person import Person
         from ..models.schedule_event_full_days import ScheduleEventFullDays
         from ..models.time_event_full_days_block import TimeEventFullDaysBlock
         from ..models.vacation import Vacation
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         full_days_block = TimeEventFullDaysBlock.from_dict(d.pop("full_days_block"))
 
         def _parse_schedule_event(data: object) -> Union["ScheduleEventFullDays", None, Unset]:
@@ -151,7 +152,7 @@ class TimeEventFullDaysBlockLoadResult:
         return time_event_full_days_block_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

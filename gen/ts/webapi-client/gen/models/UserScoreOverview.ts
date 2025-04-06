@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { UserScore } from './UserScore';
-
 /**
  * An overview of the scores for a user.
  */

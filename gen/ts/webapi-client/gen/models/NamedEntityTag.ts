@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 /**
  * A tag for all known entities.
  */
@@ -14,6 +14,7 @@ export enum NamedEntityTag {
     SCHEDULE_STREAM = 'ScheduleStream',
     SCHEDULE_EVENT_IN_DAY = 'ScheduleEventInDay',
     SCHEDULE_EVENT_FULL_DAYS = 'ScheduleEventFullDays',
+    SCHEDULE_EXTERNAL_SYNC_LOG = 'ScheduleExternalSyncLog',
     HABIT = 'Habit',
     CHORE = 'Chore',
     BIG_PLAN = 'BigPlan',

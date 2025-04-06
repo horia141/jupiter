@@ -38,12 +38,11 @@ class BigPlan(LeafEntity):
     status: BigPlanStatus
     actionable_date: ADate | None
     due_date: ADate | None
-    accepted_time: Timestamp | None
     working_time: Timestamp | None
     completed_time: Timestamp | None
 
     inbox_tasks = OwnsMany(
-        InboxTask, source=InboxTaskSource.BIG_PLAN, big_plan_ref_id=IsRefId()
+        InboxTask, source=InboxTaskSource.BIG_PLAN, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.BIG_PLAN, source_entity_ref_id=IsRefId()
@@ -62,7 +61,6 @@ class BigPlan(LeafEntity):
     ) -> "BigPlan":
         """Create a big plan."""
         BigPlan._check_actionable_and_due_dates(actionable_date, due_date)
-        accepted_time = ctx.action_timestamp if status.is_accepted_or_more else None
         working_time = ctx.action_timestamp if status.is_working_or_more else None
         completed_time = ctx.action_timestamp if status.is_completed else None
 
@@ -74,23 +72,8 @@ class BigPlan(LeafEntity):
             status=status,
             actionable_date=actionable_date,
             due_date=due_date,
-            accepted_time=accepted_time,
             working_time=working_time,
             completed_time=completed_time,
-        )
-
-    @update_entity_action
-    def change_project(
-        self,
-        ctx: DomainContext,
-        project_ref_id: EntityId,
-    ) -> "BigPlan":
-        """Change the project for the inbox task."""
-        if self.project_ref_id == project_ref_id:
-            return self
-        return self._new_version(
-            ctx,
-            project_ref_id=project_ref_id,
         )
 
     @update_entity_action
@@ -99,6 +82,7 @@ class BigPlan(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[BigPlanName],
         status: UpdateAction[BigPlanStatus],
+        project_ref_id: UpdateAction[EntityId],
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
     ) -> "BigPlan":
@@ -109,21 +93,9 @@ class BigPlan(LeafEntity):
         )
         new_name = name.or_else(self.name)
 
-        new_accepted_time = self.accepted_time
         new_working_time = self.working_time
         new_completed_time = self.completed_time
         if status.should_change:
-            if (
-                not self.status.is_accepted_or_more
-                and status.just_the_value.is_accepted_or_more
-            ):
-                new_accepted_time = ctx.action_timestamp
-            elif (
-                self.status.is_accepted_or_more
-                and not status.just_the_value.is_accepted_or_more
-            ):
-                new_accepted_time = None
-
             if (
                 not self.status.is_working_or_more
                 and status.just_the_value.is_working_or_more
@@ -150,7 +122,7 @@ class BigPlan(LeafEntity):
             ctx,
             name=new_name,
             status=new_status,
-            accepted_time=new_accepted_time,
+            project_ref_id=project_ref_id.or_else(self.project_ref_id),
             working_time=new_working_time,
             completed_time=new_completed_time,
             actionable_date=new_actionable_date,

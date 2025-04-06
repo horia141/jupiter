@@ -1,17 +1,20 @@
 import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 
-export function periodName(status: RecurringTaskPeriod): string {
+export function periodName(
+  status: RecurringTaskPeriod,
+  isBigScreen: boolean = true,
+): string {
   switch (status) {
     case RecurringTaskPeriod.DAILY:
-      return "Daily";
+      return isBigScreen ? "Daily" : "Day";
     case RecurringTaskPeriod.WEEKLY:
-      return "Weekly";
+      return isBigScreen ? "Weekly" : "Wk";
     case RecurringTaskPeriod.MONTHLY:
-      return "Monthly";
+      return isBigScreen ? "Monthly" : "Mnth";
     case RecurringTaskPeriod.QUARTERLY:
-      return "Quarterly";
+      return isBigScreen ? "Quarterly" : "Qrt";
     case RecurringTaskPeriod.YEARLY:
-      return "Yearly";
+      return isBigScreen ? "Year" : "Yr";
   }
 }
 
@@ -24,7 +27,7 @@ const PERIOD_MAP = {
 };
 
 export function oneLessThanPeriod(
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): RecurringTaskPeriod {
   switch (period) {
     case RecurringTaskPeriod.DAILY:
@@ -41,7 +44,7 @@ export function oneLessThanPeriod(
 }
 
 export function oneMoreThanPeriod(
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): RecurringTaskPeriod {
   switch (period) {
     case RecurringTaskPeriod.DAILY:
@@ -59,7 +62,7 @@ export function oneMoreThanPeriod(
 
 export function comparePeriods(
   period1: RecurringTaskPeriod,
-  period2: RecurringTaskPeriod
+  period2: RecurringTaskPeriod,
 ): number {
   return PERIOD_MAP[period1] - PERIOD_MAP[period2];
 }

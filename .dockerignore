@@ -1,5 +1,14 @@
 docs
+node_modules/
+secrets
 .github
+.build-cache
+.cache/
+src/webui/build/
+src/webui/public/build/
+.env
+gen/ts/webapi-client/dist/
+
 
 .build-cache/
 # node_modules/

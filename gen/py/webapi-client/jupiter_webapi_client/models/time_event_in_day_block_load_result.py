@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,15 +28,15 @@ class TimeEventInDayBlockLoadResult:
     in_day_block: "TimeEventInDayBlock"
     schedule_event: Union["ScheduleEventInDay", None, Unset] = UNSET
     inbox_task: Union["InboxTask", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.inbox_task import InboxTask
         from ..models.schedule_event_in_day import ScheduleEventInDay
 
         in_day_block = self.in_day_block.to_dict()
 
-        schedule_event: Union[Dict[str, Any], None, Unset]
+        schedule_event: Union[None, Unset, dict[str, Any]]
         if isinstance(self.schedule_event, Unset):
             schedule_event = UNSET
         elif isinstance(self.schedule_event, ScheduleEventInDay):
@@ -43,7 +44,7 @@ class TimeEventInDayBlockLoadResult:
         else:
             schedule_event = self.schedule_event
 
-        inbox_task: Union[Dict[str, Any], None, Unset]
+        inbox_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.inbox_task, Unset):
             inbox_task = UNSET
         elif isinstance(self.inbox_task, InboxTask):
@@ -51,7 +52,7 @@ class TimeEventInDayBlockLoadResult:
         else:
             inbox_task = self.inbox_task
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -66,12 +67,12 @@ class TimeEventInDayBlockLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task import InboxTask
         from ..models.schedule_event_in_day import ScheduleEventInDay
         from ..models.time_event_in_day_block import TimeEventInDayBlock
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         in_day_block = TimeEventInDayBlock.from_dict(d.pop("in_day_block"))
 
         def _parse_schedule_event(data: object) -> Union["ScheduleEventInDay", None, Unset]:
@@ -118,7 +119,7 @@ class TimeEventInDayBlockLoadResult:
         return time_event_in_day_block_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

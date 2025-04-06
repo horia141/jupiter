@@ -90,8 +90,6 @@ jq --arg desktop_macos "$DESKTOP_MACOS" \
           .["google-play-store"] = "not-available" 
      end' scripts/release/release-manifest.template.json > .build-cache/release/${RELEASE_VERSION}/release-manifest.json
 
-exit 1
-
 gh release create ${RELEASE_TAG} --draft --verify-tag --title "v${RELEASE_VERSION}" --notes-file "${RELEASE_NOTES_PATH}"
 
 gh release upload ${RELEASE_TAG} --clobber .build-cache/release/${RELEASE_VERSION}/release-manifest.json
@@ -101,7 +99,7 @@ if [ ! -f .build-cache/cloc/${RELEASE_VERSION} ]; then
     exit 1
 fi
 
-gh release upload ${RELEASE_TAG} --clobber .build-cache/cloc/${RELEASE_VERSION}
+gh release upload ${RELEASE_TAG} --clobber .build-cache/cloc/${RELEASE_VERSION}/cloc.txt
 
 if [ "${DESKTOP_MACOS}" = true ]; then
     # if the releases don't exist
@@ -129,7 +127,12 @@ if [ "${MOBILE_ANDROID}" = true ]; then
         exit 1
     fi
 
-    gh release upload ${RELEASE_TAG} --clobber .build-cache/mobile/android/v${RELEASE_VERSION}/build/Thrive-${RELEASE_VERSION}.apk
+    gh release upload ${RELEASE_TAG} --clobber .build-cache/mobile/android/v${RELEASE_VERSION}/build/app-${RELEASE_VERSION}.aab
 fi
+
+gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/docker-compose.yaml
+gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/nginx.conf
+gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/webui.conf
+gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/webui.nodomain.conf
 
 gh release edit ${RELEASE_TAG} --draft=false

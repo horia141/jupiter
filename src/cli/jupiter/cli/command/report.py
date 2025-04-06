@@ -153,15 +153,15 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                 period_table.add_column("Id")
                 period_table.add_column("Name", width=64, no_wrap=True)
                 period_table.add_column("Streak")
-                habit_created_text = inbox_task_status_to_rich_text(
-                    InboxTaskStatus.NOT_STARTED,
-                ).append(Text(" Created"))
+                habit_created_text = Text("🧭 Created")
                 period_table.add_column(habit_created_text, width=12, justify="right")
 
-                habit_accepted_text = inbox_task_status_to_rich_text(
-                    InboxTaskStatus.ACCEPTED,
-                ).append(Text(" Accepted"))
-                period_table.add_column(habit_accepted_text, width=12, justify="right")
+                habit_not_started_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.NOT_STARTED,
+                ).append(Text(" Not Started"))
+                period_table.add_column(
+                    habit_not_started_text, width=12, justify="right"
+                )
 
                 habit_working_text = inbox_task_status_to_rich_text(
                     InboxTaskStatus.IN_PROGRESS,
@@ -197,9 +197,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                     created_cnt_text = Text(f"{habit_item.summary.created_cnt}")
                     if habit_item.summary.created_cnt == 0:
                         created_cnt_text.stylize("dim")
-                    accepted_cnt_text = Text(f"{habit_item.summary.accepted_cnt}")
-                    if habit_item.summary.accepted_cnt == 0:
-                        accepted_cnt_text.stylize("dim")
+                    not_started_cnt_text = Text(f"{habit_item.summary.not_started_cnt}")
+                    if habit_item.summary.not_started_cnt == 0:
+                        not_started_cnt_text.stylize("dim")
                     working_cnt_text = Text(f"{habit_item.summary.working_cnt}")
                     if habit_item.summary.working_cnt == 0:
                         working_cnt_text.stylize("dim")
@@ -219,7 +219,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                         habit_name_text,
                         habit_streak_text,
                         created_cnt_text,
-                        accepted_cnt_text,
+                        not_started_cnt_text,
                         working_cnt_text,
                         not_done_cnt_text,
                         done_cnt_text,
@@ -245,15 +245,15 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
 
                 period_table.add_column("Id")
                 period_table.add_column("Name", width=64, no_wrap=True)
-                chore_created_text = inbox_task_status_to_rich_text(
-                    InboxTaskStatus.NOT_STARTED,
-                ).append(Text(" Created"))
+                chore_created_text = Text("🧭 Created")
                 period_table.add_column(chore_created_text, width=12, justify="right")
 
-                chore_accepted_text = inbox_task_status_to_rich_text(
-                    InboxTaskStatus.ACCEPTED,
-                ).append(Text(" Accepted"))
-                period_table.add_column(chore_accepted_text, width=12, justify="right")
+                chore_not_started_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.NOT_STARTED,
+                ).append(Text(" Not Started"))
+                period_table.add_column(
+                    chore_not_started_text, width=12, justify="right"
+                )
 
                 chore_working_text = inbox_task_status_to_rich_text(
                     InboxTaskStatus.IN_PROGRESS,
@@ -286,9 +286,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                     created_cnt_text = Text(f"{chore_item.summary.created_cnt}")
                     if chore_item.summary.created_cnt == 0:
                         created_cnt_text.stylize("dim")
-                    accepted_cnt_text = Text(f"{chore_item.summary.accepted_cnt}")
-                    if chore_item.summary.accepted_cnt == 0:
-                        accepted_cnt_text.stylize("dim")
+                    not_started_cnt_text = Text(f"{chore_item.summary.not_started_cnt}")
+                    if chore_item.summary.not_started_cnt == 0:
+                        not_started_cnt_text.stylize("dim")
                     working_cnt_text = Text(f"{chore_item.summary.working_cnt}")
                     if chore_item.summary.working_cnt == 0:
                         working_cnt_text.stylize("dim")
@@ -307,7 +307,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                         chore_id_text,
                         chore_name_text,
                         created_cnt_text,
-                        accepted_cnt_text,
+                        not_started_cnt_text,
                         working_cnt_text,
                         not_done_cnt_text,
                         done_cnt_text,
@@ -327,15 +327,15 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
 
             global_table.add_column("Id")
             global_table.add_column("Name", width=64, no_wrap=True)
-            big_plan_created_text = inbox_task_status_to_rich_text(
-                InboxTaskStatus.NOT_STARTED,
-            ).append(Text(" Created"))
+            big_plan_created_text = Text("🧭 Created")
             global_table.add_column(big_plan_created_text, width=12, justify="right")
 
-            big_plan_accepted_text = inbox_task_status_to_rich_text(
-                InboxTaskStatus.ACCEPTED,
-            ).append(Text(" Accepted"))
-            global_table.add_column(big_plan_accepted_text, width=12, justify="right")
+            big_plan_not_started_text = inbox_task_status_to_rich_text(
+                InboxTaskStatus.NOT_STARTED,
+            ).append(Text(" Not Started"))
+            global_table.add_column(
+                big_plan_not_started_text, width=12, justify="right"
+            )
 
             big_plan_working_text = inbox_task_status_to_rich_text(
                 InboxTaskStatus.IN_PROGRESS,
@@ -355,9 +355,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
             sorted_big_plans = sorted(
                 result.period_result.per_big_plan_breakdown,
                 key=lambda bpe: (
-                    bpe.actionable_date
-                    if bpe.actionable_date
-                    else ADate.from_str("2100-01-01"),
+                    (
+                        bpe.actionable_date
+                        if bpe.actionable_date
+                        else ADate.from_str("2100-01-01")
+                    ),
                 ),
             )
 
@@ -372,9 +374,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                 created_cnt_text = Text(f"{big_plan_item.summary.created_cnt}")
                 if big_plan_item.summary.created_cnt == 0:
                     created_cnt_text.stylize("dim")
-                accepted_cnt_text = Text(f"{big_plan_item.summary.accepted_cnt}")
-                if big_plan_item.summary.accepted_cnt == 0:
-                    accepted_cnt_text.stylize("dim")
+                not_started_cnt_text = Text(f"{big_plan_item.summary.not_started_cnt}")
+                if big_plan_item.summary.not_started_cnt == 0:
+                    not_started_cnt_text.stylize("dim")
                 working_cnt_text = Text(f"{big_plan_item.summary.working_cnt}")
                 if big_plan_item.summary.working_cnt == 0:
                     working_cnt_text.stylize("dim")
@@ -393,7 +395,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                     big_plan_id_text,
                     big_plan_name_text,
                     created_cnt_text,
-                    accepted_cnt_text,
+                    not_started_cnt_text,
                     working_cnt_text,
                     not_done_cnt_text,
                     done_cnt_text,
@@ -433,19 +435,19 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
             )
         inbox_tasks_table.add_row(*created_renderables)
 
-        accepted_renderables = [
-            inbox_task_status_to_rich_text(InboxTaskStatus.ACCEPTED).append(
-                Text(" Accepted"),
+        not_started_renderables = [
+            inbox_task_status_to_rich_text(InboxTaskStatus.NOT_STARTED).append(
+                Text(" Not Started"),
             ),
-            Text(f"{summary.accepted.total_cnt}"),
+            Text(f"{summary.not_started.total_cnt}"),
         ]
         for source in sources_to_present:
-            accepted_renderables.append(
+            not_started_renderables.append(
                 Text(
-                    f"{next((i.count for i in summary.accepted.per_source_cnt if i.source == source), 0)}",
+                    f"{next((i.count for i in summary.not_started.per_source_cnt if i.source == source), 0)}",
                 ),
             )
-        inbox_tasks_table.add_row(*accepted_renderables)
+        inbox_tasks_table.add_row(*not_started_renderables)
 
         working_renderables = [
             inbox_task_status_to_rich_text(InboxTaskStatus.IN_PROGRESS).append(
@@ -494,15 +496,15 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
         big_plan_text = Text("🌍 Big Plans:")
         big_plan_tree = Tree(big_plan_text)
 
-        created_text = inbox_task_status_to_rich_text(
-            InboxTaskStatus.NOT_STARTED,
-        ).append(Text(f" Created: {summary.created_cnt}"))
+        created_text = Text(f"🧭 Created: {summary.created_cnt}")
         big_plan_tree.add(created_text)
 
-        accepted_text = inbox_task_status_to_rich_text(InboxTaskStatus.ACCEPTED).append(
-            Text(f" Accepted: {summary.accepted_cnt}"),
+        not_started_text = inbox_task_status_to_rich_text(
+            InboxTaskStatus.NOT_STARTED
+        ).append(
+            Text(f" Not Started: {summary.not_started_cnt}"),
         )
-        big_plan_tree.add(accepted_text)
+        big_plan_tree.add(not_started_text)
 
         working_text = inbox_task_status_to_rich_text(
             InboxTaskStatus.IN_PROGRESS,
@@ -516,9 +518,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
 
         sorted_not_done_big_plans = sorted(
             summary.not_done_big_plans,
-            key=lambda bp: bp.actionable_date
-            if bp.actionable_date
-            else ADate.from_str("2100-01-01"),
+            key=lambda bp: (
+                bp.actionable_date
+                if bp.actionable_date
+                else ADate.from_str("2100-01-01")
+            ),
         )
 
         for big_plan in sorted_not_done_big_plans:
@@ -533,9 +537,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
 
         sorted_done_big_plans = sorted(
             summary.done_big_plans,
-            key=lambda bp: bp.actionable_date
-            if bp.actionable_date
-            else ADate.from_str("2100-01-01"),
+            key=lambda bp: (
+                bp.actionable_date
+                if bp.actionable_date
+                else ADate.from_str("2100-01-01")
+            ),
         )
 
         done_tree = big_plan_tree.add(done_text)

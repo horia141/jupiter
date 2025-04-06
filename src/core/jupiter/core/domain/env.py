@@ -1,4 +1,5 @@
 """An environment for a jupiter application."""
+
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
@@ -19,3 +20,7 @@ class Env(EnumValue):
     def is_live(self) -> bool:
         """Whether this is a live environment."""
         return self == Env.PRODUCTION or self == Env.STAGING
+
+    def __str__(self) -> str:
+        """The string representation of the environment."""
+        return self.value

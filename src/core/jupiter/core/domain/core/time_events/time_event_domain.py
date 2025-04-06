@@ -1,4 +1,5 @@
 """Time event domain trunk entity."""
+
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
     TimeEventFullDaysBlock,
 )

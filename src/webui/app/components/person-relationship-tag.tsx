@@ -1,5 +1,7 @@
 import { PersonRelationship } from "@jupiter/webapi-client";
+
 import { personRelationshipName } from "~/logic/domain/person-relationship";
+
 import { SlimChip } from "./infra/chips";
 
 interface PersonRelationshipTagProps {
@@ -16,7 +18,7 @@ export function PersonRelationshipTag(props: PersonRelationshipTagProps) {
 }
 
 function relaionshipToColor(
-  relationship: PersonRelationship
+  relationship: PersonRelationship,
 ): "success" | "info" | "default" {
   switch (relationship) {
     case PersonRelationship.FRIEND:

@@ -2,13 +2,27 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import PictureInPictureAltIcon from "@mui/icons-material/PictureInPictureAlt";
 import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
-import { Box, ButtonGroup, IconButton, Stack, styled } from "@mui/material";
-import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
+  styled,
+} from "@mui/material";
+import { Form, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import {
   LeafPanelExpansionState,
   loadLeafPanelExpansion,
@@ -26,6 +40,7 @@ const BIG_SCREEN_ANIMATION_END = "480px";
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
+const BIG_SCREEN_SHRUNK_HEIGHT = "300px";
 const BIG_SCREEN_WIDTH_SMALL = "480px";
 const BIG_SCREEN_WIDTH_MEDIUM = "calc(min(720px, 60vw))";
 const BIG_SCREEN_WIDTH_LARGE = "calc(min(1020px, 80vw))";
@@ -33,10 +48,14 @@ const BIG_SCREEN_WIDTH_FULL_INT = 1200;
 const SMALL_SCREEN_WIDTH = "100%";
 
 interface LeafPanelProps {
-  showArchiveButton?: boolean;
-  enableArchiveButton?: boolean;
+  showArchiveAndRemoveButton?: boolean;
+  inputsEnabled: boolean;
+  entityNotEditable?: boolean;
+  entityArchived?: boolean;
   returnLocation: string;
+  returnLocationDiscriminator?: string;
   initialExpansionState?: LeafPanelExpansionState;
+  allowedExpansionStates?: LeafPanelExpansionState[];
 }
 
 export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
@@ -45,13 +64,16 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
-  const [expansionState, setExpansionState] = useState(
-    props.initialExpansionState ?? LeafPanelExpansionState.SMALL
-  );
+  const [expansionState, setExpansionState] = useState<
+    LeafPanelExpansionState | "shrunk" | "exit"
+  >(props.initialExpansionState ?? LeafPanelExpansionState.SMALL);
+  const [previousExpansionState, setPreviousExpansionState] =
+    useState<LeafPanelExpansionState | null>(null);
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
-    BIG_SCREEN_WIDTH_FULL_INT
+    BIG_SCREEN_WIDTH_FULL_INT,
   );
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const handleScroll = useCallback(
     (ref: HTMLDivElement, pathname: string) => {
@@ -60,7 +82,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       }
       saveScrollPosition(ref, pathname);
     },
-    [isPresent]
+    [isPresent],
   );
 
   useEffect(() => {
@@ -71,6 +93,10 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     const theRef = containerRef.current;
 
     if (!isPresent) {
+      return;
+    }
+
+    if (location.pathname.endsWith("/new")) {
       return;
     }
 
@@ -91,10 +117,10 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   // pixel value and then it works.
   function handleChangeExpansionFullRight() {
     setExpansionFullRight(
-      Math.max(0, (window.innerWidth - BIG_SCREEN_WIDTH_FULL_INT) / 2)
+      Math.max(0, (window.innerWidth - BIG_SCREEN_WIDTH_FULL_INT) / 2),
     );
     setExpansionFullWidth(
-      Math.min(BIG_SCREEN_WIDTH_FULL_INT, window.innerWidth)
+      Math.min(BIG_SCREEN_WIDTH_FULL_INT, window.innerWidth),
     );
   }
 
@@ -108,20 +134,34 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   }, []);
 
   function handleExpansion() {
-    setExpansionState((e) => cycleExpansionState(e));
+    setExpansionState((e) =>
+      cycleExpansionState(e, props.allowedExpansionStates),
+    );
     saveLeafPanelExpansion(
-      props.returnLocation,
-      cycleExpansionState(expansionState)
+      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
+      cycleExpansionState(expansionState, props.allowedExpansionStates),
     );
   }
 
   useEffect(() => {
-    const savedExpansionState = loadLeafPanelExpansion(props.returnLocation);
+    const savedExpansionState = loadLeafPanelExpansion(
+      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
+    );
     if (!savedExpansionState) {
       return;
     }
     setExpansionState(savedExpansionState);
-  }, [props.returnLocation]);
+  }, [props.returnLocation, props.returnLocationDiscriminator]);
+
+  function handleShrunk() {
+    if (expansionState !== "shrunk" && expansionState !== "exit") {
+      setPreviousExpansionState(expansionState);
+      setExpansionState("shrunk");
+    } else {
+      setExpansionState(previousExpansionState as LeafPanelExpansionState);
+      setPreviousExpansionState(null);
+    }
+  }
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
@@ -153,35 +193,46 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     exit: {
       opacity: 0,
       x: isBigScreen ? BIG_SCREEN_ANIMATION_END : SMALL_SCREEN_ANIMATION_END,
+      width: "0px",
     },
     [LeafPanelExpansionState.SMALL]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_SMALL,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     [LeafPanelExpansionState.MEDIUM]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_MEDIUM,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     [LeafPanelExpansionState.LARGE]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_LARGE,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     [LeafPanelExpansionState.FULL]: {
       right: `${expansionFullRight}px`,
       opacity: 1,
       x: 0,
       width: `${expansionFullWidth}px`,
+      height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem)`,
     },
     smallScreen: {
       x: 0,
       opacity: 1,
       width: SMALL_SCREEN_WIDTH,
+    },
+    shrunk: {
+      x: 0,
+      opacity: 1,
+      height: BIG_SCREEN_SHRUNK_HEIGHT,
+      width: BIG_SCREEN_WIDTH_SMALL,
     },
   };
 
@@ -200,9 +251,17 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
         <LeafPanelControls id="leaf-panel-controls">
           <ButtonGroup size="small">
             {isBigScreen && (
-              <IconButton onClick={handleExpansion}>
-                <SwitchLeftIcon />
-              </IconButton>
+              <>
+                <IconButton
+                  disabled={expansionState === "shrunk"}
+                  onClick={handleExpansion}
+                >
+                  <SwitchLeftIcon />
+                </IconButton>
+                <IconButton onClick={handleShrunk}>
+                  <PictureInPictureAltIcon />
+                </IconButton>
+              </>
             )}
             <IconButton onClick={handleScrollTop}>
               <ArrowUpwardIcon />
@@ -210,27 +269,70 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
             <IconButton onClick={handleScrollBottom}>
               <ArrowDownwardIcon />
             </IconButton>
-            <IconButton>
-              <Link to={props.returnLocation} style={{ display: "flex" }}>
-                <KeyboardDoubleArrowRightIcon />
-              </Link>
+            <IconButton
+              onClick={() => {
+                setExpansionState("exit");
+                const returnLocation = props.returnLocation;
+                setTimeout(() => navigation(returnLocation), 500);
+              }}
+            >
+              <KeyboardDoubleArrowRightIcon />
             </IconButton>
-            <IconButton onClick={() => navigation(-1)}>
+            <IconButton
+              onClick={() => {
+                setExpansionState("exit");
+                setTimeout(() => navigation(-1), 500);
+              }}
+            >
               <ArrowBackIcon />
             </IconButton>
           </ButtonGroup>
 
-          {props.showArchiveButton && (
-            <IconButton
-              id="leaf-entity-archive"
-              sx={{ marginLeft: "auto" }}
-              disabled={!props.enableArchiveButton}
-              type="submit"
-              name="intent"
-              value="archive"
-            >
-              <DeleteIcon />
-            </IconButton>
+          {props.showArchiveAndRemoveButton && (
+            <>
+              <IconButton
+                id="leaf-entity-archive"
+                sx={{ marginLeft: "auto" }}
+                disabled={
+                  props.entityNotEditable ||
+                  (!props.entityArchived && !props.inputsEnabled)
+                }
+                type="button"
+                onClick={() => setShowArchiveDialog(true)}
+              >
+                {props.entityArchived ? <DeleteForeverIcon /> : <DeleteIcon />}
+              </IconButton>
+              <Dialog
+                onClose={() => setShowArchiveDialog(false)}
+                open={showArchiveDialog}
+                disablePortal
+              >
+                <DialogTitle>Careful!</DialogTitle>
+                <DialogContent>
+                  Are you sure you want to{" "}
+                  {props.entityArchived ? "remove" : "archive"} this entity?
+                  {props.entityArchived ? " This action cannot be undone." : ""}
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    id="leaf-entity-archive-confirm"
+                    sx={{ marginLeft: "auto" }}
+                    disabled={
+                      props.entityNotEditable ||
+                      (!props.entityArchived && !props.inputsEnabled)
+                    }
+                    type="submit"
+                    name="intent"
+                    value={props.entityArchived ? "remove" : "archive"}
+                  >
+                    Yes
+                  </Button>
+                  <Button onClick={() => setShowArchiveDialog(false)}>
+                    No
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
           )}
         </LeafPanelControls>
 
@@ -260,7 +362,7 @@ const LeafPanelFrame = styled(motion.div)<LeafPanelFrameProps>(
       z-index: ${theme.zIndex.appBar + 200};
       background-color: ${theme.palette.background.paper};
       border-left: 1px solid rgba(0, 0, 0, 0.12);
-    `
+    `,
 );
 
 const LeafPanelControls = styled("div")(
@@ -274,7 +376,7 @@ const LeafPanelControls = styled("div")(
       z-index: ${theme.zIndex.drawer + 1};
       border-radius: 0px;
       box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
-      `
+      `,
 );
 
 interface LeafPanelContentProps {
@@ -288,12 +390,22 @@ const LeafPanelContent = styled("div")<LeafPanelContentProps>(
       isbigscreen === "true" ? "4rem" : "3.5rem"
     })`,
     overflowY: "scroll",
-  })
+  }),
 );
 
 function cycleExpansionState(
-  expansionState: LeafPanelExpansionState
+  expansionState: LeafPanelExpansionState | "shrunk" | "exit",
+  allowedExpansionStates?: LeafPanelExpansionState[],
 ): LeafPanelExpansionState {
+  if (expansionState === "shrunk" || expansionState === "exit") {
+    return LeafPanelExpansionState.SMALL;
+  }
+  if (allowedExpansionStates && allowedExpansionStates.length > 0) {
+    const currentIndex = allowedExpansionStates.indexOf(expansionState);
+    const nextIndex = (currentIndex + 1) % allowedExpansionStates.length;
+    return allowedExpansionStates[nextIndex];
+  }
+
   switch (expansionState) {
     case LeafPanelExpansionState.SMALL:
       return LeafPanelExpansionState.MEDIUM;

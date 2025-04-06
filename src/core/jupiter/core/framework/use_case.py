@@ -1,4 +1,5 @@
 """Framework level elements for use cases."""
+
 import abc
 import enum
 import logging

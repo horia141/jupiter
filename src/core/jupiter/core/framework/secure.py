@@ -1,4 +1,5 @@
 """Annotations for codepaths that deal with security in some way."""
+
 from collections.abc import Callable
 from typing import TypeVar
 

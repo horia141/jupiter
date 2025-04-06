@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -47,9 +48,9 @@ class MetricUpdateArgs:
     collection_actionable_from_month: "MetricUpdateArgsCollectionActionableFromMonth"
     collection_due_at_day: "MetricUpdateArgsCollectionDueAtDay"
     collection_due_at_month: "MetricUpdateArgsCollectionDueAtMonth"
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         name = self.name.to_dict()
@@ -70,7 +71,7 @@ class MetricUpdateArgs:
 
         collection_due_at_month = self.collection_due_at_month.to_dict()
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -90,7 +91,7 @@ class MetricUpdateArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.metric_update_args_collection_actionable_from_day import (
             MetricUpdateArgsCollectionActionableFromDay,
         )
@@ -105,7 +106,7 @@ class MetricUpdateArgs:
         from ..models.metric_update_args_icon import MetricUpdateArgsIcon
         from ..models.metric_update_args_name import MetricUpdateArgsName
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         name = MetricUpdateArgsName.from_dict(d.pop("name"))
@@ -147,7 +148,7 @@ class MetricUpdateArgs:
         return metric_update_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

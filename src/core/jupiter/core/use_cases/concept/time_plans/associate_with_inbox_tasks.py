@@ -1,5 +1,4 @@
 """Use case for creating time plan actitivities for inbox tasks."""
-from typing import cast
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
@@ -47,6 +46,8 @@ class TimePlanAssociateWithInboxTasksArgs(UseCaseArgsBase):
     ref_id: EntityId
     inbox_task_ref_ids: list[EntityId]
     override_existing_dates: bool
+    kind: TimePlanActivityKind
+    feasability: TimePlanActivityFeasability
 
 
 @use_case_result
@@ -89,7 +90,7 @@ class TimePlanAssociateWithInboxTasksUseCase(
         )
 
         big_plan_ref_ids = [
-            cast(EntityId, it.big_plan_ref_id)
+            it.source_entity_ref_id_for_sure
             for it in inbox_tasks
             if it.source == InboxTaskSource.BIG_PLAN
         ]
@@ -111,8 +112,8 @@ class TimePlanAssociateWithInboxTasksUseCase(
                 context.domain_context,
                 time_plan_ref_id=args.ref_id,
                 inbox_task_ref_id=inbox_task.ref_id,
-                kind=TimePlanActivityKind.FINISH,
-                feasability=TimePlanActivityFeasability.MUST_DO,
+                kind=args.kind,
+                feasability=args.feasability,
             )
             new_time_plan_activity = await generic_creator(
                 uow, progress_reporter, new_time_plan_activity
@@ -134,8 +135,8 @@ class TimePlanAssociateWithInboxTasksUseCase(
                     context.domain_context,
                     time_plan_ref_id=args.ref_id,
                     big_plan_ref_id=big_plan.ref_id,
-                    kind=TimePlanActivityKind.MAKE_PROGRESS,
-                    feasability=TimePlanActivityFeasability.MUST_DO,
+                    kind=args.kind,
+                    feasability=args.feasability,
                 )
                 new_time_plan_activity = await generic_creator(
                     uow, progress_reporter, new_time_plan_activity

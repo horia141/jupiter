@@ -12,6 +12,7 @@ import { Link } from "@remix-run/react";
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { PropsWithChildren } from "react";
+
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 const SWIPE_THRESHOLD = 200;
@@ -54,7 +55,7 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
 
   function onDragEnd(
     event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
+    info: PanInfo,
   ) {
     if (info.offset.x < -SWIPE_COMPLETE_THRESHOLD) {
       if (props.allowMarkDone && props.onMarkDone) {
@@ -77,7 +78,7 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
       theme.palette.success.light,
       theme.palette.background.paper,
       theme.palette.warning.light,
-    ]
+    ],
   );
 
   return (
@@ -111,12 +112,14 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
                 ? theme.palette.action.hover
                 : "transparent"
               : backgroundHint === "success"
-              ? `${theme.palette.success.light}22`
-              : `${theme.palette.error.light}22`,
+                ? `${theme.palette.success.light}22`
+                : `${theme.palette.error.light}22`,
         }}
         onClick={props.onClick}
       >
-        <CardContent>{props.children}</CardContent>
+        <CardContent sx={{ flexGrow: "1", padding: "0px" }}>
+          {props.children}
+        </CardContent>
 
         <CardActions
           sx={{
@@ -157,16 +160,19 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   if (!(props.block === true)) {
     return (
       <StyledLink
+        onMouseDown={(e) => e.preventDefault()}
         to={props.to}
-        inline={props.inline ? "true" : "false"}
-        light={props.light ? "true" : "false"}
+        inline={props.inline === true ? "true" : "false"}
+        light={props.light === true ? "true" : "false"}
       >
         {props.children}
       </StyledLink>
     );
   } else {
     return (
-      <EntityFakeLink light={props.light}>{props.children}</EntityFakeLink>
+      <EntityFakeLink inline={props.inline} light={props.light}>
+        {props.children}
+      </EntityFakeLink>
     );
   }
 }
@@ -192,38 +198,49 @@ const StyledLink = styled(Link)<StyledLinkProps>(
     },
     display: "flex",
     gap: "0.5rem",
+    flexGrow: "1",
     flexWrap: "wrap",
+    padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
-  })
+    WebkitTapHighlightColor: "transparent",
+  }),
 );
 
 interface EntityFakeLinkProps {
+  inline?: boolean;
   light?: boolean;
 }
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
   return (
-    <StyledFakeLink inline={"false"} light={props.light ? "true" : "false"}>
+    <StyledFakeLink
+      inline={props.inline ? "true" : "false"}
+      light={props.light ? "true" : "false"}
+    >
       {props.children}
     </StyledFakeLink>
   );
 }
 
-const StyledFakeLink = styled("span")<StyledLinkProps>(({ theme, light }) => ({
-  textDecoration: "none",
-  width: "100%",
-  color:
-    light === "true"
-      ? theme.palette.info.contrastText
-      : theme.palette.info.dark,
-  ":visited": {
+const StyledFakeLink = styled("span")<StyledLinkProps>(
+  ({ theme, inline, light }) => ({
+    textDecoration: "none",
+    width: "100%",
     color:
       light === "true"
         ? theme.palette.info.contrastText
         : theme.palette.info.dark,
-  },
-  display: "flex",
-  gap: "0.5rem",
-  flexWrap: "wrap",
-  alignItems: "center",
-}));
+    ":visited": {
+      color:
+        light === "true"
+          ? theme.palette.info.contrastText
+          : theme.palette.info.dark,
+    },
+    display: "flex",
+    gap: "0.5rem",
+    flexWrap: "wrap",
+    padding: inline === "true" ? undefined : "16px",
+    alignItems: "center",
+    WebkitTapHighlightColor: "transparent",
+  }),
+);

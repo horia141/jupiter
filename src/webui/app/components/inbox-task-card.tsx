@@ -9,7 +9,6 @@ import type {
   Metric,
   Person,
   SlackTask,
-  Timezone,
 } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -30,7 +29,8 @@ import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { DateTime } from "luxon";
 import { useContext, useState } from "react";
-import { ClientOnly } from "remix-utils";
+
+import { ClientOnly } from "~/components/infra/client-only";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { aDateToDate } from "~/logic/domain/adate";
 import type {
@@ -41,6 +41,7 @@ import { isCompleted } from "~/logic/domain/inbox-task-status";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { ADateTag } from "./adate-tag";
 import { BigPlanTag } from "./big-plan-tag";
 import { ChoreTag } from "./chore-tag";
@@ -117,7 +118,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
 
   function onDragEnd(
     event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
+    info: PanInfo,
   ) {
     if (info.offset.x < -SWIPE_COMPLETE_THRESHOLD) {
       setTimeout(() => {
@@ -144,7 +145,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
       theme.palette.success.light,
       theme.palette.background.paper,
       theme.palette.warning.light,
-    ]
+    ],
   );
 
   const inputsEnabled =
@@ -168,125 +169,127 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           ((!props.allowSelect || !props.selected) && inputsEnabled) ||
           false
         ).toString()}
-        onClick={(e) => props.onClick && props.onClick(props.inboxTask)}
+        onClick={() => props.onClick && props.onClick(props.inboxTask)}
       >
         <OverdueWarning
           today={props.today}
-          userTimezone={props.topLevelInfo.user.timezone}
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
-        <CardContent>
+        <CardContent sx={{ padding: "0px!important" }}>
           <EntityLink
-            to={`/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
+            to={`/app/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
             block={props.onClick !== undefined}
           >
             <EntityNameComponent
               compact={props.compact}
               name={props.inboxTask.name}
             />
-          </EntityLink>
-          <Divider />
-          <TagsContained>
-            {props.showOptions.showStatus && (
-              <InboxTaskStatusTag
-                status={props.optimisticState?.status ?? props.inboxTask.status}
-              />
-            )}
-            {props.showOptions.showSource && (
-              <InboxTaskSourceTag source={props.inboxTask.source} />
-            )}
-            {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) &&
-              props.showOptions.showProject &&
-              props.parent?.project && (
-                <ProjectTag project={props.parent?.project} />
-              )}
-            {props.showOptions.showEisen && (
-              <EisenTag
-                eisen={props.optimisticState?.eisen ?? props.inboxTask.eisen}
-              />
-            )}
-            {props.showOptions.showDifficulty && props.inboxTask.difficulty && (
-              <DifficultyTag difficulty={props.inboxTask.difficulty} />
-            )}
-            {props.showOptions.showActionableDate &&
-              props.inboxTask.actionable_date && (
-                <ADateTag
-                  label="Actionable from"
-                  date={props.inboxTask.actionable_date}
+            <Divider />
+            <TagsContained>
+              {props.showOptions.showStatus && (
+                <InboxTaskStatusTag
+                  status={
+                    props.optimisticState?.status ?? props.inboxTask.status
+                  }
                 />
               )}
-            {props.showOptions.showDueDate && props.inboxTask.due_date && (
-              <ADateTag label="Due at" date={props.inboxTask.due_date} />
-            )}
-            {props.showOptions.showParent && (
-              <>
-                {isWorkspaceFeatureAvailable(
-                  props.topLevelInfo.workspace,
-                  WorkspaceFeature.BIG_PLANS
-                ) &&
-                  props.parent &&
-                  props.parent.bigPlan && (
-                    <BigPlanTag bigPlan={props.parent.bigPlan as BigPlan} />
-                  )}
-                {isWorkspaceFeatureAvailable(
-                  props.topLevelInfo.workspace,
-                  WorkspaceFeature.HABITS
-                ) &&
-                  props.parent &&
-                  props.parent.habit && (
-                    <HabitTag habit={props.parent.habit as Habit} />
-                  )}
-                {isWorkspaceFeatureAvailable(
-                  props.topLevelInfo.workspace,
-                  WorkspaceFeature.CHORES
-                ) &&
-                  props.parent &&
-                  props.parent.chore && (
-                    <ChoreTag chore={props.parent.chore as Chore} />
-                  )}
-                {isWorkspaceFeatureAvailable(
-                  props.topLevelInfo.workspace,
-                  WorkspaceFeature.METRICS
-                ) &&
-                  props.parent &&
-                  props.parent.metric && (
-                    <MetricTag metric={props.parent.metric as Metric} />
-                  )}
-                {isWorkspaceFeatureAvailable(
-                  props.topLevelInfo.workspace,
-                  WorkspaceFeature.PERSONS
-                ) &&
-                  props.parent &&
-                  props.parent.person && (
-                    <PersonTag person={props.parent.person as Person} />
-                  )}
-                {isWorkspaceFeatureAvailable(
-                  props.topLevelInfo.workspace,
-                  WorkspaceFeature.SLACK_TASKS
-                ) &&
-                  props.parent &&
-                  props.parent.slackTask && (
-                    <SlackTaskTag
-                      slackTask={props.parent.slackTask as SlackTask}
-                    />
-                  )}
-                {isWorkspaceFeatureAvailable(
-                  props.topLevelInfo.workspace,
-                  WorkspaceFeature.EMAIL_TASKS
-                ) &&
-                  props.parent &&
-                  props.parent.emailTask && (
-                    <EmailTaskTag
-                      emailTask={props.parent.emailTask as EmailTask}
-                    />
-                  )}
-              </>
-            )}
-          </TagsContained>
+              {props.showOptions.showSource && (
+                <InboxTaskSourceTag source={props.inboxTask.source} />
+              )}
+              {isWorkspaceFeatureAvailable(
+                props.topLevelInfo.workspace,
+                WorkspaceFeature.PROJECTS,
+              ) &&
+                props.showOptions.showProject &&
+                props.parent?.project && (
+                  <ProjectTag project={props.parent?.project} />
+                )}
+              {props.showOptions.showEisen && (
+                <EisenTag
+                  eisen={props.optimisticState?.eisen ?? props.inboxTask.eisen}
+                />
+              )}
+              {props.showOptions.showDifficulty &&
+                props.inboxTask.difficulty && (
+                  <DifficultyTag difficulty={props.inboxTask.difficulty} />
+                )}
+              {props.showOptions.showActionableDate &&
+                props.inboxTask.actionable_date && (
+                  <ADateTag
+                    label="Actionable from"
+                    date={props.inboxTask.actionable_date}
+                  />
+                )}
+              {props.showOptions.showDueDate && props.inboxTask.due_date && (
+                <ADateTag label="Due at" date={props.inboxTask.due_date} />
+              )}
+              {props.showOptions.showParent && (
+                <>
+                  {isWorkspaceFeatureAvailable(
+                    props.topLevelInfo.workspace,
+                    WorkspaceFeature.BIG_PLANS,
+                  ) &&
+                    props.parent &&
+                    props.parent.bigPlan && (
+                      <BigPlanTag bigPlan={props.parent.bigPlan as BigPlan} />
+                    )}
+                  {isWorkspaceFeatureAvailable(
+                    props.topLevelInfo.workspace,
+                    WorkspaceFeature.HABITS,
+                  ) &&
+                    props.parent &&
+                    props.parent.habit && (
+                      <HabitTag habit={props.parent.habit as Habit} />
+                    )}
+                  {isWorkspaceFeatureAvailable(
+                    props.topLevelInfo.workspace,
+                    WorkspaceFeature.CHORES,
+                  ) &&
+                    props.parent &&
+                    props.parent.chore && (
+                      <ChoreTag chore={props.parent.chore as Chore} />
+                    )}
+                  {isWorkspaceFeatureAvailable(
+                    props.topLevelInfo.workspace,
+                    WorkspaceFeature.METRICS,
+                  ) &&
+                    props.parent &&
+                    props.parent.metric && (
+                      <MetricTag metric={props.parent.metric as Metric} />
+                    )}
+                  {isWorkspaceFeatureAvailable(
+                    props.topLevelInfo.workspace,
+                    WorkspaceFeature.PERSONS,
+                  ) &&
+                    props.parent &&
+                    props.parent.person && (
+                      <PersonTag person={props.parent.person as Person} />
+                    )}
+                  {isWorkspaceFeatureAvailable(
+                    props.topLevelInfo.workspace,
+                    WorkspaceFeature.SLACK_TASKS,
+                  ) &&
+                    props.parent &&
+                    props.parent.slackTask && (
+                      <SlackTaskTag
+                        slackTask={props.parent.slackTask as SlackTask}
+                      />
+                    )}
+                  {isWorkspaceFeatureAvailable(
+                    props.topLevelInfo.workspace,
+                    WorkspaceFeature.EMAIL_TASKS,
+                  ) &&
+                    props.parent &&
+                    props.parent.emailTask && (
+                      <EmailTaskTag
+                        emailTask={props.parent.emailTask as EmailTask}
+                      />
+                    )}
+                </>
+              )}
+            </TagsContained>
+          </EntityLink>
         </CardContent>
         {isBigScreen &&
           (props.showOptions.showHandleMarkDone ||
@@ -349,17 +352,11 @@ const TagsContained = styled(Box)({
 
 interface OverdueWarningProps {
   today: DateTime;
-  userTimezone: Timezone;
   status: InboxTaskStatus;
   dueDate?: ADate | null;
 }
 
-function OverdueWarning({
-  today,
-  userTimezone,
-  status,
-  dueDate,
-}: OverdueWarningProps) {
+function OverdueWarning({ today, status, dueDate }: OverdueWarningProps) {
   const globalProperties = useContext(GlobalPropertiesContext);
 
   if (isCompleted(status)) {
@@ -398,7 +395,7 @@ function OverdueWarning({
   );
 }
 
-const OverdueWarningChip = styled(Chip)<ChipProps>(({ theme }) => ({
+const OverdueWarningChip = styled(Chip)<ChipProps>(() => ({
   position: "absolute",
   top: "0px",
   fontSize: "0.75rem",

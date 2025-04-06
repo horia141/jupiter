@@ -1,19 +1,22 @@
 import { WorkspaceFeature } from "@jupiter/webapi-client";
+import { Settings } from "@mui/icons-material";
 import {
-  Divider,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  styled,
   Toolbar,
+  styled,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
+
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+
+import { StandardDivider } from "./standard-divider";
 
 const BIG_SCREEN_WIDTH = "240px";
 const BIG_SCREEN_ANIMATION_START = "-240px";
@@ -65,7 +68,7 @@ export default function Sidebar(props: SidebarProps) {
           <List>
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace"
+                to="/app/workspace"
                 component={Link}
                 onClick={onClickNavigation}
               >
@@ -76,7 +79,7 @@ export default function Sidebar(props: SidebarProps) {
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/inbox-tasks"
+                to="/app/workspace/inbox-tasks"
                 component={Link}
                 onClick={onClickNavigation}
               >
@@ -87,11 +90,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.WORKING_MEM
+              WorkspaceFeature.WORKING_MEM,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/working-mem"
+                  to="/app/workspace/working-mem"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -103,11 +106,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.TIME_PLANS
+              WorkspaceFeature.TIME_PLANS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/time-plans"
+                  to="/app/workspace/time-plans"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -119,11 +122,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SCHEDULE
+              WorkspaceFeature.SCHEDULE,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/calendar"
+                  to="/app/workspace/calendar"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -135,11 +138,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.HABITS
+              WorkspaceFeature.HABITS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/habits"
+                  to="/app/workspace/habits"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -151,11 +154,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.CHORES
+              WorkspaceFeature.CHORES,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/chores"
+                  to="/app/workspace/chores"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -167,11 +170,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.BIG_PLANS
+              WorkspaceFeature.BIG_PLANS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/big-plans"
+                  to="/app/workspace/big-plans"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -183,11 +186,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.JOURNALS
+              WorkspaceFeature.JOURNALS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/journals"
+                  to="/app/workspace/journals"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -199,11 +202,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.DOCS
+              WorkspaceFeature.DOCS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/docs"
+                  to="/app/workspace/docs"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -215,11 +218,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.VACATIONS
+              WorkspaceFeature.VACATIONS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/vacations"
+                  to="/app/workspace/vacations"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -231,11 +234,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/projects"
+                  to="/app/workspace/projects"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -247,11 +250,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SMART_LISTS
+              WorkspaceFeature.SMART_LISTS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/smart-lists"
+                  to="/app/workspace/smart-lists"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -263,11 +266,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.METRICS
+              WorkspaceFeature.METRICS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/metrics"
+                  to="/app/workspace/metrics"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -279,11 +282,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.PERSONS
+              WorkspaceFeature.PERSONS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/persons"
+                  to="/app/workspace/persons"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -295,20 +298,20 @@ export default function Sidebar(props: SidebarProps) {
 
             {(isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SLACK_TASKS
+              WorkspaceFeature.SLACK_TASKS,
             ) ||
               isWorkspaceFeatureAvailable(
                 props.topLevelInfo.workspace,
-                WorkspaceFeature.EMAIL_TASKS
-              )) && <Divider textAlign="left">Push Integrations</Divider>}
+                WorkspaceFeature.EMAIL_TASKS,
+              )) && <StandardDivider title="Push Integrations" size="small" />}
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SLACK_TASKS
+              WorkspaceFeature.SLACK_TASKS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/push-integrations/slack-tasks"
+                  to="/app/workspace/push-integrations/slack-tasks"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -320,11 +323,11 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.EMAIL_TASKS
+              WorkspaceFeature.EMAIL_TASKS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
-                  to="/workspace/push-integrations/email-tasks"
+                  to="/app/workspace/push-integrations/email-tasks"
                   component={Link}
                   onClick={onClickNavigation}
                 >
@@ -334,11 +337,11 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            <Divider textAlign="left">Tools</Divider>
+            <StandardDivider title="Tools" size="small" />
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/tools/search"
+                to="/app/workspace/tools/search"
                 component={Link}
                 onClick={onClickNavigation}
               >
@@ -349,7 +352,7 @@ export default function Sidebar(props: SidebarProps) {
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/tools/report"
+                to="/app/workspace/tools/report"
                 component={Link}
                 onClick={onClickNavigation}
               >
@@ -360,7 +363,7 @@ export default function Sidebar(props: SidebarProps) {
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/tools/pomodoro"
+                to="/app/workspace/tools/pomodoro"
                 component={Link}
                 onClick={onClickNavigation}
               >
@@ -369,11 +372,11 @@ export default function Sidebar(props: SidebarProps) {
               </ListItemButton>
             </ListItem>
 
-            <Divider textAlign="left">Process</Divider>
+            <StandardDivider title="Process" size="small" />
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/tools/gen"
+                to="/app/workspace/tools/gen"
                 component={Link}
                 onClick={onClickNavigation}
               >
@@ -384,7 +387,7 @@ export default function Sidebar(props: SidebarProps) {
 
             <ListItem disablePadding>
               <ListItemButton
-                to="/workspace/tools/gc"
+                to="/app/workspace/tools/gc"
                 component={Link}
                 onClick={onClickNavigation}
               >
@@ -393,6 +396,21 @@ export default function Sidebar(props: SidebarProps) {
               </ListItemButton>
             </ListItem>
           </List>
+
+          <StandardDivider title="Explore" size="small" />
+
+          <ListItem disablePadding>
+            <ListItemButton
+              to="/app/workspace/settings"
+              component={Link}
+              onClick={onClickNavigation}
+            >
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              <ListItemText primary="More Features" />
+            </ListItemButton>
+          </ListItem>
         </StyledMotionDrawer>
       )}
     </AnimatePresence>
@@ -419,5 +437,5 @@ const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
     &::-webkit-scrollbar {
       display: none;
     }
-  `
+  `,
 );

@@ -19,7 +19,7 @@ const DIFFICULTY_MAP = {
 
 export function compareDifficulty(
   difficulty1: Difficulty,
-  difficulty2: Difficulty
+  difficulty2: Difficulty,
 ): number {
   return DIFFICULTY_MAP[difficulty1] - DIFFICULTY_MAP[difficulty2];
 }

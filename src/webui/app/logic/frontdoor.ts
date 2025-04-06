@@ -15,6 +15,6 @@ export const FRONT_DOOR_INFO_SCHEMA = z.object({
   appPlatform: z.nativeEnum(AppPlatform),
   appDistribution: z.nativeEnum(AppDistribution),
   initialWindowWidth: z.optional(
-    z.number().or(z.string().transform((s) => parseInt(s)))
+    z.number().or(z.string().transform((s) => parseInt(s))),
   ),
 });

@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BulletedListBlock } from './BulletedListBlock';
 import type { ChecklistBlock } from './ChecklistBlock';
 import type { CodeBlock } from './CodeBlock';
@@ -15,7 +15,6 @@ import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
 import type { TableBlock } from './TableBlock';
-
 /**
  * DocCreate args.
  */

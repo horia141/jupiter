@@ -1,4 +1,5 @@
 """A certain activity that happens in a plan."""
+
 import abc
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
@@ -151,5 +152,6 @@ class TimePlanActivityRespository(LeafEntityRepository[TimePlanActivity], abc.AB
         self,
         target: TimePlanActivityTarget,
         target_ref_id: EntityId,
+        allow_archived: bool = False,
     ) -> list[EntityId]:
         """Find all time plan ids with a certain entity in their activity set."""

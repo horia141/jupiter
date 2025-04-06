@@ -7,6 +7,6 @@ export function restoreScrollPosition(ref: HTMLElement, location: string) {
   // Originating from work on calendars and the mobile views therein.
   ref.scrollTo(
     0,
-    parseInt(window.sessionStorage.getItem(`scroll:${location}`) ?? "0")
+    parseInt(window.sessionStorage.getItem(`scroll:${location}`) ?? "0"),
   );
 }

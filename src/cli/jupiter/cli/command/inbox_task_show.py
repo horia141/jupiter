@@ -1,4 +1,5 @@
 """UseCase for showing the inbox tasks."""
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     actionable_date_to_rich_text,
@@ -12,7 +13,6 @@ from jupiter.cli.command.rendering import (
     source_to_rich_text,
 )
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.use_cases.concept.inbox_tasks.find import (
     InboxTaskFindResult,
@@ -40,7 +40,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase, InboxTaskFindR
                 it.inbox_task.eisen,
                 it.inbox_task.status,
                 it.inbox_task.due_date or ADate.from_str("2100-01-01"),
-                it.inbox_task.difficulty or Difficulty.EASY,
+                it.inbox_task.difficulty,
             ),
         )
 

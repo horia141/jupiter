@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -12,7 +13,7 @@ class BigPlanWorkSummary:
 
     Attributes:
         created_cnt (int):
-        accepted_cnt (int):
+        not_started_cnt (int):
         working_cnt (int):
         not_done_cnt (int):
         not_done_ratio (float):
@@ -21,18 +22,18 @@ class BigPlanWorkSummary:
     """
 
     created_cnt: int
-    accepted_cnt: int
+    not_started_cnt: int
     working_cnt: int
     not_done_cnt: int
     not_done_ratio: float
     done_cnt: int
     done_ratio: float
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         created_cnt = self.created_cnt
 
-        accepted_cnt = self.accepted_cnt
+        not_started_cnt = self.not_started_cnt
 
         working_cnt = self.working_cnt
 
@@ -44,12 +45,12 @@ class BigPlanWorkSummary:
 
         done_ratio = self.done_ratio
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "created_cnt": created_cnt,
-                "accepted_cnt": accepted_cnt,
+                "not_started_cnt": not_started_cnt,
                 "working_cnt": working_cnt,
                 "not_done_cnt": not_done_cnt,
                 "not_done_ratio": not_done_ratio,
@@ -61,11 +62,11 @@ class BigPlanWorkSummary:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         created_cnt = d.pop("created_cnt")
 
-        accepted_cnt = d.pop("accepted_cnt")
+        not_started_cnt = d.pop("not_started_cnt")
 
         working_cnt = d.pop("working_cnt")
 
@@ -79,7 +80,7 @@ class BigPlanWorkSummary:
 
         big_plan_work_summary = cls(
             created_cnt=created_cnt,
-            accepted_cnt=accepted_cnt,
+            not_started_cnt=not_started_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
             not_done_ratio=not_done_ratio,
@@ -91,7 +92,7 @@ class BigPlanWorkSummary:
         return big_plan_work_summary
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

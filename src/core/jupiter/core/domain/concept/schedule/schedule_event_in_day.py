@@ -1,4 +1,5 @@
 """An event in a schedule."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_name import ScheduleEventName
 from jupiter.core.domain.concept.schedule.schedule_external_uid import (
     ScheduleExternalUid,

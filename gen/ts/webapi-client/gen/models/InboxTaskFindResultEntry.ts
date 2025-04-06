@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BigPlan } from './BigPlan';
 import type { Chore } from './Chore';
 import type { EmailTask } from './EmailTask';
@@ -13,7 +13,7 @@ import type { Person } from './Person';
 import type { Project } from './Project';
 import type { SlackTask } from './SlackTask';
 import type { TimeEventInDayBlock } from './TimeEventInDayBlock';
-
+import type { WorkingMem } from './WorkingMem';
 /**
  * A single entry in the load all inbox tasks response.
  */
@@ -22,6 +22,7 @@ export type InboxTaskFindResultEntry = {
     note?: (Note | null);
     project: Project;
     time_event_blocks?: (Array<TimeEventInDayBlock> | null);
+    working_mem?: (WorkingMem | null);
     habit?: (Habit | null);
     chore?: (Chore | null);
     big_plan?: (BigPlan | null);

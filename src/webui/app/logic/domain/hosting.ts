@@ -10,5 +10,7 @@ export function hostingName(hosting: Hosting): string {
       return "Local";
     case Hosting.HOSTED_GLOBAL:
       return "Hosted globally";
+    case Hosting.SELF_HOSTED:
+      return "Self-hosted";
   }
 }

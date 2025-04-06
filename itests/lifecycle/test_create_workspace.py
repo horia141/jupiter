@@ -6,7 +6,7 @@ from itests.conftest import TestUser
 
 
 def test_create_workspace(page: Page, new_random_user: TestUser) -> None:
-    page.goto("/")
+    page.goto("/app")
 
     page.get_by_role("link", name="Go To The Workspace").click()
     page.locator('input[name="emailAddress"]').click()

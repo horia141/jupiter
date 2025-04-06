@@ -1,5 +1,9 @@
 """Use case for loading the current working memory file."""
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -81,11 +85,13 @@ class WorkingMemLoadCurrentUseCase(
         note = await uow.get(NoteRepository).load_for_source(
             NoteDomain.WORKING_MEM, working_mem.ref_id, allow_archived=True
         )
-        clean_up_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+        clean_up_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
             parent_ref_id=inbox_task_collection.ref_id,
             allow_archived=True,
-            working_mem_ref_id=[working_mem.ref_id],
-            source=[InboxTaskSource.WORKING_MEM_CLEANUP],
+            source=InboxTaskSource.WORKING_MEM_CLEANUP,
+            source_entity_ref_id=working_mem.ref_id,
         )
         if len(clean_up_inbox_tasks) == 0:
             raise EntityNotFoundError(

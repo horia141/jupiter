@@ -1,4 +1,5 @@
 """The service which syncs external calendars with jupiter."""
+
 from typing import Final, cast
 
 import recurring_ical_events
@@ -46,7 +47,7 @@ from jupiter.core.domain.core.time_events.time_event_in_day_block import (
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.core.time_in_day import TimeInDay
 from jupiter.core.domain.core.url import URL
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -56,7 +57,6 @@ from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
-from pendulum import Date
 
 
 class ScheduleExternalSyncService:
@@ -377,9 +377,9 @@ class ScheduleExternalSyncService:
                                     ] = note
 
                                 all_full_days_events.append(schedule_event_full_days)
-                                all_full_days_events_by_external_uid[
-                                    uid
-                                ] = schedule_event_full_days
+                                all_full_days_events_by_external_uid[uid] = (
+                                    schedule_event_full_days
+                                )
                                 all_time_event_full_days_blocks_by_source_entity_ref_id[
                                     schedule_event_full_days.ref_id
                                 ] = time_event_full_days_block
@@ -590,9 +590,9 @@ class ScheduleExternalSyncService:
                                     note = await uow.get_for(Note).create(note)
 
                                 all_in_day_events.append(schedule_event_in_day)
-                                all_in_day_events_by_external_uid[
-                                    uid
-                                ] = schedule_event_in_day
+                                all_in_day_events_by_external_uid[uid] = (
+                                    schedule_event_in_day
+                                )
                                 all_time_event_in_day_blocks_by_source_entity_ref_id[
                                     schedule_event_in_day.ref_id
                                 ] = time_event_in_day_block
@@ -742,7 +742,7 @@ class ScheduleExternalSyncService:
                         continue
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await generic_archiver(
+                        await generic_crown_archiver(
                             ctx,
                             uow,
                             progress_reporter,
@@ -769,7 +769,7 @@ class ScheduleExternalSyncService:
                         continue
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await generic_archiver(
+                        await generic_crown_archiver(
                             ctx,
                             uow,
                             progress_reporter,
@@ -796,7 +796,7 @@ class ScheduleExternalSyncService:
         """Retrieve the iCal for a schedule stream."""
         try:
             calendar_ical_response = requests.get(
-                cast(URL, schedule_stream.source_ical_url).the_url
+                cast(URL, schedule_stream.source_ical_url).the_url, timeout=10
             )
             if calendar_ical_response.status_code != 200:
                 # Early exit mark some error in sync log entry
@@ -804,6 +804,10 @@ class ScheduleExternalSyncService:
                     f"Failed to fetch iCal from {schedule_stream.source_ical_url} (error {calendar_ical_response.status_code})"
                 )
             calendar_ical = calendar_ical_response.text
+        except requests.exceptions.Timeout as err:
+            raise ValueError(
+                f"Failed to fetch iCal from {schedule_stream.source_ical_url} (timeout)"
+            ) from err
         except requests.RequestException as err:
             # Early exit in sync log entry
             raise ValueError(
@@ -823,6 +827,6 @@ class ScheduleExternalSyncService:
     def _build_processing_window(self, today: ADate) -> tuple[ADate, ADate]:
         """Build the processing window."""
         today_date = today.the_date
-        start_of_window = cast(Date, today_date.start_of("year").add(years=-1))  # type: ignore
-        end_of_window = cast(Date, today_date.add(days=30).end_of("year"))  # type: ignore
+        start_of_window = today_date.start_of("year").add(years=-1)
+        end_of_window = today_date.add(days=30).end_of("year")
         return (ADate.from_date(start_of_window), ADate.from_date(end_of_window))

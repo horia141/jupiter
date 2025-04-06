@@ -1,6 +1,7 @@
 import { AppDistribution, AppPlatform, AppShell } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
-import uap from "ua-parser-js";
+import { UAParser } from "ua-parser-js";
+
 import { FRONTDOOR_COOKIE_NAME } from "../names";
 import type { FrontDoorInfo } from "./frontdoor";
 import { FRONT_DOOR_INFO_SCHEMA } from "./frontdoor";
@@ -18,7 +19,7 @@ export async function saveFrontDoorInfo(info: FrontDoorInfo) {
 export async function loadFrontDoorInfo(
   serverVersion: string,
   cookie: string | null,
-  userAgent: string | null
+  userAgent: string | null,
 ): Promise<FrontDoorInfo> {
   if (cookie === null) {
     const { platform, distribution } = inferPlatformAndDistribution(userAgent);
@@ -54,10 +55,13 @@ export function inferPlatformAndDistribution(userAgent: string | null): {
   distribution: AppDistribution;
 } {
   if (userAgent === null) {
-    return { platform: AppPlatform.DESKTOP, distribution: AppDistribution.WEB };
+    return {
+      platform: AppPlatform.DESKTOP_MACOS,
+      distribution: AppDistribution.WEB,
+    };
   }
 
-  const ua = uap.UAParser(userAgent);
+  const ua = UAParser(userAgent);
 
   if (ua.device.type === "mobile" && ua.os.name === "iOS") {
     return {
@@ -80,6 +84,9 @@ export function inferPlatformAndDistribution(userAgent: string | null): {
       distribution: AppDistribution.GOOGLE_PLAY_STORE,
     };
   } else {
-    return { platform: AppPlatform.DESKTOP, distribution: AppDistribution.WEB };
+    return {
+      platform: AppPlatform.DESKTOP_MACOS,
+      distribution: AppDistribution.WEB,
+    };
   }
 }

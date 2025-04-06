@@ -1,4 +1,5 @@
 """The status of a big plan."""
+
 from functools import total_ordering
 
 from jupiter.core.framework.value import EnumValue, enum_value
@@ -9,10 +10,8 @@ from jupiter.core.framework.value import EnumValue, enum_value
 class BigPlanStatus(EnumValue):
     """The status of a big plan."""
 
-    # Created
+    # Not Started
     NOT_STARTED = "not-started"
-    # Accepted
-    ACCEPTED = "accepted"
     # Working
     IN_PROGRESS = "in-progress"
     BLOCKED = "blocked"
@@ -26,14 +25,9 @@ class BigPlanStatus(EnumValue):
         return not self.is_completed
 
     @property
-    def is_accepted(self) -> bool:
+    def is_not_started(self) -> bool:
         """Whether the status means work has been accepted on the big plan."""
-        return self == BigPlanStatus.ACCEPTED
-
-    @property
-    def is_accepted_or_more(self) -> bool:
-        """Whether the status means work has been accepted, or is ongoing, or is completed."""
-        return self.is_accepted or self.is_working or self.is_completed
+        return self == BigPlanStatus.NOT_STARTED
 
     @property
     def is_working(self) -> bool:

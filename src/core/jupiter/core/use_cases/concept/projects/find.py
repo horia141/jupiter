@@ -1,4 +1,5 @@
 """The command for finding projects."""
+
 from collections import defaultdict
 
 from jupiter.core.domain.concept.projects.project import Project

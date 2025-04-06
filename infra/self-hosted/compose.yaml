@@ -1,0 +1,58 @@
+name: jupiter
+
+services:
+  webapi:
+    environment:
+      - ENV=production
+      - HOSTING=self-hosted
+      - PORT=2000
+      - AUTH_TOKEN_SECRET=${AUTH_TOKEN_SECRET:?Check https://docs.get-thriving.com/how-tos/self-hosting.html}
+    restart: always
+    image: horia141/jupiter-webapi:${VERSION:-latest}
+    ports:
+    - "${WEBAPI_PORT:-0}:2000"
+    volumes:
+      - db:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  webui:
+    environment:
+      - ENV=production
+      - HOSTING=self-hosted
+      - HOSTING_NAME=${NAME:?Check https://docs.get-thriving.com/how-tos/self-hosting.html}
+      - PORT=2000
+      - LOCAL_OR_SELF_HOSTED_WEBAPI_SERVER_URL=http://webapi:2000
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-false}
+      - SESSION_COOKIE_SECRET=${SESSION_COOKIE_SECRET:?Check https://docs.get-thriving.com/how-tos/self-hosting.html}
+    restart: always
+    image: horia141/jupiter-webui:${VERSION:-latest}
+    depends_on:
+      - webapi
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  frontend:
+    image: nginx:1-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "${WEBUI_PORT:-0}:443"
+    depends_on:
+      - webui
+      - webapi
+    volumes:
+      - ${FULLCHAIN_PEM:-/etc/letsencrypt/live/${DOMAIN:-none}/fullchain.pem}:/etc/letsencrypt/live/domain/fullchain.pem
+      - ${PRIVKEY_PEM:-/etc/letsencrypt/live/${DOMAIN:-none}/privkey.pem}:/etc/letsencrypt/live/domain/privkey.pem
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./webui.conf:/etc/nginx/conf.d/webui.conf
+      - ./webui.nodomain.conf:/etc/nginx/conf.d/webui.nodomain.conf
+volumes:
+  db:
+    name: db-${NAMESPACE:-dev}
+    

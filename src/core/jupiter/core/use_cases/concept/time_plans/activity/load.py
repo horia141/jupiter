@@ -1,4 +1,5 @@
 """Use case for loading a time plan activity activity."""
+
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity

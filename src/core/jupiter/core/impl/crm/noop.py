@@ -1,4 +1,5 @@
 """The NoOp implementation of the CRM."""
+
 import logging
 
 from jupiter.core.domain.concept.user.user import User

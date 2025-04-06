@@ -1,5 +1,6 @@
 """Use case for archiving a time plan activity."""
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -9,7 +10,7 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
 from jupiter.core.domain.features import WorkspaceFeature
-from jupiter.core.domain.infra.generic_archiver import generic_archiver
+from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -51,11 +52,13 @@ class TimePlanActivityArchiveUseCase(
             inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).load_by_parent(workspace.ref_id)
-            inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+            inbox_tasks = await uow.get(
+                InboxTaskRepository
+            ).find_all_for_source_created_desc(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 source=InboxTaskSource.BIG_PLAN,
-                big_plan_ref_id=activity.target_ref_id,
+                source_entity_ref_id=activity.target_ref_id,
             )
             if len(inbox_tasks) > 0:
                 inbox_task_activities = await uow.get_for(
@@ -67,7 +70,7 @@ class TimePlanActivityArchiveUseCase(
                     target_ref_id=[it.ref_id for it in inbox_tasks],
                 )
                 for inbox_task_activity in inbox_task_activities:
-                    await generic_archiver(
+                    await generic_crown_archiver(
                         context.domain_context,
                         uow,
                         progress_reporter,
@@ -75,7 +78,7 @@ class TimePlanActivityArchiveUseCase(
                         inbox_task_activity.ref_id,
                     )
 
-        await generic_archiver(
+        await generic_crown_archiver(
             context.domain_context,
             uow,
             progress_reporter,

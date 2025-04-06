@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,7 +21,7 @@ class Project:
         last_modified_time (str): A timestamp in the application.
         name (str): The project name.
         project_collection_ref_id (str):
-        order_of_child_projects (List[str]):
+        order_of_child_projects (list[str]):
         archived_time (Union[None, Unset, str]):
         parent_project_ref_id (Union[None, Unset, str]):
     """
@@ -32,12 +33,12 @@ class Project:
     last_modified_time: str
     name: str
     project_collection_ref_id: str
-    order_of_child_projects: List[str]
+    order_of_child_projects: list[str]
     archived_time: Union[None, Unset, str] = UNSET
     parent_project_ref_id: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         version = self.version
@@ -66,7 +67,7 @@ class Project:
         else:
             parent_project_ref_id = self.parent_project_ref_id
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -88,8 +89,8 @@ class Project:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -104,7 +105,7 @@ class Project:
 
         project_collection_ref_id = d.pop("project_collection_ref_id")
 
-        order_of_child_projects = cast(List[str], d.pop("order_of_child_projects"))
+        order_of_child_projects = cast(list[str], d.pop("order_of_child_projects"))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -141,7 +142,7 @@ class Project:
         return project
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

@@ -14,8 +14,6 @@ Inbox tasks have a _name_, which should tell you what the task is all about.
 
 Tasks have a _status_, which can be one of:
 
-* _Accepted_: all tasks you created by hand should start with this status. It means
-  you’re going to start working on the task in the near future.
 * _Recurring_: all tasks you created from chores, habits, metrics, persons, etc
   start with this status. It means you’re going to start working on the task in the
   near future.
@@ -29,10 +27,6 @@ Tasks have a _status_, which can be one of:
   and then to “Not Done” or “Done”.
 * _Done_: all tasks that are finished, with the desired outcome.
 * _Not Done_: all tasks that are finished, but not with the desired outcome.
-* _Archived_: tasks which have been archived [garbage collection](./garbage-collection.md).
-  You can also achieve them via manually changing their status too.
-* _No Status_: tasks which you perhaps created, but don’t plan on actioning in any
-  way.
 
 Tasks also have a _source_, which can be one of:
 

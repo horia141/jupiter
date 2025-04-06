@@ -1,4 +1,5 @@
 """An URL in this domain."""
+
 from functools import total_ordering
 
 import validators

@@ -3,24 +3,37 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  styled,
+} from "@mui/material";
 import { Form, Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
-import React, {
+import {
+  Fragment,
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type PropsWithChildren,
 } from "react";
-import { useHydrated } from "remix-utils";
+
 import { extractBranchFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,
   saveScrollPosition,
 } from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { useHydrated } from "~/rendering/use-hidrated";
 import { useTrunkNeedsToShowLeaf } from "~/rendering/use-nested-entities";
 
 const SMALL_SCREEN_ANIMATION_START = "100vw";
@@ -28,8 +41,9 @@ const SMALL_SCREEN_ANIMATION_END = "100vw";
 
 interface BranchPanelProps {
   createLocation?: string;
-  showArchiveButton?: boolean;
-  enableArchiveButton?: boolean;
+  showArchiveAndRemoveButton?: boolean;
+  inputsEnabled?: boolean;
+  entityArchived?: boolean;
   extraControls?: JSX.Element[];
   returnLocation: string;
 }
@@ -41,6 +55,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   const isPresent = useIsPresent();
   const isHydrated = useHydrated();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   // This little function is a hack to get around the fact that Framer Motion
   // generates a translateX(Xpx) CSS applied to the StyledMotionDrawer element.
@@ -49,7 +64,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   // to be relative to the viewport, not this element. So we use this function to
   // not emit a translateX in case of 0px. So whenever any leaf element appears
   // it'll work relative to the whole viewport.
-  function template({ x }: { x: string }, generatedTransform: string): string {
+  function template({ x }: { x: string }, _generatedTransform: string): string {
     if (x === "0px" || x === "0vw" || x === "0%" || x === "0") {
       if (isHydrated) {
         return "";
@@ -70,7 +85,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
       }
       saveScrollPosition(ref, pathname);
     },
-    [isPresent, isBigScreen]
+    [isPresent, isBigScreen],
   );
 
   useEffect(() => {
@@ -88,7 +103,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
       handleScroll(
         theRef,
         extractBranchFromPath(location.pathname),
-        shouldShowALeaf
+        shouldShowALeaf,
       );
     }
 
@@ -132,7 +147,6 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
       id="branch-panel"
       key={extractBranchFromPath(location.pathname)}
       transformTemplate={template}
-      isBigScreen={isBigScreen}
       initial={{
         opacity: 0,
         x: isBigScreen ? undefined : SMALL_SCREEN_ANIMATION_START,
@@ -176,22 +190,58 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
                 />
               )}
 
-              {props.showArchiveButton && (
-                <IconButton
-                  id="branch-entity-archive"
-                  sx={{ marginLeft: "auto" }}
-                  disabled={!props.enableArchiveButton}
-                  type="submit"
-                  name="intent"
-                  value="archive"
-                >
-                  <DeleteIcon />
-                </IconButton>
+              {props.showArchiveAndRemoveButton && (
+                <>
+                  <IconButton
+                    id="branch-entity-archive"
+                    sx={{ marginLeft: "auto" }}
+                    disabled={!props.entityArchived && !props.inputsEnabled}
+                    type="button"
+                    onClick={() => setShowArchiveDialog(true)}
+                  >
+                    {props.entityArchived ? (
+                      <DeleteForeverIcon />
+                    ) : (
+                      <DeleteIcon />
+                    )}
+                  </IconButton>
+                  <Dialog
+                    onClose={() => setShowArchiveDialog(false)}
+                    open={showArchiveDialog}
+                    disablePortal
+                  >
+                    <DialogTitle>Careful!</DialogTitle>
+                    <DialogContent>
+                      Are you sure you want to{" "}
+                      {props.entityArchived ? "remove" : "archive"} this entity?
+                      {props.entityArchived
+                        ? " This action cannot be undone."
+                        : ""}
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        id="branch-entity-archive-confirm"
+                        sx={{ marginLeft: "auto" }}
+                        disabled={!props.entityArchived && !props.inputsEnabled}
+                        type="submit"
+                        name="intent"
+                        value={props.entityArchived ? "remove" : "archive"}
+                      >
+                        Yes
+                      </Button>
+                      <Button onClick={() => setShowArchiveDialog(false)}>
+                        No
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </>
               )}
 
               <IconButton
                 sx={{
-                  marginLeft: !props.showArchiveButton ? "auto" : undefined,
+                  marginLeft: !props.showArchiveAndRemoveButton
+                    ? "auto"
+                    : undefined,
                 }}
               >
                 <Link style={{ display: "flex" }} to={props.returnLocation}>
@@ -215,16 +265,10 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   );
 }
 
-interface BranchPanelFrameProps {
-  isBigScreen: boolean;
-}
-
-const BranchPanelFrame = styled(motion.div)<BranchPanelFrameProps>(
-  ({ theme, isBigScreen }) => ({
-    backgroundColor: theme.palette.background.paper,
-    width: "100vw",
-  })
-);
+const BranchPanelFrame = styled(motion.div)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  width: "100vw",
+}));
 
 const BranchPanelControls = styled("div")(
   ({ theme }) => `
@@ -233,7 +277,7 @@ const BranchPanelControls = styled("div")(
       background-color: ${theme.palette.background.paper};
       border-radius: 0px;
       box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
-      `
+      `,
 );
 
 interface TrunkPanelControlsInnerProps {
@@ -247,8 +291,8 @@ const TrunkPanelControlsInner = styled(Box)<TrunkPanelControlsInnerProps>(
     margin: "auto",
     display: "flex",
     alignItems: "center",
-    gap: "1rem",
-  })
+    gap: isbigscreen === "true" ? "1rem" : "0.2rem",
+  }),
 );
 
 interface TrunkPanelExtraControlsProps {
@@ -266,7 +310,7 @@ function TrunkPanelExtraControls({
     return (
       <>
         {controls.map((c, i) => (
-          <React.Fragment key={i}>{c}</React.Fragment>
+          <Fragment key={i}>{c}</Fragment>
         ))}
       </>
     );
@@ -295,7 +339,7 @@ function TrunkPanelExtraControls({
             <TrunkPanelExtraControlsOuterContainer>
               <TrunkPanelExtraControlsInnerContainer>
                 {controls.map((c, i) => (
-                  <React.Fragment key={i}>{c}</React.Fragment>
+                  <Fragment key={i}>{c}</Fragment>
                 ))}
               </TrunkPanelExtraControlsInnerContainer>
             </TrunkPanelExtraControlsOuterContainer>
@@ -344,15 +388,21 @@ interface BranchPanelContentProps {
 
 const BranchPanelContent = styled("div")<BranchPanelContentProps>(
   ({ theme, isbigscreen, hasleaf }) => ({
-    width:
-      isbigscreen === "true" ? `${theme.breakpoints.values.lg}px` : "100vw",
-    margin: "auto",
-    padding: isbigscreen === "true" ? "0.5rem" : "0px",
+    paddingBottom: isbigscreen === "true" ? "0.5rem" : "0px",
+    paddingTop: isbigscreen === "true" ? "0.5rem" : "0px",
+    paddingLeft:
+      isbigscreen === "true"
+        ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
+        : "0px",
+    paddingRight:
+      isbigscreen === "true"
+        ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
+        : "0px",
     height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"
     } - ${
       isbigscreen === "true" ? "4rem" : hasleaf === "false" ? "4rem" : "0px"
     })`,
     overflowY: "scroll",
-  })
+  }),
 );

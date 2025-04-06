@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,28 +18,28 @@ class InitArgs:
         user_email_address (str): An email address.
         user_name (str): The user name for a user of jupiter.
         user_timezone (str): A timezone in this domain.
-        user_feature_flags (List[UserFeature]):
+        user_feature_flags (list[UserFeature]):
         auth_password (str): A new password in plain text, as received from a user.
         auth_password_repeat (str): A new password in plain text, as received from a user.
         workspace_name (str): The workspace name.
         workspace_first_schedule_stream_name (str): The name of a schedule stream.
         workspace_root_project_name (str): The project name.
-        workspace_feature_flags (List[WorkspaceFeature]):
+        workspace_feature_flags (list[WorkspaceFeature]):
     """
 
     user_email_address: str
     user_name: str
     user_timezone: str
-    user_feature_flags: List[UserFeature]
+    user_feature_flags: list[UserFeature]
     auth_password: str
     auth_password_repeat: str
     workspace_name: str
     workspace_first_schedule_stream_name: str
     workspace_root_project_name: str
-    workspace_feature_flags: List[WorkspaceFeature]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    workspace_feature_flags: list[WorkspaceFeature]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         user_email_address = self.user_email_address
 
         user_name = self.user_name
@@ -65,7 +66,7 @@ class InitArgs:
             workspace_feature_flags_item = workspace_feature_flags_item_data.value
             workspace_feature_flags.append(workspace_feature_flags_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -85,8 +86,8 @@ class InitArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         user_email_address = d.pop("user_email_address")
 
         user_name = d.pop("user_name")
@@ -134,7 +135,7 @@ class InitArgs:
         return init_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

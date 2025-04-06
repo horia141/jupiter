@@ -1,8 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { BigPlanArchiveArgs } from '../models/BigPlanArchiveArgs';
-import type { BigPlanChangeProjectArgs } from '../models/BigPlanChangeProjectArgs';
 import type { BigPlanCreateArgs } from '../models/BigPlanCreateArgs';
 import type { BigPlanCreateResult } from '../models/BigPlanCreateResult';
 import type { BigPlanFindArgs } from '../models/BigPlanFindArgs';
@@ -12,14 +12,10 @@ import type { BigPlanLoadResult } from '../models/BigPlanLoadResult';
 import type { BigPlanRemoveArgs } from '../models/BigPlanRemoveArgs';
 import type { BigPlanUpdateArgs } from '../models/BigPlanUpdateArgs';
 import type { BigPlanUpdateResult } from '../models/BigPlanUpdateResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class BigPlansService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a big plan.
      * The command for archiving a big plan.
@@ -42,30 +38,6 @@ export class BigPlansService {
             },
         });
     }
-
-    /**
-     * The command for changing the project of a big plan.
-     * The command for changing the project of a big plan.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public bigPlanChangeProject(
-        requestBody?: BigPlanChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/big-plan-change-project',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
     /**
      * The command for creating a big plan.
      * The command for creating a big plan.
@@ -88,7 +60,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for finding a big plan.
      * The command for finding a big plan.
@@ -111,7 +82,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The use case for loading a particular big plan.
      * The use case for loading a particular big plan.
@@ -134,7 +104,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for removing a big plan.
      * The command for removing a big plan.
@@ -157,7 +126,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for updating a big plan.
      * The command for updating a big plan.
@@ -180,5 +148,4 @@ export class BigPlansService {
             },
         });
     }
-
 }

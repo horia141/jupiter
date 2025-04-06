@@ -1,4 +1,7 @@
 import { Alert } from "@mui/material";
+import { useSnackbar } from "notistack";
+import { useEffect } from "react";
+
 import type { ActionResult } from "~/logic/action-result";
 import { getFieldError } from "~/logic/action-result";
 
@@ -8,6 +11,33 @@ interface GlobalErrorProps {
 }
 
 export function GlobalError(props: GlobalErrorProps) {
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (props.actionResult === undefined) {
+      return;
+    }
+    if (props.actionResult.theType !== "some-error-no-data") {
+      return;
+    }
+    if (props.actionResult.globalError === null) {
+      return;
+    }
+    if (
+      props.intent !== undefined &&
+      props.actionResult.intent !== props.intent
+    ) {
+      return;
+    }
+
+    enqueueSnackbar("The values supplied were invalid", {
+      key: "errors",
+      preventDuplicate: true,
+      autoHideDuration: 6000,
+      variant: "error",
+    });
+  }, [enqueueSnackbar, props.actionResult, props.intent]);
+
   if (props.actionResult === undefined) {
     return null;
   }
@@ -33,6 +63,30 @@ interface FieldErrorProps {
 }
 
 export function FieldError(props: FieldErrorProps) {
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (props.actionResult === undefined) {
+      return;
+    }
+    if (props.actionResult.theType !== "some-error-no-data") {
+      return;
+    }
+
+    const errorMsg = getFieldError(props.actionResult, props.fieldName);
+
+    if (errorMsg === undefined) {
+      return;
+    }
+
+    enqueueSnackbar("The values supplied were invalid", {
+      key: "errors",
+      preventDuplicate: true,
+      autoHideDuration: 6000,
+      variant: "error",
+    });
+  }, [enqueueSnackbar, props.actionResult, props.fieldName]);
+
   if (props.actionResult === undefined) {
     return null;
   }

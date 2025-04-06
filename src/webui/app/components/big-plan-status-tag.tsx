@@ -1,8 +1,10 @@
 import { BigPlanStatus } from "@jupiter/webapi-client";
+
 import {
   bigPlanStatusIcon,
   bigPlanStatusName,
 } from "~/logic/domain/big-plan-status";
+
 import { SlimChip } from "./infra/chips";
 
 interface Props {
@@ -25,12 +27,10 @@ export function BigPlanStatusTag(props: Props) {
 }
 
 function statusToClass(
-  status: BigPlanStatus
-): "default" | "info" | "warning" | "success" | "error" {
+  status: BigPlanStatus,
+): "info" | "warning" | "success" | "error" {
   switch (status) {
     case BigPlanStatus.NOT_STARTED:
-      return "default";
-    case BigPlanStatus.ACCEPTED:
       return "info";
     case BigPlanStatus.IN_PROGRESS:
       return "warning";

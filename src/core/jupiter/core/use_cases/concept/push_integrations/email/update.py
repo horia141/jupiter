@@ -1,6 +1,10 @@
 """The command for updating a email task."""
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.application.gen.service.gen_service import GenService
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -20,6 +24,7 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
@@ -45,8 +50,8 @@ class EmailTaskUpdateArgs(UseCaseArgsBase):
     body: UpdateAction[str]
     generation_name: UpdateAction[InboxTaskName | None]
     generation_status: UpdateAction[InboxTaskStatus | None]
-    generation_eisen: UpdateAction[Eisen | None]
-    generation_difficulty: UpdateAction[Difficulty | None]
+    generation_eisen: UpdateAction[Eisen]
+    generation_difficulty: UpdateAction[Difficulty]
     generation_actionable_date: UpdateAction[ADate | None]
     generation_due_date: UpdateAction[ADate | None]
 
@@ -107,14 +112,15 @@ class EmailTaskUpdateUseCase(
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
-        generated_inbox_task = (
-            await uow.get_for(InboxTask).find_all_generic(
-                parent_ref_id=inbox_task_collection.ref_id,
-                allow_archived=False,
-                source=[InboxTaskSource.EMAIL_TASK],
-                email_task_ref_id=[email_task.ref_id],
-            )
-        )[0]
+        all_inbox_tasks = await uow.get(
+            InboxTaskRepository
+        ).find_all_for_source_created_desc(
+            parent_ref_id=inbox_task_collection.ref_id,
+            allow_archived=False,
+            source=InboxTaskSource.EMAIL_TASK,
+            source_entity_ref_id=email_task.ref_id,
+        )
+        generated_inbox_task = all_inbox_tasks[0]
 
         generated_inbox_task = generated_inbox_task.update_link_to_email_task(
             ctx=context.domain_context,
@@ -142,3 +148,23 @@ class EmailTaskUpdateUseCase(
 
         await uow.get_for(EmailTask).save(email_task)
         await progress_reporter.mark_updated(email_task)
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: EmailTaskUpdateArgs,
+        result: None,
+    ) -> None:
+        """Execute the command's post-mutation work."""
+        await GenService(self._domain_storage_engine).do_it(
+            context.domain_context,
+            progress_reporter=progress_reporter,
+            user=context.user,
+            workspace=context.workspace,
+            gen_even_if_not_modified=False,
+            today=self._time_provider.get_current_date(),
+            gen_targets=[SyncTarget.EMAIL_TASKS],
+            period=None,
+            filter_email_task_ref_ids=[args.ref_id],
+        )

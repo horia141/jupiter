@@ -1,4 +1,5 @@
 """A particular entry in the score log related to an task being completed."""
+
 import abc
 import random
 
@@ -94,18 +95,14 @@ class ScoreLogEntry(LeafEntity):
     ) -> int:
         lucky_puppy_modifier = 1 if has_lucky_puppy_bonus else 0
         if inbox_task.status == InboxTaskStatus.DONE:
-            if inbox_task.difficulty is None:
-                return 1 + lucky_puppy_modifier
-            elif inbox_task.difficulty == Difficulty.EASY:
+            if inbox_task.difficulty == Difficulty.EASY:
                 return 1 + lucky_puppy_modifier
             elif inbox_task.difficulty == Difficulty.MEDIUM:
                 return 2 + lucky_puppy_modifier
             else:  # inbox_task.difficulty == Difficulty.HARD:
                 return 5 + lucky_puppy_modifier
         else:  # inbox_task.status == InboxTaskStatus.NOT_DONE:
-            if inbox_task.difficulty is None:
-                return -1
-            elif inbox_task.difficulty == Difficulty.EASY:
+            if inbox_task.difficulty == Difficulty.EASY:
                 return -1
             elif inbox_task.difficulty == Difficulty.MEDIUM:
                 return -2

@@ -1,4 +1,5 @@
 """A producer of auth tokens."""
+
 from typing import Final
 
 from jupiter.core.domain.concept.auth.auth_token import AuthToken

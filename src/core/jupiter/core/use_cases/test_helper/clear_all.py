@@ -1,4 +1,5 @@
 """The command for clearing all branch and leaf type entities."""
+
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.concept.auth.password_plain import PasswordPlain

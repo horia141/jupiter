@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -8,14 +9,10 @@ import type { SmartListTagLoadArgs } from '../models/SmartListTagLoadArgs';
 import type { SmartListTagLoadResult } from '../models/SmartListTagLoadResult';
 import type { SmartListTagRemoveArgs } from '../models/SmartListTagRemoveArgs';
 import type { SmartListTagUpdateArgs } from '../models/SmartListTagUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class TagService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a smart list tag.
      * The command for archiving a smart list tag.
@@ -38,7 +35,6 @@ export class TagService {
             },
         });
     }
-
     /**
      * The command for creating a smart list tag.
      * The command for creating a smart list tag.
@@ -61,7 +57,6 @@ export class TagService {
             },
         });
     }
-
     /**
      * Use case for loading a smart list tag.
      * Use case for loading a smart list tag.
@@ -84,7 +79,6 @@ export class TagService {
             },
         });
     }
-
     /**
      * The command for removing a smart list tag.
      * The command for removing a smart list tag.
@@ -107,7 +101,6 @@ export class TagService {
             },
         });
     }
-
     /**
      * The command for updating a smart list tag.
      * The command for updating a smart list tag.
@@ -130,5 +123,4 @@ export class TagService {
             },
         });
     }
-
 }

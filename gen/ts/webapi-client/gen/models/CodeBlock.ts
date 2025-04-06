@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { CorrelationId } from './CorrelationId';
-
 /**
  * A code block.
  */
@@ -14,13 +13,9 @@ export type CodeBlock = {
     language?: (string | null);
     show_line_numbers?: (boolean | null);
 };
-
 export namespace CodeBlock {
-
     export enum kind {
         CODE = 'code',
     }
-
-
 }
 

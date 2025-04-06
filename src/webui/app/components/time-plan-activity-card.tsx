@@ -12,6 +12,7 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import { Typography } from "@mui/material";
+
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -19,6 +20,7 @@ import { TimePlanActivityFeasabilityTag } from "~/components/time-plan-activity-
 import { TimePlanActivityKindTag } from "~/components/time-plan-activity-kind-tag";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { ADateTag } from "./adate-tag";
 import { TimePlanTag } from "./time-plan-tag";
 
@@ -39,12 +41,12 @@ interface TimePlanActivityCardProps {
 
 export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
   const timePlan = props.timePlansByRefId.get(
-    props.activity.time_plan_ref_id.toString()
+    props.activity.time_plan_ref_id.toString(),
   );
 
   if (props.activity.target === TimePlanActivityTarget.INBOX_TASK) {
     const inboxTask = props.inboxTasksByRefId.get(
-      props.activity.target_ref_id
+      props.activity.target_ref_id,
     )!;
     const timeEvents =
       props.timeEventsByRefId.get(`it:${inboxTask.ref_id}`) ?? [];
@@ -70,7 +72,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         }
       >
         <EntityLink
-          to={`/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
+          to={`/app/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
           <Typography
@@ -112,7 +114,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
   } else if (
     isWorkspaceFeatureAvailable(
       props.topLevelInfo.workspace,
-      WorkspaceFeature.BIG_PLANS
+      WorkspaceFeature.BIG_PLANS,
     )
   ) {
     const bigPlan = props.bigPlansByRefId.get(props.activity.target_ref_id)!;
@@ -137,7 +139,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
         }
       >
         <EntityLink
-          to={`/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
+          to={`/app/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
           <Typography

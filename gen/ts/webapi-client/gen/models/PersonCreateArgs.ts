@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { PersonBirthday } from './PersonBirthday';
@@ -10,7 +10,6 @@ import type { PersonRelationship } from './PersonRelationship';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
-
 /**
  * Person create args..
  */

@@ -14,15 +14,16 @@ docker pull hadolint/hadolint:latest-debian
 
 bundle install
 
-poetry install --no-interaction --no-ansi --no-root
+poetry install --no-interaction --no-ansi
 (cd src/core && poetry install --no-interaction --no-ansi)
-(cd src/cli && poetry install --no-interaction --no-ansi --no-root)
-(cd src/webapi && poetry install --no-interaction --no-ansi --no-root)
-(cd itests && poetry install --no-interaction --no-ansi --no-root)
+(cd src/cli && poetry install --no-interaction --no-ansi)
+(cd src/webapi && poetry install --no-interaction --no-ansi)
+(cd src/docs && poetry install --no-interaction --no-ansi)
+(cd itests && poetry install --no-interaction --no-ansi)
 
-npm ci --ws --include-workspace-root
-(cd src/desktop && npm install --no-ansi)
-(cd src/mobile && npm install --no-ansi)
+npm ci --no-save
+(cd src/desktop && npm install --no-save)
+(cd src/mobile && npm install --no-save)
 
 playwright install
 

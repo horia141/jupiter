@@ -1,4 +1,5 @@
 """UseCase for showing the projects."""
+
 from collections import defaultdict
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -27,9 +28,9 @@ class ProjectShow(LoggedInReadonlyCommand[ProjectFindUseCase, ProjectFindResult]
         context: AppLoggedInReadonlyUseCaseContext,
         result: ProjectFindResult,
     ) -> None:
-        project_tree: defaultdict[
-            EntityId | None, list[ProjectFindResultEntry]
-        ] = defaultdict(list)
+        project_tree: defaultdict[EntityId | None, list[ProjectFindResultEntry]] = (
+            defaultdict(list)
+        )
         for entry in result.entries:
             project_tree[entry.project.parent_project_ref_id].append(entry)
 

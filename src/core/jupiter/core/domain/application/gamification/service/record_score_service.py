@@ -1,4 +1,5 @@
 """A service that records scores for various actions."""
+
 import asyncio
 
 from jupiter.core.domain.application.gamification.score_log import ScoreLog

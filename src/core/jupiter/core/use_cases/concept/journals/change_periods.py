@@ -1,4 +1,5 @@
 """Use case for changing the periods for journals."""
+
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature

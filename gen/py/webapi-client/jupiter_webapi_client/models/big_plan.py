@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -26,7 +27,6 @@ class BigPlan:
         archived_time (Union[None, Unset, str]):
         actionable_date (Union[None, Unset, str]):
         due_date (Union[None, Unset, str]):
-        accepted_time (Union[None, Unset, str]):
         working_time (Union[None, Unset, str]):
         completed_time (Union[None, Unset, str]):
     """
@@ -43,12 +43,11 @@ class BigPlan:
     archived_time: Union[None, Unset, str] = UNSET
     actionable_date: Union[None, Unset, str] = UNSET
     due_date: Union[None, Unset, str] = UNSET
-    accepted_time: Union[None, Unset, str] = UNSET
     working_time: Union[None, Unset, str] = UNSET
     completed_time: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         version = self.version
@@ -85,12 +84,6 @@ class BigPlan:
         else:
             due_date = self.due_date
 
-        accepted_time: Union[None, Unset, str]
-        if isinstance(self.accepted_time, Unset):
-            accepted_time = UNSET
-        else:
-            accepted_time = self.accepted_time
-
         working_time: Union[None, Unset, str]
         if isinstance(self.working_time, Unset):
             working_time = UNSET
@@ -103,7 +96,7 @@ class BigPlan:
         else:
             completed_time = self.completed_time
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -124,8 +117,6 @@ class BigPlan:
             field_dict["actionable_date"] = actionable_date
         if due_date is not UNSET:
             field_dict["due_date"] = due_date
-        if accepted_time is not UNSET:
-            field_dict["accepted_time"] = accepted_time
         if working_time is not UNSET:
             field_dict["working_time"] = working_time
         if completed_time is not UNSET:
@@ -134,8 +125,8 @@ class BigPlan:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -181,15 +172,6 @@ class BigPlan:
 
         due_date = _parse_due_date(d.pop("due_date", UNSET))
 
-        def _parse_accepted_time(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        accepted_time = _parse_accepted_time(d.pop("accepted_time", UNSET))
-
         def _parse_working_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -221,7 +203,6 @@ class BigPlan:
             archived_time=archived_time,
             actionable_date=actionable_date,
             due_date=due_date,
-            accepted_time=accepted_time,
             working_time=working_time,
             completed_time=completed_time,
         )
@@ -230,7 +211,7 @@ class BigPlan:
         return big_plan
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,9 +28,9 @@ class VacationUpdateArgs:
     name: "VacationUpdateArgsName"
     start_date: "VacationUpdateArgsStartDate"
     end_date: "VacationUpdateArgsEndDate"
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         name = self.name.to_dict()
@@ -38,7 +39,7 @@ class VacationUpdateArgs:
 
         end_date = self.end_date.to_dict()
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -52,12 +53,12 @@ class VacationUpdateArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.vacation_update_args_end_date import VacationUpdateArgsEndDate
         from ..models.vacation_update_args_name import VacationUpdateArgsName
         from ..models.vacation_update_args_start_date import VacationUpdateArgsStartDate
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         name = VacationUpdateArgsName.from_dict(d.pop("name"))
@@ -77,7 +78,7 @@ class VacationUpdateArgs:
         return vacation_update_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

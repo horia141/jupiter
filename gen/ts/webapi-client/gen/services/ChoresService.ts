@@ -1,26 +1,23 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { ChoreArchiveArgs } from '../models/ChoreArchiveArgs';
-import type { ChoreChangeProjectArgs } from '../models/ChoreChangeProjectArgs';
 import type { ChoreCreateArgs } from '../models/ChoreCreateArgs';
 import type { ChoreCreateResult } from '../models/ChoreCreateResult';
 import type { ChoreFindArgs } from '../models/ChoreFindArgs';
 import type { ChoreFindResult } from '../models/ChoreFindResult';
 import type { ChoreLoadArgs } from '../models/ChoreLoadArgs';
 import type { ChoreLoadResult } from '../models/ChoreLoadResult';
+import type { ChoreRegenArgs } from '../models/ChoreRegenArgs';
 import type { ChoreRemoveArgs } from '../models/ChoreRemoveArgs';
 import type { ChoreSuspendArgs } from '../models/ChoreSuspendArgs';
 import type { ChoreUnsuspendArgs } from '../models/ChoreUnsuspendArgs';
 import type { ChoreUpdateArgs } from '../models/ChoreUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ChoresService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a chore.
      * The command for archiving a chore.
@@ -43,30 +40,6 @@ export class ChoresService {
             },
         });
     }
-
-    /**
-     * The command for changing the project of a chore.
-     * The command for changing the project of a chore.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public choreChangeProject(
-        requestBody?: ChoreChangeProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/chore-change-project',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
     /**
      * The command for creating a chore.
      * The command for creating a chore.
@@ -89,7 +62,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for finding a chore.
      * The command for finding a chore.
@@ -112,7 +84,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * Use case for loading a particular chore.
      * Use case for loading a particular chore.
@@ -135,7 +106,28 @@ export class ChoresService {
             },
         });
     }
-
+    /**
+     * A use case for regenerating tasks associated with chores.
+     * A use case for regenerating tasks associated with chores.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public choreRegen(
+        requestBody?: ChoreRegenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/chore-regen',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
     /**
      * The command for removing a chore.
      * The command for removing a chore.
@@ -158,7 +150,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for suspending a chore.
      * The command for suspending a chore.
@@ -181,7 +172,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for unsuspending a chore.
      * The command for unsuspending a chore.
@@ -204,7 +194,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for updating a chore.
      * The command for updating a chore.
@@ -227,5 +216,4 @@ export class ChoresService {
             },
         });
     }
-
 }
