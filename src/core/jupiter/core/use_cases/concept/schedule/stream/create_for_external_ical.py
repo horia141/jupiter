@@ -65,12 +65,18 @@ class ScheduleStreamCreateForExternalIcalUseCase(
         )
 
         try:
-            calendar_ical_response = requests.get(args.source_ical_url.the_url)
+            calendar_ical_response = requests.get(
+                args.source_ical_url.the_url, timeout=10
+            )
             if calendar_ical_response.status_code != 200:
                 raise InputValidationError(
                     f"Failed to fetch iCal from {args.source_ical_url} (error {calendar_ical_response.status_code})"
                 )
             calendar_ical = calendar_ical_response.text
+        except requests.exceptions.Timeout as err:
+            raise InputValidationError(
+                f"Failed to fetch iCal from {args.source_ical_url} (timeout)"
+            ) from err
         except requests.RequestException as err:
             raise InputValidationError(
                 f"Failed to fetch iCal from {args.source_ical_url} ({err})"

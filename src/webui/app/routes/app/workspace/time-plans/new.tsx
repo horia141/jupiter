@@ -93,12 +93,12 @@ export default function NewTimePlan() {
         title="Properties"
         actions={
           <SectionActions
-            id="time-plan-create"
+            id="time-plan-properties"
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
             actions={[
               ActionSingle({
-                id: "create",
+                id: "time-plan-create",
                 text: "Create",
                 value: "create",
                 disabled: !inputsEnabled,

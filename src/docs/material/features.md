@@ -1,6 +1,7 @@
 # Features Map
 
-There are many ways to run Thrive, as detailed in [hosting](concepts/hosting-options.md). Not all features or surfaces are going to be availabe in all modes, due to many
+There are many ways to run Thrive, as detailed in [hosting](concepts/hosting-options.md).
+Not all features or surfaces are going to be availabe in all modes, due to many
 of them requiring specialized infrastructure, or some level of centralised
 control.
 

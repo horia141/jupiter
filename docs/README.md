@@ -190,7 +190,7 @@ We aim to keep this under 30 seconds.
 
 ## Fixing Issues
 
-Run `make fix-style` to fix many linting issues.
+Run `./scripts/check/fix-style.sh` to fix many linting issues.
 
 ### Integration Tests
 

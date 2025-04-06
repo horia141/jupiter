@@ -37,7 +37,6 @@ def new_user_and_workspace(
 ) -> Iterator[InitResult]:
     """Create a new user and workspace."""
     guest_client = Client(base_url=webapi_server_url)
-    print(f"webapi_server_url: {webapi_server_url}")
 
     init_response = init_sync(
         client=guest_client,

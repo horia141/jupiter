@@ -1,12 +1,15 @@
 FROM python:3.13.0
 LABEL maintainer='horia141@gmail.com'
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN apt-get update && \
-    apt-get install -y git curl netcat dumb-init --no-install-recommends && \
+    apt-get install -y git curl netcat-openbsd dumb-init --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir "pipx==1.1.0" && pipx install "poetry==1.3.1"
-ENV PATH="/root/.local/bin:${PATH}"
+RUN pip install --no-cache-dir "pipx==1.1.0" && pipx install "poetry==2.1.1"
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.local/bin:/root/.cargo/bin:${PATH}"
 
 WORKDIR /jupiter
 

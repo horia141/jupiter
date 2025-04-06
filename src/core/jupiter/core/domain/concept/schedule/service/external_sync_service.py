@@ -57,7 +57,6 @@ from jupiter.core.framework.realm import RealmCodecRegistry
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
-from pendulum import Date
 
 
 class ScheduleExternalSyncService:
@@ -797,7 +796,7 @@ class ScheduleExternalSyncService:
         """Retrieve the iCal for a schedule stream."""
         try:
             calendar_ical_response = requests.get(
-                cast(URL, schedule_stream.source_ical_url).the_url
+                cast(URL, schedule_stream.source_ical_url).the_url, timeout=10
             )
             if calendar_ical_response.status_code != 200:
                 # Early exit mark some error in sync log entry
@@ -805,6 +804,10 @@ class ScheduleExternalSyncService:
                     f"Failed to fetch iCal from {schedule_stream.source_ical_url} (error {calendar_ical_response.status_code})"
                 )
             calendar_ical = calendar_ical_response.text
+        except requests.exceptions.Timeout as err:
+            raise ValueError(
+                f"Failed to fetch iCal from {schedule_stream.source_ical_url} (timeout)"
+            ) from err
         except requests.RequestException as err:
             # Early exit in sync log entry
             raise ValueError(

@@ -264,7 +264,7 @@ def test_time_plan_update(page: Page, create_time_plan) -> None:
 
     page.locator('input[name="rightNow"]').fill("2024-06-19")
     page.locator('button[id="period-daily"]').click()
-    page.locator("#time-plan-update").click()
+    page.locator("#time-plan-change-time-config").click()
 
     page.wait_for_url(re.compile(r"/app/workspace/time-plans/\d+"))
 
@@ -308,7 +308,7 @@ def test_time_plan_archive(page: Page, create_time_plan) -> None:
     page.locator("#branch-entity-archive").click()
     page.locator("#branch-entity-archive-confirm").click()
 
-    expect(page.locator("#time-plan-update")).to_be_disabled()
+    expect(page.locator("#time-plan-change-time-config")).to_be_disabled()
 
     entity_id = page.url.split("/")[-1]
     expect(page.locator(f"#time-plan-{entity_id}")).to_have_count(0)
@@ -1725,7 +1725,16 @@ def test_time_plan_activity_update(
 
     expect(
         page.locator('button[id="time-plan-activity-kind-finish"]')
+    ).to_have_attribute("aria-pressed", "false")
+    expect(
+        page.locator('button[id="time-plan-activity-kind-make-progress"]')
     ).to_have_attribute("aria-pressed", "true")
+    expect(
+        page.locator('button[id="time-plan-activity-feasability-must-do"]')
+    ).to_have_attribute("aria-pressed", "false")
+    expect(
+        page.locator('button[id="time-plan-activity-feasability-nice-to-have"]')
+    ).to_have_attribute("aria-pressed", "false")
     expect(
         page.locator('button[id="time-plan-activity-feasability-stretch"]')
     ).to_have_attribute("aria-pressed", "true")

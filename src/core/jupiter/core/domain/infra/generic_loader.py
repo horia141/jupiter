@@ -35,7 +35,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> _EntityT:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -52,7 +52,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -70,7 +70,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T | None]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -87,7 +87,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, Iterable[_LinkedEntity1T]]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -109,7 +109,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -132,7 +132,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T, _LinkedEntity2T | None]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -154,7 +154,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T, Iterable[_LinkedEntity2T]]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -177,7 +177,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -201,7 +201,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T | None, _LinkedEntity2T | None]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -224,7 +224,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, _LinkedEntity1T | None, Iterable[_LinkedEntity2T]]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -246,7 +246,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -269,7 +269,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, Iterable[_LinkedEntity1T], _LinkedEntity2T | None]:
-    """A generic entity loader."""
+    pass
 
 
 @overload
@@ -291,7 +291,7 @@ async def generic_loader(
     allow_archived: bool = False,
     allow_subentity_archived: bool = False,
 ) -> tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
-    """A generic entity loader."""
+    pass
 
 
 async def generic_loader(  # type: ignore[no-untyped-def]

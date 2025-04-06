@@ -1,6 +1,8 @@
 FROM node:22.14
 LABEL maintainer='horia141@gmail.com'
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends dumb-init && \
     apt-get clean && \
@@ -22,6 +24,7 @@ COPY src/webui/remix.env.d.ts src/webui/remix.env.d.ts
 COPY src/webui/from-electron.d.ts src/webui/from-electron.d.ts
 
 RUN npm install
+RUN cd src/webui && npm install
 
 # hadolint ignore=DL3003
 RUN cd gen/ts/webapi-client && npx tsc

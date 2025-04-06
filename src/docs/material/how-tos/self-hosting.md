@@ -12,7 +12,7 @@ and maintenance yourself.
 
 We've tried making the experience as smooth as possible, but realistically self-hosting
 requires a modicum of tech knowledge. Even if you manage to follow the instructions
-below, there are aspects of reliability, data recovery, security, etc. that are tricky to get right. 
+below, there are aspects of reliability, data recovery, security, etc. that are tricky to get right.
 If you're unsure, the [hosted version](https://get-thriving.com) aims to be respectful
 of you and focused on privacy.
 
@@ -37,7 +37,8 @@ never done it, the setup should be straight-forward.
 A VPS (Virtual Private Server) is a virtualized server that you can rent from a
 cloud provider. It runs on their hardware but gives you full control over the
 operating system and software, just like having your own dedicated server.
-Popular VPS providers include [Hetzner](https://www.hetzner.com/), [DigitalOcean](https://www.digitalocean.com/), [Linode](https://www.linode.com/), and [Vultr](https://www.vultr.com/).
+Popular VPS providers include [Hetzner](https://www.hetzner.com/),
+[DigitalOcean](https://www.digitalocean.com/), [Linode](https://www.linode.com/), and [Vultr](https://www.vultr.com/).
 
 For running Thrive, a basic VPS with 1-2 GB RAM and 1 CPU core should be sufficient
 for personal use. The providers above all offer plans starting around $5-10/month.
@@ -65,7 +66,7 @@ such as `32.114.15.21`. You'll probably want a domain like `my-thrive-instance.c
 so accessing your instance is simpler and more secure (because we'll also get a
 certificate for it).
 
-So instead of going to something like `http://32.114.15.21` to work, you can 
+So instead of going to something like `http://32.114.15.21` to work, you can
 visit to a much nicer `https://my-thrive-instance.com`.
 
 The standard setup for Thrive requires a domain and a certificate, but it also
@@ -73,8 +74,9 @@ offers a way of running things without them. Also, if you've already got a VPN
 and have setup a domain for it, you can adopt to steps to easily make it work
 with them.
 
-You can get a domain from registrars like [Namecheap](https://www.namecheap.com/), [GoDaddy](https://www.godaddy.com/), or [Google Domains](https://domains.google/). Most domains cost around $10-15 per year, but
-you can find ones for as low as $2 per year. 
+You can get a domain from registrars like [Namecheap](https://www.namecheap.com/),
+[GoDaddy](https://www.godaddy.com/), or [Google Domains](https://domains.google/).
+Most domains cost around $10-15 per year, but you can find ones for as low as $2 per year.
 
 After purchasing, you'll need to point your domain to your VPS by creating an `A record` in
 your domain's DNS settings that points to your VPS's IP address. This might look
@@ -89,7 +91,8 @@ The most common way nowadays to get and use an HTTPs certificate is via
 is _the_ tool for actually obtaining and managing the certificate.
 
 It's instructive to read about the effort, the concepts, and tools. But
-in truth, you just need to look at the instructions from [other and pip](https://certbot.eff.org/instructions?ws=other&os=pip&tab=standard).
+in truth, you just need to look at the instructions from
+[other and pip](https://certbot.eff.org/instructions?ws=other&os=pip&tab=standard).
 
 At some point in that tutorial, you're going to run:
 
@@ -101,7 +104,7 @@ Which will ask you about the domain name you wish to obtain the certificate
 for. Enter your domain (say `my-thrive-instance.com`) and, if you've configured
 the DNS settings correctly, you'll get two new files in:
 
-```
+```bash
 /etc/letsencrypt/live/my-thrive-instance.com/fullchain.pem
 /etc/letsencrypt/live/my-thrive-instance.com/privkey.pem
 ```
@@ -113,7 +116,7 @@ to force folks to be _on top of_ domain renewals!
 ### Preparation
 
 With the groundwork out of the way, we can actually do something that
-is specific to Thrive. 
+is specific to Thrive.
 
 First, you need to download some configuration files to
 your machine. Putting these files in your home directory should be enough:
@@ -159,7 +162,8 @@ with `webui.nodomain.conf` - a one word change!
 
 ### Running Things
 
-If you're using a Linux distribution that uses `systemd` (which most should be these days), you need to enable docker as a startup service like so:
+If you're using a Linux distribution that uses `systemd` (which most should
+be these days), you need to enable docker as a startup service like so:
 
 ```bash
 sudo systemctl enable docker
@@ -229,9 +233,14 @@ WIP
 
 ### Reliability
 
-The current setup will be resilient against machine restarts, service failures, etc. With a typical dedicated server or VPS setup this should get you to a cool `3 nines` of availability (or ±8 hours a year of downtime). For self-hosting this should be more than enough.
+The current setup will be resilient against machine restarts, service failures, etc.
+With a typical dedicated server or VPS setup this should get you to a cool `3 nines`
+of availability (or ±8 hours a year of downtime). For self-hosting this should be
+more than enough.
 
-For any higher level of availability, you'll need to find a provider that offers machines with a higher availability SLA. At this point, the typical high-availabilty toolbox of multiple machines, replicated storage, etc. is not available for the self-hosted version.
+For any higher level of availability, you'll need to find a provider that offers machines
+with a higher availability SLA. At this point, the typical high-availabilty toolbox of
+multiple machines, replicated storage, etc. is not available for the self-hosted version.
 
 ### Updating
 
@@ -249,7 +258,8 @@ sudo docker compose up -d
 sudo docker compose logs -f
 ```
 
-Thrive is built in such a way that it will ensure there's a smooth update, and all components are updated and made compatible with the new version.
+Thrive is built in such a way that it will ensure there's a smooth update, and all
+components are updated and made compatible with the new version.
 
 ## With A High-Level Hosting Service (Render, Vercel, Genezio, etc.)
 

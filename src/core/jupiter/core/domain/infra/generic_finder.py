@@ -20,7 +20,7 @@ async def generic_finder(
     *,
     allow_archived: bool = False
 ) -> _EntityT:
-    """Load an entity and linked entities."""
+    pass
 
 
 @overload
@@ -32,7 +32,7 @@ async def generic_finder(
     *,
     allow_archived: bool = False
 ) -> tuple[_EntityT, Iterable[_LinkedEntity1T]]:
-    """Load an entity and linked entities."""
+    pass
 
 
 @overload
@@ -45,7 +45,7 @@ async def generic_finder(
     *,
     allow_archived: bool = False
 ) -> tuple[_EntityT, Iterable[_LinkedEntity1T], Iterable[_LinkedEntity2T]]:
-    """Load an entity and linked entities."""
+    pass
 
 
 async def generic_finder(

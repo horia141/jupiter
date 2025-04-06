@@ -1,7 +1,6 @@
 """An entry in the working_mem.txt system."""
 
 import abc
-from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -25,7 +24,6 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.repository import LeafEntityRepository
-from pendulum.date import Date
 
 
 @entity

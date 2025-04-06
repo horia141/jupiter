@@ -338,7 +338,7 @@ export default function TimePlanView() {
                 inputsEnabled={inputsEnabled}
                 actions={[
                   ActionSingle({
-                    id: "change-time-config",
+                    id: "time-plan-change-time-config",
                     text: "Change Time Config",
                     value: "change-time-config",
                     disabled: !inputsEnabled,

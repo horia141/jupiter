@@ -14,12 +14,12 @@ Inspiration comes from [Getting Things Done](https://gettingthingsdone.com/what-
 existentialist philosophy, [Notion](https://notion.so), Todoist, and many others.
 
 The current version is both a [webapp](https://get-thriving.com), a desktop app,
- a mobile app, a PWA, and a [CLI application](how-tos/install.md). You can even [self-host](how-tos/self-hosting.md) it.
+a mobile app, a PWA, and a [CLI application](how-tos/install.md). You can even [self-host](how-tos/self-hosting.md) it.
 
- Checkout the full list of [features](features.md), but here's a sneak peek at
- what it can do.
- 
- Here's a picture from the "inbox" view:
+Checkout the full list of [features](features.md), but here's a sneak peek at
+what it can do.
+
+Here's a picture from the "inbox" view:
 
 ![Inbox Tasks](assets/showcase/showcase-inbox-tasks.png)
 

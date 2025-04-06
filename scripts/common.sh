@@ -151,7 +151,7 @@ get_jupiter_port() {
 }
 
 get_namespace() {
-    poetry run randomname generate
+    poetry run codename -s '-'
 }
 
 get_free_port() {

@@ -29,6 +29,11 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "2.7"
+      - name: Set up Rust
+        uses: actions/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:

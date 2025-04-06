@@ -5,7 +5,8 @@
 The simplest way to use Thrive is by using the [web application](https://get-thriving.com/).
 If this is the first time you're visiting you'll be prompted to create an account.
 
-By using the web application you will be running in [global hosted mode](../concepts/hosting-options.md). You can access the web app in self hosted mode too.
+By using the web application you will be running in
+[global hosted mode](../concepts/hosting-options.md). You can access the web app in self hosted mode too.
 
 ## Desktop App, Mobile Apps, PWA
 
@@ -15,7 +16,8 @@ mobile (iOS and Android) too.
 ## MacOS Dmg Local
 
 For MacOS, a simple way of installing the Thrive CLI is via a `dmg` archive published
-together with a release. You can check them [in the release page](https://github.com/horia141/jupiter/releases).
+together with a release. You can check them
+[in the release page](https://github.com/horia141/jupiter/releases).
 
 ![Releases](../assets/install-release.png)
 

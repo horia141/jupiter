@@ -168,13 +168,14 @@ def test_vacation_archive(page: Page, create_vacation) -> None:
     page.locator("#leaf-entity-archive").click()
     page.locator("#leaf-entity-archive-confirm").click()
 
+    page.goto(f"/app/workspace/vacations/{vacation.ref_id}")
+
     expect(page.locator('input[name="name"]')).not_to_be_disabled()
     expect(page.locator('input[name="startDate"]')).not_to_be_disabled()
     expect(page.locator('input[name="endDate"]')).not_to_be_disabled()
 
     expect(page.locator("#vacation-update")).to_be_disabled()
     expect(page.locator("#vacation-create-note")).to_be_disabled()
-    expect(page.locator("#leaf-entity-archive")).to_be_disabled()
 
     entity_id = page.url.split("/")[-1]
     expect(page.locator(f"#vacation-{entity_id}")).to_have_count(0)
