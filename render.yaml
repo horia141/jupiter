@@ -75,3 +75,7 @@ services:
     - key: ENV
       value: production
       previewValue: staging
+    - key: POETRY_VERSION
+      value: 2.1.1
+    - key: PYTHON_VERSION
+      value: 3.13

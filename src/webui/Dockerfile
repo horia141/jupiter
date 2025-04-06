@@ -43,5 +43,4 @@ WORKDIR /jupiter/src/webui
 
 RUN npx remix build
 
-# ENTRYPOINT [ "dumb-init", "npx", "remix", "dev" ]
-ENTRYPOINT [ "dumb-init", "npx", "remix-serve", "build" ]
+ENTRYPOINT [ "dumb-init", "npx", "remix-serve", "build/index.js" ]
