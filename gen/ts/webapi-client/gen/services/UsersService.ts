@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -5,14 +6,10 @@ import type { UserChangeFeatureFlagsArgs } from '../models/UserChangeFeatureFlag
 import type { UserLoadArgs } from '../models/UserLoadArgs';
 import type { UserLoadResult } from '../models/UserLoadResult';
 import type { UserUpdateArgs } from '../models/UserUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class UsersService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Usecase for changing the feature flags for the user.
      * Usecase for changing the feature flags for the user.
@@ -35,7 +32,6 @@ export class UsersService {
             },
         });
     }
-
     /**
      * The command for loading the current user.
      * The command for loading the current user.
@@ -58,7 +54,6 @@ export class UsersService {
             },
         });
     }
-
     /**
      * The command for updating a user's properties.
      * The command for updating a user's properties.
@@ -81,5 +76,4 @@ export class UsersService {
             },
         });
     }
-
 }

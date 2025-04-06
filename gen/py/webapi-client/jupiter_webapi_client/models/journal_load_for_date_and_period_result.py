@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,15 +18,15 @@ class JournalLoadForDateAndPeriodResult:
     """Result.
 
     Attributes:
-        sub_period_journals (List['Journal']):
+        sub_period_journals (list['Journal']):
         journal (Union['Journal', None, Unset]):
     """
 
-    sub_period_journals: List["Journal"]
+    sub_period_journals: list["Journal"]
     journal: Union["Journal", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.journal import Journal
 
         sub_period_journals = []
@@ -33,7 +34,7 @@ class JournalLoadForDateAndPeriodResult:
             sub_period_journals_item = sub_period_journals_item_data.to_dict()
             sub_period_journals.append(sub_period_journals_item)
 
-        journal: Union[Dict[str, Any], None, Unset]
+        journal: Union[None, Unset, dict[str, Any]]
         if isinstance(self.journal, Unset):
             journal = UNSET
         elif isinstance(self.journal, Journal):
@@ -41,7 +42,7 @@ class JournalLoadForDateAndPeriodResult:
         else:
             journal = self.journal
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -54,10 +55,10 @@ class JournalLoadForDateAndPeriodResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.journal import Journal
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         sub_period_journals = []
         _sub_period_journals = d.pop("sub_period_journals")
         for sub_period_journals_item_data in _sub_period_journals:
@@ -91,7 +92,7 @@ class JournalLoadForDateAndPeriodResult:
         return journal_load_for_date_and_period_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

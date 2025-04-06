@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -5,14 +6,10 @@ import type { WorkspaceChangeFeatureFlagsArgs } from '../models/WorkspaceChangeF
 import type { WorkspaceLoadArgs } from '../models/WorkspaceLoadArgs';
 import type { WorkspaceLoadResult } from '../models/WorkspaceLoadResult';
 import type { WorkspaceUpdateArgs } from '../models/WorkspaceUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class WorkspacesService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Usecase for changing the feature flags for the workspace.
      * Usecase for changing the feature flags for the workspace.
@@ -35,7 +32,6 @@ export class WorkspacesService {
             },
         });
     }
-
     /**
      * The command for loading workspaces.
      * The command for loading workspaces.
@@ -58,7 +54,6 @@ export class WorkspacesService {
             },
         });
     }
-
     /**
      * UseCase for updating a workspace.
      * UseCase for updating a workspace.
@@ -81,5 +76,4 @@ export class WorkspacesService {
             },
         });
     }
-
 }

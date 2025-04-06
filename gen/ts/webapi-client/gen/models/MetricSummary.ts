@@ -1,11 +1,10 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
 import type { MetricName } from './MetricName';
-
 /**
  * Summary information about a metric.
  */

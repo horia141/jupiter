@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -9,14 +10,10 @@ import type { ScheduleEventInDayLoadArgs } from '../models/ScheduleEventInDayLoa
 import type { ScheduleEventInDayLoadResult } from '../models/ScheduleEventInDayLoadResult';
 import type { ScheduleEventInDayRemoveArgs } from '../models/ScheduleEventInDayRemoveArgs';
 import type { ScheduleEventInDayUpdateArgs } from '../models/ScheduleEventInDayUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class EventInDayService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a schedule in day event.
      * Use case for archiving a schedule in day event.
@@ -39,7 +36,6 @@ export class EventInDayService {
             },
         });
     }
-
     /**
      * Use case for changing the schedule stream of an event.
      * Use case for changing the schedule stream of an event.
@@ -62,7 +58,6 @@ export class EventInDayService {
             },
         });
     }
-
     /**
      * Use case for creating a schedule in day event.
      * Use case for creating a schedule in day event.
@@ -85,7 +80,6 @@ export class EventInDayService {
             },
         });
     }
-
     /**
      * Use case for loading a schedule in day event.
      * Use case for loading a schedule in day event.
@@ -108,7 +102,6 @@ export class EventInDayService {
             },
         });
     }
-
     /**
      * Use case for removing a schedule in day event.
      * Use case for removing a schedule in day event.
@@ -131,7 +124,6 @@ export class EventInDayService {
             },
         });
     }
-
     /**
      * Use case for updating a schedule in day event.
      * Use case for updating a schedule in day event.
@@ -154,5 +146,4 @@ export class EventInDayService {
             },
         });
     }
-
 }

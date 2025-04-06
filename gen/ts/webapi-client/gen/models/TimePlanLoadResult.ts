@@ -1,13 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BigPlan } from './BigPlan';
 import type { InboxTask } from './InboxTask';
 import type { Note } from './Note';
 import type { TimePlan } from './TimePlan';
 import type { TimePlanActivity } from './TimePlanActivity';
-
 /**
  * Result.
  */

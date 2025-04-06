@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -27,7 +28,7 @@ class NoteUpdateArgsContent:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, List[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock',
+        value (Union[Unset, list[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock',
             'EntityReferenceBlock', 'HeadingBlock', 'LinkBlock', 'NumberedListBlock', 'ParagraphBlock', 'QuoteBlock',
             'TableBlock']]]):
     """
@@ -35,7 +36,7 @@ class NoteUpdateArgsContent:
     should_change: bool
     value: Union[
         Unset,
-        List[
+        list[
             Union[
                 "BulletedListBlock",
                 "ChecklistBlock",
@@ -51,9 +52,9 @@ class NoteUpdateArgsContent:
             ]
         ],
     ] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.bulleted_list_block import BulletedListBlock
         from ..models.checklist_block import ChecklistBlock
         from ..models.code_block import CodeBlock
@@ -67,11 +68,11 @@ class NoteUpdateArgsContent:
 
         should_change = self.should_change
 
-        value: Union[Unset, List[Dict[str, Any]]] = UNSET
+        value: Union[Unset, list[dict[str, Any]]] = UNSET
         if not isinstance(self.value, Unset):
             value = []
             for value_item_data in self.value:
-                value_item: Dict[str, Any]
+                value_item: dict[str, Any]
                 if isinstance(value_item_data, ParagraphBlock):
                     value_item = value_item_data.to_dict()
                 elif isinstance(value_item_data, HeadingBlock):
@@ -97,7 +98,7 @@ class NoteUpdateArgsContent:
 
                 value.append(value_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -110,7 +111,7 @@ class NoteUpdateArgsContent:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.bulleted_list_block import BulletedListBlock
         from ..models.checklist_block import ChecklistBlock
         from ..models.code_block import CodeBlock
@@ -123,7 +124,7 @@ class NoteUpdateArgsContent:
         from ..models.quote_block import QuoteBlock
         from ..models.table_block import TableBlock
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         should_change = d.pop("should_change")
 
         value = []
@@ -244,7 +245,7 @@ class NoteUpdateArgsContent:
         return note_update_args_content
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

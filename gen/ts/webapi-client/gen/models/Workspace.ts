@@ -1,11 +1,10 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
 import type { Timestamp } from './Timestamp';
 import type { WorkspaceName } from './WorkspaceName';
-
 /**
  * The workspace where everything happens.
  */

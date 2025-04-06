@@ -1,10 +1,9 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { TimePlan } from './TimePlan';
 import type { TimePlanActivity } from './TimePlanActivity';
-
 /**
  * Result.
  */

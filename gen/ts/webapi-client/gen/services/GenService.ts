@@ -1,17 +1,14 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { GenDoArgs } from '../models/GenDoArgs';
 import type { GenLoadRunsArgs } from '../models/GenLoadRunsArgs';
 import type { GenLoadRunsResult } from '../models/GenLoadRunsResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class GenService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for generating new tasks.
      * The command for generating new tasks.
@@ -34,7 +31,6 @@ export class GenService {
             },
         });
     }
-
     /**
      * Load previous runs of task generation.
      * Load previous runs of task generation.
@@ -57,5 +53,4 @@ export class GenService {
             },
         });
     }
-
 }

@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { AppCore } from './AppCore';
 import type { AppDistribution } from './AppDistribution';
 import type { AppDistributionState } from './AppDistributionState';
@@ -19,7 +19,6 @@ import type { Workspace } from './Workspace';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceFeatureFlagsControls } from './WorkspaceFeatureFlagsControls';
 import type { WorkspaceName } from './WorkspaceName';
-
 /**
  * Load user and workspace result.
  */

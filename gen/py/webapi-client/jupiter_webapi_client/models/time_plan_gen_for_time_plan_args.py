@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -15,17 +16,17 @@ class TimePlanGenForTimePlanArgs:
 
     Attributes:
         today (str): A date or possibly a datetime for the application.
-        period (Union[List[RecurringTaskPeriod], None, Unset]):
+        period (Union[None, Unset, list[RecurringTaskPeriod]]):
     """
 
     today: str
-    period: Union[List[RecurringTaskPeriod], None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    period: Union[None, Unset, list[RecurringTaskPeriod]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         today = self.today
 
-        period: Union[List[str], None, Unset]
+        period: Union[None, Unset, list[str]]
         if isinstance(self.period, Unset):
             period = UNSET
         elif isinstance(self.period, list):
@@ -37,7 +38,7 @@ class TimePlanGenForTimePlanArgs:
         else:
             period = self.period
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -50,11 +51,11 @@ class TimePlanGenForTimePlanArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         today = d.pop("today")
 
-        def _parse_period(data: object) -> Union[List[RecurringTaskPeriod], None, Unset]:
+        def _parse_period(data: object) -> Union[None, Unset, list[RecurringTaskPeriod]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -72,7 +73,7 @@ class TimePlanGenForTimePlanArgs:
                 return period_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[RecurringTaskPeriod], None, Unset], data)
+            return cast(Union[None, Unset, list[RecurringTaskPeriod]], data)
 
         period = _parse_period(d.pop("period", UNSET))
 
@@ -85,7 +86,7 @@ class TimePlanGenForTimePlanArgs:
         return time_plan_gen_for_time_plan_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

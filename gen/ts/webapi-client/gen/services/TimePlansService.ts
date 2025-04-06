@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -19,14 +20,10 @@ import type { TimePlanLoadForDateAndPeriodArgs } from '../models/TimePlanLoadFor
 import type { TimePlanLoadForDateAndPeriodResult } from '../models/TimePlanLoadForDateAndPeriodResult';
 import type { TimePlanLoadResult } from '../models/TimePlanLoadResult';
 import type { TimePlanRemoveArgs } from '../models/TimePlanRemoveArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class TimePlansService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a time plan.
      * Use case for archiving a time plan.
@@ -49,7 +46,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * Use case for creating activities starting from already existin activities.
      * Use case for creating activities starting from already existin activities.
@@ -72,7 +68,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * Use case for creating activities starting from big plans.
      * Use case for creating activities starting from big plans.
@@ -95,7 +90,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * Use case for creating activities starting from inbox tasks.
      * Use case for creating activities starting from inbox tasks.
@@ -118,7 +112,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * Command for updating the time configuration of a time_plan.
      * Command for updating the time configuration of a time_plan.
@@ -141,7 +134,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * Use case for creating a time plan.
      * Use case for creating a time plan.
@@ -164,7 +156,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * The command for finding time plans.
      * The command for finding time plans.
@@ -187,7 +178,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * The command for generating new tasks for a time plan.
      * The command for generating new tasks for a time plan.
@@ -210,7 +200,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * The command for loading details about a time plan.
      * The command for loading details about a time plan.
@@ -233,7 +222,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * The command for loading details about a time plan.
      * The command for loading details about a time plan.
@@ -256,7 +244,6 @@ export class TimePlansService {
             },
         });
     }
-
     /**
      * Use case for removing a time_plan.
      * Use case for removing a time_plan.
@@ -279,5 +266,4 @@ export class TimePlansService {
             },
         });
     }
-
 }

@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -12,14 +13,10 @@ import type { WorkingMemLoadCurrentResult } from '../models/WorkingMemLoadCurren
 import type { WorkingMemLoadResult } from '../models/WorkingMemLoadResult';
 import type { WorkingMemLoadSettingsArgs } from '../models/WorkingMemLoadSettingsArgs';
 import type { WorkingMemLoadSettingsResult } from '../models/WorkingMemLoadSettingsResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class WorkingMemService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a working mem.
      * The command for archiving a working mem.
@@ -42,7 +39,6 @@ export class WorkingMemService {
             },
         });
     }
-
     /**
      * The command for updating the collection up project for working mem.
      * The command for updating the collection up project for working mem.
@@ -65,7 +61,6 @@ export class WorkingMemService {
             },
         });
     }
-
     /**
      * The command for updating the generation period for working mem.
      * The command for updating the generation period for working mem.
@@ -88,7 +83,6 @@ export class WorkingMemService {
             },
         });
     }
-
     /**
      * The command for finding working mems.
      * The command for finding working mems.
@@ -111,7 +105,6 @@ export class WorkingMemService {
             },
         });
     }
-
     /**
      * The command for loading the working mem.
      * The command for loading the working mem.
@@ -134,7 +127,6 @@ export class WorkingMemService {
             },
         });
     }
-
     /**
      * The command for loading the current working mem.
      * The command for loading the current working mem.
@@ -157,7 +149,6 @@ export class WorkingMemService {
             },
         });
     }
-
     /**
      * The command for loading the settings around workingmem.
      * The command for loading the settings around workingmem.
@@ -180,5 +171,4 @@ export class WorkingMemService {
             },
         });
     }
-
 }

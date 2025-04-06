@@ -1,10 +1,9 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BigPlanName } from './BigPlanName';
 import type { EntityId } from './EntityId';
-
 /**
  * Summary information about a big plan.
  */

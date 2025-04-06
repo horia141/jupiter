@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -19,15 +20,15 @@ class NumberedListBlock:
     Attributes:
         correlation_id (str): A generic entity id.
         kind (NumberedListBlockKind):
-        items (List['ListItem']):
+        items (list['ListItem']):
     """
 
     correlation_id: str
     kind: NumberedListBlockKind
-    items: List["ListItem"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    items: list["ListItem"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         correlation_id = self.correlation_id
 
         kind = self.kind.value
@@ -37,7 +38,7 @@ class NumberedListBlock:
             items_item = items_item_data.to_dict()
             items.append(items_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -50,10 +51,10 @@ class NumberedListBlock:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.list_item import ListItem
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         correlation_id = d.pop("correlation_id")
 
         kind = NumberedListBlockKind(d.pop("kind"))
@@ -75,7 +76,7 @@ class NumberedListBlock:
         return numbered_list_block
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,12 +22,12 @@ class InboxTaskUpdateResult:
     """
 
     record_score_result: Union["RecordScoreResult", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.record_score_result import RecordScoreResult
 
-        record_score_result: Union[Dict[str, Any], None, Unset]
+        record_score_result: Union[None, Unset, dict[str, Any]]
         if isinstance(self.record_score_result, Unset):
             record_score_result = UNSET
         elif isinstance(self.record_score_result, RecordScoreResult):
@@ -34,7 +35,7 @@ class InboxTaskUpdateResult:
         else:
             record_score_result = self.record_score_result
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if record_score_result is not UNSET:
@@ -43,10 +44,10 @@ class InboxTaskUpdateResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.record_score_result import RecordScoreResult
 
-        d = src_dict.copy()
+        d = dict(src_dict)
 
         def _parse_record_score_result(data: object) -> Union["RecordScoreResult", None, Unset]:
             if data is None:
@@ -73,7 +74,7 @@ class InboxTaskUpdateResult:
         return inbox_task_update_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

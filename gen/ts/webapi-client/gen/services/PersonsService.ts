@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -14,14 +15,10 @@ import type { PersonLoadSettingsResult } from '../models/PersonLoadSettingsResul
 import type { PersonRegenArgs } from '../models/PersonRegenArgs';
 import type { PersonRemoveArgs } from '../models/PersonRemoveArgs';
 import type { PersonUpdateArgs } from '../models/PersonUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class PersonsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a person.
      * The command for archiving a person.
@@ -44,7 +41,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * The command for updating the catch up project for persons.
      * The command for updating the catch up project for persons.
@@ -67,7 +63,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * The command for creating a person.
      * The command for creating a person.
@@ -90,7 +85,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * The command for finding the persons.
      * The command for finding the persons.
@@ -113,7 +107,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * Use case for loading a person.
      * Use case for loading a person.
@@ -136,7 +129,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * The command for loading the settings around persons.
      * The command for loading the settings around persons.
@@ -159,7 +151,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * A use case for regenerating tasks associated with persons.
      * A use case for regenerating tasks associated with persons.
@@ -182,7 +173,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * The command for removing a person.
      * The command for removing a person.
@@ -205,7 +195,6 @@ export class PersonsService {
             },
         });
     }
-
     /**
      * The command for updating a person.
      * The command for updating a person.
@@ -228,5 +217,4 @@ export class PersonsService {
             },
         });
     }
-
 }

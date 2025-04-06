@@ -1,17 +1,14 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { ScheduleExternalSyncDoArgs } from '../models/ScheduleExternalSyncDoArgs';
 import type { ScheduleExternalSyncLoadRunsArgs } from '../models/ScheduleExternalSyncLoadRunsArgs';
 import type { ScheduleExternalSyncLoadRunsResult } from '../models/ScheduleExternalSyncLoadRunsResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ScheduleService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for doing a sync.
      * The command for doing a sync.
@@ -34,7 +31,6 @@ export class ScheduleService {
             },
         });
     }
-
     /**
      * Use case for loading external sync runs.
      * Use case for loading external sync runs.
@@ -57,5 +53,4 @@ export class ScheduleService {
             },
         });
     }
-
 }

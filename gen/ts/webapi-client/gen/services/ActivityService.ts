@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -8,14 +9,10 @@ import type { TimePlanActivityLoadArgs } from '../models/TimePlanActivityLoadArg
 import type { TimePlanActivityLoadResult } from '../models/TimePlanActivityLoadResult';
 import type { TimePlanActivityRemoveArgs } from '../models/TimePlanActivityRemoveArgs';
 import type { TimePlanActivityUpdateArgs } from '../models/TimePlanActivityUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ActivityService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a time plan activity.
      * Use case for archiving a time plan activity.
@@ -38,7 +35,6 @@ export class ActivityService {
             },
         });
     }
-
     /**
      * The command for finding time plan activities for a particular target.
      * The command for finding time plan activities for a particular target.
@@ -61,7 +57,6 @@ export class ActivityService {
             },
         });
     }
-
     /**
      * Use case for loading a time plan activity activity.
      * Use case for loading a time plan activity activity.
@@ -84,7 +79,6 @@ export class ActivityService {
             },
         });
     }
-
     /**
      * Use case for removing a time plan activity.
      * Use case for removing a time plan activity.
@@ -107,7 +101,6 @@ export class ActivityService {
             },
         });
     }
-
     /**
      * The command for updating a time plan activity.
      * The command for updating a time plan activity.
@@ -130,5 +123,4 @@ export class ActivityService {
             },
         });
     }
-
 }

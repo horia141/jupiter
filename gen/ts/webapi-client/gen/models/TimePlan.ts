@@ -1,14 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ADate } from './ADate';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { TimePlanSource } from './TimePlanSource';
 import type { Timestamp } from './Timestamp';
-
 /**
  * A plan for a particular period of time.
  */

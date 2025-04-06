@@ -12,7 +12,7 @@ export function useBigScreen(): boolean {
   switch (globalProperties.frontDoorInfo.appShell) {
     case AppShell.BROWSER:
       switch (globalProperties.frontDoorInfo.appPlatform) {
-        case AppPlatform.DESKTOP:
+        case AppPlatform.DESKTOP_MACOS:
           return mediaQuery;
         case AppPlatform.MOBILE_IOS:
         case AppPlatform.MOBILE_ANDROID:
@@ -41,7 +41,7 @@ export function useBigScreen(): boolean {
       return false;
     case AppShell.PWA:
       switch (globalProperties.frontDoorInfo.appPlatform) {
-        case AppPlatform.DESKTOP:
+        case AppPlatform.DESKTOP_MACOS:
           return mediaQuery;
         case AppPlatform.MOBILE_IOS:
         case AppPlatform.MOBILE_ANDROID:

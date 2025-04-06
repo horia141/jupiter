@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -29,35 +30,35 @@ class ReportPeriodResult:
     Attributes:
         today (str): A date or possibly a datetime for the application.
         period (RecurringTaskPeriod): A period for a particular task.
-        sources (List[InboxTaskSource]):
-        breakdowns (List[ReportBreakdown]):
+        sources (list[InboxTaskSource]):
+        breakdowns (list[ReportBreakdown]):
         global_inbox_tasks_summary (InboxTasksSummary): A bigger summary for inbox tasks.
         global_big_plans_summary (WorkableSummary): The reporting summary.
-        per_project_breakdown (List['PerProjectBreakdownItem']):
-        per_period_breakdown (List['PerPeriodBreakdownItem']):
-        per_habit_breakdown (List['PerHabitBreakdownItem']):
-        per_chore_breakdown (List['PerChoreBreakdownItem']):
-        per_big_plan_breakdown (List['PerBigPlanBreakdownItem']):
+        per_project_breakdown (list['PerProjectBreakdownItem']):
+        per_period_breakdown (list['PerPeriodBreakdownItem']):
+        per_habit_breakdown (list['PerHabitBreakdownItem']):
+        per_chore_breakdown (list['PerChoreBreakdownItem']):
+        per_big_plan_breakdown (list['PerBigPlanBreakdownItem']):
         breakdown_period (Union[None, RecurringTaskPeriod, Unset]):
         user_score_overview (Union['UserScoreOverview', None, Unset]):
     """
 
     today: str
     period: RecurringTaskPeriod
-    sources: List[InboxTaskSource]
-    breakdowns: List[ReportBreakdown]
+    sources: list[InboxTaskSource]
+    breakdowns: list[ReportBreakdown]
     global_inbox_tasks_summary: "InboxTasksSummary"
     global_big_plans_summary: "WorkableSummary"
-    per_project_breakdown: List["PerProjectBreakdownItem"]
-    per_period_breakdown: List["PerPeriodBreakdownItem"]
-    per_habit_breakdown: List["PerHabitBreakdownItem"]
-    per_chore_breakdown: List["PerChoreBreakdownItem"]
-    per_big_plan_breakdown: List["PerBigPlanBreakdownItem"]
+    per_project_breakdown: list["PerProjectBreakdownItem"]
+    per_period_breakdown: list["PerPeriodBreakdownItem"]
+    per_habit_breakdown: list["PerHabitBreakdownItem"]
+    per_chore_breakdown: list["PerChoreBreakdownItem"]
+    per_big_plan_breakdown: list["PerBigPlanBreakdownItem"]
     breakdown_period: Union[None, RecurringTaskPeriod, Unset] = UNSET
     user_score_overview: Union["UserScoreOverview", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.user_score_overview import UserScoreOverview
 
         today = self.today
@@ -111,7 +112,7 @@ class ReportPeriodResult:
         else:
             breakdown_period = self.breakdown_period
 
-        user_score_overview: Union[Dict[str, Any], None, Unset]
+        user_score_overview: Union[None, Unset, dict[str, Any]]
         if isinstance(self.user_score_overview, Unset):
             user_score_overview = UNSET
         elif isinstance(self.user_score_overview, UserScoreOverview):
@@ -119,7 +120,7 @@ class ReportPeriodResult:
         else:
             user_score_overview = self.user_score_overview
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -144,7 +145,7 @@ class ReportPeriodResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_tasks_summary import InboxTasksSummary
         from ..models.per_big_plan_breakdown_item import PerBigPlanBreakdownItem
         from ..models.per_chore_breakdown_item import PerChoreBreakdownItem
@@ -154,7 +155,7 @@ class ReportPeriodResult:
         from ..models.user_score_overview import UserScoreOverview
         from ..models.workable_summary import WorkableSummary
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         today = d.pop("today")
 
         period = RecurringTaskPeriod(d.pop("period"))
@@ -266,7 +267,7 @@ class ReportPeriodResult:
         return report_period_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

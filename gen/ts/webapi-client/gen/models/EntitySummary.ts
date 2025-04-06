@@ -1,12 +1,11 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { NamedEntityTag } from './NamedEntityTag';
 import type { Timestamp } from './Timestamp';
-
 /**
  * Information about a particular entity very broadly.
  */

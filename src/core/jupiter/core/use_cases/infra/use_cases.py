@@ -85,7 +85,7 @@ class AppGuestUseCaseSession(EmptySession):
             app_client_version=app_client_version,
             app_core=AppCore.CLI,
             app_shell=AppShell.CLI,
-            app_platform=AppPlatform.DESKTOP,
+            app_platform=AppPlatform.DESKTOP_MACOS,
             app_distribution=AppDistribution.MAC_WEB,
         )
 
@@ -272,7 +272,7 @@ class AppLoggedInUseCaseSession(UseCaseSessionBase):
             app_client_version=app_client_version,
             app_core=AppCore.CLI,
             app_shell=AppShell.CLI,
-            app_platform=AppPlatform.DESKTOP,
+            app_platform=AppPlatform.DESKTOP_MACOS,
             app_distribution=AppDistribution.MAC_WEB,
         )
 

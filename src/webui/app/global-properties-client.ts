@@ -42,7 +42,7 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   frontDoorInfo: {
     clientVersion: "FAKE-FAKE",
     appShell: AppShell.BROWSER,
-    appPlatform: AppPlatform.DESKTOP,
+    appPlatform: AppPlatform.DESKTOP_MACOS,
     appDistribution: AppDistribution.WEB,
     initialWindowWidth: undefined,
   },

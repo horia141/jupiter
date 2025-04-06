@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -30,20 +31,20 @@ class GenLogEntry:
         source (EventSource): The source of the modification which this event records.
         gen_even_if_not_modified (bool):
         today (str): A date or possibly a datetime for the application.
-        gen_targets (List[SyncTarget]):
+        gen_targets (list[SyncTarget]):
         opened (bool):
-        entity_created_records (List['EntitySummary']):
-        entity_updated_records (List['EntitySummary']):
-        entity_removed_records (List['EntitySummary']):
+        entity_created_records (list['EntitySummary']):
+        entity_updated_records (list['EntitySummary']):
+        entity_removed_records (list['EntitySummary']):
         archived_time (Union[None, Unset, str]):
-        period (Union[List[RecurringTaskPeriod], None, Unset]):
-        filter_project_ref_ids (Union[List[str], None, Unset]):
-        filter_habit_ref_ids (Union[List[str], None, Unset]):
-        filter_chore_ref_ids (Union[List[str], None, Unset]):
-        filter_metric_ref_ids (Union[List[str], None, Unset]):
-        filter_person_ref_ids (Union[List[str], None, Unset]):
-        filter_slack_task_ref_ids (Union[List[str], None, Unset]):
-        filter_email_task_ref_ids (Union[List[str], None, Unset]):
+        period (Union[None, Unset, list[RecurringTaskPeriod]]):
+        filter_project_ref_ids (Union[None, Unset, list[str]]):
+        filter_habit_ref_ids (Union[None, Unset, list[str]]):
+        filter_chore_ref_ids (Union[None, Unset, list[str]]):
+        filter_metric_ref_ids (Union[None, Unset, list[str]]):
+        filter_person_ref_ids (Union[None, Unset, list[str]]):
+        filter_slack_task_ref_ids (Union[None, Unset, list[str]]):
+        filter_email_task_ref_ids (Union[None, Unset, list[str]]):
     """
 
     ref_id: str
@@ -56,23 +57,23 @@ class GenLogEntry:
     source: EventSource
     gen_even_if_not_modified: bool
     today: str
-    gen_targets: List[SyncTarget]
+    gen_targets: list[SyncTarget]
     opened: bool
-    entity_created_records: List["EntitySummary"]
-    entity_updated_records: List["EntitySummary"]
-    entity_removed_records: List["EntitySummary"]
+    entity_created_records: list["EntitySummary"]
+    entity_updated_records: list["EntitySummary"]
+    entity_removed_records: list["EntitySummary"]
     archived_time: Union[None, Unset, str] = UNSET
-    period: Union[List[RecurringTaskPeriod], None, Unset] = UNSET
-    filter_project_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_habit_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_chore_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_metric_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_person_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_slack_task_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_email_task_ref_ids: Union[List[str], None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    period: Union[None, Unset, list[RecurringTaskPeriod]] = UNSET
+    filter_project_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_habit_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_chore_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_metric_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_person_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_slack_task_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_email_task_ref_ids: Union[None, Unset, list[str]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         version = self.version
@@ -121,7 +122,7 @@ class GenLogEntry:
         else:
             archived_time = self.archived_time
 
-        period: Union[List[str], None, Unset]
+        period: Union[None, Unset, list[str]]
         if isinstance(self.period, Unset):
             period = UNSET
         elif isinstance(self.period, list):
@@ -133,7 +134,7 @@ class GenLogEntry:
         else:
             period = self.period
 
-        filter_project_ref_ids: Union[List[str], None, Unset]
+        filter_project_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_project_ref_ids, Unset):
             filter_project_ref_ids = UNSET
         elif isinstance(self.filter_project_ref_ids, list):
@@ -142,7 +143,7 @@ class GenLogEntry:
         else:
             filter_project_ref_ids = self.filter_project_ref_ids
 
-        filter_habit_ref_ids: Union[List[str], None, Unset]
+        filter_habit_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_habit_ref_ids, Unset):
             filter_habit_ref_ids = UNSET
         elif isinstance(self.filter_habit_ref_ids, list):
@@ -151,7 +152,7 @@ class GenLogEntry:
         else:
             filter_habit_ref_ids = self.filter_habit_ref_ids
 
-        filter_chore_ref_ids: Union[List[str], None, Unset]
+        filter_chore_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_chore_ref_ids, Unset):
             filter_chore_ref_ids = UNSET
         elif isinstance(self.filter_chore_ref_ids, list):
@@ -160,7 +161,7 @@ class GenLogEntry:
         else:
             filter_chore_ref_ids = self.filter_chore_ref_ids
 
-        filter_metric_ref_ids: Union[List[str], None, Unset]
+        filter_metric_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_metric_ref_ids, Unset):
             filter_metric_ref_ids = UNSET
         elif isinstance(self.filter_metric_ref_ids, list):
@@ -169,7 +170,7 @@ class GenLogEntry:
         else:
             filter_metric_ref_ids = self.filter_metric_ref_ids
 
-        filter_person_ref_ids: Union[List[str], None, Unset]
+        filter_person_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_person_ref_ids, Unset):
             filter_person_ref_ids = UNSET
         elif isinstance(self.filter_person_ref_ids, list):
@@ -178,7 +179,7 @@ class GenLogEntry:
         else:
             filter_person_ref_ids = self.filter_person_ref_ids
 
-        filter_slack_task_ref_ids: Union[List[str], None, Unset]
+        filter_slack_task_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_slack_task_ref_ids, Unset):
             filter_slack_task_ref_ids = UNSET
         elif isinstance(self.filter_slack_task_ref_ids, list):
@@ -187,7 +188,7 @@ class GenLogEntry:
         else:
             filter_slack_task_ref_ids = self.filter_slack_task_ref_ids
 
-        filter_email_task_ref_ids: Union[List[str], None, Unset]
+        filter_email_task_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_email_task_ref_ids, Unset):
             filter_email_task_ref_ids = UNSET
         elif isinstance(self.filter_email_task_ref_ids, list):
@@ -196,7 +197,7 @@ class GenLogEntry:
         else:
             filter_email_task_ref_ids = self.filter_email_task_ref_ids
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -239,10 +240,10 @@ class GenLogEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.entity_summary import EntitySummary
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -302,7 +303,7 @@ class GenLogEntry:
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        def _parse_period(data: object) -> Union[List[RecurringTaskPeriod], None, Unset]:
+        def _parse_period(data: object) -> Union[None, Unset, list[RecurringTaskPeriod]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -320,11 +321,11 @@ class GenLogEntry:
                 return period_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[RecurringTaskPeriod], None, Unset], data)
+            return cast(Union[None, Unset, list[RecurringTaskPeriod]], data)
 
         period = _parse_period(d.pop("period", UNSET))
 
-        def _parse_filter_project_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_project_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -332,16 +333,16 @@ class GenLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_project_ref_ids_type_0 = cast(List[str], data)
+                filter_project_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_project_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_project_ref_ids = _parse_filter_project_ref_ids(d.pop("filter_project_ref_ids", UNSET))
 
-        def _parse_filter_habit_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_habit_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -349,16 +350,16 @@ class GenLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_habit_ref_ids_type_0 = cast(List[str], data)
+                filter_habit_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_habit_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_habit_ref_ids = _parse_filter_habit_ref_ids(d.pop("filter_habit_ref_ids", UNSET))
 
-        def _parse_filter_chore_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_chore_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -366,16 +367,16 @@ class GenLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_chore_ref_ids_type_0 = cast(List[str], data)
+                filter_chore_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_chore_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_chore_ref_ids = _parse_filter_chore_ref_ids(d.pop("filter_chore_ref_ids", UNSET))
 
-        def _parse_filter_metric_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_metric_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -383,16 +384,16 @@ class GenLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_metric_ref_ids_type_0 = cast(List[str], data)
+                filter_metric_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_metric_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_metric_ref_ids = _parse_filter_metric_ref_ids(d.pop("filter_metric_ref_ids", UNSET))
 
-        def _parse_filter_person_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_person_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -400,16 +401,16 @@ class GenLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_person_ref_ids_type_0 = cast(List[str], data)
+                filter_person_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_person_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_person_ref_ids = _parse_filter_person_ref_ids(d.pop("filter_person_ref_ids", UNSET))
 
-        def _parse_filter_slack_task_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_slack_task_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -417,16 +418,16 @@ class GenLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_slack_task_ref_ids_type_0 = cast(List[str], data)
+                filter_slack_task_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_slack_task_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_slack_task_ref_ids = _parse_filter_slack_task_ref_ids(d.pop("filter_slack_task_ref_ids", UNSET))
 
-        def _parse_filter_email_task_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_email_task_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -434,12 +435,12 @@ class GenLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_email_task_ref_ids_type_0 = cast(List[str], data)
+                filter_email_task_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_email_task_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_email_task_ref_ids = _parse_filter_email_task_ref_ids(d.pop("filter_email_task_ref_ids", UNSET))
 
@@ -474,7 +475,7 @@ class GenLogEntry:
         return gen_log_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

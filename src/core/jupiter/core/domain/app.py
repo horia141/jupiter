@@ -37,7 +37,7 @@ class AppShell(EnumValue):
 class AppPlatform(EnumValue):
     """The platform on which the app is running."""
 
-    DESKTOP = "desktop"
+    DESKTOP_MACOS = "desktop-macos"
     MOBILE_IOS = "mobile-ios"
     MOBILE_ANDROID = "mobile-android"
     TABLET_IOS = "tablet-ios"

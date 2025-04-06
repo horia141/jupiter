@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -29,9 +30,9 @@ class TimeEventInDayBlockUpdateArgs:
     start_date: "TimeEventInDayBlockUpdateArgsStartDate"
     start_time_in_day: "TimeEventInDayBlockUpdateArgsStartTimeInDay"
     duration_mins: "TimeEventInDayBlockUpdateArgsDurationMins"
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         start_date = self.start_date.to_dict()
@@ -40,7 +41,7 @@ class TimeEventInDayBlockUpdateArgs:
 
         duration_mins = self.duration_mins.to_dict()
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -54,14 +55,14 @@ class TimeEventInDayBlockUpdateArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.time_event_in_day_block_update_args_duration_mins import TimeEventInDayBlockUpdateArgsDurationMins
         from ..models.time_event_in_day_block_update_args_start_date import TimeEventInDayBlockUpdateArgsStartDate
         from ..models.time_event_in_day_block_update_args_start_time_in_day import (
             TimeEventInDayBlockUpdateArgsStartTimeInDay,
         )
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         start_date = TimeEventInDayBlockUpdateArgsStartDate.from_dict(d.pop("start_date"))
@@ -81,7 +82,7 @@ class TimeEventInDayBlockUpdateArgs:
         return time_event_in_day_block_update_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

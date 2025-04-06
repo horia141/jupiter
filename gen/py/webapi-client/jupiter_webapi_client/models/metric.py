@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -42,9 +43,9 @@ class Metric:
     icon: Union[None, Unset, str] = UNSET
     collection_params: Union["RecurringTaskGenParams", None, Unset] = UNSET
     metric_unit: Union[MetricUnit, None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
 
         ref_id = self.ref_id
@@ -73,7 +74,7 @@ class Metric:
         else:
             icon = self.icon
 
-        collection_params: Union[Dict[str, Any], None, Unset]
+        collection_params: Union[None, Unset, dict[str, Any]]
         if isinstance(self.collection_params, Unset):
             collection_params = UNSET
         elif isinstance(self.collection_params, RecurringTaskGenParams):
@@ -89,7 +90,7 @@ class Metric:
         else:
             metric_unit = self.metric_unit
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -114,10 +115,10 @@ class Metric:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -202,7 +203,7 @@ class Metric:
         return metric
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

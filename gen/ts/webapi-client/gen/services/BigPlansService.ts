@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -11,14 +12,10 @@ import type { BigPlanLoadResult } from '../models/BigPlanLoadResult';
 import type { BigPlanRemoveArgs } from '../models/BigPlanRemoveArgs';
 import type { BigPlanUpdateArgs } from '../models/BigPlanUpdateArgs';
 import type { BigPlanUpdateResult } from '../models/BigPlanUpdateResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class BigPlansService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a big plan.
      * The command for archiving a big plan.
@@ -41,7 +38,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for creating a big plan.
      * The command for creating a big plan.
@@ -64,7 +60,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for finding a big plan.
      * The command for finding a big plan.
@@ -87,7 +82,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The use case for loading a particular big plan.
      * The use case for loading a particular big plan.
@@ -110,7 +104,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for removing a big plan.
      * The command for removing a big plan.
@@ -133,7 +126,6 @@ export class BigPlansService {
             },
         });
     }
-
     /**
      * The command for updating a big plan.
      * The command for updating a big plan.
@@ -156,5 +148,4 @@ export class BigPlansService {
             },
         });
     }
-
 }

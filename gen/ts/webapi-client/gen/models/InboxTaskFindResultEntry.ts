@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BigPlan } from './BigPlan';
 import type { Chore } from './Chore';
 import type { EmailTask } from './EmailTask';
@@ -14,7 +14,6 @@ import type { Project } from './Project';
 import type { SlackTask } from './SlackTask';
 import type { TimeEventInDayBlock } from './TimeEventInDayBlock';
 import type { WorkingMem } from './WorkingMem';
-
 /**
  * A single entry in the load all inbox tasks response.
  */

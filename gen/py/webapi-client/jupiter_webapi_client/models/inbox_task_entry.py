@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -17,14 +18,14 @@ class InboxTaskEntry:
 
     Attributes:
         inbox_task (InboxTask): An inbox task.
-        time_events (List['TimeEventInDayBlock']):
+        time_events (list['TimeEventInDayBlock']):
     """
 
     inbox_task: "InboxTask"
-    time_events: List["TimeEventInDayBlock"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    time_events: list["TimeEventInDayBlock"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         inbox_task = self.inbox_task.to_dict()
 
         time_events = []
@@ -32,7 +33,7 @@ class InboxTaskEntry:
             time_events_item = time_events_item_data.to_dict()
             time_events.append(time_events_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -44,11 +45,11 @@ class InboxTaskEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task import InboxTask
         from ..models.time_event_in_day_block import TimeEventInDayBlock
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         inbox_task = InboxTask.from_dict(d.pop("inbox_task"))
 
         time_events = []
@@ -67,7 +68,7 @@ class InboxTaskEntry:
         return inbox_task_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

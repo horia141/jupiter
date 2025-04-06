@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -8,14 +9,10 @@ import type { SmartListItemLoadArgs } from '../models/SmartListItemLoadArgs';
 import type { SmartListItemLoadResult } from '../models/SmartListItemLoadResult';
 import type { SmartListItemRemoveArgs } from '../models/SmartListItemRemoveArgs';
 import type { SmartListItemUpdateArgs } from '../models/SmartListItemUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ItemService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a smart list item.
      * The command for archiving a smart list item.
@@ -38,7 +35,6 @@ export class ItemService {
             },
         });
     }
-
     /**
      * The command for creating a smart list item.
      * The command for creating a smart list item.
@@ -61,7 +57,6 @@ export class ItemService {
             },
         });
     }
-
     /**
      * Use case for loading a smart list item.
      * Use case for loading a smart list item.
@@ -84,7 +79,6 @@ export class ItemService {
             },
         });
     }
-
     /**
      * The command for removing a smart list item.
      * The command for removing a smart list item.
@@ -107,7 +101,6 @@ export class ItemService {
             },
         });
     }
-
     /**
      * The command for updating a smart list item.
      * The command for updating a smart list item.
@@ -130,5 +123,4 @@ export class ItemService {
             },
         });
     }
-
 }

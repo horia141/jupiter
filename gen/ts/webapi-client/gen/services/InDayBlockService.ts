@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -8,14 +9,10 @@ import type { TimeEventInDayBlockLoadArgs } from '../models/TimeEventInDayBlockL
 import type { TimeEventInDayBlockLoadResult } from '../models/TimeEventInDayBlockLoadResult';
 import type { TimeEventInDayBlockRemoveArgs } from '../models/TimeEventInDayBlockRemoveArgs';
 import type { TimeEventInDayBlockUpdateArgs } from '../models/TimeEventInDayBlockUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class InDayBlockService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving the in day event.
      * Use case for archiving the in day event.
@@ -38,7 +35,6 @@ export class InDayBlockService {
             },
         });
     }
-
     /**
      * Use case for creating a time event associated with an inbox task.
      * Use case for creating a time event associated with an inbox task.
@@ -61,7 +57,6 @@ export class InDayBlockService {
             },
         });
     }
-
     /**
      * Load a in day block and associated data.
      * Load a in day block and associated data.
@@ -84,7 +79,6 @@ export class InDayBlockService {
             },
         });
     }
-
     /**
      * Use case for removing the in day event.
      * Use case for removing the in day event.
@@ -107,7 +101,6 @@ export class InDayBlockService {
             },
         });
     }
-
     /**
      * Use case for updating a time event in day.
      * Use case for updating a time event in day.
@@ -130,5 +123,4 @@ export class InDayBlockService {
             },
         });
     }
-
 }

@@ -139,7 +139,7 @@ class LoadTopLevelInfoUseCase(
             user_feature_hack=UserFeature.GAMIFICATION,
             app_core_hack=AppCore.WEBUI,
             app_shell_hack=AppShell.BROWSER,
-            app_platform_hack=AppPlatform.DESKTOP,
+            app_platform_hack=AppPlatform.DESKTOP_MACOS,
             app_distribution_hack=AppDistribution.WEB,
             app_distribution_state_hack=AppDistributionState.READY,
         )

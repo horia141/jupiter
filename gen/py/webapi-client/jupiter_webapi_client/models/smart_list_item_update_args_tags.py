@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -13,21 +14,21 @@ class SmartListItemUpdateArgsTags:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, List[str]]):
+        value (Union[Unset, list[str]]):
     """
 
     should_change: bool
-    value: Union[Unset, List[str]] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    value: Union[Unset, list[str]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         should_change = self.should_change
 
-        value: Union[Unset, List[str]] = UNSET
+        value: Union[Unset, list[str]] = UNSET
         if not isinstance(self.value, Unset):
             value = self.value
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -40,11 +41,11 @@ class SmartListItemUpdateArgsTags:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         should_change = d.pop("should_change")
 
-        value = cast(List[str], d.pop("value", UNSET))
+        value = cast(list[str], d.pop("value", UNSET))
 
         smart_list_item_update_args_tags = cls(
             should_change=should_change,
@@ -55,7 +56,7 @@ class SmartListItemUpdateArgsTags:
         return smart_list_item_update_args_tags
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

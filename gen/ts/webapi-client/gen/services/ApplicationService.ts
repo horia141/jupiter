@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -8,14 +9,10 @@ import type { ReportArgs } from '../models/ReportArgs';
 import type { ReportResult } from '../models/ReportResult';
 import type { SearchArgs } from '../models/SearchArgs';
 import type { SearchResult } from '../models/SearchResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ApplicationService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Close account use case.
      * Close account use case.
@@ -38,7 +35,6 @@ export class ApplicationService {
             },
         });
     }
-
     /**
      * UseCase for initialising the workspace.
      * UseCase for initialising the workspace.
@@ -61,7 +57,6 @@ export class ApplicationService {
             },
         });
     }
-
     /**
      * The command for reporting on progress.
      * The command for reporting on progress.
@@ -84,7 +79,6 @@ export class ApplicationService {
             },
         });
     }
-
     /**
      * Use case for free form searching through jupiter.
      * Use case for free form searching through jupiter.
@@ -107,5 +101,4 @@ export class ApplicationService {
             },
         });
     }
-
 }

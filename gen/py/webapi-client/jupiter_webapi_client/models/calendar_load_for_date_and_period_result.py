@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -39,9 +40,9 @@ class CalendarLoadForDateAndPeriodResult:
     stats_subperiod: Union[None, RecurringTaskPeriod, Unset] = UNSET
     entries: Union["CalendarEventsEntries", None, Unset] = UNSET
     stats: Union["CalendarEventsStats", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.calendar_events_entries import CalendarEventsEntries
         from ..models.calendar_events_stats import CalendarEventsStats
 
@@ -65,7 +66,7 @@ class CalendarLoadForDateAndPeriodResult:
         else:
             stats_subperiod = self.stats_subperiod
 
-        entries: Union[Dict[str, Any], None, Unset]
+        entries: Union[None, Unset, dict[str, Any]]
         if isinstance(self.entries, Unset):
             entries = UNSET
         elif isinstance(self.entries, CalendarEventsEntries):
@@ -73,7 +74,7 @@ class CalendarLoadForDateAndPeriodResult:
         else:
             entries = self.entries
 
-        stats: Union[Dict[str, Any], None, Unset]
+        stats: Union[None, Unset, dict[str, Any]]
         if isinstance(self.stats, Unset):
             stats = UNSET
         elif isinstance(self.stats, CalendarEventsStats):
@@ -81,7 +82,7 @@ class CalendarLoadForDateAndPeriodResult:
         else:
             stats = self.stats
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -103,11 +104,11 @@ class CalendarLoadForDateAndPeriodResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.calendar_events_entries import CalendarEventsEntries
         from ..models.calendar_events_stats import CalendarEventsStats
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         right_now = d.pop("right_now")
 
         period = RecurringTaskPeriod(d.pop("period"))
@@ -187,7 +188,7 @@ class CalendarLoadForDateAndPeriodResult:
         return calendar_load_for_date_and_period_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

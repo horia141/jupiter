@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -16,14 +17,10 @@ import type { JournalLoadSettingsArgs } from '../models/JournalLoadSettingsArgs'
 import type { JournalLoadSettingsResult } from '../models/JournalLoadSettingsResult';
 import type { JournalRemoveArgs } from '../models/JournalRemoveArgs';
 import type { JournalUpdateReportArgs } from '../models/JournalUpdateReportArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class JournalsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Use case for archiving a journal.
      * Use case for archiving a journal.
@@ -46,7 +43,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * THe use case for changing periods for journals.
      * THe use case for changing periods for journals.
@@ -69,7 +65,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * Command for updating the time configuration of a journal.
      * Command for updating the time configuration of a journal.
@@ -92,7 +87,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * Use case for creating a journal.
      * Use case for creating a journal.
@@ -115,7 +109,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * The command for finding journals.
      * The command for finding journals.
@@ -138,7 +131,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * The command for loading details about a journal.
      * The command for loading details about a journal.
@@ -161,7 +153,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * The command for loading details about a journal.
      * The command for loading details about a journal.
@@ -184,7 +175,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * The command for loading the settings around journals.
      * The command for loading the settings around journals.
@@ -207,7 +197,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * Use case for removing a journal.
      * Use case for removing a journal.
@@ -230,7 +219,6 @@ export class JournalsService {
             },
         });
     }
-
     /**
      * Use case for updating a journal entry.
      * Use case for updating a journal entry.
@@ -253,5 +241,4 @@ export class JournalsService {
             },
         });
     }
-
 }

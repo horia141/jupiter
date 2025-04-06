@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -32,11 +33,11 @@ class ScheduleExternalSyncLogEntry:
         end_of_window (str): A date or possibly a datetime for the application.
         sync_even_if_not_modified (bool):
         opened (bool):
-        per_stream_results (List['ScheduleExternalSyncLogPerStreamResult']):
-        entity_records (List['EntitySummary']):
+        per_stream_results (list['ScheduleExternalSyncLogPerStreamResult']):
+        entity_records (list['EntitySummary']):
         even_more_entity_records (bool):
         archived_time (Union[None, Unset, str]):
-        filter_schedule_stream_ref_id (Union[List[str], None, Unset]):
+        filter_schedule_stream_ref_id (Union[None, Unset, list[str]]):
     """
 
     ref_id: str
@@ -52,14 +53,14 @@ class ScheduleExternalSyncLogEntry:
     end_of_window: str
     sync_even_if_not_modified: bool
     opened: bool
-    per_stream_results: List["ScheduleExternalSyncLogPerStreamResult"]
-    entity_records: List["EntitySummary"]
+    per_stream_results: list["ScheduleExternalSyncLogPerStreamResult"]
+    entity_records: list["EntitySummary"]
     even_more_entity_records: bool
     archived_time: Union[None, Unset, str] = UNSET
-    filter_schedule_stream_ref_id: Union[List[str], None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    filter_schedule_stream_ref_id: Union[None, Unset, list[str]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         ref_id = self.ref_id
 
         version = self.version
@@ -104,7 +105,7 @@ class ScheduleExternalSyncLogEntry:
         else:
             archived_time = self.archived_time
 
-        filter_schedule_stream_ref_id: Union[List[str], None, Unset]
+        filter_schedule_stream_ref_id: Union[None, Unset, list[str]]
         if isinstance(self.filter_schedule_stream_ref_id, Unset):
             filter_schedule_stream_ref_id = UNSET
         elif isinstance(self.filter_schedule_stream_ref_id, list):
@@ -113,7 +114,7 @@ class ScheduleExternalSyncLogEntry:
         else:
             filter_schedule_stream_ref_id = self.filter_schedule_stream_ref_id
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -143,11 +144,11 @@ class ScheduleExternalSyncLogEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.entity_summary import EntitySummary
         from ..models.schedule_external_sync_log_per_stream_result import ScheduleExternalSyncLogPerStreamResult
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -199,7 +200,7 @@ class ScheduleExternalSyncLogEntry:
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        def _parse_filter_schedule_stream_ref_id(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_schedule_stream_ref_id(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -207,12 +208,12 @@ class ScheduleExternalSyncLogEntry:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_schedule_stream_ref_id_type_0 = cast(List[str], data)
+                filter_schedule_stream_ref_id_type_0 = cast(list[str], data)
 
                 return filter_schedule_stream_ref_id_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_schedule_stream_ref_id = _parse_filter_schedule_stream_ref_id(
             d.pop("filter_schedule_stream_ref_id", UNSET)
@@ -243,7 +244,7 @@ class ScheduleExternalSyncLogEntry:
         return schedule_external_sync_log_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

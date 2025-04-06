@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -8,14 +9,10 @@ import type { MetricEntryLoadArgs } from '../models/MetricEntryLoadArgs';
 import type { MetricEntryLoadResult } from '../models/MetricEntryLoadResult';
 import type { MetricEntryRemoveArgs } from '../models/MetricEntryRemoveArgs';
 import type { MetricEntryUpdateArgs } from '../models/MetricEntryUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class EntryService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a metric entry.
      * The command for archiving a metric entry.
@@ -38,7 +35,6 @@ export class EntryService {
             },
         });
     }
-
     /**
      * The command for creating a metric entry.
      * The command for creating a metric entry.
@@ -61,7 +57,6 @@ export class EntryService {
             },
         });
     }
-
     /**
      * Use case for loading a metric entry.
      * Use case for loading a metric entry.
@@ -84,7 +79,6 @@ export class EntryService {
             },
         });
     }
-
     /**
      * The command for removing a metric entry.
      * The command for removing a metric entry.
@@ -107,7 +101,6 @@ export class EntryService {
             },
         });
     }
-
     /**
      * The command for updating a metric entry's properties.
      * The command for updating a metric entry's properties.
@@ -130,5 +123,4 @@ export class EntryService {
             },
         });
     }
-
 }

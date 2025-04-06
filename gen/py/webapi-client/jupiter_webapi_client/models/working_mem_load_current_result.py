@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,12 +22,12 @@ class WorkingMemLoadCurrentResult:
     """
 
     entry: Union["WorkingMemLoadCurrentEntry", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.working_mem_load_current_entry import WorkingMemLoadCurrentEntry
 
-        entry: Union[Dict[str, Any], None, Unset]
+        entry: Union[None, Unset, dict[str, Any]]
         if isinstance(self.entry, Unset):
             entry = UNSET
         elif isinstance(self.entry, WorkingMemLoadCurrentEntry):
@@ -34,7 +35,7 @@ class WorkingMemLoadCurrentResult:
         else:
             entry = self.entry
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if entry is not UNSET:
@@ -43,10 +44,10 @@ class WorkingMemLoadCurrentResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.working_mem_load_current_entry import WorkingMemLoadCurrentEntry
 
-        d = src_dict.copy()
+        d = dict(src_dict)
 
         def _parse_entry(data: object) -> Union["WorkingMemLoadCurrentEntry", None, Unset]:
             if data is None:
@@ -73,7 +74,7 @@ class WorkingMemLoadCurrentResult:
         return working_mem_load_current_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

@@ -1,16 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { LoadProgressReporterTokenArgs } from '../models/LoadProgressReporterTokenArgs';
 import type { LoadProgressReporterTokenResult } from '../models/LoadProgressReporterTokenResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class LoadProgressReporterTokenService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The use case for retrieving summaries about entities.
      * The use case for retrieving summaries about entities.
@@ -33,5 +30,4 @@ export class LoadProgressReporterTokenService {
             },
         });
     }
-
 }

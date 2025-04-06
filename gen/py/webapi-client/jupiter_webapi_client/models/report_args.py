@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -18,35 +19,35 @@ class ReportArgs:
     Attributes:
         period (RecurringTaskPeriod): A period for a particular task.
         today (Union[None, Unset, str]):
-        sources (Union[List[InboxTaskSource], None, Unset]):
-        breakdowns (Union[List[ReportBreakdown], None, Unset]):
-        filter_project_ref_ids (Union[List[str], None, Unset]):
-        filter_big_plan_ref_ids (Union[List[str], None, Unset]):
-        filter_habit_ref_ids (Union[List[str], None, Unset]):
-        filter_chore_ref_ids (Union[List[str], None, Unset]):
-        filter_metric_ref_ids (Union[List[str], None, Unset]):
-        filter_person_ref_ids (Union[List[str], None, Unset]):
-        filter_slack_task_ref_ids (Union[List[str], None, Unset]):
-        filter_email_task_ref_ids (Union[List[str], None, Unset]):
+        sources (Union[None, Unset, list[InboxTaskSource]]):
+        breakdowns (Union[None, Unset, list[ReportBreakdown]]):
+        filter_project_ref_ids (Union[None, Unset, list[str]]):
+        filter_big_plan_ref_ids (Union[None, Unset, list[str]]):
+        filter_habit_ref_ids (Union[None, Unset, list[str]]):
+        filter_chore_ref_ids (Union[None, Unset, list[str]]):
+        filter_metric_ref_ids (Union[None, Unset, list[str]]):
+        filter_person_ref_ids (Union[None, Unset, list[str]]):
+        filter_slack_task_ref_ids (Union[None, Unset, list[str]]):
+        filter_email_task_ref_ids (Union[None, Unset, list[str]]):
         breakdown_period (Union[None, RecurringTaskPeriod, Unset]):
     """
 
     period: RecurringTaskPeriod
     today: Union[None, Unset, str] = UNSET
-    sources: Union[List[InboxTaskSource], None, Unset] = UNSET
-    breakdowns: Union[List[ReportBreakdown], None, Unset] = UNSET
-    filter_project_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_big_plan_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_habit_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_chore_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_metric_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_person_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_slack_task_ref_ids: Union[List[str], None, Unset] = UNSET
-    filter_email_task_ref_ids: Union[List[str], None, Unset] = UNSET
+    sources: Union[None, Unset, list[InboxTaskSource]] = UNSET
+    breakdowns: Union[None, Unset, list[ReportBreakdown]] = UNSET
+    filter_project_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_big_plan_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_habit_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_chore_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_metric_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_person_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_slack_task_ref_ids: Union[None, Unset, list[str]] = UNSET
+    filter_email_task_ref_ids: Union[None, Unset, list[str]] = UNSET
     breakdown_period: Union[None, RecurringTaskPeriod, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         period = self.period.value
 
         today: Union[None, Unset, str]
@@ -55,7 +56,7 @@ class ReportArgs:
         else:
             today = self.today
 
-        sources: Union[List[str], None, Unset]
+        sources: Union[None, Unset, list[str]]
         if isinstance(self.sources, Unset):
             sources = UNSET
         elif isinstance(self.sources, list):
@@ -67,7 +68,7 @@ class ReportArgs:
         else:
             sources = self.sources
 
-        breakdowns: Union[List[str], None, Unset]
+        breakdowns: Union[None, Unset, list[str]]
         if isinstance(self.breakdowns, Unset):
             breakdowns = UNSET
         elif isinstance(self.breakdowns, list):
@@ -79,7 +80,7 @@ class ReportArgs:
         else:
             breakdowns = self.breakdowns
 
-        filter_project_ref_ids: Union[List[str], None, Unset]
+        filter_project_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_project_ref_ids, Unset):
             filter_project_ref_ids = UNSET
         elif isinstance(self.filter_project_ref_ids, list):
@@ -88,7 +89,7 @@ class ReportArgs:
         else:
             filter_project_ref_ids = self.filter_project_ref_ids
 
-        filter_big_plan_ref_ids: Union[List[str], None, Unset]
+        filter_big_plan_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_big_plan_ref_ids, Unset):
             filter_big_plan_ref_ids = UNSET
         elif isinstance(self.filter_big_plan_ref_ids, list):
@@ -97,7 +98,7 @@ class ReportArgs:
         else:
             filter_big_plan_ref_ids = self.filter_big_plan_ref_ids
 
-        filter_habit_ref_ids: Union[List[str], None, Unset]
+        filter_habit_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_habit_ref_ids, Unset):
             filter_habit_ref_ids = UNSET
         elif isinstance(self.filter_habit_ref_ids, list):
@@ -106,7 +107,7 @@ class ReportArgs:
         else:
             filter_habit_ref_ids = self.filter_habit_ref_ids
 
-        filter_chore_ref_ids: Union[List[str], None, Unset]
+        filter_chore_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_chore_ref_ids, Unset):
             filter_chore_ref_ids = UNSET
         elif isinstance(self.filter_chore_ref_ids, list):
@@ -115,7 +116,7 @@ class ReportArgs:
         else:
             filter_chore_ref_ids = self.filter_chore_ref_ids
 
-        filter_metric_ref_ids: Union[List[str], None, Unset]
+        filter_metric_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_metric_ref_ids, Unset):
             filter_metric_ref_ids = UNSET
         elif isinstance(self.filter_metric_ref_ids, list):
@@ -124,7 +125,7 @@ class ReportArgs:
         else:
             filter_metric_ref_ids = self.filter_metric_ref_ids
 
-        filter_person_ref_ids: Union[List[str], None, Unset]
+        filter_person_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_person_ref_ids, Unset):
             filter_person_ref_ids = UNSET
         elif isinstance(self.filter_person_ref_ids, list):
@@ -133,7 +134,7 @@ class ReportArgs:
         else:
             filter_person_ref_ids = self.filter_person_ref_ids
 
-        filter_slack_task_ref_ids: Union[List[str], None, Unset]
+        filter_slack_task_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_slack_task_ref_ids, Unset):
             filter_slack_task_ref_ids = UNSET
         elif isinstance(self.filter_slack_task_ref_ids, list):
@@ -142,7 +143,7 @@ class ReportArgs:
         else:
             filter_slack_task_ref_ids = self.filter_slack_task_ref_ids
 
-        filter_email_task_ref_ids: Union[List[str], None, Unset]
+        filter_email_task_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_email_task_ref_ids, Unset):
             filter_email_task_ref_ids = UNSET
         elif isinstance(self.filter_email_task_ref_ids, list):
@@ -159,7 +160,7 @@ class ReportArgs:
         else:
             breakdown_period = self.breakdown_period
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -194,8 +195,8 @@ class ReportArgs:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
         period = RecurringTaskPeriod(d.pop("period"))
 
         def _parse_today(data: object) -> Union[None, Unset, str]:
@@ -207,7 +208,7 @@ class ReportArgs:
 
         today = _parse_today(d.pop("today", UNSET))
 
-        def _parse_sources(data: object) -> Union[List[InboxTaskSource], None, Unset]:
+        def _parse_sources(data: object) -> Union[None, Unset, list[InboxTaskSource]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -225,11 +226,11 @@ class ReportArgs:
                 return sources_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[InboxTaskSource], None, Unset], data)
+            return cast(Union[None, Unset, list[InboxTaskSource]], data)
 
         sources = _parse_sources(d.pop("sources", UNSET))
 
-        def _parse_breakdowns(data: object) -> Union[List[ReportBreakdown], None, Unset]:
+        def _parse_breakdowns(data: object) -> Union[None, Unset, list[ReportBreakdown]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -247,11 +248,11 @@ class ReportArgs:
                 return breakdowns_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[ReportBreakdown], None, Unset], data)
+            return cast(Union[None, Unset, list[ReportBreakdown]], data)
 
         breakdowns = _parse_breakdowns(d.pop("breakdowns", UNSET))
 
-        def _parse_filter_project_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_project_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -259,16 +260,16 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_project_ref_ids_type_0 = cast(List[str], data)
+                filter_project_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_project_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_project_ref_ids = _parse_filter_project_ref_ids(d.pop("filter_project_ref_ids", UNSET))
 
-        def _parse_filter_big_plan_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_big_plan_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -276,16 +277,16 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_big_plan_ref_ids_type_0 = cast(List[str], data)
+                filter_big_plan_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_big_plan_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_big_plan_ref_ids = _parse_filter_big_plan_ref_ids(d.pop("filter_big_plan_ref_ids", UNSET))
 
-        def _parse_filter_habit_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_habit_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -293,16 +294,16 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_habit_ref_ids_type_0 = cast(List[str], data)
+                filter_habit_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_habit_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_habit_ref_ids = _parse_filter_habit_ref_ids(d.pop("filter_habit_ref_ids", UNSET))
 
-        def _parse_filter_chore_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_chore_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -310,16 +311,16 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_chore_ref_ids_type_0 = cast(List[str], data)
+                filter_chore_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_chore_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_chore_ref_ids = _parse_filter_chore_ref_ids(d.pop("filter_chore_ref_ids", UNSET))
 
-        def _parse_filter_metric_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_metric_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -327,16 +328,16 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_metric_ref_ids_type_0 = cast(List[str], data)
+                filter_metric_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_metric_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_metric_ref_ids = _parse_filter_metric_ref_ids(d.pop("filter_metric_ref_ids", UNSET))
 
-        def _parse_filter_person_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_person_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -344,16 +345,16 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_person_ref_ids_type_0 = cast(List[str], data)
+                filter_person_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_person_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_person_ref_ids = _parse_filter_person_ref_ids(d.pop("filter_person_ref_ids", UNSET))
 
-        def _parse_filter_slack_task_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_slack_task_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -361,16 +362,16 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_slack_task_ref_ids_type_0 = cast(List[str], data)
+                filter_slack_task_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_slack_task_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_slack_task_ref_ids = _parse_filter_slack_task_ref_ids(d.pop("filter_slack_task_ref_ids", UNSET))
 
-        def _parse_filter_email_task_ref_ids(data: object) -> Union[List[str], None, Unset]:
+        def _parse_filter_email_task_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -378,12 +379,12 @@ class ReportArgs:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                filter_email_task_ref_ids_type_0 = cast(List[str], data)
+                filter_email_task_ref_ids_type_0 = cast(list[str], data)
 
                 return filter_email_task_ref_ids_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List[str], None, Unset], data)
+            return cast(Union[None, Unset, list[str]], data)
 
         filter_email_task_ref_ids = _parse_filter_email_task_ref_ids(d.pop("filter_email_task_ref_ids", UNSET))
 
@@ -424,7 +425,7 @@ class ReportArgs:
         return report_args
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

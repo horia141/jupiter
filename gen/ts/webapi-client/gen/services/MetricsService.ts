@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -14,14 +15,10 @@ import type { MetricLoadSettingsResult } from '../models/MetricLoadSettingsResul
 import type { MetricRegenArgs } from '../models/MetricRegenArgs';
 import type { MetricRemoveArgs } from '../models/MetricRemoveArgs';
 import type { MetricUpdateArgs } from '../models/MetricUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class MetricsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a metric.
      * The command for archiving a metric.
@@ -44,7 +41,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * The command for updating the collection up project for metrics.
      * The command for updating the collection up project for metrics.
@@ -67,7 +63,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * The command for creating a metric.
      * The command for creating a metric.
@@ -90,7 +85,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * The command for finding metrics.
      * The command for finding metrics.
@@ -113,7 +107,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * Use case for loading a metric.
      * Use case for loading a metric.
@@ -136,7 +129,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * The command for loading the settings around metrics.
      * The command for loading the settings around metrics.
@@ -159,7 +151,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * A use case for regenerating tasks associated with metrics.
      * A use case for regenerating tasks associated with metrics.
@@ -182,7 +173,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * The command for removing a metric.
      * The command for removing a metric.
@@ -205,7 +195,6 @@ export class MetricsService {
             },
         });
     }
-
     /**
      * The command for updating a metric's properties.
      * The command for updating a metric's properties.
@@ -228,5 +217,4 @@ export class MetricsService {
             },
         });
     }
-
 }

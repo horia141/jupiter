@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class AppPlatform(str, Enum):
-    DESKTOP = "desktop"
+    DESKTOP_MACOS = "desktop-macos"
     MOBILE_ANDROID = "mobile-android"
     MOBILE_IOS = "mobile-ios"
     TABLET_ANDROID = "tablet-android"

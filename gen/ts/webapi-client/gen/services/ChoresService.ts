@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -13,14 +14,10 @@ import type { ChoreRemoveArgs } from '../models/ChoreRemoveArgs';
 import type { ChoreSuspendArgs } from '../models/ChoreSuspendArgs';
 import type { ChoreUnsuspendArgs } from '../models/ChoreUnsuspendArgs';
 import type { ChoreUpdateArgs } from '../models/ChoreUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class ChoresService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a chore.
      * The command for archiving a chore.
@@ -43,7 +40,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for creating a chore.
      * The command for creating a chore.
@@ -66,7 +62,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for finding a chore.
      * The command for finding a chore.
@@ -89,7 +84,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * Use case for loading a particular chore.
      * Use case for loading a particular chore.
@@ -112,7 +106,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * A use case for regenerating tasks associated with chores.
      * A use case for regenerating tasks associated with chores.
@@ -135,7 +128,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for removing a chore.
      * The command for removing a chore.
@@ -158,7 +150,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for suspending a chore.
      * The command for suspending a chore.
@@ -181,7 +172,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for unsuspending a chore.
      * The command for unsuspending a chore.
@@ -204,7 +194,6 @@ export class ChoresService {
             },
         });
     }
-
     /**
      * The command for updating a chore.
      * The command for updating a chore.
@@ -227,5 +216,4 @@ export class ChoresService {
             },
         });
     }
-
 }

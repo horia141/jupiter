@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -11,14 +12,10 @@ import type { InboxTaskLoadResult } from '../models/InboxTaskLoadResult';
 import type { InboxTaskRemoveArgs } from '../models/InboxTaskRemoveArgs';
 import type { InboxTaskUpdateArgs } from '../models/InboxTaskUpdateArgs';
 import type { InboxTaskUpdateResult } from '../models/InboxTaskUpdateResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class InboxTasksService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a inbox task.
      * The command for archiving a inbox task.
@@ -41,7 +38,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The command for creating a inbox task.
      * The command for creating a inbox task.
@@ -64,7 +60,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The command for finding a inbox task.
      * The command for finding a inbox task.
@@ -87,7 +82,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The use case for loading a particular inbox task.
      * The use case for loading a particular inbox task.
@@ -110,7 +104,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The command for removing a inbox task.
      * The command for removing a inbox task.
@@ -133,7 +126,6 @@ export class InboxTasksService {
             },
         });
     }
-
     /**
      * The command for updating a inbox task.
      * The command for updating a inbox task.
@@ -156,5 +148,4 @@ export class InboxTasksService {
             },
         });
     }
-
 }

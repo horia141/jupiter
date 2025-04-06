@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -26,9 +27,9 @@ class InitResult:
     new_workspace: "Workspace"
     auth_token_ext: str
     recovery_token: str
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         new_user = self.new_user.to_dict()
 
         new_workspace = self.new_workspace.to_dict()
@@ -37,7 +38,7 @@ class InitResult:
 
         recovery_token = self.recovery_token
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -51,11 +52,11 @@ class InitResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.user import User
         from ..models.workspace import Workspace
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         new_user = User.from_dict(d.pop("new_user"))
 
         new_workspace = Workspace.from_dict(d.pop("new_workspace"))
@@ -75,7 +76,7 @@ class InitResult:
         return init_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

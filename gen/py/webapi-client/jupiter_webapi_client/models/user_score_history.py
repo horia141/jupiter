@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -15,19 +16,19 @@ class UserScoreHistory:
     """A history of user scores over time.
 
     Attributes:
-        daily_scores (List['UserScoreAtDate']):
-        weekly_scores (List['UserScoreAtDate']):
-        monthly_scores (List['UserScoreAtDate']):
-        quarterly_scores (List['UserScoreAtDate']):
+        daily_scores (list['UserScoreAtDate']):
+        weekly_scores (list['UserScoreAtDate']):
+        monthly_scores (list['UserScoreAtDate']):
+        quarterly_scores (list['UserScoreAtDate']):
     """
 
-    daily_scores: List["UserScoreAtDate"]
-    weekly_scores: List["UserScoreAtDate"]
-    monthly_scores: List["UserScoreAtDate"]
-    quarterly_scores: List["UserScoreAtDate"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    daily_scores: list["UserScoreAtDate"]
+    weekly_scores: list["UserScoreAtDate"]
+    monthly_scores: list["UserScoreAtDate"]
+    quarterly_scores: list["UserScoreAtDate"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         daily_scores = []
         for daily_scores_item_data in self.daily_scores:
             daily_scores_item = daily_scores_item_data.to_dict()
@@ -48,7 +49,7 @@ class UserScoreHistory:
             quarterly_scores_item = quarterly_scores_item_data.to_dict()
             quarterly_scores.append(quarterly_scores_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -62,10 +63,10 @@ class UserScoreHistory:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.user_score_at_date import UserScoreAtDate
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         daily_scores = []
         _daily_scores = d.pop("daily_scores")
         for daily_scores_item_data in _daily_scores:
@@ -105,7 +106,7 @@ class UserScoreHistory:
         return user_score_history
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

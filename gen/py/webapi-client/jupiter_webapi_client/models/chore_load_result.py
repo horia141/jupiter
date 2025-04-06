@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -22,7 +23,7 @@ class ChoreLoadResult:
     Attributes:
         chore (Chore): A chore.
         project (Project): The project.
-        inbox_tasks (List['InboxTask']):
+        inbox_tasks (list['InboxTask']):
         inbox_tasks_total_cnt (int):
         inbox_tasks_page_size (int):
         note (Union['Note', None, Unset]):
@@ -30,13 +31,13 @@ class ChoreLoadResult:
 
     chore: "Chore"
     project: "Project"
-    inbox_tasks: List["InboxTask"]
+    inbox_tasks: list["InboxTask"]
     inbox_tasks_total_cnt: int
     inbox_tasks_page_size: int
     note: Union["Note", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.note import Note
 
         chore = self.chore.to_dict()
@@ -52,7 +53,7 @@ class ChoreLoadResult:
 
         inbox_tasks_page_size = self.inbox_tasks_page_size
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -60,7 +61,7 @@ class ChoreLoadResult:
         else:
             note = self.note
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -77,13 +78,13 @@ class ChoreLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.chore import Chore
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.project import Project
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         chore = Chore.from_dict(d.pop("chore"))
 
         project = Project.from_dict(d.pop("project"))
@@ -129,7 +130,7 @@ class ChoreLoadResult:
         return chore_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

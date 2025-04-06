@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -10,14 +11,10 @@ import type { VacationLoadArgs } from '../models/VacationLoadArgs';
 import type { VacationLoadResult } from '../models/VacationLoadResult';
 import type { VacationRemoveArgs } from '../models/VacationRemoveArgs';
 import type { VacationUpdateArgs } from '../models/VacationUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class VacationsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a vacation.
      * The command for archiving a vacation.
@@ -40,7 +37,6 @@ export class VacationsService {
             },
         });
     }
-
     /**
      * The command for creating a vacation.
      * The command for creating a vacation.
@@ -63,7 +59,6 @@ export class VacationsService {
             },
         });
     }
-
     /**
      * The command for finding vacations.
      * The command for finding vacations.
@@ -86,7 +81,6 @@ export class VacationsService {
             },
         });
     }
-
     /**
      * Use case for loading a particular vacation.
      * Use case for loading a particular vacation.
@@ -109,7 +103,6 @@ export class VacationsService {
             },
         });
     }
-
     /**
      * The command for removing a vacation.
      * The command for removing a vacation.
@@ -132,7 +125,6 @@ export class VacationsService {
             },
         });
     }
-
     /**
      * The command for updating a vacation's properties.
      * The command for updating a vacation's properties.
@@ -155,5 +147,4 @@ export class VacationsService {
             },
         });
     }
-
 }

@@ -1,16 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
 import type { TimeEventFullDaysBlockLoadArgs } from '../models/TimeEventFullDaysBlockLoadArgs';
 import type { TimeEventFullDaysBlockLoadResult } from '../models/TimeEventFullDaysBlockLoadResult';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class FullDaysBlockService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * Load a full day block and associated data.
      * Load a full day block and associated data.
@@ -33,5 +30,4 @@ export class FullDaysBlockService {
             },
         });
     }
-
 }

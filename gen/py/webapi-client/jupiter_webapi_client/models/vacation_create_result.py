@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -22,14 +23,14 @@ class VacationCreateResult:
 
     new_vacation: "Vacation"
     new_time_event_block: "TimeEventFullDaysBlock"
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         new_vacation = self.new_vacation.to_dict()
 
         new_time_event_block = self.new_time_event_block.to_dict()
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -41,11 +42,11 @@ class VacationCreateResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.time_event_full_days_block import TimeEventFullDaysBlock
         from ..models.vacation import Vacation
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         new_vacation = Vacation.from_dict(d.pop("new_vacation"))
 
         new_time_event_block = TimeEventFullDaysBlock.from_dict(d.pop("new_time_event_block"))
@@ -59,7 +60,7 @@ class VacationCreateResult:
         return vacation_create_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

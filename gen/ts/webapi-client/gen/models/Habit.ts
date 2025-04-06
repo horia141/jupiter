@@ -1,13 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { EntityId } from './EntityId';
 import type { HabitName } from './HabitName';
 import type { HabitRepeatsStrategy } from './HabitRepeatsStrategy';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { Timestamp } from './Timestamp';
-
 /**
  * A habit.
  */

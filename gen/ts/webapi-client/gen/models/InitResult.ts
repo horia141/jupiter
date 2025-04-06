@@ -1,12 +1,11 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { AuthTokenExt } from './AuthTokenExt';
 import type { RecoveryTokenPlain } from './RecoveryTokenPlain';
 import type { User } from './User';
 import type { Workspace } from './Workspace';
-
 /**
  * Init use case result.
  */

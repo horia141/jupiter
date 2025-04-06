@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -21,22 +22,22 @@ class MetricLoadResult:
 
     Attributes:
         metric (Metric): A metric.
-        metric_entries (List['MetricEntry']):
-        collection_tasks (List['InboxTask']):
+        metric_entries (list['MetricEntry']):
+        collection_tasks (list['InboxTask']):
         collection_tasks_total_cnt (int):
         collection_tasks_page_size (int):
         note (Union['Note', None, Unset]):
     """
 
     metric: "Metric"
-    metric_entries: List["MetricEntry"]
-    collection_tasks: List["InboxTask"]
+    metric_entries: list["MetricEntry"]
+    collection_tasks: list["InboxTask"]
     collection_tasks_total_cnt: int
     collection_tasks_page_size: int
     note: Union["Note", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.note import Note
 
         metric = self.metric.to_dict()
@@ -55,7 +56,7 @@ class MetricLoadResult:
 
         collection_tasks_page_size = self.collection_tasks_page_size
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -63,7 +64,7 @@ class MetricLoadResult:
         else:
             note = self.note
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -80,13 +81,13 @@ class MetricLoadResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task import InboxTask
         from ..models.metric import Metric
         from ..models.metric_entry import MetricEntry
         from ..models.note import Note
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         metric = Metric.from_dict(d.pop("metric"))
 
         metric_entries = []
@@ -137,7 +138,7 @@ class MetricLoadResult:
         return metric_load_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

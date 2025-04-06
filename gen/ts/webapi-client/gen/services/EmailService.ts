@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -11,14 +12,10 @@ import type { EmailTaskLoadSettingsArgs } from '../models/EmailTaskLoadSettingsA
 import type { EmailTaskLoadSettingsResult } from '../models/EmailTaskLoadSettingsResult';
 import type { EmailTaskRemoveArgs } from '../models/EmailTaskRemoveArgs';
 import type { EmailTaskUpdateArgs } from '../models/EmailTaskUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class EmailService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a email task.
      * The command for archiving a email task.
@@ -41,7 +38,6 @@ export class EmailService {
             },
         });
     }
-
     /**
      * The command for updating the generation up project for email tasks.
      * The command for updating the generation up project for email tasks.
@@ -64,7 +60,6 @@ export class EmailService {
             },
         });
     }
-
     /**
      * The command for finding a email task.
      * The command for finding a email task.
@@ -87,7 +82,6 @@ export class EmailService {
             },
         });
     }
-
     /**
      * Use case for loading a particular email task.
      * Use case for loading a particular email task.
@@ -110,7 +104,6 @@ export class EmailService {
             },
         });
     }
-
     /**
      * The command for loading the settings around email tasks.
      * The command for loading the settings around email tasks.
@@ -133,7 +126,6 @@ export class EmailService {
             },
         });
     }
-
     /**
      * The command for archiving a email task.
      * The command for archiving a email task.
@@ -156,7 +148,6 @@ export class EmailService {
             },
         });
     }
-
     /**
      * The command for updating a email task.
      * The command for updating a email task.
@@ -179,5 +170,4 @@ export class EmailService {
             },
         });
     }
-
 }

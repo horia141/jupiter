@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -28,38 +29,38 @@ class GetSummariesResult:
 
     Attributes:
         workspace (Union['Workspace', None, Unset]):
-        vacations (Union[List['VacationSummary'], None, Unset]):
-        schedule_streams (Union[List['ScheduleStreamSummary'], None, Unset]):
+        vacations (Union[None, Unset, list['VacationSummary']]):
+        schedule_streams (Union[None, Unset, list['ScheduleStreamSummary']]):
         root_project (Union['ProjectSummary', None, Unset]):
-        projects (Union[List['ProjectSummary'], None, Unset]):
-        inbox_tasks (Union[List['InboxTaskSummary'], None, Unset]):
-        habits (Union[List['HabitSummary'], None, Unset]):
-        chores (Union[List['ChoreSummary'], None, Unset]):
-        big_plans (Union[List['BigPlanSummary'], None, Unset]):
-        smart_lists (Union[List['SmartListSummary'], None, Unset]):
-        metrics (Union[List['MetricSummary'], None, Unset]):
-        persons (Union[List['PersonSummary'], None, Unset]):
+        projects (Union[None, Unset, list['ProjectSummary']]):
+        inbox_tasks (Union[None, Unset, list['InboxTaskSummary']]):
+        habits (Union[None, Unset, list['HabitSummary']]):
+        chores (Union[None, Unset, list['ChoreSummary']]):
+        big_plans (Union[None, Unset, list['BigPlanSummary']]):
+        smart_lists (Union[None, Unset, list['SmartListSummary']]):
+        metrics (Union[None, Unset, list['MetricSummary']]):
+        persons (Union[None, Unset, list['PersonSummary']]):
     """
 
     workspace: Union["Workspace", None, Unset] = UNSET
-    vacations: Union[List["VacationSummary"], None, Unset] = UNSET
-    schedule_streams: Union[List["ScheduleStreamSummary"], None, Unset] = UNSET
+    vacations: Union[None, Unset, list["VacationSummary"]] = UNSET
+    schedule_streams: Union[None, Unset, list["ScheduleStreamSummary"]] = UNSET
     root_project: Union["ProjectSummary", None, Unset] = UNSET
-    projects: Union[List["ProjectSummary"], None, Unset] = UNSET
-    inbox_tasks: Union[List["InboxTaskSummary"], None, Unset] = UNSET
-    habits: Union[List["HabitSummary"], None, Unset] = UNSET
-    chores: Union[List["ChoreSummary"], None, Unset] = UNSET
-    big_plans: Union[List["BigPlanSummary"], None, Unset] = UNSET
-    smart_lists: Union[List["SmartListSummary"], None, Unset] = UNSET
-    metrics: Union[List["MetricSummary"], None, Unset] = UNSET
-    persons: Union[List["PersonSummary"], None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    projects: Union[None, Unset, list["ProjectSummary"]] = UNSET
+    inbox_tasks: Union[None, Unset, list["InboxTaskSummary"]] = UNSET
+    habits: Union[None, Unset, list["HabitSummary"]] = UNSET
+    chores: Union[None, Unset, list["ChoreSummary"]] = UNSET
+    big_plans: Union[None, Unset, list["BigPlanSummary"]] = UNSET
+    smart_lists: Union[None, Unset, list["SmartListSummary"]] = UNSET
+    metrics: Union[None, Unset, list["MetricSummary"]] = UNSET
+    persons: Union[None, Unset, list["PersonSummary"]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.project_summary import ProjectSummary
         from ..models.workspace import Workspace
 
-        workspace: Union[Dict[str, Any], None, Unset]
+        workspace: Union[None, Unset, dict[str, Any]]
         if isinstance(self.workspace, Unset):
             workspace = UNSET
         elif isinstance(self.workspace, Workspace):
@@ -67,7 +68,7 @@ class GetSummariesResult:
         else:
             workspace = self.workspace
 
-        vacations: Union[List[Dict[str, Any]], None, Unset]
+        vacations: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.vacations, Unset):
             vacations = UNSET
         elif isinstance(self.vacations, list):
@@ -79,7 +80,7 @@ class GetSummariesResult:
         else:
             vacations = self.vacations
 
-        schedule_streams: Union[List[Dict[str, Any]], None, Unset]
+        schedule_streams: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.schedule_streams, Unset):
             schedule_streams = UNSET
         elif isinstance(self.schedule_streams, list):
@@ -91,7 +92,7 @@ class GetSummariesResult:
         else:
             schedule_streams = self.schedule_streams
 
-        root_project: Union[Dict[str, Any], None, Unset]
+        root_project: Union[None, Unset, dict[str, Any]]
         if isinstance(self.root_project, Unset):
             root_project = UNSET
         elif isinstance(self.root_project, ProjectSummary):
@@ -99,7 +100,7 @@ class GetSummariesResult:
         else:
             root_project = self.root_project
 
-        projects: Union[List[Dict[str, Any]], None, Unset]
+        projects: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.projects, Unset):
             projects = UNSET
         elif isinstance(self.projects, list):
@@ -111,7 +112,7 @@ class GetSummariesResult:
         else:
             projects = self.projects
 
-        inbox_tasks: Union[List[Dict[str, Any]], None, Unset]
+        inbox_tasks: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.inbox_tasks, Unset):
             inbox_tasks = UNSET
         elif isinstance(self.inbox_tasks, list):
@@ -123,7 +124,7 @@ class GetSummariesResult:
         else:
             inbox_tasks = self.inbox_tasks
 
-        habits: Union[List[Dict[str, Any]], None, Unset]
+        habits: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.habits, Unset):
             habits = UNSET
         elif isinstance(self.habits, list):
@@ -135,7 +136,7 @@ class GetSummariesResult:
         else:
             habits = self.habits
 
-        chores: Union[List[Dict[str, Any]], None, Unset]
+        chores: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.chores, Unset):
             chores = UNSET
         elif isinstance(self.chores, list):
@@ -147,7 +148,7 @@ class GetSummariesResult:
         else:
             chores = self.chores
 
-        big_plans: Union[List[Dict[str, Any]], None, Unset]
+        big_plans: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.big_plans, Unset):
             big_plans = UNSET
         elif isinstance(self.big_plans, list):
@@ -159,7 +160,7 @@ class GetSummariesResult:
         else:
             big_plans = self.big_plans
 
-        smart_lists: Union[List[Dict[str, Any]], None, Unset]
+        smart_lists: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.smart_lists, Unset):
             smart_lists = UNSET
         elif isinstance(self.smart_lists, list):
@@ -171,7 +172,7 @@ class GetSummariesResult:
         else:
             smart_lists = self.smart_lists
 
-        metrics: Union[List[Dict[str, Any]], None, Unset]
+        metrics: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.metrics, Unset):
             metrics = UNSET
         elif isinstance(self.metrics, list):
@@ -183,7 +184,7 @@ class GetSummariesResult:
         else:
             metrics = self.metrics
 
-        persons: Union[List[Dict[str, Any]], None, Unset]
+        persons: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.persons, Unset):
             persons = UNSET
         elif isinstance(self.persons, list):
@@ -195,7 +196,7 @@ class GetSummariesResult:
         else:
             persons = self.persons
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
         if workspace is not UNSET:
@@ -226,7 +227,7 @@ class GetSummariesResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan_summary import BigPlanSummary
         from ..models.chore_summary import ChoreSummary
         from ..models.habit_summary import HabitSummary
@@ -239,7 +240,7 @@ class GetSummariesResult:
         from ..models.vacation_summary import VacationSummary
         from ..models.workspace import Workspace
 
-        d = src_dict.copy()
+        d = dict(src_dict)
 
         def _parse_workspace(data: object) -> Union["Workspace", None, Unset]:
             if data is None:
@@ -258,7 +259,7 @@ class GetSummariesResult:
 
         workspace = _parse_workspace(d.pop("workspace", UNSET))
 
-        def _parse_vacations(data: object) -> Union[List["VacationSummary"], None, Unset]:
+        def _parse_vacations(data: object) -> Union[None, Unset, list["VacationSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -276,11 +277,11 @@ class GetSummariesResult:
                 return vacations_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["VacationSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["VacationSummary"]], data)
 
         vacations = _parse_vacations(d.pop("vacations", UNSET))
 
-        def _parse_schedule_streams(data: object) -> Union[List["ScheduleStreamSummary"], None, Unset]:
+        def _parse_schedule_streams(data: object) -> Union[None, Unset, list["ScheduleStreamSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -298,7 +299,7 @@ class GetSummariesResult:
                 return schedule_streams_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["ScheduleStreamSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["ScheduleStreamSummary"]], data)
 
         schedule_streams = _parse_schedule_streams(d.pop("schedule_streams", UNSET))
 
@@ -319,7 +320,7 @@ class GetSummariesResult:
 
         root_project = _parse_root_project(d.pop("root_project", UNSET))
 
-        def _parse_projects(data: object) -> Union[List["ProjectSummary"], None, Unset]:
+        def _parse_projects(data: object) -> Union[None, Unset, list["ProjectSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -337,11 +338,11 @@ class GetSummariesResult:
                 return projects_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["ProjectSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["ProjectSummary"]], data)
 
         projects = _parse_projects(d.pop("projects", UNSET))
 
-        def _parse_inbox_tasks(data: object) -> Union[List["InboxTaskSummary"], None, Unset]:
+        def _parse_inbox_tasks(data: object) -> Union[None, Unset, list["InboxTaskSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -359,11 +360,11 @@ class GetSummariesResult:
                 return inbox_tasks_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["InboxTaskSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["InboxTaskSummary"]], data)
 
         inbox_tasks = _parse_inbox_tasks(d.pop("inbox_tasks", UNSET))
 
-        def _parse_habits(data: object) -> Union[List["HabitSummary"], None, Unset]:
+        def _parse_habits(data: object) -> Union[None, Unset, list["HabitSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -381,11 +382,11 @@ class GetSummariesResult:
                 return habits_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["HabitSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["HabitSummary"]], data)
 
         habits = _parse_habits(d.pop("habits", UNSET))
 
-        def _parse_chores(data: object) -> Union[List["ChoreSummary"], None, Unset]:
+        def _parse_chores(data: object) -> Union[None, Unset, list["ChoreSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -403,11 +404,11 @@ class GetSummariesResult:
                 return chores_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["ChoreSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["ChoreSummary"]], data)
 
         chores = _parse_chores(d.pop("chores", UNSET))
 
-        def _parse_big_plans(data: object) -> Union[List["BigPlanSummary"], None, Unset]:
+        def _parse_big_plans(data: object) -> Union[None, Unset, list["BigPlanSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -425,11 +426,11 @@ class GetSummariesResult:
                 return big_plans_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["BigPlanSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["BigPlanSummary"]], data)
 
         big_plans = _parse_big_plans(d.pop("big_plans", UNSET))
 
-        def _parse_smart_lists(data: object) -> Union[List["SmartListSummary"], None, Unset]:
+        def _parse_smart_lists(data: object) -> Union[None, Unset, list["SmartListSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -447,11 +448,11 @@ class GetSummariesResult:
                 return smart_lists_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["SmartListSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["SmartListSummary"]], data)
 
         smart_lists = _parse_smart_lists(d.pop("smart_lists", UNSET))
 
-        def _parse_metrics(data: object) -> Union[List["MetricSummary"], None, Unset]:
+        def _parse_metrics(data: object) -> Union[None, Unset, list["MetricSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -469,11 +470,11 @@ class GetSummariesResult:
                 return metrics_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["MetricSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["MetricSummary"]], data)
 
         metrics = _parse_metrics(d.pop("metrics", UNSET))
 
-        def _parse_persons(data: object) -> Union[List["PersonSummary"], None, Unset]:
+        def _parse_persons(data: object) -> Union[None, Unset, list["PersonSummary"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -491,7 +492,7 @@ class GetSummariesResult:
                 return persons_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["PersonSummary"], None, Unset], data)
+            return cast(Union[None, Unset, list["PersonSummary"]], data)
 
         persons = _parse_persons(d.pop("persons", UNSET))
 
@@ -514,7 +515,7 @@ class GetSummariesResult:
         return get_summaries_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

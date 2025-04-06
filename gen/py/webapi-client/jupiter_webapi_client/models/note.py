@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -37,7 +38,7 @@ class Note:
         note_collection_ref_id (str):
         domain (NoteDomain): The source of a note.
         source_entity_ref_id (str): A generic entity id.
-        content (List[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock', 'EntityReferenceBlock',
+        content (list[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock', 'EntityReferenceBlock',
             'HeadingBlock', 'LinkBlock', 'NumberedListBlock', 'ParagraphBlock', 'QuoteBlock', 'TableBlock']]):
         archived_time (Union[None, Unset, str]):
     """
@@ -51,7 +52,7 @@ class Note:
     note_collection_ref_id: str
     domain: NoteDomain
     source_entity_ref_id: str
-    content: List[
+    content: list[
         Union[
             "BulletedListBlock",
             "ChecklistBlock",
@@ -67,9 +68,9 @@ class Note:
         ]
     ]
     archived_time: Union[None, Unset, str] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.bulleted_list_block import BulletedListBlock
         from ..models.checklist_block import ChecklistBlock
         from ..models.code_block import CodeBlock
@@ -101,7 +102,7 @@ class Note:
 
         content = []
         for content_item_data in self.content:
-            content_item: Dict[str, Any]
+            content_item: dict[str, Any]
             if isinstance(content_item_data, ParagraphBlock):
                 content_item = content_item_data.to_dict()
             elif isinstance(content_item_data, HeadingBlock):
@@ -133,7 +134,7 @@ class Note:
         else:
             archived_time = self.archived_time
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -155,7 +156,7 @@ class Note:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.bulleted_list_block import BulletedListBlock
         from ..models.checklist_block import ChecklistBlock
         from ..models.code_block import CodeBlock
@@ -168,7 +169,7 @@ class Note:
         from ..models.quote_block import QuoteBlock
         from ..models.table_block import TableBlock
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         version = d.pop("version")
@@ -323,7 +324,7 @@ class Note:
         return note
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

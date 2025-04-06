@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { CorrelationId } from './CorrelationId';
-
 /**
  * A quote.
  */
@@ -12,13 +11,9 @@ export type QuoteBlock = {
     kind: QuoteBlock.kind;
     text: string;
 };
-
 export namespace QuoteBlock {
-
     export enum kind {
         QUOTE = 'quote',
     }
-
-
 }
 

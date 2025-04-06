@@ -1,3 +1,4 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -13,14 +14,10 @@ import type { HabitRemoveArgs } from '../models/HabitRemoveArgs';
 import type { HabitSuspendArgs } from '../models/HabitSuspendArgs';
 import type { HabitUnsuspendArgs } from '../models/HabitUnsuspendArgs';
 import type { HabitUpdateArgs } from '../models/HabitUpdateArgs';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
-
 export class HabitsService {
-
     constructor(public readonly httpRequest: BaseHttpRequest) {}
-
     /**
      * The command for archiving a habit.
      * The command for archiving a habit.
@@ -43,7 +40,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for creating a habit.
      * The command for creating a habit.
@@ -66,7 +62,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for finding a habit.
      * The command for finding a habit.
@@ -89,7 +84,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * Use case for loading a particular habit.
      * Use case for loading a particular habit.
@@ -112,7 +106,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * A use case for regenerating tasks associated with habits.
      * A use case for regenerating tasks associated with habits.
@@ -135,7 +128,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for removing a habit.
      * The command for removing a habit.
@@ -158,7 +150,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for suspending a habit.
      * The command for suspending a habit.
@@ -181,7 +172,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for unsuspending a habit.
      * The command for unsuspending a habit.
@@ -204,7 +194,6 @@ export class HabitsService {
             },
         });
     }
-
     /**
      * The command for updating a habit.
      * The command for updating a habit.
@@ -227,5 +216,4 @@ export class HabitsService {
             },
         });
     }
-
 }

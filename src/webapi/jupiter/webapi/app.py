@@ -147,7 +147,7 @@ def construct_guest_session(
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
     app_client_version = AppVersion("0.0.1")
     app_shell = AppShell.BROWSER
-    app_platform = AppPlatform.DESKTOP
+    app_platform = AppPlatform.DESKTOP_MACOS
     app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
@@ -171,7 +171,7 @@ def construct_logged_in_session(
     frontdoor_raw = request.headers.get(FRONTDOOR_HEADER)
     app_client_version = AppVersion("0.0.1")
     app_shell = AppShell.BROWSER
-    app_platform = AppPlatform.DESKTOP
+    app_platform = AppPlatform.DESKTOP_MACOS
     app_distribution = AppDistribution.WEB
     if frontdoor_raw is not None:
         bits = frontdoor_raw.split(":")
@@ -674,7 +674,7 @@ class WebServiceApp:
                     auth_token_ext=None,
                     app_client_version=global_properties.version,
                     app_shell=AppShell.BROWSER,
-                    app_platform=AppPlatform.DESKTOP,
+                    app_platform=AppPlatform.DESKTOP_MACOS,
                     app_distribution=AppDistribution.WEB,
                 ),
                 LoginArgs(email_address=email_address, password=password),

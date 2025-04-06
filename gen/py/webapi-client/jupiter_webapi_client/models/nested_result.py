@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -16,14 +17,14 @@ class NestedResult:
 
     Attributes:
         total_cnt (int):
-        per_source_cnt (List['NestedResultPerSource']):
+        per_source_cnt (list['NestedResultPerSource']):
     """
 
     total_cnt: int
-    per_source_cnt: List["NestedResultPerSource"]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    per_source_cnt: list["NestedResultPerSource"]
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         total_cnt = self.total_cnt
 
         per_source_cnt = []
@@ -31,7 +32,7 @@ class NestedResult:
             per_source_cnt_item = per_source_cnt_item_data.to_dict()
             per_source_cnt.append(per_source_cnt_item)
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -43,10 +44,10 @@ class NestedResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.nested_result_per_source import NestedResultPerSource
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         total_cnt = d.pop("total_cnt")
 
         per_source_cnt = []
@@ -65,7 +66,7 @@ class NestedResult:
         return nested_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

@@ -55,7 +55,10 @@ export function inferPlatformAndDistribution(userAgent: string | null): {
   distribution: AppDistribution;
 } {
   if (userAgent === null) {
-    return { platform: AppPlatform.DESKTOP, distribution: AppDistribution.WEB };
+    return {
+      platform: AppPlatform.DESKTOP_MACOS,
+      distribution: AppDistribution.WEB,
+    };
   }
 
   const ua = UAParser(userAgent);
@@ -81,6 +84,9 @@ export function inferPlatformAndDistribution(userAgent: string | null): {
       distribution: AppDistribution.GOOGLE_PLAY_STORE,
     };
   } else {
-    return { platform: AppPlatform.DESKTOP, distribution: AppDistribution.WEB };
+    return {
+      platform: AppPlatform.DESKTOP_MACOS,
+      distribution: AppDistribution.WEB,
+    };
   }
 }

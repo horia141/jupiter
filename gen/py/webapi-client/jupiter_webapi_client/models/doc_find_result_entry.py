@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,20 +21,20 @@ class DocFindResultEntry:
     Attributes:
         doc (Doc): A doc in the docbook.
         note (Union['Note', None, Unset]):
-        subdocs (Union[List['Doc'], None, Unset]):
+        subdocs (Union[None, Unset, list['Doc']]):
     """
 
     doc: "Doc"
     note: Union["Note", None, Unset] = UNSET
-    subdocs: Union[List["Doc"], None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    subdocs: Union[None, Unset, list["Doc"]] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.note import Note
 
         doc = self.doc.to_dict()
 
-        note: Union[Dict[str, Any], None, Unset]
+        note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
         elif isinstance(self.note, Note):
@@ -41,7 +42,7 @@ class DocFindResultEntry:
         else:
             note = self.note
 
-        subdocs: Union[List[Dict[str, Any]], None, Unset]
+        subdocs: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.subdocs, Unset):
             subdocs = UNSET
         elif isinstance(self.subdocs, list):
@@ -53,7 +54,7 @@ class DocFindResultEntry:
         else:
             subdocs = self.subdocs
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -68,11 +69,11 @@ class DocFindResultEntry:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.doc import Doc
         from ..models.note import Note
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         doc = Doc.from_dict(d.pop("doc"))
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
@@ -92,7 +93,7 @@ class DocFindResultEntry:
 
         note = _parse_note(d.pop("note", UNSET))
 
-        def _parse_subdocs(data: object) -> Union[List["Doc"], None, Unset]:
+        def _parse_subdocs(data: object) -> Union[None, Unset, list["Doc"]]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -110,7 +111,7 @@ class DocFindResultEntry:
                 return subdocs_type_0
             except:  # noqa: E722
                 pass
-            return cast(Union[List["Doc"], None, Unset], data)
+            return cast(Union[None, Unset, list["Doc"]], data)
 
         subdocs = _parse_subdocs(d.pop("subdocs", UNSET))
 
@@ -124,7 +125,7 @@ class DocFindResultEntry:
         return doc_find_result_entry
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:

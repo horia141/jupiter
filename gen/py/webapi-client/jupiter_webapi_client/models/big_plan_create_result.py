@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -24,14 +25,14 @@ class BigPlanCreateResult:
 
     new_big_plan: "BigPlan"
     new_time_plan_activity: Union["TimePlanActivity", None, Unset] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         from ..models.time_plan_activity import TimePlanActivity
 
         new_big_plan = self.new_big_plan.to_dict()
 
-        new_time_plan_activity: Union[Dict[str, Any], None, Unset]
+        new_time_plan_activity: Union[None, Unset, dict[str, Any]]
         if isinstance(self.new_time_plan_activity, Unset):
             new_time_plan_activity = UNSET
         elif isinstance(self.new_time_plan_activity, TimePlanActivity):
@@ -39,7 +40,7 @@ class BigPlanCreateResult:
         else:
             new_time_plan_activity = self.new_time_plan_activity
 
-        field_dict: Dict[str, Any] = {}
+        field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
@@ -52,11 +53,11 @@ class BigPlanCreateResult:
         return field_dict
 
     @classmethod
-    def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
         from ..models.time_plan_activity import TimePlanActivity
 
-        d = src_dict.copy()
+        d = dict(src_dict)
         new_big_plan = BigPlan.from_dict(d.pop("new_big_plan"))
 
         def _parse_new_time_plan_activity(data: object) -> Union["TimePlanActivity", None, Unset]:
@@ -85,7 +86,7 @@ class BigPlanCreateResult:
         return big_plan_create_result
 
     @property
-    def additional_keys(self) -> List[str]:
+    def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
     def __getitem__(self, key: str) -> Any:
