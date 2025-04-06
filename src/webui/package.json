@@ -34,9 +34,9 @@
     "@nivo/calendar": "=0.80.0",
     "@nivo/core": "=0.80.0",
     "@nivo/line": "=0.80.0",
-    "@remix-run/node": "^2.16.3",
-    "@remix-run/react": "^2.16.3",
-    "@remix-run/serve": "^2.16.3",
+    "@remix-run/node": "^2.16.4",
+    "@remix-run/react": "^2.16.4",
+    "@remix-run/serve": "^2.16.4",
     "buffer-polyfill": "npm:buffer@^6.0.3",
     "editorjs-drag-drop": "^1.1.16",
     "emoji-picker-react": "^4.12.2",
@@ -55,7 +55,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@remix-run/dev": "^2.16.3",
+    "@remix-run/dev": "^2.16.4",
     "@remix-run/v1-route-convention": "^0.1.4",
     "@types/js-cookie": "^3.0.6",
     "@types/luxon": "^3.4.2",
