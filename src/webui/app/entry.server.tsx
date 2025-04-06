@@ -29,6 +29,7 @@ export default function handleRequest(
           responseHeaders.set(ENV_HEADER, GLOBAL_PROPERTIES.env);
           responseHeaders.set(HOSTING_HEADER, GLOBAL_PROPERTIES.hosting);
           responseHeaders.set(VERSION_HEADER, GLOBAL_PROPERTIES.version);
+          responseHeaders.set("X-Frame-Options", "DENY");
 
           done = true;
 
