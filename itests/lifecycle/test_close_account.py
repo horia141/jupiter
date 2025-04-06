@@ -30,4 +30,4 @@ def test_close_account(
     page.locator("#close-account-initialize").click()
     page.locator("#close-account").click()
 
-    page.wait_for_url("/init")
+    page.wait_for_url("/app/init")
