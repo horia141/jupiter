@@ -1,4 +1,5 @@
 """Use case specific storage interactions."""
+
 import abc
 from contextlib import AbstractAsyncContextManager
 

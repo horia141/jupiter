@@ -14,12 +14,13 @@ import {
 } from "@mui/material";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
+
 import type { SkipRule } from "~/logic/domain/recurring-task-skip-rule";
 import {
+  SkipRuleType,
   assembleSkipRule,
   isCompatibleWithPeriod,
   parseSkipRule,
-  SkipRuleType,
   skipRuleTypeName,
 } from "~/logic/domain/recurring-task-skip-rule";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -44,7 +45,7 @@ interface EditingInfo {
 
 function skipRuleToEditingInfo(
   period: RecurringTaskPeriod,
-  skipRule: SkipRule
+  skipRule: SkipRule,
 ): EditingInfo {
   if (!isCompatibleWithPeriod(skipRule.type, period)) {
     return {
@@ -79,13 +80,14 @@ function editingInfoToSkipRule(editingInfo: EditingInfo): SkipRule {
       return { type: SkipRuleType.EVEN };
     case SkipRuleType.ODD:
       return { type: SkipRuleType.ODD };
-    case SkipRuleType.EVERY:
+    case SkipRuleType.EVERY: {
       const realN = parseInt(editingInfo.n);
       const realK = parseInt(editingInfo.k);
       if (isNaN(realN) || isNaN(realK)) {
         return { type: SkipRuleType.EVERY, n: -1, k: -1 };
       }
       return { type: SkipRuleType.EVERY, n: realN, k: realK };
+    }
     case SkipRuleType.CUSTOM_DAILY_REL_WEEKLY:
       return {
         type: SkipRuleType.CUSTOM_DAILY_REL_WEEKLY,
@@ -115,21 +117,21 @@ function editingInfoToSkipRule(editingInfo: EditingInfo): SkipRule {
 }
 
 export function RecurringTaskSkipRuleBlock(
-  props: RecurringTaskSkipRuleBlockProps
+  props: RecurringTaskSkipRuleBlockProps,
 ) {
   const isBigScreen = useBigScreen();
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(
-    skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule))
+    skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule)),
   );
   useEffect(() => {
     setEditingInfo(
-      skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule))
+      skipRuleToEditingInfo(props.period, parseSkipRule(props.skipRule)),
     );
   }, [props.skipRule, props.period]);
 
   function handleNewSkipRule(
     event: React.MouseEvent<HTMLElement>,
-    newSkipRuleType: SkipRuleType | null
+    newSkipRuleType: SkipRuleType | null,
   ) {
     if (newSkipRuleType === null) {
       return;
@@ -192,7 +194,7 @@ export function RecurringTaskSkipRuleBlock(
 
   function handleChangeCustomQuarterlyRelYearly(
     quarter: number,
-    include: boolean
+    include: boolean,
   ) {
     setEditingInfo((oldEditingInfo: EditingInfo) => ({
       ...oldEditingInfo,
@@ -457,7 +459,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_DAILY_REL_WEEKLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
             <ToggleButton
@@ -467,7 +469,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_DAILY_REL_MONTHLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -526,7 +528,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_WEEKLY_REL_YEARLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -584,7 +586,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_MONTHLY_REL_YEARLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -642,7 +644,7 @@ export function RecurringTaskSkipRuleBlock(
             >
               {skipRuleTypeName(
                 SkipRuleType.CUSTOM_QUARTERLY_REL_YEARLY,
-                isBigScreen
+                isBigScreen,
               )}
             </ToggleButton>
           </ToggleButtonGroup>

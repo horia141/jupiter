@@ -1,7 +1,6 @@
 import type { ADate, BigPlan } from "@jupiter/webapi-client";
 import {
   Box,
-  styled,
   Table,
   TableBody,
   TableCell,
@@ -9,10 +8,13 @@ import {
   TableHead,
   TableRow,
   Tooltip,
+  styled,
   useTheme,
 } from "@mui/material";
 import type { DateTime } from "luxon";
+
 import { aDateToDate } from "~/logic/domain/adate";
+
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameOneLineComponent } from "./entity-name";
 import { EntityLink } from "./infra/entity-card";
@@ -73,7 +75,7 @@ export function BigPlanTimelineBigScreen({
           {bigPlans.map((entry) => {
             const { leftMargin, width } = computeBigPlanGnattPosition(
               thisYear,
-              entry
+              entry,
             );
 
             return (
@@ -105,7 +107,7 @@ export function BigPlanTimelineBigScreen({
                   {dateMarkers?.map((marker, idx) => {
                     const markerPosition = computeMarkerPosition(
                       thisYear,
-                      marker.date
+                      marker.date,
                     );
                     return (
                       <Tooltip key={idx} title={marker.label} placement="top">
@@ -126,7 +128,7 @@ export function BigPlanTimelineBigScreen({
   );
 }
 
-const BigScreenTimelineHeaderCell = styled(TableCell)(({ theme }) => ({
+const BigScreenTimelineHeaderCell = styled(TableCell)(() => ({
   display: "flex",
   flexWrap: "nowrap",
   justifyContent: "space-between",
@@ -148,7 +150,7 @@ const TimelineGnattBlob = styled("div")<TimelineGnattBlobProps>(
     backgroundColor: theme.palette.action.disabledBackground,
     borderRadius: "0.25rem",
     height: "1.5rem",
-  })
+  }),
 );
 
 interface TimelineMarkerProps {
@@ -166,7 +168,7 @@ const TimelineMarker = styled("div")<TimelineMarkerProps>(
     left: `calc(${leftmargin * 100}% - 0.5rem)`,
     zIndex: 1,
     cursor: "pointer",
-  })
+  }),
 );
 
 function computeMarkerPosition(thisYear: DateTime, date: ADate): number {

@@ -9,7 +9,6 @@ import type {
   Metric,
   Person,
   SlackTask,
-  Timezone,
 } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -30,7 +29,8 @@ import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { DateTime } from "luxon";
 import { useContext, useState } from "react";
-import { ClientOnly } from "remix-utils";
+
+import { ClientOnly } from "~/components/infra/client-only";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { aDateToDate } from "~/logic/domain/adate";
 import type {
@@ -41,6 +41,7 @@ import { isCompleted } from "~/logic/domain/inbox-task-status";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { ADateTag } from "./adate-tag";
 import { BigPlanTag } from "./big-plan-tag";
 import { ChoreTag } from "./chore-tag";
@@ -117,7 +118,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
 
   function onDragEnd(
     event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
+    info: PanInfo,
   ) {
     if (info.offset.x < -SWIPE_COMPLETE_THRESHOLD) {
       setTimeout(() => {
@@ -144,7 +145,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
       theme.palette.success.light,
       theme.palette.background.paper,
       theme.palette.warning.light,
-    ]
+    ],
   );
 
   const inputsEnabled =
@@ -168,11 +169,10 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           ((!props.allowSelect || !props.selected) && inputsEnabled) ||
           false
         ).toString()}
-        onClick={(e) => props.onClick && props.onClick(props.inboxTask)}
+        onClick={() => props.onClick && props.onClick(props.inboxTask)}
       >
         <OverdueWarning
           today={props.today}
-          userTimezone={props.topLevelInfo.user.timezone}
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
@@ -199,7 +199,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
               )}
               {isWorkspaceFeatureAvailable(
                 props.topLevelInfo.workspace,
-                WorkspaceFeature.PROJECTS
+                WorkspaceFeature.PROJECTS,
               ) &&
                 props.showOptions.showProject &&
                 props.parent?.project && (
@@ -228,7 +228,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                 <>
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.BIG_PLANS
+                    WorkspaceFeature.BIG_PLANS,
                   ) &&
                     props.parent &&
                     props.parent.bigPlan && (
@@ -236,7 +236,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.HABITS
+                    WorkspaceFeature.HABITS,
                   ) &&
                     props.parent &&
                     props.parent.habit && (
@@ -244,7 +244,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.CHORES
+                    WorkspaceFeature.CHORES,
                   ) &&
                     props.parent &&
                     props.parent.chore && (
@@ -252,7 +252,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.METRICS
+                    WorkspaceFeature.METRICS,
                   ) &&
                     props.parent &&
                     props.parent.metric && (
@@ -260,7 +260,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.PERSONS
+                    WorkspaceFeature.PERSONS,
                   ) &&
                     props.parent &&
                     props.parent.person && (
@@ -268,7 +268,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.SLACK_TASKS
+                    WorkspaceFeature.SLACK_TASKS,
                   ) &&
                     props.parent &&
                     props.parent.slackTask && (
@@ -278,7 +278,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                     )}
                   {isWorkspaceFeatureAvailable(
                     props.topLevelInfo.workspace,
-                    WorkspaceFeature.EMAIL_TASKS
+                    WorkspaceFeature.EMAIL_TASKS,
                   ) &&
                     props.parent &&
                     props.parent.emailTask && (
@@ -352,17 +352,11 @@ const TagsContained = styled(Box)({
 
 interface OverdueWarningProps {
   today: DateTime;
-  userTimezone: Timezone;
   status: InboxTaskStatus;
   dueDate?: ADate | null;
 }
 
-function OverdueWarning({
-  today,
-  userTimezone,
-  status,
-  dueDate,
-}: OverdueWarningProps) {
+function OverdueWarning({ today, status, dueDate }: OverdueWarningProps) {
   const globalProperties = useContext(GlobalPropertiesContext);
 
   if (isCompleted(status)) {
@@ -401,7 +395,7 @@ function OverdueWarning({
   );
 }
 
-const OverdueWarningChip = styled(Chip)<ChipProps>(({ theme }) => ({
+const OverdueWarningChip = styled(Chip)<ChipProps>(() => ({
   position: "absolute",
   top: "0px",
   fontSize: "0.75rem",

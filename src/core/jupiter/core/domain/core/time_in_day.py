@@ -1,4 +1,5 @@
 """The time in hh:mm format."""
+
 from functools import total_ordering
 
 from jupiter.core.framework.errors import InputValidationError

@@ -1,4 +1,5 @@
 """The command for finding a big plan."""
+
 from collections import defaultdict
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
@@ -148,16 +149,20 @@ class BigPlanFindUseCase(
             entries=[
                 BigPlanFindResultEntry(
                     big_plan=bp,
-                    project=project_by_ref_id[bp.project_ref_id]
-                    if project_by_ref_id is not None
-                    else None,
-                    inbox_tasks=[
-                        it
-                        for it in inbox_tasks
-                        if it.source_entity_ref_id_for_sure == bp.ref_id
-                    ]
-                    if inbox_tasks is not None
-                    else None,
+                    project=(
+                        project_by_ref_id[bp.project_ref_id]
+                        if project_by_ref_id is not None
+                        else None
+                    ),
+                    inbox_tasks=(
+                        [
+                            it
+                            for it in inbox_tasks
+                            if it.source_entity_ref_id_for_sure == bp.ref_id
+                        ]
+                        if inbox_tasks is not None
+                        else None
+                    ),
                     note=notes_by_inbox_task_ref_id.get(bp.ref_id, None),
                 )
                 for bp in big_plans

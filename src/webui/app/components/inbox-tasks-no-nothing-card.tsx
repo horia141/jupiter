@@ -8,6 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
+
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 
@@ -21,11 +22,11 @@ export function InboxTasksNoNothingCard(props: InboxTasksNoNothingCardProps) {
 
   const habitsAvailable = isWorkspaceFeatureAvailable(
     workspace,
-    WorkspaceFeature.HABITS
+    WorkspaceFeature.HABITS,
   );
   const choresAvailable = isWorkspaceFeatureAvailable(
     workspace,
-    WorkspaceFeature.CHORES
+    WorkspaceFeature.CHORES,
   );
 
   if (habitsAvailable && choresAvailable) {
@@ -47,7 +48,7 @@ export function InboxTasksNoNothingCard(props: InboxTasksNoNothingCardProps) {
       <CardActions>
         {isWorkspaceFeatureAvailable(
           props.topLevelInfo.workspace,
-          WorkspaceFeature.HABITS
+          WorkspaceFeature.HABITS,
         ) && (
           <Button
             variant="contained"
@@ -60,7 +61,7 @@ export function InboxTasksNoNothingCard(props: InboxTasksNoNothingCardProps) {
         )}
         {isWorkspaceFeatureAvailable(
           props.topLevelInfo.workspace,
-          WorkspaceFeature.CHORES
+          WorkspaceFeature.CHORES,
         ) && (
           <Button
             variant="contained"

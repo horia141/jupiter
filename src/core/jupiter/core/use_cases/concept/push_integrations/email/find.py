@@ -107,9 +107,11 @@ class EmailTaskFindUseCase(
             entries=[
                 EmailTaskFindResultEntry(
                     email_task=st,
-                    inbox_task=inbox_tasks_by_email_task_ref_id.get(st.ref_id, None)
-                    if inbox_tasks_by_email_task_ref_id
-                    else None,
+                    inbox_task=(
+                        inbox_tasks_by_email_task_ref_id.get(st.ref_id, None)
+                        if inbox_tasks_by_email_task_ref_id
+                        else None
+                    ),
                 )
                 for st in email_tasks
             ],

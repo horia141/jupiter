@@ -17,14 +17,15 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -40,12 +41,14 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const ParamsSchema = z.object({});
+
+const QuerySchema = z.object({
   timePlanReason: z.literal("for-time-plan").optional(),
   timePlanRefId: z.string().optional(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   actionableDate: z.string().optional(),
@@ -54,13 +57,13 @@ const CreateFormSchema = {
   timePlanActivityFeasability: z
     .nativeEnum(TimePlanActivityFeasability)
     .optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
 
@@ -95,7 +98,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
   const form = await parseForm(request, CreateFormSchema);
@@ -125,12 +128,12 @@ export async function action({ request }: ActionArgs) {
     switch (timePlanReason) {
       case "standard":
         return redirect(
-          `/app/workspace/big-plans/${result.new_big_plan.ref_id}`
+          `/app/workspace/big-plans/${result.new_big_plan.ref_id}`,
         );
 
       case "for-time-plan":
         return redirect(
-          `/app/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`
+          `/app/workspace/time-plans/${result.new_time_plan_activity?.time_plan_ref_id}/${result.new_time_plan_activity?.ref_id}`,
         );
     }
   } catch (error) {
@@ -149,13 +152,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewBigPlan() {
-  const transition = useTransition();
-  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -179,7 +182,7 @@ export default function NewBigPlan() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -208,7 +211,7 @@ export default function NewBigPlan() {
                   loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
                         (loaderData.associatedTimePlan as TimePlan)
-                          .start_date as ADate
+                          .start_date as ADate,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -234,7 +237,7 @@ export default function NewBigPlan() {
                   loaderData.timePlanReason === "for-time-plan"
                     ? aDateToDate(
                         (loaderData.associatedTimePlan as TimePlan)
-                          .end_date as ADate
+                          .end_date as ADate,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -245,7 +248,7 @@ export default function NewBigPlan() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.TIME_PLANS
+              WorkspaceFeature.TIME_PLANS,
             ) &&
               loaderData.timePlanReason === "for-time-plan" && (
                 <>
@@ -300,5 +303,9 @@ export default function NewBigPlan() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/big-plans",
-  () => `There was an error creating the big plan! Please try again!`
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the big plan!`,
+    error: () => `There was an error creating the big plan! Please try again!`,
+  },
 );

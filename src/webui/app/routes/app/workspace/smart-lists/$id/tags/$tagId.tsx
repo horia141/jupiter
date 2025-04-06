@@ -10,16 +10,15 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -28,10 +27,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   tagId: z.string(),
-};
+});
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
@@ -49,7 +49,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { tagId } = parseParams(params, ParamsSchema);
 
@@ -74,7 +74,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id, tagId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -131,10 +131,10 @@ export default function SmartListTag() {
   const { id, tagId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.smartListTag.archived;
+    navigation.state === "idle" && !loaderData.smartListTag.archived;
 
   return (
     <LeafPanel
@@ -179,16 +179,12 @@ export default function SmartListTag() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/tags`,
-  () =>
-    `Could not find smart list tag #${useParams().id}:#${useParams().tagId}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/tags`,
-  () =>
-    `There was an error loading smart list tag #${useParams().id}:#${
-      useParams().tagId
-    }! Please try again!`
+  (params) => `/app/workspace/smart-lists/${params.id}/tags`,
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find smart list tag #${params.tagId}!`,
+    error: (params) =>
+      `There was an error loading smart list tag #${params.tagId}! Please try again!`,
+  },
 );

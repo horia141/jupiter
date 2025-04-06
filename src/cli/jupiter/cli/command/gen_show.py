@@ -1,6 +1,5 @@
 """ommand for loading previous runs of Gen."""
 
-
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     boolean_to_rich_text,

@@ -1,4 +1,5 @@
 """UseCase for showing the habits."""
+
 from typing import cast
 
 from jupiter.cli.command.command import LoggedInReadonlyCommand
@@ -17,8 +18,6 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.core.difficulty import Difficulty
-from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.use_cases.concept.habits.find import HabitFindResult, HabitFindUseCase
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInReadonlyUseCaseContext
@@ -45,7 +44,7 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
                 ce.habit.suspended,
                 ce.habit.gen_params.period,
                 ce.habit.gen_params.eisen,
-                ce.habit.gen_params.difficulty or Difficulty.EASY,
+                ce.habit.gen_params.difficulty,
             ),
         )
 
@@ -61,9 +60,7 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
             habit_info_text = Text("")
             habit_info_text.append(period_to_rich_text(habit.gen_params.period))
             habit_info_text.append(" ")
-            habit_info_text.append(
-                eisen_to_rich_text(habit.gen_params.eisen or Eisen.REGULAR)
-            )
+            habit_info_text.append(eisen_to_rich_text(habit.gen_params.eisen))
 
             if habit.gen_params.difficulty:
                 habit_info_text.append(" ")

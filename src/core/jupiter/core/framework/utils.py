@@ -1,4 +1,5 @@
 """Some utilities."""
+
 import importlib
 import pkgutil
 from datetime import date, datetime

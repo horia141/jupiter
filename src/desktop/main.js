@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { sanitizeUrl } from "@braintree/sanitize-url";
 import { config } from "dotenv";
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { BrowserWindow, app, ipcMain, shell } from "electron";
 import fs from "fs";
 import path from "node:path";
 import normalizeUrl from "normalize-url";
@@ -24,7 +24,7 @@ app.whenReady().then(() => {
   ipcMain.handle("getWebUiUrl", handleGetWebUiUrl);
   ipcMain.handle("getHostedGlobalWebUiUrl", handleGetHostedGlobalWebUiUrl);
   ipcMain.handle("pickServer", (event, serverUrlString) =>
-    handlePickServer(win, serverUrlString)
+    handlePickServer(win, serverUrlString),
   );
 
   app.on("activate", () => {
@@ -47,7 +47,7 @@ function createWindow() {
       preload: path.join(
         path.dirname(fileURLToPath(import.meta.url)),
         "src",
-        "preload.js"
+        "preload.js",
       ),
     },
   });
@@ -59,12 +59,12 @@ function createWindow() {
     console.error(
       "An error occurred loading the webui: ",
       errorCode,
-      errorDescription
+      errorDescription,
     );
   });
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
-    return { action: 'deny' };
+    return { action: "deny" };
   });
 
   win.once("ready-to-show", () => {
@@ -102,7 +102,7 @@ function loadAppConfig(appConfigPath) {
         version: config.version,
         webUiUrl: buildFrontdoor(config.remoteHostWebUiUrl),
         hostedGlobalWebUiUrl: buildFrontdoor(
-          process.env.HOSTED_GLOBAL_WEBUI_URL
+          process.env.HOSTED_GLOBAL_WEBUI_URL,
         ),
       };
     }
@@ -126,7 +126,7 @@ function updateAppConfig(appConfigPath, remoteHostWebUiUrl) {
     JSON.stringify({
       version: "v1",
       remoteHostWebUiUrl: remoteHostWebUiUrl,
-    })
+    }),
   );
 }
 
@@ -194,7 +194,7 @@ async function handlePickServer(win, serverUrlString) {
       // more, so we get to the proper redirect we want.
       latestVersionResponse = await fetch(
         latestVersionResponse.headers.get("Location"),
-        { redirect: "manual" }
+        { redirect: "manual" },
       );
 
       if (
@@ -252,12 +252,12 @@ async function handlePickServer(win, serverUrlString) {
 function buildFrontdoor(remoteHostWebUiUrl) {
   const frontDoorUrl = new URL(
     process.env.FRONTDOOR_PATTERN,
-    remoteHostWebUiUrl
+    remoteHostWebUiUrl,
   );
   frontDoorUrl.searchParams.set("clientVersion", process.env.VERSION);
   frontDoorUrl.searchParams.set(
     "initialWindowWidth",
-    process.env.INITIAL_WINDOW_WIDTH
+    process.env.INITIAL_WINDOW_WIDTH,
   );
   return frontDoorUrl;
 }

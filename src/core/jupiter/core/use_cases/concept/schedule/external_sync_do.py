@@ -1,4 +1,5 @@
 """Use case for syncing a schedule once."""
+
 from jupiter.core.domain.concept.schedule.service.external_sync_service import (
     ScheduleExternalSyncService,
 )

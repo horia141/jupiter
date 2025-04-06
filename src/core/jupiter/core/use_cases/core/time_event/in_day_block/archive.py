@@ -1,4 +1,5 @@
 """Use case for archiving the in day event."""
+
 from jupiter.core.domain.core.time_events.time_event_in_day_block import (
     TimeEventInDayBlock,
 )

@@ -1,6 +1,7 @@
 import { TimePlanActivityFeasability } from "@jupiter/webapi-client";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useEffect, useState } from "react";
+
 import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
 
 interface TimePlanActivityFeasabilitySelectProps {
@@ -10,10 +11,10 @@ interface TimePlanActivityFeasabilitySelectProps {
 }
 
 export function TimePlanActivityFeasabilitySelect(
-  props: TimePlanActivityFeasabilitySelectProps
+  props: TimePlanActivityFeasabilitySelectProps,
 ) {
   const [feasability, setFeasability] = useState<TimePlanActivityFeasability>(
-    props.defaultValue
+    props.defaultValue,
   );
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export function TimePlanActivityFeasabilitySelect(
           value={TimePlanActivityFeasability.NICE_TO_HAVE}
         >
           {timePlanActivityFeasabilityName(
-            TimePlanActivityFeasability.NICE_TO_HAVE
+            TimePlanActivityFeasability.NICE_TO_HAVE,
           )}
         </ToggleButton>
         <ToggleButton

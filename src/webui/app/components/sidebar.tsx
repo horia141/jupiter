@@ -6,14 +6,16 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  styled,
   Toolbar,
+  styled,
 } from "@mui/material";
 import { Link } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
+
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { StandardDivider } from "./standard-divider";
 
 const BIG_SCREEN_WIDTH = "240px";
@@ -88,7 +90,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.WORKING_MEM
+              WorkspaceFeature.WORKING_MEM,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -104,7 +106,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.TIME_PLANS
+              WorkspaceFeature.TIME_PLANS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -120,7 +122,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SCHEDULE
+              WorkspaceFeature.SCHEDULE,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -136,7 +138,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.HABITS
+              WorkspaceFeature.HABITS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -152,7 +154,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.CHORES
+              WorkspaceFeature.CHORES,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -168,7 +170,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.BIG_PLANS
+              WorkspaceFeature.BIG_PLANS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -184,7 +186,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.JOURNALS
+              WorkspaceFeature.JOURNALS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -200,7 +202,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.DOCS
+              WorkspaceFeature.DOCS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -216,7 +218,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.VACATIONS
+              WorkspaceFeature.VACATIONS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -232,7 +234,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -248,7 +250,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SMART_LISTS
+              WorkspaceFeature.SMART_LISTS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -264,7 +266,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.METRICS
+              WorkspaceFeature.METRICS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -280,7 +282,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.PERSONS
+              WorkspaceFeature.PERSONS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -296,16 +298,16 @@ export default function Sidebar(props: SidebarProps) {
 
             {(isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SLACK_TASKS
+              WorkspaceFeature.SLACK_TASKS,
             ) ||
               isWorkspaceFeatureAvailable(
                 props.topLevelInfo.workspace,
-                WorkspaceFeature.EMAIL_TASKS
+                WorkspaceFeature.EMAIL_TASKS,
               )) && <StandardDivider title="Push Integrations" size="small" />}
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.SLACK_TASKS
+              WorkspaceFeature.SLACK_TASKS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -321,7 +323,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              WorkspaceFeature.EMAIL_TASKS
+              WorkspaceFeature.EMAIL_TASKS,
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -435,5 +437,5 @@ const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
     &::-webkit-scrollbar {
       display: none;
     }
-  `
+  `,
 );

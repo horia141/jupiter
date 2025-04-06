@@ -1,4 +1,5 @@
 """Garbage collect a workspace."""
+
 from collections.abc import Iterable
 from typing import Final
 

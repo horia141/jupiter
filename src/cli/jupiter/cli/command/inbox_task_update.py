@@ -1,6 +1,5 @@
 """UseCase for updating inbox tasks."""
 
-
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.core.use_cases.concept.inbox_tasks.update import (
     InboxTaskUpdateResult,

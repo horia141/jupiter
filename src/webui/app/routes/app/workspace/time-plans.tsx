@@ -1,10 +1,11 @@
 import type { TimePlanFindResultEntry } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
@@ -26,7 +27,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.timePlans.timePlanFind({
     allow_archived: false,
@@ -47,7 +48,7 @@ export default function TimePlans() {
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
   const sortedTimePlans = sortTimePlansNaturally(
-    entries.map((e) => e.time_plan)
+    entries.map((e) => e.time_plan),
   );
   const entriesByRefId = new Map<string, TimePlanFindResultEntry>();
   for (const entry of entries) {
@@ -86,7 +87,6 @@ export default function TimePlans() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the time plans! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the time plans! Please try again!`,
+});

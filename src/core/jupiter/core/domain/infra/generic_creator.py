@@ -1,4 +1,5 @@
 """A generic creator of entities."""
+
 from typing import TypeVar
 
 from jupiter.core.domain.storage_engine import DomainUnitOfWork

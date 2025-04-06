@@ -21,7 +21,7 @@ export function measureText(str: string, fontSize: number): number {
   return (
     Array.from(str).reduce(
       (acc, cur) => acc + (STANDARD_WIDTHS[cur.charCodeAt(0)] ?? AVERAGE_WIDTH),
-      0
+      0,
     ) * fontSize
   );
 }

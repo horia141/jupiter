@@ -1,8 +1,9 @@
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelpSubject } from "~/components/docs-help";
 import EntityIconComponent from "~/components/entity-icon";
@@ -25,7 +26,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const smartListResponse = await apiClient.smartLists.smartListFind({
     allow_archived: false,
@@ -93,7 +94,6 @@ export default function SmartLists() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the smart lists! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the smart lists! Please try again!`,
+});

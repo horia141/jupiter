@@ -1,18 +1,17 @@
-import type { LoaderArgs } from "@remix-run/node";
+import type { Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { Box, IconButton, Typography, styled } from "@mui/material";
+import type { CalendarTooltipProps, TimeRangeDayData } from "@nivo/calendar";
+import { ResponsiveTimeRange } from "@nivo/calendar";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useNavigate } from "@remix-run/react";
-
-import type { Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
-
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Box, IconButton, styled, Typography } from "@mui/material";
-import type { CalendarTooltipProps, TimeRangeDayData } from "@nivo/calendar";
-import { ResponsiveTimeRange } from "@nivo/calendar";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useMemo, useState } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { DocsHelpSubject } from "~/components/docs-help";
@@ -38,7 +37,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.vacations.vacationFind({
     allow_archived: false,
@@ -51,12 +50,12 @@ export async function loader({ request }: LoaderArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function Vacations({ request }: LoaderArgs) {
+export default function Vacations() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const sortedVacations = sortVacationsNaturally(
-    entries.map((e) => e.vacation)
+    entries.map((e) => e.vacation),
   );
   const vacationsByRefId = new Map<string, VacationFindResultEntry>();
   for (const entry of entries) {
@@ -66,7 +65,7 @@ export default function Vacations({ request }: LoaderArgs) {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
-    "day"
+    "day",
   );
 
   return (
@@ -168,7 +167,7 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
   const firstIntervalRoundDate = earliestDate.startOf(intervalStep);
   const lastIntervalRoundDate = latestDate.endOf(intervalStep);
   const [currentInterval, setCurrentInterval] = useState(
-    lastIntervalRoundDate.startOf(intervalStep)
+    lastIntervalRoundDate.startOf(intervalStep),
   );
   useEffect(() => {
     setCurrentInterval(() => lastIntervalRoundDate.startOf(intervalStep));
@@ -183,7 +182,9 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
       return;
     }
     setCurrentInterval((ci) =>
-      intervalStep === "year" ? ci.minus({ years: 1 }) : ci.minus({ months: 1 })
+      intervalStep === "year"
+        ? ci.minus({ years: 1 })
+        : ci.minus({ months: 1 }),
     );
   }
 
@@ -192,14 +193,11 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
       return;
     }
     setCurrentInterval((ci) =>
-      intervalStep === "year" ? ci.plus({ years: 1 }) : ci.plus({ months: 1 })
+      intervalStep === "year" ? ci.plus({ years: 1 }) : ci.plus({ months: 1 }),
     );
   }
 
-  function handleDayClick(
-    datum: TimeRangeDayData,
-    event: React.SyntheticEvent
-  ) {
+  function handleDayClick(datum: TimeRangeDayData) {
     if (!vacationDays.has(datum.day)) {
       return null;
     }
@@ -275,10 +273,9 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the vacations! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the vacations! Please try again!`,
+});
 
 const TooltipBox = styled("div")`
   font-size: 1rem;

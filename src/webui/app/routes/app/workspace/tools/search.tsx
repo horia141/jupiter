@@ -17,15 +17,16 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useTransition } from "@remix-run/react";
+import { useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EntityCard } from "~/components/infra/entity-card";
@@ -50,7 +51,7 @@ export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-const QuerySchema = {
+const QuerySchema = z.object({
   query: z.string().optional(),
   limit: z.string().optional(),
   includeArchived: CheckboxAsString,
@@ -61,11 +62,11 @@ const QuerySchema = {
   filterLastModifiedTimeBefore: z.string().optional(),
   filterArchivedTimeAfter: z.string().optional(),
   filterArchivedTimeBefore: z.string().optional(),
-};
+});
 
 const DEFAULT_LIMIT = 30;
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
 
@@ -77,7 +78,7 @@ export async function loader({ request }: LoaderArgs) {
         limit: query.limit ? parseInt(query.limit) : DEFAULT_LIMIT,
         include_archived: query.includeArchived,
         filter_entity_tags: fixSelectOutputToEnum<NamedEntityTag>(
-          query.filterEntityTags
+          query.filterEntityTags,
         ),
         filter_created_time_after: query.filterCreatedTimeAfter || undefined,
         filter_created_time_before: query.filterCreatedTimeBefore || undefined,
@@ -97,7 +98,7 @@ export async function loader({ request }: LoaderArgs) {
         limit: query.limit,
         includeArchived: query.includeArchived,
         filterEntityTags: fixSelectOutputToEnum<NamedEntityTag>(
-          query.filterEntityTags
+          query.filterEntityTags,
         ),
         filterCreatedTimeAfter: query.filterCreatedTimeAfter,
         filterCreatedTimeBefore: query.filterCreatedTimeBefore,
@@ -106,7 +107,7 @@ export async function loader({ request }: LoaderArgs) {
         filterArchivedTimeAfter: query.filterArchivedTimeAfter,
         filterArchivedTimeBefore: query.filterArchivedTimeBefore,
         result: searchResponse,
-      })
+      }),
     );
   } catch (error) {
     if (
@@ -126,33 +127,33 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Search() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const isBigScreen = useBigScreen();
 
   const [searchQuery, setSearchQuery] = useState(
-    isNoErrorSomeData(loaderData) ? loaderData.data.query : ""
+    isNoErrorSomeData(loaderData) ? loaderData.data.query : "",
   );
   const [searchLimit, setSearchLimit] = useState(
-    isNoErrorSomeData(loaderData) ? loaderData.data.limit : undefined
+    isNoErrorSomeData(loaderData) ? loaderData.data.limit : undefined,
   );
   const [searchIncludeArchived, setSearchIncludeArchived] = useState(
-    isNoErrorSomeData(loaderData) ? loaderData.data.includeArchived : false
+    isNoErrorSomeData(loaderData) ? loaderData.data.includeArchived : false,
   );
   const [searchFilterEntityTags, setSearchFilterEntityTags] = useState(
-    isNoErrorSomeData(loaderData) ? loaderData.data.filterEntityTags || [] : []
+    isNoErrorSomeData(loaderData) ? loaderData.data.filterEntityTags || [] : [],
   );
   const [searchFilterCreatedTimeAfter, setSearchFilterCreatedTimeAfter] =
     useState(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterCreatedTimeAfter
-        : undefined
+        : undefined,
     );
   const [searchFilterCreatedTimeBefore, setSearchFilterCreatedTimeBefore] =
     useState(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterCreatedTimeBefore
-        : undefined
+        : undefined,
     );
   const [
     searchFilterLastModifiedTimeAfter,
@@ -160,7 +161,7 @@ export default function Search() {
   ] = useState(
     isNoErrorSomeData(loaderData)
       ? loaderData.data.filterLastModifiedTimeAfter
-      : undefined
+      : undefined,
   );
   const [
     searchFilterLastModifiedTimeBefore,
@@ -168,67 +169,67 @@ export default function Search() {
   ] = useState(
     isNoErrorSomeData(loaderData)
       ? loaderData.data.filterLastModifiedTimeBefore
-      : undefined
+      : undefined,
   );
   const [searchFilterArchivedTimeAfter, setSearchFilterArchivedTimeAfter] =
     useState(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterArchivedTimeAfter
-        : undefined
+        : undefined,
     );
   const [searchFilterArchivedTimeBefore, setSearchFilterArchivedTimeBefore] =
     useState(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterArchivedTimeBefore
-        : undefined
+        : undefined,
     );
 
   useEffect(() => {
     setSearchQuery(isNoErrorSomeData(loaderData) ? loaderData.data.query : "");
     setSearchLimit(
-      isNoErrorSomeData(loaderData) ? loaderData.data.limit : undefined
+      isNoErrorSomeData(loaderData) ? loaderData.data.limit : undefined,
     );
     setSearchIncludeArchived(
-      isNoErrorSomeData(loaderData) ? loaderData.data.includeArchived : false
+      isNoErrorSomeData(loaderData) ? loaderData.data.includeArchived : false,
     );
     setSearchFilterEntityTags(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterEntityTags || []
-        : []
+        : [],
     );
     setSearchFilterCreatedTimeAfter(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterCreatedTimeAfter
-        : undefined
+        : undefined,
     );
     setSearchFilterCreatedTimeBefore(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterCreatedTimeBefore
-        : undefined
+        : undefined,
     );
     setSearchFilterLastModifiedTimeAfter(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterLastModifiedTimeAfter
-        : undefined
+        : undefined,
     );
     setSearchFilterLastModifiedTimeBefore(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterLastModifiedTimeBefore
-        : undefined
+        : undefined,
     );
     setSearchFilterArchivedTimeAfter(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterArchivedTimeAfter
-        : undefined
+        : undefined,
     );
     setSearchFilterArchivedTimeBefore(
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterArchivedTimeBefore
-        : undefined
+        : undefined,
     );
   }, [loaderData]);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
@@ -404,7 +405,7 @@ export default function Search() {
                           value={searchFilterLastModifiedTimeBefore}
                           onChange={(e) =>
                             setSearchFilterLastModifiedTimeBefore(
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           name="filterLastModifiedTimeBefore"
@@ -507,5 +508,5 @@ export default function Search() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error performing the search!`
+  () => `There was an error performing the search!`,
 );

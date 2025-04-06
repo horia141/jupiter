@@ -1,4 +1,5 @@
 """Command for running a pomodoro timer."""
+
 import asyncio
 from argparse import Namespace
 

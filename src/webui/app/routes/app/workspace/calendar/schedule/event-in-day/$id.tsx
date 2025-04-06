@@ -10,22 +10,21 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
-  useParams,
+  useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -48,9 +47,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -80,7 +79,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -113,7 +112,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -124,7 +123,7 @@ export async function action({ request, params }: ActionArgs) {
       case "update": {
         const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
           form,
-          form.userTimezone
+          form.userTimezone,
         );
         await apiClient.eventInDay.scheduleEventInDayUpdate({
           ref_id: id,
@@ -154,7 +153,7 @@ export async function action({ request, params }: ActionArgs) {
           schedule_stream_ref_id: form.scheduleStreamRefId,
         });
         return redirect(
-          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`,
         );
       }
 
@@ -165,7 +164,7 @@ export async function action({ request, params }: ActionArgs) {
           content: [],
         });
         return redirect(
-          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`
+          `/app/workspace/calendar/schedule/event-in-day/${id}?${url.searchParams}`,
         );
       }
 
@@ -204,13 +203,13 @@ export default function ScheduleEventInDayViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.scheduleEventInDay.archived;
+    navigation.state === "idle" && !loaderData.scheduleEventInDay.archived;
   const corePropertyEditable = isCorePropertyEditable(
-    loaderData.scheduleEventInDay
+    loaderData.scheduleEventInDay,
   );
 
   const blockParamsInTz = timeEventInDayBlockParamsToTimezone(
@@ -218,14 +217,14 @@ export default function ScheduleEventInDayViewOne() {
       startDate: loaderData.timeEventInDayBlock.start_date,
       startTimeInDay: loaderData.timeEventInDayBlock.start_time_in_day,
     },
-    topLevelInfo.user.timezone
+    topLevelInfo.user.timezone,
   );
   const [startDate, setStartDate] = useState(blockParamsInTz.startDate);
   const [startTimeInDay, setStartTimeInDay] = useState(
-    blockParamsInTz.startTimeInDay!
+    blockParamsInTz.startTimeInDay!,
   );
   const [durationMins, setDurationMins] = useState(
-    loaderData.timeEventInDayBlock.duration_mins
+    loaderData.timeEventInDayBlock.duration_mins,
   );
 
   useEffect(() => {
@@ -234,7 +233,7 @@ export default function ScheduleEventInDayViewOne() {
         startDate: loaderData.timeEventInDayBlock.start_date,
         startTimeInDay: loaderData.timeEventInDayBlock.start_time_in_day,
       },
-      topLevelInfo.user.timezone
+      topLevelInfo.user.timezone,
     );
     setStartDate(blockParamsInTz.startDate);
     setStartTimeInDay(blockParamsInTz.startTimeInDay!);
@@ -257,7 +256,7 @@ export default function ScheduleEventInDayViewOne() {
   }, [query, debounceForeign]);
 
   const allScheduleStreamsByRefId = new Map(
-    loaderData.allScheduleStreams.map((st) => [st.ref_id, st])
+    loaderData.allScheduleStreams.map((st) => [st.ref_id, st]),
   );
 
   return (
@@ -319,7 +318,7 @@ export default function ScheduleEventInDayViewOne() {
               allScheduleStreams={loaderData.allScheduleStreams}
               defaultValue={
                 allScheduleStreamsByRefId.get(
-                  loaderData.scheduleEventInDay.schedule_stream_ref_id
+                  loaderData.scheduleEventInDay.schedule_stream_ref_id,
                 )!
               }
             />
@@ -463,15 +462,12 @@ export default function ScheduleEventInDayViewOne() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find schedule event in day#${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () =>
-    `There was an error loading schedule event in day #${
-      useParams().id
-    }. Please try again!`
+  (params) => `/app/workspace/calendar/schedule/event-in-day/${params.id}`,
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find event in day #${params.id}!`,
+    error: (params) =>
+      `There was an error loading event in day #${params.id}! Please try again!`,
+  },
 );

@@ -25,31 +25,32 @@ import {
   Box,
   Button,
   Paper,
-  styled,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableRow,
   Typography,
+  styled,
   useTheme,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Outlet,
   useLocation,
   useNavigate,
+  useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import type { PropsWithChildren } from "react";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { Fragment, useContext, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityLink } from "~/components/infra/entity-card";
@@ -79,18 +80,18 @@ import type {
   CombinedTimeEventInDayEntry,
 } from "~/logic/domain/time-event";
 import {
-  birthdayTimeEventName,
   BIRTHDAY_TIME_EVENT_COLOR,
+  INBOX_TASK_TIME_EVENT_COLOR,
+  VACATION_TIME_EVENT_COLOR,
+  birthdayTimeEventName,
   calculateEndTimeForTimeEvent,
   calculateStartTimeForTimeEvent,
   calendarPxHeightToMinutes,
   calendarTimeEventInDayDurationToRems,
   calendarTimeEventInDayStartMinutesToRems,
   compareNamespaceForSortingFullDaysTimeEvents,
-  INBOX_TASK_TIME_EVENT_COLOR,
   scheduleTimeEventInDayDurationToRems,
   timeEventInDayBlockToTimezone,
-  VACATION_TIME_EVENT_COLOR,
 } from "~/logic/domain/time-event";
 import { inferPlatformAndDistribution } from "~/logic/frontdoor.server";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -113,22 +114,22 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-const QuerySchema = {
+const QuerySchema = z.object({
   date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
   period: z.nativeEnum(RecurringTaskPeriod).optional(),
   view: z.nativeEnum(View).optional(),
-};
+});
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
   const url = new URL(request.url);
 
   const { platform } = inferPlatformAndDistribution(
-    request.headers.get("User-Agent")
+    request.headers.get("User-Agent"),
   );
 
   if (
@@ -144,7 +145,7 @@ export async function loader({ request }: LoaderArgs) {
         (platform === AppPlatform.MOBILE_IOS ||
         platform === AppPlatform.MOBILE_ANDROID
           ? RecurringTaskPeriod.DAILY
-          : RecurringTaskPeriod.WEEKLY)
+          : RecurringTaskPeriod.WEEKLY),
     );
     url.searchParams.set("view", query.view || View.CALENDAR);
 
@@ -177,13 +178,13 @@ const REFRESH_RIGHT_NOW_MS = 1000 * 60 * 5; // 5 minutes
 
 export default function CalendarView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const location = useLocation();
   const [query] = useSearchParams();
 
   const calendarLocation = location.pathname.replace(
-    /\/workspace\/calendar/,
-    ""
+    /\/app\/workspace\/calendar/,
+    "",
   );
   const isAdding =
     location.pathname.endsWith("/new") ||
@@ -191,13 +192,13 @@ export default function CalendarView() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
   const [rightNow, setRightNow] = useState(
-    DateTime.local({ zone: topLevelInfo.user.timezone })
+    DateTime.local({ zone: topLevelInfo.user.timezone }),
   );
   const theRealToday = rightNow.toISODate() as ADate;
 
@@ -252,7 +253,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "date",
-                    theRealToday
+                    theRealToday,
                   )}`,
                 }),
                 NavSingle({
@@ -261,7 +262,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "date",
-                    loaderData.prevPeriodStartDate
+                    loaderData.prevPeriodStartDate,
                   )}`,
                 }),
                 NavSingle({
@@ -270,7 +271,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "date",
-                    loaderData.nextPeriodStartDate
+                    loaderData.nextPeriodStartDate,
                   )}`,
                 }),
               ],
@@ -283,7 +284,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "period",
-                    RecurringTaskPeriod.DAILY
+                    RecurringTaskPeriod.DAILY,
                   )}`,
                 }),
                 NavSingle({
@@ -292,7 +293,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "period",
-                    RecurringTaskPeriod.WEEKLY
+                    RecurringTaskPeriod.WEEKLY,
                   )}`,
                 }),
                 NavSingle({
@@ -301,7 +302,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "period",
-                    RecurringTaskPeriod.MONTHLY
+                    RecurringTaskPeriod.MONTHLY,
                   )}`,
                 }),
                 NavSingle({
@@ -311,7 +312,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "period",
-                    RecurringTaskPeriod.QUARTERLY
+                    RecurringTaskPeriod.QUARTERLY,
                   )}`,
                 }),
                 NavSingle({
@@ -320,7 +321,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "period",
-                    RecurringTaskPeriod.YEARLY
+                    RecurringTaskPeriod.YEARLY,
                   )}`,
                 }),
               ],
@@ -332,7 +333,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "view",
-                    View.CALENDAR
+                    View.CALENDAR,
                   )}`,
                   highlight: loaderData.view === View.CALENDAR,
                 }),
@@ -341,7 +342,7 @@ export default function CalendarView() {
                   link: `/app/workspace/calendar${calendarLocation}?${newURLParams(
                     query,
                     "view",
-                    View.SCHEDULE
+                    View.SCHEDULE,
                   )}`,
                   highlight: loaderData.view === View.SCHEDULE,
                 }),
@@ -484,10 +485,10 @@ export default function CalendarView() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the calendar events! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () =>
+    `There was an error loading the calendar events! Please try again!`,
+});
 
 const MAX_VISIBLE_TIME_EVENT_FULL_DAYS = 3;
 
@@ -541,7 +542,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
     combinedTimeEventInDay.push({
       time_event_in_tz: timeEventInDayBlockToTimezone(
         entry.time_event,
-        props.timezone
+        props.timezone,
       ),
       entry: entry,
     });
@@ -551,7 +552,7 @@ function ViewAsCalendarDaily(props: ViewAsProps) {
       combinedTimeEventInDay.push({
         time_event_in_tz: timeEventInDayBlockToTimezone(
           timeEvent,
-          props.timezone
+          props.timezone,
         ),
         entry: entry,
       });
@@ -670,7 +671,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
     combinedTimeEventInDay.push({
       time_event_in_tz: timeEventInDayBlockToTimezone(
         entry.time_event,
-        props.timezone
+        props.timezone,
       ),
       entry: entry,
     });
@@ -680,7 +681,7 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
       combinedTimeEventInDay.push({
         time_event_in_tz: timeEventInDayBlockToTimezone(
           timeEvent,
-          props.timezone
+          props.timezone,
         ),
         entry: entry,
       });
@@ -694,8 +695,8 @@ function ViewAsCalendarWeekly(props: ViewAsProps) {
 
   const maxFullDaysEntriesCnt = Math.max(
     ...Object.values(partitionedCombinedTimeEventFullDays).map(
-      (entries) => entries.length
-    )
+      (entries) => entries.length,
+    ),
   );
 
   const allDays = allDaysBetween(props.periodStartDate, props.periodEndDate);
@@ -785,8 +786,10 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
     throw new Error("Stats are required");
   }
 
-  const periodStartDate = DateTime.fromISO(props.periodStartDate);
-  const periodEndDate = DateTime.fromISO(props.periodEndDate);
+  const periodStartDate = DateTime.fromISO(
+    props.periodStartDate,
+  ) as DateTime<true>;
+  const periodEndDate = DateTime.fromISO(props.periodEndDate) as DateTime<true>;
   const firstWeekIdx = periodStartDate.weekNumber;
 
   const weeks = [];
@@ -835,7 +838,7 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
             // the next year.
             gridRowStart = Math.min(
               weeks.length + 1,
-              week.weeksInWeekYear + 1 - firstWeekIdx + 2
+              week.weeksInWeekYear + 1 - firstWeekIdx + 2,
             );
           }
 
@@ -858,7 +861,7 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
         })}
 
         {props.stats.per_subperiod.map((stats, idx) => {
-          const startDate = DateTime.fromISO(stats.period_start_date);
+          const startDate = aDateToDate(stats.period_start_date);
 
           let gridRowStart = startDate.weekNumber - firstWeekIdx + 2;
           if (
@@ -877,7 +880,7 @@ function ViewAsCalendarMonthly(props: ViewAsProps) {
             // the next year.
             gridRowStart = Math.min(
               weeks.length + 1,
-              periodStartDate.weeksInWeekYear + 1 - firstWeekIdx + 2
+              periodStartDate.weeksInWeekYear + 1 - firstWeekIdx + 2,
             );
           }
 
@@ -909,8 +912,8 @@ function ViewAsCalendarQuarterly(props: ViewAsProps) {
     throw new Error("Stats are required");
   }
 
-  const periodStartDate = DateTime.fromISO(props.periodStartDate);
-  const periodEndDate = DateTime.fromISO(props.periodEndDate);
+  const periodStartDate = aDateToDate(props.periodStartDate);
+  const periodEndDate = aDateToDate(props.periodEndDate);
 
   const months = [];
   for (
@@ -1043,7 +1046,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-01-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-01-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1057,7 +1060,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-02-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-02-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1071,7 +1074,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-03-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-03-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1094,7 +1097,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-04-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-04-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1108,7 +1111,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-05-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-05-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1122,7 +1125,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-06-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-06-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1145,7 +1148,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-07-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-07-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1159,7 +1162,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-08-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-08-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1173,7 +1176,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-09-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-09-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1196,7 +1199,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-10-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-10-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1210,7 +1213,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-11-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-11-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1224,7 +1227,7 @@ function ViewAsCalendarYearly(props: ViewAsProps) {
             showCompact={!isBigScreen}
             stats={
               props.stats.per_subperiod.find(
-                (s) => s.period_start_date === `${periodStartDate.year}-12-01`
+                (s) => s.period_start_date === `${periodStartDate.year}-12-01`,
               )!
             }
             calendarLocation={props.calendarLocation}
@@ -1271,12 +1274,10 @@ function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
   );
 }
 
-interface ViewAsCalendarLeftColumnProps {}
-
-function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
+function ViewAsCalendarLeftColumn() {
   const theme = useTheme();
   const hours = Array.from({ length: 24 }, (_, i) =>
-    DateTime.utc(1987, 9, 18, i, 0, 0)
+    DateTime.utc(1987, 9, 18, i, 0, 0),
   );
 
   return (
@@ -1331,7 +1332,7 @@ interface ViewAsCalendarTimeEventFullDaysColumnProps {
 }
 
 function ViewAsCalendarTimeEventFullDaysColumn(
-  props: ViewAsCalendarTimeEventFullDaysColumnProps
+  props: ViewAsCalendarTimeEventFullDaysColumnProps,
 ) {
   return (
     <Box sx={{ flex: 1 }}>
@@ -1358,7 +1359,7 @@ interface ViewAsCalendarTimeEventFullDaysCellProps {
 }
 
 function ViewAsCalendarTimeEventFullDaysCell(
-  props: ViewAsCalendarTimeEventFullDaysCellProps
+  props: ViewAsCalendarTimeEventFullDaysCellProps,
 ) {
   const [query] = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1375,7 +1376,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
       const clippedName = clipTimeEventFullDaysNameToWhatFits(
         fullDaysEntry.event.name,
         12,
-        containerWidth - 32 // A hack of sorts
+        containerWidth - 32, // A hack of sorts
       );
 
       return (
@@ -1403,7 +1404,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             <EntityNameComponent
               name={clippedName}
               color={scheduleStreamColorContrastingHex(
-                fullDaysEntry.stream.color
+                fullDaysEntry.stream.color,
               )}
             />
           </EntityLink>
@@ -1417,10 +1418,10 @@ function ViewAsCalendarTimeEventFullDaysCell(
       const clippedName = clipTimeEventFullDaysNameToWhatFits(
         `👨 ${birthdayTimeEventName(
           props.entry.time_event,
-          fullDaysEntry.person
+          fullDaysEntry.person,
         )}`,
         12,
-        containerWidth - 32 // A hack of sorts
+        containerWidth - 32, // A hack of sorts
       );
 
       return (
@@ -1448,7 +1449,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             <EntityNameComponent
               name={clippedName}
               color={scheduleStreamColorContrastingHex(
-                BIRTHDAY_TIME_EVENT_COLOR
+                BIRTHDAY_TIME_EVENT_COLOR,
               )}
             />
           </EntityLink>
@@ -1462,7 +1463,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
       const clippedName = clipTimeEventFullDaysNameToWhatFits(
         `🌴 ${fullDaysEntry.vacation.name}`,
         12,
-        containerWidth - 32 // A hack of sorts
+        containerWidth - 32, // A hack of sorts
       );
 
       return (
@@ -1490,7 +1491,7 @@ function ViewAsCalendarTimeEventFullDaysCell(
             <EntityNameComponent
               name={clippedName}
               color={scheduleStreamColorContrastingHex(
-                VACATION_TIME_EVENT_COLOR
+                VACATION_TIME_EVENT_COLOR,
               )}
             />
           </EntityLink>
@@ -1514,7 +1515,7 @@ interface ViewAsCalendarTimeEventInDayColumnProps {
 }
 
 function ViewAsCalendarTimeEventInDayColumn(
-  props: ViewAsCalendarTimeEventInDayColumnProps
+  props: ViewAsCalendarTimeEventInDayColumnProps,
 ) {
   const theme = useTheme();
   const location = useLocation();
@@ -1527,12 +1528,12 @@ function ViewAsCalendarTimeEventInDayColumn(
   });
 
   const hours = Array.from({ length: 24 }, (_, i) =>
-    startOfDay.plus({ hours: i })
+    startOfDay.plus({ hours: i }),
   );
 
   const timeBlockOffsetsMap = buildTimeBlockOffsetsMap(
     props.timeEventsInDay,
-    startOfDay
+    startOfDay,
   );
 
   const theMinutes = props.rightNow
@@ -1548,7 +1549,7 @@ function ViewAsCalendarTimeEventInDayColumn(
     const offsetY = event.clientY - columnRect.top;
     const minutes = calendarPxHeightToMinutes(
       offsetY,
-      theme.typography.htmlFontSize
+      theme.typography.htmlFontSize,
     );
     const time = startOfDay.plus({ minutes });
     const newQuery = new URLSearchParams(query);
@@ -1561,11 +1562,11 @@ function ViewAsCalendarTimeEventInDayColumn(
         `/app/workspace/calendar/schedule/event-in-day/new?${newQuery}`,
         {
           replace: true,
-        }
+        },
       );
     } else if (
       location.pathname.startsWith(
-        `/app/workspace/calendar/schedule/event-in-day/`
+        `/app/workspace/calendar/schedule/event-in-day/`,
       )
     ) {
       navigate(`${location.pathname}?${newQuery}`, {
@@ -1579,11 +1580,11 @@ function ViewAsCalendarTimeEventInDayColumn(
         `/app/workspace/calendar/time-event/in-day-block/new-for-inbox-task?${newQuery}`,
         {
           replace: true,
-        }
+        },
       );
     } else if (
       location.pathname.startsWith(
-        `/app/workspace/calendar/time-event/in-day-block/`
+        `/app/workspace/calendar/time-event/in-day-block/`,
       )
     ) {
       navigate(`${location.pathname}?${newQuery}`, {
@@ -1594,7 +1595,7 @@ function ViewAsCalendarTimeEventInDayColumn(
         `/app/workspace/calendar/schedule/event-in-day/new?${newQuery}`,
         {
           replace: true,
-        }
+        },
       );
     }
   }
@@ -1663,7 +1664,7 @@ interface ViewAsCalendarTimeEventInDayCellProps {
 }
 
 function ViewAsCalendarTimeEventInDayCell(
-  props: ViewAsCalendarTimeEventInDayCellProps
+  props: ViewAsCalendarTimeEventInDayCellProps,
 ) {
   const [query] = useSearchParams();
   const theme = useTheme();
@@ -1679,10 +1680,10 @@ function ViewAsCalendarTimeEventInDayCell(
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
 
       const startTime = calculateStartTimeForTimeEvent(
-        props.entry.time_event_in_tz
+        props.entry.time_event_in_tz,
       );
       const endTime = calculateEndTimeForTimeEvent(
-        props.entry.time_event_in_tz
+        props.entry.time_event_in_tz,
       );
       const minutesSinceStartOfDay = startTime
         .diff(props.startOfDay)
@@ -1695,7 +1696,7 @@ function ViewAsCalendarTimeEventInDayCell(
         theme.typography.htmlFontSize,
         containerWidth,
         minutesSinceStartOfDay,
-        scheduleEntry.time_event.duration_mins
+        scheduleEntry.time_event.duration_mins,
       );
 
       return (
@@ -1705,11 +1706,11 @@ function ViewAsCalendarTimeEventInDayCell(
             fontSize: "10px",
             position: "absolute",
             top: calendarTimeEventInDayStartMinutesToRems(
-              minutesSinceStartOfDay
+              minutesSinceStartOfDay,
             ),
             height: calendarTimeEventInDayDurationToRems(
               minutesSinceStartOfDay,
-              scheduleEntry.time_event.duration_mins
+              scheduleEntry.time_event.duration_mins,
             ),
             backgroundColor: scheduleStreamColorHex(scheduleEntry.stream.color),
             borderRadius: "0.25rem",
@@ -1739,7 +1740,7 @@ function ViewAsCalendarTimeEventInDayCell(
               <EntityNameComponent
                 name={clippedName}
                 color={scheduleStreamColorContrastingHex(
-                  scheduleEntry.stream.color
+                  scheduleEntry.stream.color,
                 )}
               />
             </Box>
@@ -1752,10 +1753,10 @@ function ViewAsCalendarTimeEventInDayCell(
       const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
 
       const startTime = calculateStartTimeForTimeEvent(
-        props.entry.time_event_in_tz
+        props.entry.time_event_in_tz,
       );
       const endTime = calculateEndTimeForTimeEvent(
-        props.entry.time_event_in_tz
+        props.entry.time_event_in_tz,
       );
 
       const minutesSinceStartOfDay = startTime
@@ -1771,7 +1772,7 @@ function ViewAsCalendarTimeEventInDayCell(
         theme.typography.htmlFontSize,
         containerWidth,
         minutesSinceStartOfDay,
-        props.entry.time_event_in_tz.duration_mins
+        props.entry.time_event_in_tz.duration_mins,
       );
 
       return (
@@ -1781,19 +1782,19 @@ function ViewAsCalendarTimeEventInDayCell(
             fontSize: "10px",
             position: "absolute",
             top: calendarTimeEventInDayStartMinutesToRems(
-              minutesSinceStartOfDay
+              minutesSinceStartOfDay,
             ),
             height: calendarTimeEventInDayDurationToRems(
               minutesSinceStartOfDay,
-              props.entry.time_event_in_tz.duration_mins
+              props.entry.time_event_in_tz.duration_mins,
             ),
             backgroundColor: scheduleStreamColorHex(
               INBOX_TASK_TIME_EVENT_COLOR,
               inboxTaskEntry.inbox_task.status === InboxTaskStatus.DONE
                 ? "lighter"
                 : inboxTaskEntry.inbox_task.status === InboxTaskStatus.NOT_DONE
-                ? "darker"
-                : "normal"
+                  ? "darker"
+                  : "normal",
             ),
             borderRadius: "0.25rem",
             border: `1px solid ${theme.palette.background.paper}`,
@@ -1822,7 +1823,7 @@ function ViewAsCalendarTimeEventInDayCell(
               <EntityNameComponent
                 name={clippedName}
                 color={scheduleStreamColorContrastingHex(
-                  INBOX_TASK_TIME_EVENT_COLOR
+                  INBOX_TASK_TIME_EVENT_COLOR,
                 )}
               />
             </Box>
@@ -1999,7 +2000,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
     combinedTimeEventInDay.push({
       time_event_in_tz: timeEventInDayBlockToTimezone(
         entry.time_event,
-        props.timezone
+        props.timezone,
       ),
       entry: entry,
     });
@@ -2009,7 +2010,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
       combinedTimeEventInDay.push({
         time_event_in_tz: timeEventInDayBlockToTimezone(
           timeEvent,
-          props.timezone
+          props.timezone,
         ),
         entry: entry,
       });
@@ -2020,7 +2021,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
   const periodEndDate = DateTime.fromISO(props.periodEndDate);
   const daysToProcess = allDaysBetween(
     props.periodStartDate,
-    props.periodEndDate
+    props.periodEndDate,
   );
   const partitionedCombinedTimeEventFullDays =
     combinedTimeEventFullDayEntryPartionByDay(combinedTimeEventFullDays);
@@ -2055,7 +2056,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
                 partitionFullDays.length === 0 &&
                 partitionInDay.length === 0
               ) {
-                return <React.Fragment key={date}></React.Fragment>;
+                return <Fragment key={date}></Fragment>;
               }
 
               const firstRowFullDays = partitionFullDays[0];
@@ -2064,7 +2065,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
               const otherRowsInDay = partitionInDay.slice(1);
 
               return (
-                <React.Fragment key={date}>
+                <Fragment key={date}>
                   {firstRowFullDays && (
                     <>
                       <TableRow>
@@ -2138,7 +2139,7 @@ function ViewAsScheduleDailyAndWeekly(props: ViewAsProps) {
                       ))}
                     </>
                   )}
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </TableBody>
@@ -2182,7 +2183,7 @@ function ViewAsScheduleMonthlyQuarterlyAndYearly(props: ViewAsProps) {
                     {DateTime.fromISO(stats.period_start_date).toFormat(
                       props.period === RecurringTaskPeriod.YEARLY
                         ? "MMM"
-                        : "MMM-dd"
+                        : "MMM-dd",
                     )}
                   </ViewAsScheduleDateCell>
 
@@ -2211,7 +2212,7 @@ interface ViewAsScheduleTimeEventFullDaysRowsProps {
 }
 
 function ViewAsScheduleTimeEventFullDaysRows(
-  props: ViewAsScheduleTimeEventFullDaysRowsProps
+  props: ViewAsScheduleTimeEventFullDaysRowsProps,
 ) {
   const [query] = useSearchParams();
   const isBigScreen = useBigScreen();
@@ -2220,14 +2221,13 @@ function ViewAsScheduleTimeEventFullDaysRows(
     case TimeEventNamespace.SCHEDULE_FULL_DAYS_BLOCK: {
       const fullDaysEntry = props.entry.entry as ScheduleFullDaysEventEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [All Day]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(fullDaysEntry.stream.color)}
-            isbigscreen={isBigScreen.toString()}
             height="0.25rem"
           >
             <EntityLink
@@ -2240,26 +2240,25 @@ function ViewAsScheduleTimeEventFullDaysRows(
               <EntityNameComponent
                 name={fullDaysEntry.event.name}
                 color={scheduleStreamColorContrastingHex(
-                  fullDaysEntry.stream.color
+                  fullDaysEntry.stream.color,
                 )}
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
     case TimeEventNamespace.PERSON_BIRTHDAY: {
       const fullDaysEntry = props.entry.entry as PersonEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [All Day]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(BIRTHDAY_TIME_EVENT_COLOR)}
-            isbigscreen={isBigScreen.toString()}
             height="0.25rem"
           >
             <EntityLink
@@ -2272,29 +2271,28 @@ function ViewAsScheduleTimeEventFullDaysRows(
               <EntityNameComponent
                 name={`👨 ${birthdayTimeEventName(
                   fullDaysEntry.birthday_time_event,
-                  fullDaysEntry.person
+                  fullDaysEntry.person,
                 )}`}
                 color={scheduleStreamColorContrastingHex(
-                  BIRTHDAY_TIME_EVENT_COLOR
+                  BIRTHDAY_TIME_EVENT_COLOR,
                 )}
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
     case TimeEventNamespace.VACATION: {
       const fullDaysEntry = props.entry.entry as VacationEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [All Day]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(VACATION_TIME_EVENT_COLOR)}
-            isbigscreen={isBigScreen.toString()}
             height="0.25rem"
           >
             <EntityLink
@@ -2307,12 +2305,12 @@ function ViewAsScheduleTimeEventFullDaysRows(
               <EntityNameComponent
                 name={`🌴 ${fullDaysEntry.vacation.name}`}
                 color={scheduleStreamColorContrastingHex(
-                  VACATION_TIME_EVENT_COLOR
+                  VACATION_TIME_EVENT_COLOR,
                 )}
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
@@ -2327,13 +2325,13 @@ interface ViewAsScheduleTimeEventInDaysRowsProps {
 }
 
 function ViewAsScheduleTimeEventInDaysRows(
-  props: ViewAsScheduleTimeEventInDaysRowsProps
+  props: ViewAsScheduleTimeEventInDaysRowsProps,
 ) {
   const [query] = useSearchParams();
   const isBigScreen = useBigScreen();
 
   const startTime = calculateStartTimeForTimeEvent(
-    props.entry.time_event_in_tz
+    props.entry.time_event_in_tz,
   );
   const endTime = calculateEndTimeForTimeEvent(props.entry.time_event_in_tz);
 
@@ -2341,16 +2339,15 @@ function ViewAsScheduleTimeEventInDaysRows(
     case TimeEventNamespace.SCHEDULE_EVENT_IN_DAY: {
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
           </ViewAsScheduleTimeCell>
 
           <ViewAsScheduleEventCell
             color={scheduleStreamColorHex(scheduleEntry.stream.color)}
-            isbigscreen={isBigScreen.toString()}
             height={scheduleTimeEventInDayDurationToRems(
-              props.entry.time_event_in_tz.duration_mins
+              props.entry.time_event_in_tz.duration_mins,
             )}
           >
             <EntityLink
@@ -2363,19 +2360,19 @@ function ViewAsScheduleTimeEventInDaysRows(
               <EntityNameComponent
                 name={scheduleEntry.event.name}
                 color={scheduleStreamColorContrastingHex(
-                  scheduleEntry.stream.color
+                  scheduleEntry.stream.color,
                 )}
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
     case TimeEventNamespace.INBOX_TASK: {
       const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
       return (
-        <React.Fragment>
+        <Fragment>
           <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
           </ViewAsScheduleTimeCell>
@@ -2386,12 +2383,11 @@ function ViewAsScheduleTimeEventInDaysRows(
               inboxTaskEntry.inbox_task.status === InboxTaskStatus.DONE
                 ? "lighter"
                 : inboxTaskEntry.inbox_task.status === InboxTaskStatus.NOT_DONE
-                ? "darker"
-                : "normal"
+                  ? "darker"
+                  : "normal",
             )}
-            isbigscreen={isBigScreen.toString()}
             height={scheduleTimeEventInDayDurationToRems(
-              props.entry.time_event_in_tz.duration_mins
+              props.entry.time_event_in_tz.duration_mins,
             )}
           >
             <EntityLink
@@ -2404,12 +2400,12 @@ function ViewAsScheduleTimeEventInDaysRows(
               <EntityNameComponent
                 name={inboxTaskNameForEvent(inboxTaskEntry.inbox_task)}
                 color={scheduleStreamColorContrastingHex(
-                  INBOX_TASK_TIME_EVENT_COLOR
+                  INBOX_TASK_TIME_EVENT_COLOR,
                 )}
               />
             </EntityLink>
           </ViewAsScheduleEventCell>
-        </React.Fragment>
+        </Fragment>
       );
     }
 
@@ -2427,7 +2423,7 @@ const ViewAsScheduleDateCell = styled(TableCell)<ViewAsScheduleDateCellProps>(
     verticalAlign: "top",
     padding: "0.25rem",
     width: isbigscreen === "true" ? "15%" : "25%",
-  })
+  }),
 );
 
 const ViewAsScheduleContentCell = styled(TableCell)({
@@ -2443,24 +2439,23 @@ const ViewAsScheduleTimeCell = styled(TableCell)<ViewAsScheduleTimeCellProps>(
     verticalAlign: "top",
     padding: "0.25rem",
     width: isbigscreen === "true" ? "15%" : "30%",
-  })
+  }),
 );
 
 interface ViewAsScheduleEventCellProps {
-  isbigscreen: string;
   color: string;
   height: string;
 }
 
 const ViewAsScheduleEventCell = styled(TableCell)<ViewAsScheduleEventCellProps>(
-  ({ isbigscreen, color, height }) => ({
+  ({ color, height }) => ({
     verticalAlign: "top",
     backgroundColor: color,
     padding: "0.25rem",
     paddingLeft: "0.5rem",
     paddingBottom: height,
     borderRadius: "0.25rem",
-  })
+  }),
 );
 
 interface ViewAsStatsPerSubperiodProps {
@@ -2511,7 +2506,7 @@ function ViewAsStatsPerSubperiod(props: ViewAsStatsPerSubperiodProps) {
 
 export function computeTimeEventInDayDurationInQuarters(
   minutesSinceStartOfDay: number,
-  durationMins: number
+  durationMins: number,
 ): number {
   // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
   // If the event goes beyond the day, we cap it at 24 hours.
@@ -2526,7 +2521,7 @@ export function computeTimeEventInDayDurationInQuarters(
 function clipTimeEventFullDaysNameToWhatFits(
   name: string,
   fontSize: number,
-  containerWidth: number
+  containerWidth: number,
 ): string {
   const textWidthInPx = measureText(name, fontSize);
 
@@ -2546,16 +2541,16 @@ function clipTimeEventInDayNameToWhatFits(
   fontSize: number,
   containerWidth: number,
   minutesSinceStartOfDay: number,
-  durationInMins: number
+  durationInMins: number,
 ): string {
   const durationInQuarters = computeTimeEventInDayDurationInQuarters(
     0,
-    durationInMins
+    durationInMins,
   );
   const durationInHalfs = Math.max(1, Math.floor(durationInQuarters / 2));
 
   const bigName = `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat(
-    "HH:mm"
+    "HH:mm",
   )}] ${name}`;
   const textWidthInPx = measureText(bigName, fontSize);
   const totalWidthInPx = containerWidth * durationInHalfs;
@@ -2566,17 +2561,17 @@ function clipTimeEventInDayNameToWhatFits(
     // Do some rough approximation here.
     const maxChars = Math.max(
       3,
-      Math.floor((name.length * totalWidthInPx) / textWidthInPx)
+      Math.floor((name.length * totalWidthInPx) / textWidthInPx),
     );
     return `[${startTime.toFormat("HH:mm")}] ${name.substring(
       0,
-      maxChars
+      maxChars,
     )} ...`;
   }
 }
 
 function combinedTimeEventFullDayEntryPartionByDay(
-  entries: Array<CombinedTimeEventFullDaysEntry>
+  entries: Array<CombinedTimeEventFullDaysEntry>,
 ): Record<string, Array<CombinedTimeEventFullDaysEntry>> {
   const partition: Record<string, Array<CombinedTimeEventFullDaysEntry>> = {};
 
@@ -2601,7 +2596,7 @@ function combinedTimeEventFullDayEntryPartionByDay(
 }
 
 function sortTimeEventFullDaysByType(
-  entries: Array<CombinedTimeEventFullDaysEntry>
+  entries: Array<CombinedTimeEventFullDaysEntry>,
 ) {
   return entries.sort((a, b) => {
     if (a.time_event.namespace === b.time_event.namespace) {
@@ -2610,13 +2605,13 @@ function sortTimeEventFullDaysByType(
 
     return compareNamespaceForSortingFullDaysTimeEvents(
       a.time_event.namespace,
-      b.time_event.namespace
+      b.time_event.namespace,
     );
   });
 }
 
 function splitTimeEventInDayEntryIntoPerDayEntries(
-  entry: CombinedTimeEventInDayEntry
+  entry: CombinedTimeEventInDayEntry,
 ): {
   day1: CombinedTimeEventInDayEntry;
   day2?: CombinedTimeEventInDayEntry;
@@ -2718,7 +2713,7 @@ function splitTimeEventInDayEntryIntoPerDayEntries(
 }
 
 function combinedTimeEventInDayEntryPartionByDay(
-  entries: Array<CombinedTimeEventInDayEntry>
+  entries: Array<CombinedTimeEventInDayEntry>,
 ): Record<string, Array<CombinedTimeEventInDayEntry>> {
   const partition: Record<string, Array<CombinedTimeEventInDayEntry>> = {};
 
@@ -2751,7 +2746,7 @@ function combinedTimeEventInDayEntryPartionByDay(
   // Now sort all partitions.
   for (const dateStr in partition) {
     partition[dateStr] = sortTimeEventInDayByStartTimeAndEndTime(
-      partition[dateStr]
+      partition[dateStr],
     );
   }
 
@@ -2759,7 +2754,7 @@ function combinedTimeEventInDayEntryPartionByDay(
 }
 
 function sortTimeEventInDayByStartTimeAndEndTime(
-  entries: Array<CombinedTimeEventInDayEntry>
+  entries: Array<CombinedTimeEventInDayEntry>,
 ) {
   return entries.sort((a, b) => {
     const aStartTime = calculateStartTimeForTimeEvent(a.time_event_in_tz);
@@ -2776,7 +2771,7 @@ function sortTimeEventInDayByStartTimeAndEndTime(
 
 function buildTimeBlockOffsetsMap(
   entries: Array<CombinedTimeEventInDayEntry>,
-  startOfDay: DateTime
+  startOfDay: DateTime,
 ): Map<EntityId, number> {
   const offsets = new Map<EntityId, number>();
 
@@ -2861,7 +2856,7 @@ function buildTimeBlockOffsetsMap(
 }
 
 function statsSubperiodForPeriod(
-  period: RecurringTaskPeriod
+  period: RecurringTaskPeriod,
 ): RecurringTaskPeriod | null {
   switch (period) {
     case RecurringTaskPeriod.DAILY:

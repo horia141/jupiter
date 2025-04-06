@@ -1,4 +1,5 @@
 """The update action for a field."""
+
 import typing
 from collections.abc import Callable
 from typing import Final, Generic, TypeVar

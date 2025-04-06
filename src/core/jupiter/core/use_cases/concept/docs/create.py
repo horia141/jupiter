@@ -1,4 +1,5 @@
 """Use case for creating a doc."""
+
 from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.concept.docs.doc_collection import DocCollection

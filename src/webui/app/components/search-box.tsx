@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
-import { alpha, InputBase, styled } from "@mui/material";
+import { InputBase, alpha, styled } from "@mui/material";
 import { Form } from "@remix-run/react";
 
 const Search = styled("div")(({ theme }) => ({

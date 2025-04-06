@@ -1,7 +1,7 @@
 import { TimePlanActivityFeasability } from "@jupiter/webapi-client";
 
 export function timePlanActivityFeasabilityName(
-  feasability: TimePlanActivityFeasability
+  feasability: TimePlanActivityFeasability,
 ): string {
   switch (feasability) {
     case TimePlanActivityFeasability.MUST_DO:
@@ -21,7 +21,7 @@ const TIME_PLAN_ACTIVITY_FEASABILITY_MAP = {
 
 export function compareTimePlanActivityFeasability(
   feasability1: TimePlanActivityFeasability,
-  feasability2: TimePlanActivityFeasability
+  feasability2: TimePlanActivityFeasability,
 ): number {
   return (
     TIME_PLAN_ACTIVITY_FEASABILITY_MAP[feasability1] -

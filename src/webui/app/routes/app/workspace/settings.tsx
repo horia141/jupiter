@@ -11,14 +11,15 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { WorkspaceFeatureFlagsEditor } from "~/components/feature-flags-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -47,7 +48,7 @@ export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const result = await apiClient.workspaces.workspaceLoad({});
 
@@ -56,7 +57,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -102,12 +103,12 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Settings() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const globalProperties = useContext(GlobalPropertiesContext);
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <TrunkPanel key={"settings"} returnLocation="/app/workspace">
@@ -185,7 +186,6 @@ export default function Settings() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error updating the workspace! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error updating the workspace! Please try again!`,
+});

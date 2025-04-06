@@ -2,11 +2,6 @@ import type { ADate } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
-import type { LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet } from "@remix-run/react";
-
 import {
   Button,
   ButtonGroup,
@@ -15,9 +10,14 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
-import React, { useContext, useState } from "react";
+import { Fragment, useContext, useState } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
@@ -51,7 +51,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
@@ -84,7 +84,7 @@ export default function BigPlans() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const sortedBigPlans = sortBigPlansNaturally(
-    loaderData.bigPlans.map((b) => b.big_plan)
+    loaderData.bigPlans.map((b) => b.big_plan),
   );
   const entriesByRefId = new Map<string, BigPlanParent>();
   for (const entry of loaderData.bigPlans) {
@@ -98,7 +98,7 @@ export default function BigPlans() {
 
   const initialView = isWorkspaceFeatureAvailable(
     topLevelInfo.workspace,
-    WorkspaceFeature.PROJECTS
+    WorkspaceFeature.PROJECTS,
   )
     ? View.TIMELINE_BY_PROJECT
     : View.TIMELINE;
@@ -112,7 +112,7 @@ export default function BigPlans() {
       <ButtonGroup key="1">
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
+          WorkspaceFeature.PROJECTS,
         ) && (
           <Button
             variant={
@@ -156,11 +156,11 @@ export default function BigPlans() {
   }
 
   const thisYear = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
-    "year"
+    "year",
   );
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
   return (
@@ -179,7 +179,7 @@ export default function BigPlans() {
           <ButtonGroup orientation="vertical">
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <Button
                 variant={
@@ -229,14 +229,14 @@ export default function BigPlans() {
         {sortedBigPlans.length > 0 &&
           isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) &&
           selectedView === View.TIMELINE_BY_PROJECT && (
             <>
               {sortedProjects.map((p) => {
                 const theBigPlans = sortedBigPlans.filter(
                   (se) =>
-                    entriesByRefId.get(se.ref_id)?.project?.ref_id === p.ref_id
+                    entriesByRefId.get(se.ref_id)?.project?.ref_id === p.ref_id,
                 );
 
                 if (theBigPlans.length === 0) {
@@ -245,11 +245,11 @@ export default function BigPlans() {
 
                 const fullProjectName = computeProjectHierarchicalNameFromRoot(
                   p,
-                  allProjectsByRefId
+                  allProjectsByRefId,
                 );
 
                 return (
-                  <React.Fragment key={p.ref_id}>
+                  <Fragment key={p.ref_id}>
                     <StandardDivider title={fullProjectName} size="large" />
                     <>
                       {isBigScreen && (
@@ -279,7 +279,7 @@ export default function BigPlans() {
                         />
                       )}
                     </>
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </>
@@ -340,7 +340,6 @@ export default function BigPlans() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the big plans! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the big plans! Please try again!`,
+});

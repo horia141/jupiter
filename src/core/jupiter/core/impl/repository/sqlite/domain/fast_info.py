@@ -62,10 +62,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             VacationSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -84,10 +88,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             ScheduleStreamSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -112,18 +120,22 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             ProjectSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
-                parent_project_ref_id=_ENTITY_ID_DECODER.decode(
-                    str(row["parent_project_ref_id"])
-                )
-                if row["parent_project_ref_id"]
-                else None,
+                parent_project_ref_id=(
+                    _ENTITY_ID_DECODER.decode(str(row["parent_project_ref_id"]))
+                    if row["parent_project_ref_id"]
+                    else None
+                ),
                 name=_PROJECT_NAME_DECODER.decode(row["name"]),
                 order_of_child_projects=[
                     _ENTITY_ID_DECODER.decode(idx)
@@ -143,10 +155,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             InboxTaskSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -165,10 +181,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             HabitSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -187,10 +207,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             ChoreSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -209,10 +233,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             BigPlanSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -232,10 +260,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             SmartListSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -255,10 +287,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             MetricSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
@@ -278,10 +314,14 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         if not allow_archived:
             query += " and archived=0"
         result = (
-            await self._connection.execute(
-                text(query), {"parent_ref_id": parent_ref_id.as_int()}
+            (
+                await self._connection.execute(
+                    text(query), {"parent_ref_id": parent_ref_id.as_int()}
+                )
             )
-        ).fetchall()
+            .mappings()
+            .all()
+        )
         return [
             PersonSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),

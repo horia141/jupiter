@@ -1,4 +1,5 @@
 """The command for updating a metric's properties."""
+
 import typing
 
 from jupiter.core.domain.application.gen.service.gen_service import GenService
@@ -247,11 +248,13 @@ class MetricUpdateUseCase(
             gen_even_if_not_modified=False,
             today=self._time_provider.get_current_date(),
             gen_targets=[SyncTarget.METRICS],
-            period=[args.collection_period.just_the_value]
-            if (
-                args.collection_period.should_change
-                and args.collection_period.just_the_value is not None
-            )
-            else None,
+            period=(
+                [args.collection_period.just_the_value]
+                if (
+                    args.collection_period.should_change
+                    and args.collection_period.just_the_value is not None
+                )
+                else None
+            ),
             filter_metric_ref_ids=[args.ref_id],
         )

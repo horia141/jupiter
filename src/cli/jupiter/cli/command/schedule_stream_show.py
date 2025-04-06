@@ -1,4 +1,5 @@
 """Command for showing the schedule streams."""
+
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import entity_id_to_rich_text
 from jupiter.core.use_cases.concept.schedule.stream.find import (

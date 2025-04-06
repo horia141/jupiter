@@ -1,4 +1,5 @@
 """The service which syncs external calendars with jupiter."""
+
 from typing import Final, cast
 
 import recurring_ical_events
@@ -377,9 +378,9 @@ class ScheduleExternalSyncService:
                                     ] = note
 
                                 all_full_days_events.append(schedule_event_full_days)
-                                all_full_days_events_by_external_uid[
-                                    uid
-                                ] = schedule_event_full_days
+                                all_full_days_events_by_external_uid[uid] = (
+                                    schedule_event_full_days
+                                )
                                 all_time_event_full_days_blocks_by_source_entity_ref_id[
                                     schedule_event_full_days.ref_id
                                 ] = time_event_full_days_block
@@ -590,9 +591,9 @@ class ScheduleExternalSyncService:
                                     note = await uow.get_for(Note).create(note)
 
                                 all_in_day_events.append(schedule_event_in_day)
-                                all_in_day_events_by_external_uid[
-                                    uid
-                                ] = schedule_event_in_day
+                                all_in_day_events_by_external_uid[uid] = (
+                                    schedule_event_in_day
+                                )
                                 all_time_event_in_day_blocks_by_source_entity_ref_id[
                                     schedule_event_in_day.ref_id
                                 ] = time_event_in_day_block
@@ -823,6 +824,6 @@ class ScheduleExternalSyncService:
     def _build_processing_window(self, today: ADate) -> tuple[ADate, ADate]:
         """Build the processing window."""
         today_date = today.the_date
-        start_of_window = cast(Date, today_date.start_of("year").add(years=-1))  # type: ignore
-        end_of_window = cast(Date, today_date.add(days=30).end_of("year"))  # type: ignore
+        start_of_window = today_date.start_of("year").add(years=-1)
+        end_of_window = today_date.add(days=30).end_of("year")
         return (ADate.from_date(start_of_window), ADate.from_date(end_of_window))

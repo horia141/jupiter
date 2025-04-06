@@ -1,15 +1,9 @@
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 
 export const basicShouldRevalidate: ShouldRevalidateFunction = ({
-  actionResult,
-  currentParams,
   currentUrl,
   defaultShouldRevalidate,
-  formAction,
-  formData,
-  formEncType,
   formMethod,
-  nextParams,
   nextUrl,
 }) => {
   if (
@@ -17,7 +11,7 @@ export const basicShouldRevalidate: ShouldRevalidateFunction = ({
     onlyDifferenceIsInTimeEventParamsSource(
       formMethod || "GET",
       currentUrl,
-      nextUrl
+      nextUrl,
     )
   ) {
     return false;
@@ -27,15 +21,10 @@ export const basicShouldRevalidate: ShouldRevalidateFunction = ({
 };
 
 export const standardShouldRevalidate: ShouldRevalidateFunction = ({
-  actionResult,
-  currentParams,
   currentUrl,
   defaultShouldRevalidate,
   formAction,
-  formData,
-  formEncType,
   formMethod,
-  nextParams,
   nextUrl,
 }) => {
   if (formAction === "/app/workspace/inbox-tasks/update-status-and-eisen") {
@@ -55,7 +44,7 @@ export const standardShouldRevalidate: ShouldRevalidateFunction = ({
     onlyDifferenceIsInTimeEventParamsSource(
       formMethod || "GET",
       currentUrl,
-      nextUrl
+      nextUrl,
     )
   ) {
     return false;
@@ -67,7 +56,7 @@ export const standardShouldRevalidate: ShouldRevalidateFunction = ({
 function onlyDifferenceIsInTimeEventParamsSource(
   formMethod: string,
   currentUrl: URL,
-  nextUrl: URL
+  nextUrl: URL,
 ): boolean {
   if (formMethod !== "GET") {
     return false;

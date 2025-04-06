@@ -3,5 +3,5 @@
 export function secureFn(
   target: any,
   propertyKey: string,
-  descriptor: PropertyDescriptor
+  descriptor: PropertyDescriptor,
 ) {}

@@ -23,26 +23,25 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Link,
   useActionData,
   useFetcher,
-  useParams,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStatusBigTag } from "~/components/big-plan-status-big-tag";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -60,10 +59,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-  alert: z.string().optional(),
-};
+});
 
 const CommonParamsSchema = {
   name: z.string(),
@@ -121,7 +119,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -167,7 +165,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -287,18 +285,18 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function BigPlan() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.bigPlan.archived;
+    navigation.state === "idle" && !loaderData.bigPlan.archived;
 
   const bigPlansByRefId = new Map();
   bigPlansByRefId.set(loaderData.bigPlan.ref_id, loaderData.bigPlan);
 
   const timePlanActivities = loaderData.timePlanEntries?.map(
-    (entry) => entry.time_plan_activity
+    (entry) => entry.time_plan_activity,
   );
   const timePlansByRefId = new Map();
   if (loaderData.timePlanEntries) {
@@ -310,7 +308,7 @@ export default function BigPlan() {
   const timeEventsByRefId = new Map();
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id
+    loaderData.project.ref_id,
   );
 
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
@@ -328,7 +326,7 @@ export default function BigPlan() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -341,7 +339,7 @@ export default function BigPlan() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -390,7 +388,7 @@ export default function BigPlan() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -407,7 +405,7 @@ export default function BigPlan() {
             )}
             {!isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && <input type="hidden" name="project" value={selectedProject} />}
 
             <FormControl fullWidth>
@@ -421,7 +419,7 @@ export default function BigPlan() {
                 defaultValue={
                   loaderData.bigPlan.actionable_date
                     ? aDateToDate(loaderData.bigPlan.actionable_date).toFormat(
-                        "yyyy-MM-dd"
+                        "yyyy-MM-dd",
                       )
                     : undefined
                 }
@@ -446,7 +444,7 @@ export default function BigPlan() {
                 defaultValue={
                   loaderData.bigPlan.due_date
                     ? aDateToDate(loaderData.bigPlan.due_date).toFormat(
-                        "yyyy-MM-dd"
+                        "yyyy-MM-dd",
                       )
                     : undefined
                 }
@@ -687,7 +685,7 @@ export default function BigPlan() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.TIME_PLANS
+        WorkspaceFeature.TIME_PLANS,
       ) &&
         timePlanActivities && (
           <SectionCardNew
@@ -710,13 +708,12 @@ export default function BigPlan() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/big-plans",
-  () => `Could not find big plan #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/big-plans",
-  () =>
-    `There was an error loading big plan #${useParams().id}! Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find big plan with ID ${params.id}!`,
+    error: (params) =>
+      `There was an error loading big plan with ID ${params.id}! Please try again!`,
+  },
 );

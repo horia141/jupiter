@@ -1,4 +1,5 @@
 """Load an in day block with associated data."""
+
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
     ScheduleEventInDay,

@@ -1,4 +1,5 @@
 """The SQLite connection."""
+
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,7 +9,7 @@ import sqlalchemy.exc
 from alembic import command
 from alembic.config import Config
 from jupiter.core.framework.storage import Connection, ConnectionPrepareError
-from pydantic.json import pydantic_encoder
+from pydantic_core import to_jsonable_python
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 
@@ -33,8 +34,9 @@ class SqliteConnection(Connection):
             config.sqlite_db_url,
             future=True,
             json_serializer=lambda *a, **kw: json.dumps(
-                *a, **kw, default=pydantic_encoder
+                to_jsonable_python(*a, **kw),
             ),
+            # connect_args={"detect_types": sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES}
         )
 
     async def prepare(self) -> None:

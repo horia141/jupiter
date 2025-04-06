@@ -1,4 +1,5 @@
 """Update various bits and bobs about changing the generation period."""
+
 from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (

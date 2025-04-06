@@ -1,9 +1,10 @@
 import { ApiError, BigPlanStatus } from "@jupiter/webapi-client";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import {
   noErrorNoData,
@@ -11,12 +12,12 @@ import {
 } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 
-const UpdateStatusFormSchema = {
+const UpdateStatusFormSchema = z.object({
   id: z.string(),
   status: z.nativeEnum(BigPlanStatus),
-};
+});
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateStatusFormSchema);
 

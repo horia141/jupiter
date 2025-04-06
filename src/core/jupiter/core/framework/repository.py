@@ -1,4 +1,5 @@
 """Framework level elements for storage."""
+
 import abc
 from collections.abc import Iterable
 from typing import Generic, TypeVar

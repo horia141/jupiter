@@ -1,14 +1,14 @@
+import { UserFeature } from "@jupiter/webapi-client";
 import { Settings } from "@mui/icons-material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PolicyIcon from "@mui/icons-material/Policy";
+import SecurityIcon from "@mui/icons-material/Security";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import {
-  Alert,
-  AlertTitle,
   Avatar,
   Badge,
-  Button,
-  ButtonGroup,
   Divider,
   IconButton,
   ListItemIcon,
@@ -16,46 +16,41 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import type { LinksFunction, LoaderArgs } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Form, Link, useCatch, useOutlet } from "@remix-run/react";
-import Sidebar from "~/components/sidebar";
-
-import { UserFeature } from "@jupiter/webapi-client";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import SecurityIcon from "@mui/icons-material/Security";
-import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
+import { Form, Link, useOutlet } from "@remix-run/react";
 import { AnimatePresence, useAnimate } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import {
   ScoreSnackbarManager,
   useScoreActionSingleton,
 } from "~/components/gamification/score-snackbar-manager";
-import SearchBox from "~/components/search-box";
-import { isUserFeatureAvailable } from "~/logic/domain/user";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
-import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { TopLevelInfoContext } from "~/top-level-context";
-
-import { CommunityLink } from "~/components/community-link";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { ReleaseUpdateWidget } from "~/components/release-update-widget";
+import SearchBox from "~/components/search-box";
+import Sidebar from "~/components/sidebar";
 import { Title } from "~/components/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { isUserFeatureAvailable } from "~/logic/domain/user";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
+import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: editorJsTweaks },
 ];
 
 // @secureFn
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
 
@@ -93,7 +88,7 @@ export default function Workspace() {
     useState<null | HTMLElement>(null);
   const accountMenuOpen = Boolean(accountMenuAnchorEl);
   const handleAccountMenuClick = (
-    event: React.MouseEvent<HTMLButtonElement>
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     setAccountMenuAnchorEl(event.currentTarget);
   };
@@ -108,7 +103,7 @@ export default function Workspace() {
     animateBadge(badgeRef.current, { scale: 1.2 }, { duration: 0.15 }).then(
       () => {
         animateBadge(badgeRef.current, { scale: 1 }, { duration: 0.15 });
-      }
+      },
     );
   }, [animateBadge, badgeRef, scoreAction]);
 
@@ -196,7 +191,7 @@ export default function Workspace() {
           >
             {isUserFeatureAvailable(
               loaderData.user,
-              UserFeature.GAMIFICATION
+              UserFeature.GAMIFICATION,
             ) && (
               <MenuItem
                 to="/app/workspace/gamification"
@@ -306,25 +301,6 @@ export default function Workspace() {
   );
 }
 
-export function CatchBoundary() {
-  const caught = useCatch();
-
-  if (caught.status === 426 /* UPGRADE REQUIRED */) {
-    return (
-      <Alert severity="warning">
-        <AlertTitle>Your session has expired! Login again!</AlertTitle>
-        <ButtonGroup>
-          <Button variant="outlined" component={Link} to="/app/login">
-            Login
-          </Button>
-        </ButtonGroup>
-      </Alert>
-    );
-  }
-
-  throw new Error(`Unhandled error: ${caught.status}`);
-}
-
-export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error loading the workspace! Please try again!`
-);
+export const ErrorBoundary = makeRootErrorBoundary({
+  error: () => `There was an error loading the workspace! Please try again!`,
+});

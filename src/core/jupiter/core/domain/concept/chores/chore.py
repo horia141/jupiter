@@ -1,4 +1,5 @@
 """A chore."""
+
 from jupiter.core.domain.concept.chores.chore_name import ChoreName
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource

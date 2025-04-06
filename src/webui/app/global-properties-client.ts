@@ -7,12 +7,14 @@ import {
   Hosting,
 } from "@jupiter/webapi-client";
 import { createContext } from "react";
+
 import type { GlobalPropertiesServer } from "./global-properties-server";
 import type { FrontDoorInfo } from "./logic/frontdoor";
 
 export interface GlobalPropertiesClient {
   env: Env;
   hosting: Hosting;
+  hostingName: string;
   version: string;
   appCore: AppCore;
   frontDoorInfo: FrontDoorInfo;
@@ -34,6 +36,7 @@ export interface GlobalPropertiesClient {
 export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   env: Env.LOCAL,
   hosting: Hosting.LOCAL,
+  hostingName: "FAKE-FAKE",
   version: "FAKE-FAKE",
   appCore: AppCore.WEBUI,
   frontDoorInfo: {
@@ -60,11 +63,12 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
 
 export function serverToClientGlobalProperties(
   globalPropertiesServer: GlobalPropertiesServer,
-  frontDoorInfo: FrontDoorInfo
+  frontDoorInfo: FrontDoorInfo,
 ): GlobalPropertiesClient {
   return {
     env: globalPropertiesServer.env,
     hosting: globalPropertiesServer.hosting,
+    hostingName: globalPropertiesServer.hostingName,
     version: globalPropertiesServer.version,
     appCore: AppCore.WEBUI,
     frontDoorInfo: frontDoorInfo,

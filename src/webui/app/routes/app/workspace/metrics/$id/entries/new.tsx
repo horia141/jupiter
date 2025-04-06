@@ -10,17 +10,17 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -30,20 +30,20 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   collectionTime: z.string(),
   value: z.string().transform(parseFloat),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -58,7 +58,7 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 }
 
-export async function action({ params, request }: ActionArgs) {
+export async function action({ params, request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, CreateFormSchema);
@@ -71,7 +71,7 @@ export async function action({ params, request }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id}`
+      `/app/workspace/metrics/${id}/entries/${response.new_metric_entry.ref_id}`,
     );
   } catch (error) {
     if (
@@ -93,9 +93,9 @@ export default function NewMetricEntry() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -160,6 +160,10 @@ export default function NewMetricEntry() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
-  () => `There was an error creating the metric entry! Please try again!`
+  (params) => `/app/workspace/metrics/${params.id}`,
+  ParamsSchema,
+  {
+    error: () =>
+      `There was an error creating the metric entry! Please try again!`,
+  },
 );

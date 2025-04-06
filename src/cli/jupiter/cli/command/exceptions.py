@@ -1,4 +1,5 @@
 """Specific exception handling."""
+
 import sys
 
 from jupiter.cli.command.command import CliApp, CliExceptionHandler

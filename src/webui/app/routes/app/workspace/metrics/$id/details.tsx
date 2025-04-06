@@ -18,28 +18,26 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
   useFetcher,
+  useNavigation,
   useParams,
-  useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { IconSelector } from "~/components/icon-selector";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
@@ -51,16 +49,16 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const QuerySchema = {
+const QuerySchema = z.object({
   collectionTasksRetrieveOffset: z
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -95,7 +93,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const query = parseQuery(request, QuerySchema);
@@ -127,7 +125,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -172,9 +170,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionActionableFromDay === undefined ||
-                  form.collectionActionableFromDay === ""
-                ? undefined
-                : parseInt(form.collectionActionableFromDay),
+                    form.collectionActionableFromDay === ""
+                  ? undefined
+                  : parseInt(form.collectionActionableFromDay),
           },
           collection_actionable_from_month: {
             should_change: true,
@@ -182,9 +180,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionActionableFromMonth === undefined ||
-                  form.collectionActionableFromMonth === ""
-                ? undefined
-                : parseInt(form.collectionActionableFromMonth),
+                    form.collectionActionableFromMonth === ""
+                  ? undefined
+                  : parseInt(form.collectionActionableFromMonth),
           },
           collection_due_at_day: {
             should_change: true,
@@ -192,9 +190,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionDueAtDay === undefined ||
-                  form.collectionDueAtDay === ""
-                ? undefined
-                : parseInt(form.collectionDueAtDay),
+                    form.collectionDueAtDay === ""
+                  ? undefined
+                  : parseInt(form.collectionDueAtDay),
           },
           collection_due_at_month: {
             should_change: true,
@@ -202,9 +200,9 @@ export async function action({ request, params }: ActionArgs) {
               form.collectionPeriod === "none"
                 ? undefined
                 : form.collectionDueAtMonth === undefined ||
-                  form.collectionDueAtMonth === ""
-                ? undefined
-                : parseInt(form.collectionDueAtMonth),
+                    form.collectionDueAtMonth === ""
+                  ? undefined
+                  : parseInt(form.collectionDueAtMonth),
           },
         });
 
@@ -267,11 +265,11 @@ export default function MetricDetails() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.metric.archived;
+    navigation.state === "idle" && !loaderData.metric.archived;
 
   const sortedCollectionTasks = loaderData.collectionTasks
     ? sortInboxTasksNaturally(loaderData.collectionTasks, {
@@ -290,7 +288,7 @@ export default function MetricDetails() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -303,7 +301,7 @@ export default function MetricDetails() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -440,13 +438,12 @@ export default function MetricDetails() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
-  () => `Could not find metric #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
-  () =>
-    `There was an error loading metric #${useParams().id}! Please try again!`
+  (params) => `/app/workspace/metrics/${params.id}`,
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find metric details for #${params.id}!`,
+    error: (params) =>
+      `There was an error loading metric details for #${params.id}! Please try again!`,
+  },
 );

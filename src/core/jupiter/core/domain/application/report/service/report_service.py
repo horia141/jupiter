@@ -1,4 +1,5 @@
 """The domain service which constructs a report."""
+
 from collections import defaultdict
 from collections.abc import Iterable
 from itertools import groupby
@@ -672,9 +673,9 @@ class ReportService:
             not_started_cnt=not_started_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(created_cnt)
-            if created_cnt > 0
-            else 0.0,
+            not_done_ratio=(
+                not_done_cnt / float(created_cnt) if created_cnt > 0 else 0.0
+            ),
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0,
         )
@@ -746,15 +747,19 @@ class ReportService:
                     used_skip_once = False
                     if inbox_task.recurring_repeat_index is None:
                         streak_plot.append(
-                            "."
-                            if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                            else "?",
+                            (
+                                "."
+                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
+                                else "?"
+                            ),
                         )
                     elif inbox_task.recurring_repeat_index == 0:
                         streak_plot.append(
-                            "0"
-                            if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                            else "?",
+                            (
+                                "0"
+                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
+                                else "?"
+                            ),
                         )
 
         return RecurringTaskWorkSummary(
@@ -762,9 +767,9 @@ class ReportService:
             not_started_cnt=not_started_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(created_cnt)
-            if created_cnt > 0
-            else 0.0,
+            not_done_ratio=(
+                not_done_cnt / float(created_cnt) if created_cnt > 0 else 0.0
+            ),
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
             streak_plot="".join(streak_plot),

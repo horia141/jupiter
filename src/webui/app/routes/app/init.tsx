@@ -21,19 +21,20 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
   Link,
   useActionData,
   useLoaderData,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getGuestApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
@@ -56,7 +57,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { commitSession, getSession } from "~/sessions";
 
-const WorkspaceInitFormSchema = {
+const WorkspaceInitFormSchema = z.object({
   userEmailAddress: z.string(),
   userName: z.string(),
   userTimezone: z.string(),
@@ -70,10 +71,10 @@ const WorkspaceInitFormSchema = {
   workspaceFirstScheduleStreamName: z.string(),
   workspaceFeatureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
   // forAppReview: CheckboxAsString,
-};
+});
 
 // @secureFn
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getGuestApiClient(request);
   const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
   if (result.user || result.workspace) {
@@ -92,7 +93,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 // @secureFn
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const apiClient = await getGuestApiClient(request);
   const form = await parseForm(request, WorkspaceInitFormSchema);
@@ -121,7 +122,7 @@ export async function action({ request }: ActionArgs) {
         headers: {
           "Set-Cookie": await commitSession(session),
         },
-      }
+      },
     );
   } catch (error) {
     if (
@@ -138,9 +139,9 @@ export async function action({ request }: ActionArgs) {
 export default function WorkspaceInit() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
-  const inputsEnabled = transition.state === "idle";
   const globalProperties = useContext(GlobalPropertiesContext);
 
   return (
@@ -383,6 +384,6 @@ export default function WorkspaceInit() {
   );
 }
 
-export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error creating the workspace! Please try again!`
-);
+export const ErrorBoundary = makeRootErrorBoundary({
+  error: () => `There was an error creating the workspace! Please try again!`,
+});

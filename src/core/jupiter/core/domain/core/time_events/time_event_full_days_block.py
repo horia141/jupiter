@@ -1,4 +1,5 @@
 """A full day block of time."""
+
 import abc
 
 from jupiter.core.domain.core.adate import ADate

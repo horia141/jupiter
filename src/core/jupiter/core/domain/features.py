@@ -1,4 +1,5 @@
 """Even features are expressed here."""
+
 from collections.abc import Iterable
 from typing import Final
 

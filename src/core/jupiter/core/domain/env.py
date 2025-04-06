@@ -1,4 +1,5 @@
 """An environment for a jupiter application."""
+
 from jupiter.core.framework.value import EnumValue, enum_value
 
 

@@ -10,11 +10,12 @@ import {
   Card,
   CardActions,
   CardContent,
-  styled,
   Typography,
+  styled,
 } from "@mui/material";
 import { useFetcher } from "@remix-run/react";
 import { useContext, useEffect, useState } from "react";
+
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import type { ReleaseManifestResult } from "~/logic/release";
 

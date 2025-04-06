@@ -1,4 +1,5 @@
 """The SQLite repository for big plans."""
+
 from collections.abc import Iterable
 
 from jupiter.core.domain.concept.big_plans.big_plan import (

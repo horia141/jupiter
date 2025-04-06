@@ -227,14 +227,16 @@ class GenService:
                         parent_ref_id=note_collection.ref_id,
                         allow_archived=False,
                         domain=NoteDomain.WORKING_MEM,
-                        source_entity_ref_id=[wm.ref_id for wm in all_working_mem]
-                        if all_working_mem
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [wm.ref_id for wm in all_working_mem]
+                            if all_working_mem
+                            else NoFilter()
+                        ),
                     )
                     for note in all_notes:
-                        all_notes_by_working_mem_ref_id[
-                            note.source_entity_ref_id
-                        ] = note
+                        all_notes_by_working_mem_ref_id[note.source_entity_ref_id] = (
+                            note
+                        )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_cleanup_inbox_tasks = await uow.get_for(
@@ -243,9 +245,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.WORKING_MEM_CLEANUP],
                         allow_archived=True,
-                        source_entity_ref_id=[rt.ref_id for rt in all_working_mem]
-                        if all_working_mem
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [rt.ref_id for rt in all_working_mem]
+                            if all_working_mem
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_working_mem_ref_id_and_timeline = {}
@@ -297,9 +301,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.HABIT],
                         allow_archived=True,
-                        source_entity_ref_id=[rt.ref_id for rt in all_habits]
-                        if all_habits
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [rt.ref_id for rt in all_habits]
+                            if all_habits
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_habit_ref_id_and_timeline: dict[
@@ -354,9 +360,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.CHORE],
                         allow_archived=True,
-                        source_entity_ref_id=[rt.ref_id for rt in all_chores]
-                        if all_chores
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [rt.ref_id for rt in all_chores]
+                            if all_chores
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_chore_ref_id_and_timeline = {}
@@ -412,9 +420,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         source=[InboxTaskSource.METRIC],
                         allow_archived=True,
-                        source_entity_ref_id=[m.ref_id for m in all_metrics]
-                        if all_metrics
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_metrics]
+                            if all_metrics
+                            else NoFilter()
+                        ),
                     )
 
                 all_collection_inbox_tasks_by_metric_ref_id_and_timeline = {}
@@ -476,9 +486,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_CATCH_UP],
-                        source_entity_ref_id=[m.ref_id for m in all_persons]
-                        if all_persons
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_persons]
+                            if all_persons
+                            else NoFilter()
+                        ),
                     )
                     all_birthday_inbox_tasks = await uow.get_for(
                         InboxTask
@@ -486,9 +498,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.PERSON_BIRTHDAY],
-                        source_entity_ref_id=[m.ref_id for m in all_persons]
-                        if all_persons
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_persons]
+                            if all_persons
+                            else NoFilter()
+                        ),
                     )
                     all_birthday_time_event_blocks = await uow.get_for(
                         TimeEventFullDaysBlock
@@ -496,9 +510,11 @@ class GenService:
                         parent_ref_id=time_event_domain.ref_id,
                         allow_archived=False,
                         namespace=TimeEventNamespace.PERSON_BIRTHDAY,
-                        source_entity_ref_id=[m.ref_id for m in all_persons]
-                        if all_persons
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [m.ref_id for m in all_persons]
+                            if all_persons
+                            else NoFilter()
+                        ),
                     )
 
                 all_catch_up_inbox_tasks_by_person_ref_id_and_timeline = {}
@@ -615,9 +631,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.SLACK_TASK],
-                        source_entity_ref_id=[st.ref_id for st in all_slack_tasks]
-                        if all_slack_tasks
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [st.ref_id for st in all_slack_tasks]
+                            if all_slack_tasks
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_slack_task_ref_id = {
@@ -670,9 +688,11 @@ class GenService:
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         source=[InboxTaskSource.EMAIL_TASK],
-                        source_entity_ref_id=[st.ref_id for st in all_email_tasks]
-                        if all_email_tasks
-                        else NoFilter(),
+                        source_entity_ref_id=(
+                            [st.ref_id for st in all_email_tasks]
+                            if all_email_tasks
+                            else NoFilter()
+                        ),
                     )
 
                 all_inbox_tasks_by_email_task_ref_id = {

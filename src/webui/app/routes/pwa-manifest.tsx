@@ -1,10 +1,11 @@
 import { Hosting } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { inferPlatformAndDistribution } from "~/logic/frontdoor.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   let name = "";
   if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     name = GLOBAL_PROPERTIES.title;
@@ -15,11 +16,11 @@ export async function loader({ request }: LoaderArgs) {
   }
 
   const { platform } = inferPlatformAndDistribution(
-    request.headers.get("User-Agent")
+    request.headers.get("User-Agent"),
   );
 
   const startUrl = new URL(
-    "http://example.com" + GLOBAL_PROPERTIES.pwaStartUrl
+    "http://example.com" + GLOBAL_PROPERTIES.pwaStartUrl,
   );
   startUrl.searchParams.set("clientVersion", GLOBAL_PROPERTIES.version);
   startUrl.searchParams.set("appPlatform", platform);

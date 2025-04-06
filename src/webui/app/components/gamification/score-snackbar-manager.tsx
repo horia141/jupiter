@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
+
 import type { ScoreAction } from "~/logic/domain/gamification/scores";
 import { SCORE_ACTION_COOKIE_SCHEMA } from "~/logic/domain/gamification/scores";
 import { SCORE_ACTION_COOKIE_NAME } from "~/names";
@@ -16,7 +17,7 @@ function formatScoreUpdate(result: ScoreAction, isBigScreen: boolean): string {
     resultStr += `⭐ Great! You scored ${result.latest_task_score} ${pointsStr}!`;
   } else {
     resultStr += `😿 Snap! You lost ${Math.abs(
-      result.latest_task_score
+      result.latest_task_score,
     )} ${pointsStr}!`;
   }
 
@@ -33,7 +34,7 @@ function formatScoreUpdate(result: ScoreAction, isBigScreen: boolean): string {
 
 export function useScoreActionSingleton() {
   const [scoreAction, setScoreAction] = useState<ScoreAction | undefined>(
-    undefined
+    undefined,
   );
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export function useScoreActionSingleton() {
         return;
       }
       const scoreAction = SCORE_ACTION_COOKIE_SCHEMA.parse(
-        JSON.parse(atob(scoreActionStr))
+        JSON.parse(atob(scoreActionStr)),
       );
       setScoreAction(scoreAction);
       Cookies.remove(SCORE_ACTION_COOKIE_NAME);

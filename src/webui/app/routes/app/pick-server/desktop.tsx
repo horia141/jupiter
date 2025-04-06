@@ -13,10 +13,11 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Link, useTransition } from "@remix-run/react";
+import { Link, useNavigation } from "@remix-run/react";
 import { useContext, useState } from "react";
+
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { FieldError } from "~/components/infra/errors";
@@ -30,11 +31,11 @@ import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { aFieldError } from "~/logic/action-result";
 import { loadFrontDoorInfo } from "~/logic/frontdoor.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const frontDoor = await loadFrontDoorInfo(
     GLOBAL_PROPERTIES.version,
     request.headers.get("Cookie"),
-    request.headers.get("User-Agent")
+    request.headers.get("User-Agent"),
   );
 
   if (frontDoor.appShell !== AppShell.DESKTOP_ELECTRON) {
@@ -46,9 +47,9 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function PickServer() {
   const globalProperties = useContext(GlobalPropertiesContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const [serverUrl, setServerUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

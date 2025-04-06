@@ -3,11 +3,13 @@ import { Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { DateTime } from "luxon";
+
 import type {
   InboxTaskOptimisticState,
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import type { InboxTaskShowOptions } from "./inbox-task-card";
 import { InboxTaskCard } from "./inbox-task-card";
 import { StandardDivider } from "./standard-divider";
@@ -100,7 +102,7 @@ function Pages(props: PagesProps) {
   const pageCount = Math.ceil(props.totalCnt / props.pageSize);
   const [searchParams] = useSearchParams();
   const currentOffset = parseInt(
-    searchParams.get(props.retrieveOffsetParamName) || "0"
+    searchParams.get(props.retrieveOffsetParamName) || "0",
   );
   const currentPage = Math.floor(currentOffset / props.pageSize);
   const location = useLocation();
@@ -124,7 +126,7 @@ function Pages(props: PagesProps) {
         const newSearchParams = new URLSearchParams(searchParams.toString());
         newSearchParams.set(
           props.retrieveOffsetParamName,
-          (i * props.pageSize).toString()
+          (i * props.pageSize).toString(),
         );
 
         buttons.push(
@@ -138,13 +140,13 @@ function Pages(props: PagesProps) {
             }}
           >
             {i + 1}
-          </ToggleButton>
+          </ToggleButton>,
         );
       } else if (i > 0 && shouldShowPage[i - 1]) {
         buttons.push(
           <ToggleButton key={`ellipsis-${i}`} value="ellipsis" disabled>
             ...
-          </ToggleButton>
+          </ToggleButton>,
         );
       }
     }

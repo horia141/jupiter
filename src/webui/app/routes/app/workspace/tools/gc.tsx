@@ -14,15 +14,16 @@ import {
   InputLabel,
   styled,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
@@ -44,21 +45,21 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const GCFormSchema = {
+const GCFormSchema = z.object({
   gcTargets: selectZod(z.nativeEnum(SyncTarget)),
-};
+});
 
 export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.gc.gcLoadRuns({});
   return json(response.entries);
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, GCFormSchema);
 
@@ -86,10 +87,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function GC() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
@@ -164,7 +165,7 @@ export default function GC() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error garbage collecting! Please try again!`
+  () => `There was an error garbage collecting! Please try again!`,
 );
 
 const AccordionHeader = styled(Box)(({ theme }) => ({

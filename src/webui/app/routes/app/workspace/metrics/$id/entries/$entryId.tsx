@@ -10,19 +10,18 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -34,10 +33,10 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   entryId: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -60,7 +59,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { entryId } = parseParams(params, ParamsSchema);
 
@@ -86,7 +85,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id, entryId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -157,11 +156,11 @@ export default function MetricEntry() {
   const { id, entryId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.metricEntry.archived;
+    navigation.state === "idle" && !loaderData.metricEntry.archived;
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
@@ -193,7 +192,7 @@ export default function MetricEntry() {
                 defaultValue={
                   loaderData.metricEntry.collection_time
                     ? aDateToDate(
-                        loaderData.metricEntry.collection_time
+                        loaderData.metricEntry.collection_time,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -267,16 +266,13 @@ export default function MetricEntry() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
-  () =>
-    `Could not find metric entry #${useParams().id}:#${useParams().entryId}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/metrics/${useParams().id}`,
-  () =>
-    `There was an error loading metric entry #${useParams().id}:#${
-      useParams().entryId
-    }! Please try again!`
+  "/app/workspace/metrics",
+  ParamsSchema,
+  {
+    notFound: (params) =>
+      `Could not find entry ${params.entryId} in metric ${params.id}!`,
+    error: (params) =>
+      `There was an error loading entry ${params.entryId} in metric ${params.id}! Please try again!`,
+  },
 );

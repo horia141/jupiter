@@ -1,4 +1,5 @@
 """Load all the calendar specific entities for a given date and period."""
+
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.persons.person import Person
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain

@@ -1,4 +1,5 @@
 [tool.poetry]
+package-mode = false
 name = "jupiter-webapi"
 version = "0.1.0"
 description = "A Web RPC-ish API for Thrive."
@@ -10,23 +11,22 @@ repository = "https://github.com/horia141/jupiter"
 documentation = "https://docs.get-thriving.com"
 
 [tool.poetry.dependencies]
-python = ">=3.10, <3.11"
+python = "^3.13"
 jupiter-core = {path = "../core", develop = true}
-fastapi = "^0.110.1"
-uvicorn = "^0.20.0"
-pydantic = "^2.7"
-websockets = "^10.4"
-gunicorn = "^20.1.0"
-python-multipart = "^0.0.6"
-apscheduler = "^3.10.4"
-watchfiles = "^0.21.0"
+fastapi = "^0.115.11"
+uvicorn = "^0.34.0"
+pydantic = "^2.10.6"
+websockets = "^15.0.1"
+gunicorn = "^23.0.0"
+python-multipart = "^0.0.20"
+apscheduler = "^3.11.0"
 inflection = "^0.5.1"
-aiohttp = "^3.9.5"
+aiohttp = "^3.11.14"
 wsproto = "^1.2.0"
 aiodns = "^3.2.0"
 
-[tool.poetry.dev-dependencies]
-types-requests = "2.27.16"
+[tool.poetry.group.dev.dependencies]
+types-requests = "^2.32.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

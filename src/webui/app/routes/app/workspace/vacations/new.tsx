@@ -10,15 +10,15 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import { Stack } from "@mui/system";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -26,17 +26,19 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   startDate: z.string(),
   endDate: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
 
@@ -64,10 +66,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewVacation() {
-  const transition = useTransition();
+  const navigation = useNavigation();
   const actionData = useActionData<typeof action>();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -141,5 +143,8 @@ export default function NewVacation() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/vacations",
-  () => `There was an error creating the vacation! Please try again!`
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the vacation! Please try again!`,
+  },
 );

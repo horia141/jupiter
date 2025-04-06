@@ -10,16 +10,16 @@ import {
   FormControl,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -31,15 +31,17 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const UpdateFormSchema = {
+const ParamsSchema = z.object({});
+
+const UpdateFormSchema = z.object({
   project: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
@@ -53,7 +55,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -79,13 +81,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function MetricsSettings() {
-  const transition = useTransition();
+  const navigation = useNavigation();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -95,7 +97,7 @@ export default function MetricsSettings() {
     >
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.PROJECTS
+        WorkspaceFeature.PROJECTS,
       ) && (
         <Card>
           <GlobalError actionResult={actionData} />
@@ -138,6 +140,11 @@ export default function MetricsSettings() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  `/app/workspace/metrics`,
-  () => `There was an error upserting the metric settings! Please try again!`
+  "/app/workspace/metrics",
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the metrics settings!`,
+    error: () =>
+      `There was an error loading the metrics settings! Please try again!`,
+  },
 );

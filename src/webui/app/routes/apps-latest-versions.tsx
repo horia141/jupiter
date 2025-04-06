@@ -1,16 +1,17 @@
 import { AppDistribution } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { z } from "zod";
 import { parseQuery } from "zodix";
+
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { VERSION_HEADER } from "~/names";
 
-const QuerySchema = {
+const QuerySchema = z.object({
   distribution: z.nativeEnum(AppDistribution),
-};
+});
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const query = parseQuery(request, QuerySchema);
 
   switch (query.distribution) {
@@ -25,7 +26,7 @@ export async function loader({ request }: LoaderArgs) {
       });
     case AppDistribution.MAC_WEB:
       return redirect(
-        `${GLOBAL_PROPERTIES.appsStorageUrl}/v${GLOBAL_PROPERTIES.version}/Thrive-${GLOBAL_PROPERTIES.version}-universal.dmg`
+        `${GLOBAL_PROPERTIES.appsStorageUrl}/v${GLOBAL_PROPERTIES.version}/Thrive-${GLOBAL_PROPERTIES.version}-universal.dmg`,
       );
     case AppDistribution.MAC_STORE:
       return redirect(GLOBAL_PROPERTIES.macStoreUrl);

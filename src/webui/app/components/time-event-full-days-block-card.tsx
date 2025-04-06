@@ -4,8 +4,10 @@ import type {
   VacationEntry,
 } from "@jupiter/webapi-client";
 import { TimeEventNamespace } from "@jupiter/webapi-client";
+
 import type { CombinedTimeEventFullDaysEntry } from "~/logic/domain/time-event";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
+
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 
@@ -14,7 +16,7 @@ interface TimeEventFullDaysBlockCardProps {
 }
 
 export function TimeEventFullDaysBlockCard(
-  props: TimeEventFullDaysBlockCardProps
+  props: TimeEventFullDaysBlockCardProps,
 ) {
   let name = null;
   switch (props.entry.time_event.namespace) {

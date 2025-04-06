@@ -1,8 +1,9 @@
+import { PassThrough, Readable } from "stream";
+
 import type { EntryContext } from "@remix-run/node";
-import { Response } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { renderToPipeableStream } from "react-dom/server";
-import { PassThrough } from "stream";
+
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 import { ENV_HEADER, HOSTING_HEADER, VERSION_HEADER } from "./names";
 
@@ -12,7 +13,7 @@ export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
   return new Promise((resolve, reject) => {
     let didError = false;
@@ -32,10 +33,13 @@ export default function handleRequest(
           done = true;
 
           resolve(
-            new Response(body, {
-              headers: responseHeaders,
-              status: didError ? 500 : responseStatusCode,
-            })
+            new Response(
+              Readable.toWeb(body) as globalThis.ReadableStream<Uint8Array>,
+              {
+                headers: responseHeaders,
+                status: didError ? 500 : responseStatusCode,
+              },
+            ),
           );
 
           pipe(body);
@@ -50,7 +54,7 @@ export default function handleRequest(
 
           console.error(error);
         },
-      }
+      },
     );
 
     setTimeout(() => {

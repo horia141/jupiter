@@ -1,4 +1,5 @@
 """A new password in plain text, as received from a user."""
+
 import re
 from re import Pattern
 from typing import Final

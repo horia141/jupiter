@@ -1,5 +1,6 @@
 import { ApiClient, Hosting } from "@jupiter/webapi-client";
 import { redirect } from "@remix-run/node";
+
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 import type { FrontDoorInfo } from "./logic/frontdoor";
 import { loadFrontDoorInfo } from "./logic/frontdoor.server";
@@ -11,7 +12,7 @@ const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();
 // @secureFn
 export async function getGuestApiClient(
   request: Request,
-  newFrontDoor?: FrontDoorInfo
+  newFrontDoor?: FrontDoorInfo,
 ): Promise<ApiClient> {
   const session = await getSession(request.headers.get("Cookie"));
   const frontDoor =
@@ -19,7 +20,7 @@ export async function getGuestApiClient(
     (await loadFrontDoorInfo(
       GLOBAL_PROPERTIES.version,
       request.headers.get("Cookie"),
-      request.headers.get("User-Agent")
+      request.headers.get("User-Agent"),
     ));
 
   let token = undefined;
@@ -59,7 +60,7 @@ export async function getGuestApiClient(
 // @secureFn
 export async function getLoggedInApiClient(
   request: Request,
-  newFrontDoor?: FrontDoorInfo
+  newFrontDoor?: FrontDoorInfo,
 ): Promise<ApiClient> {
   const session = await getSession(request.headers.get("Cookie"));
   const frontDoor =
@@ -67,7 +68,7 @@ export async function getLoggedInApiClient(
     (await loadFrontDoorInfo(
       GLOBAL_PROPERTIES.version,
       request.headers.get("Cookie"),
-      request.headers.get("User-Agent")
+      request.headers.get("User-Agent"),
     ));
 
   if (!session.has(AUTH_TOKEN_NAME)) {

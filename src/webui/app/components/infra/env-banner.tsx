@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { Env } from "@jupiter/webapi-client";
-import { useContext } from "react";
-import { GlobalPropertiesContext } from "~/global-properties-client";
 
-export function EnvBanner() {
-  const globalProperties = useContext(GlobalPropertiesContext);
+interface EnvBannerProps {
+  env: Env;
+}
 
-  switch (globalProperties.env) {
+export function EnvBanner({ env }: EnvBannerProps) {
+  switch (env) {
     case Env.PRODUCTION:
       return null;
     case Env.STAGING:

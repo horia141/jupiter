@@ -1,4 +1,5 @@
 """A date or possibly a datetime for the application."""
+
 from datetime import date
 from functools import total_ordering
 from typing import cast

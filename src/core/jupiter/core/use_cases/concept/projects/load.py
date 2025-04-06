@@ -1,4 +1,5 @@
 """Use case for loading a particular project."""
+
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain

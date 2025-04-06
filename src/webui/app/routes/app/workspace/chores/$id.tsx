@@ -21,26 +21,20 @@ import {
   Stack,
   Switch,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  useActionData,
-  useFetcher,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { ProjectSelect } from "~/components/project-select";
@@ -55,16 +49,16 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const QuerySchema = {
+const QuerySchema = z.object({
   inboxTasksRetrieveOffset: z
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -101,7 +95,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const query = parseQuery(request, QuerySchema);
@@ -137,7 +131,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -282,16 +276,16 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Chore() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.chore.archived;
+    navigation.state === "idle" && !loaderData.chore.archived;
 
   const [selectedProject, setSelectedProject] = useState(
-    loaderData.project.ref_id
+    loaderData.project.ref_id,
   );
 
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
@@ -309,7 +303,7 @@ export default function Chore() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -322,7 +316,7 @@ export default function Chore() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -360,7 +354,7 @@ export default function Chore() {
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
+              WorkspaceFeature.PROJECTS,
             ) && (
               <FormControl fullWidth>
                 <ProjectSelect
@@ -420,7 +414,7 @@ export default function Chore() {
                   defaultValue={
                     loaderData.chore.start_at_date
                       ? aDateToDate(loaderData.chore.start_at_date).toFormat(
-                          "yyyy-MM-dd"
+                          "yyyy-MM-dd",
                         )
                       : undefined
                   }
@@ -445,7 +439,7 @@ export default function Chore() {
                   defaultValue={
                     loaderData.chore.end_at_date
                       ? aDateToDate(loaderData.chore.end_at_date).toFormat(
-                          "yyyy-MM-dd"
+                          "yyyy-MM-dd",
                         )
                       : undefined
                   }
@@ -538,13 +532,12 @@ export default function Chore() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/chores",
-  () => `Could not find chore #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/chores",
-  () =>
-    `There was an error loading chore  #${useParams().id}! Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find chore #${params.id}!`,
+    error: (params) =>
+      `There was an error loading chore #${params.id}! Please try again!`,
+  },
 );

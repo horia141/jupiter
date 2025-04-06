@@ -1,4 +1,5 @@
 """An entry in a sync log."""
+
 import abc
 
 from jupiter.core.domain.core.adate import ADate

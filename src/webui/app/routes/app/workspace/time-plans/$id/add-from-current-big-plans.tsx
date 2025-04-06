@@ -10,20 +10,20 @@ import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
 import { FormControl, FormLabel, Stack } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { DateTime } from "luxon";
-import React, { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
 import { BigPlanTimelineSmallScreen } from "~/components/big-plan-timeline-small-screen";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -64,9 +64,10 @@ enum View {
   TIMELINE_BY_PROJECT = "timeline-by-project",
 }
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
+
 const CommonParamsSchema = {
   targetBigPlanRefIds: z
     .string()
@@ -90,7 +91,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -136,7 +137,7 @@ export async function loader({ request, params }: LoaderArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -186,25 +187,24 @@ export default function TimePlanAddFromCurrentBigPlans() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
+  const inputsEnabled =
+    navigation.state === "idle" && !loaderData.timePlan.archived;
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
-
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.timePlan.archived;
 
   const alreadyIncludedBigPlanRefIds = new Set(
     loaderData.activities
       .filter((tpa) => tpa.target === TimePlanActivityTarget.BIG_PLAN)
-      .map((tpa) => tpa.target_ref_id)
+      .map((tpa) => tpa.target_ref_id),
   );
 
   const [targetBigPlanRefIds, setTargetBigPlanRefIds] = useState(
-    new Set<string>()
+    new Set<string>(),
   );
 
   const sortedBigPlans = sortBigPlansNaturally(
-    loaderData.bigPlans.map((e) => e.big_plan)
+    loaderData.bigPlans.map((e) => e.big_plan),
   );
 
   const entriesByRefId: { [key: string]: BigPlanParent } = {};
@@ -214,13 +214,13 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
   const thisYear = aDateToDate(loaderData.timePlan.right_now).startOf("year");
 
   const [selectedView, setSelectedView] = useState(
-    inferDefaultSelectedView(topLevelInfo.workspace)
+    inferDefaultSelectedView(topLevelInfo.workspace),
   );
 
   useEffect(() => {
@@ -290,7 +290,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     gatedOn: WorkspaceFeature.PROJECTS,
                   },
                 ],
-                (selected) => setSelectedView(selected)
+                (selected) => setSelectedView(selected),
               ),
             ]}
           />
@@ -344,7 +344,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
           <>
             {sortedProjects.map((p) => {
               const theBigPlans = sortedBigPlans.filter(
-                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
+                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id,
               );
 
               if (theBigPlans.length === 0) {
@@ -353,11 +353,11 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
               const fullProjectName = computeProjectHierarchicalNameFromRoot(
                 p,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
 
               return (
-                <React.Fragment key={`project-${p.ref_id}`}>
+                <Fragment key={`project-${p.ref_id}`}>
                   <StandardDivider title={fullProjectName} size="large" />
 
                   <BigPlanList
@@ -375,7 +375,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                       })
                     }
                   />
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </>
@@ -404,7 +404,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
           <>
             {sortedProjects.map((p) => {
               const theBigPlans = sortedBigPlans.filter(
-                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id
+                (se) => entriesByRefId[se.ref_id]?.project?.ref_id === p.ref_id,
               );
 
               if (theBigPlans.length === 0) {
@@ -413,11 +413,11 @@ export default function TimePlanAddFromCurrentBigPlans() {
 
               const fullProjectName = computeProjectHierarchicalNameFromRoot(
                 p,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
 
               return (
-                <React.Fragment key={`project-${p.ref_id}`}>
+                <Fragment key={`project-${p.ref_id}`}>
                   <StandardDivider title={fullProjectName} size="large" />
 
                   <BigPlanTimeline
@@ -436,7 +436,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                       })
                     }
                   />
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </>
@@ -452,17 +452,14 @@ export default function TimePlanAddFromCurrentBigPlans() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () => `Could not find time plan  #${useParams().id}`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `There was an error loading time plan activity #${
-      useParams().id
-    }. Please try again!`
+  (params) => `/app/workspace/time-plans/${params.id}`,
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find time plan #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time plan #${params.id}! Please try again!`,
+  },
 );
 
 interface BigPlanListProps {
@@ -568,7 +565,7 @@ function BigPlanTimeline(props: BigPlanTimelineProps) {
 
 function toggleBigPlanRefIds(
   bigPlanRefIds: Set<string>,
-  newRefId: string
+  newRefId: string,
 ): Set<string> {
   if (bigPlanRefIds.has(newRefId)) {
     const newBigPlanRefIds = new Set<string>();

@@ -7,21 +7,21 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
+  useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -35,16 +35,18 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   sourceIcalUrl: z.string(),
   color: z.nativeEnum(ScheduleStreamColor),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
   const url = new URL(request.url);
@@ -54,11 +56,11 @@ export async function action({ request }: ActionArgs) {
       {
         source_ical_url: form.sourceIcalUrl,
         color: form.color,
-      }
+      },
     );
 
     return redirect(
-      `/app/workspace/calendar/schedule/stream/${response.new_schedule_stream.ref_id}?${url.searchParams}`
+      `/app/workspace/calendar/schedule/stream/${response.new_schedule_stream.ref_id}?${url.searchParams}`,
     );
   } catch (error) {
     if (
@@ -78,10 +80,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function ScheduleStreamNew() {
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -144,6 +146,11 @@ export default function ScheduleStreamNew() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar/schedule/stream?${useSearchParams()}`,
-  () => `There was an error creating the schedule stream! Please try again!`
+  (_params, searchParams) =>
+    `/app/workspace/calendar/schedule/stream?${searchParams}`,
+  ParamsSchema,
+  {
+    error: () =>
+      `There was an error creating the schedule stream! Please try again!`,
+  },
 );

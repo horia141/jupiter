@@ -1,4 +1,5 @@
 """The time plan trunk domain object."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext

@@ -1,5 +1,7 @@
 import { InboxTaskStatus } from "@jupiter/webapi-client";
+
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
+
 import { SlimChip } from "./infra/chips";
 
 interface Props {
@@ -13,7 +15,7 @@ export function InboxTaskStatusTag(props: Props) {
 }
 
 function statusToClass(
-  status: InboxTaskStatus
+  status: InboxTaskStatus,
 ): "primary" | "info" | "warning" | "success" | "error" {
   switch (status) {
     case InboxTaskStatus.NOT_STARTED:

@@ -1,4 +1,5 @@
 """Load a full day block and associated data."""
+
 from jupiter.core.domain.concept.persons.person import Person
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,

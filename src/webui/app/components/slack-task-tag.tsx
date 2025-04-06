@@ -1,5 +1,7 @@
 import type { SlackTask } from "@jupiter/webapi-client";
+
 import { slackTaskNiceName } from "~/logic/domain/slack-task";
+
 import { LinkTag } from "./infra/link-tag";
 
 interface Props {

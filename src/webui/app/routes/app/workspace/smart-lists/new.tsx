@@ -10,33 +10,35 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { IconSelector } from "~/components/icon-selector";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   icon: z.string().optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
 
@@ -47,7 +49,7 @@ export async function action({ request }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/smart-lists/${result.new_smart_list.ref_id}/items`
+      `/app/workspace/smart-lists/${result.new_smart_list.ref_id}/items`,
     );
   } catch (error) {
     if (
@@ -65,10 +67,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewSmartList() {
-  const transition = useTransition();
   const actionData = useActionData<typeof action>();
-
-  const inputsEnabled = transition.state === "idle";
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -117,5 +118,10 @@ export default function NewSmartList() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/smart-lists",
-  () => `There was an error creating the smart list! Please try again!`
+  ParamsSchema,
+  {
+    notFound: () => `Could not find the smart list!`,
+    error: () =>
+      `There was an error creating the smart list! Please try again!`,
+  },
 );

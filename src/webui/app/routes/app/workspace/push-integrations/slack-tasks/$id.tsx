@@ -19,26 +19,20 @@ import {
   Select,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  useActionData,
-  useFetcher,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/difficulty-select";
 import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -51,9 +45,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -79,7 +73,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   }),
 ]);
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -105,7 +99,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -201,11 +195,11 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function SlackTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.slackTask.archived;
+    navigation.state === "idle" && !loaderData.slackTask.archived;
 
   const cardActionFetcher = useFetcher();
 
@@ -220,7 +214,7 @@ export default function SlackTask() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -233,7 +227,7 @@ export default function SlackTask() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -398,7 +392,7 @@ export default function SlackTask() {
                   loaderData.slackTask.generation_extra_info?.actionable_date
                     ? aDateToDate(
                         loaderData.slackTask.generation_extra_info
-                          ?.actionable_date
+                          ?.actionable_date,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -423,7 +417,7 @@ export default function SlackTask() {
                 defaultValue={
                   loaderData.slackTask.generation_extra_info?.due_date
                     ? aDateToDate(
-                        loaderData.slackTask.generation_extra_info?.due_date
+                        loaderData.slackTask.generation_extra_info?.due_date,
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -472,15 +466,12 @@ export default function SlackTask() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/push-integrations/slack-tasks",
-  () => `Could not find Slack task #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/push-integrations/slack-tasks",
-  () =>
-    `There was an error loading Slack task #${
-      useParams().id
-    }! Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find slack task #${params.id}!`,
+    error: (params) =>
+      `There was an error loading slack task #${params.id}! Please try again!`,
+  },
 );

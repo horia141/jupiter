@@ -1,4 +1,5 @@
 """Update the persons catch up project."""
+
 from typing import cast
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask

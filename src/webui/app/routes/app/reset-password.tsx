@@ -11,12 +11,13 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useTransition } from "@remix-run/react";
+import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getGuestApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
@@ -32,20 +33,15 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { commitSession, getSession } from "~/sessions";
 
-const RecoverAccountFormSchema = {
+const RecoverAccountFormSchema = z.object({
   emailAddress: z.string(),
   recoveryToken: z.string(),
   newPassword: z.string(),
   newPasswordRepeat: z.string(),
-};
+});
 
 // @secureFn
-export async function loader({ request }: LoaderArgs) {
-  return json({});
-}
-
-// @secureFn
-export async function action({ request }: LoaderArgs) {
+export async function action({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const apiClient = await getGuestApiClient(request);
   const form = await parseForm(request, RecoverAccountFormSchema);
@@ -71,7 +67,7 @@ export async function action({ request }: LoaderArgs) {
         headers: {
           "Set-Cookie": await commitSession(session),
         },
-      }
+      },
     );
   } catch (error) {
     if (
@@ -87,9 +83,8 @@ export async function action({ request }: LoaderArgs) {
 
 export default function ResetPassword() {
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
-
-  const inputsEnabled = transition.state === "idle";
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <StandaloneContainer>

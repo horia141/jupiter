@@ -14,20 +14,19 @@ import {
   Select,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect, Response } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useFetcher, useParams, useTransition } from "@remix-run/react";
+import { useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -42,16 +41,16 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const QuerySchema = {
+const QuerySchema = z.object({
   cleanupTasksRetrieveOffset: z
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({ intent: z.literal("archive") }),
@@ -61,7 +60,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const query = parseQuery(request, QuerySchema);
@@ -92,7 +91,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -130,14 +129,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function WorkingMem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const transition = useTransition();
+  const navigation = useNavigation();
+  const inputsEnabled =
+    navigation.state === "idle" && !loaderData.workingMem.archived;
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const isBigScreen = useBigScreen();
-
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.workingMem.archived;
 
   const cardActionFetcher = useFetcher();
 
@@ -150,7 +148,7 @@ export default function WorkingMem() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -163,7 +161,7 @@ export default function WorkingMem() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -255,13 +253,12 @@ export default function WorkingMem() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/working-mem/archive",
-  () => `Could not find journal #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  "/app/workspace/working-mem/archive",
-  () =>
-    `There was an error loading journal #${useParams().id}. Please try again!`
+  "/app/workspace/working-mem",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find archived item with ID ${params.id}!`,
+    error: (params) =>
+      `There was an error loading archived item with ID ${params.id}! Please try again!`,
+  },
 );

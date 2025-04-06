@@ -12,15 +12,15 @@ import {
   Stack,
   Switch,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -30,11 +30,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
   isDone: CheckboxAsString,
   tags: z
@@ -44,13 +44,13 @@ const CreateFormSchema = {
     .string()
     .transform((s) => (s === "" ? undefined : s))
     .optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -67,7 +67,7 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, CreateFormSchema);
@@ -82,7 +82,7 @@ export async function action({ request, params }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/smart-lists/${id}/items/${response.new_smart_list_item.ref_id}`
+      `/app/workspace/smart-lists/${id}/items/${response.new_smart_list_item.ref_id}`,
     );
   } catch (error) {
     if (
@@ -103,9 +103,9 @@ export default function NewSmartListItem() {
   const { id } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -171,6 +171,10 @@ export default function NewSmartListItem() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/items`,
-  () => `There was an error creating the smart list item! Please try again!`
+  (params) => `/app/workspace/smart-lists/${params.id}/items`,
+  ParamsSchema,
+  {
+    error: () =>
+      `There was an error creating the smart list item! Please try again!`,
+  },
 );

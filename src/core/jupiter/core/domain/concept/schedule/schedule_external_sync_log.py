@@ -1,4 +1,5 @@
 """A sync log attached to a schedule domain."""
+
 from jupiter.core.domain.concept.schedule.schedule_external_sync_log_entry import (
     ScheduleExternalSyncLogEntry,
 )

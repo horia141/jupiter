@@ -1,4 +1,5 @@
 """A repository of docs."""
+
 import abc
 
 from jupiter.core.domain.concept.docs.doc import Doc

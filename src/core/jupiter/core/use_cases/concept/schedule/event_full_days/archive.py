@@ -1,4 +1,5 @@
 """Use case for archiving a schedule full day event."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
 )

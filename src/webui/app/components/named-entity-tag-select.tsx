@@ -1,5 +1,6 @@
 import { NamedEntityTag } from "@jupiter/webapi-client";
 import { Box, Chip, MenuItem, Select } from "@mui/material";
+
 import { entityTagName } from "~/logic/domain/entity-tag";
 import { inferEntityTagsForEnabledFeatures } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
@@ -18,7 +19,7 @@ interface EntityTagSelectProps {
 export function EntityTagSelect(props: EntityTagSelectProps) {
   const allowedEntityTags = inferEntityTagsForEnabledFeatures(
     props.topLevelInfo.workspace,
-    Object.values(NamedEntityTag)
+    Object.values(NamedEntityTag),
   );
 
   return (

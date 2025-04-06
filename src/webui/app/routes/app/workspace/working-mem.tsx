@@ -2,14 +2,15 @@ import { ApiError, SyncTarget } from "@jupiter/webapi-client";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, Card, CardContent } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useTransition } from "@remix-run/react";
+import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -34,7 +35,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.workingMem.workingMemLoadCurrent({});
   return json({
@@ -42,7 +43,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -79,11 +80,11 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function WorkingMem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <TrunkPanel
@@ -147,7 +148,6 @@ export default function WorkingMem() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the working mem! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the working mem! Please try again!`,
+});

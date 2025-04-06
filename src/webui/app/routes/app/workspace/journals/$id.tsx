@@ -16,28 +16,25 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect, Response } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  useActionData,
-  useFetcher,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
+import { PeriodSelect } from "~/components/period-select";
 import { ShowReport } from "~/components/show-report";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -54,13 +51,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { PeriodSelect } from "~/components/period-select";
-
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -83,7 +76,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -131,7 +124,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -199,14 +192,14 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Journal() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const isBigScreen = useBigScreen();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.journal.archived;
+    navigation.state === "idle" && !loaderData.journal.archived;
 
   const cardActionFetcher = useFetcher();
 
@@ -219,7 +212,7 @@ export default function Journal() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -232,7 +225,7 @@ export default function Journal() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -353,7 +346,7 @@ export default function Journal() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.TIME_PLANS
+        WorkspaceFeature.TIME_PLANS,
       ) &&
         loaderData.timePlan &&
         sortedTimePlans.length > 0 && (
@@ -376,13 +369,12 @@ export default function Journal() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  `/app/workspace/journals`,
-  () => `Could not find journal #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/journals",
-  () =>
-    `There was an error loading journal #${useParams().id}. Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find journal #${params.id}!`,
+    error: (params) =>
+      `There was an error loading journal #${params.id}! Please try again!`,
+  },
 );

@@ -1,4 +1,5 @@
 """The birthday of a person."""
+
 from typing import ClassVar
 
 from jupiter.core.domain.core.adate import ADate

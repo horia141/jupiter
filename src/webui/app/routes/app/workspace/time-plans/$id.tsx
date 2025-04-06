@@ -15,47 +15,40 @@ import {
 } from "@jupiter/webapi-client";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect, Response } from "@remix-run/node";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import {
-  Form,
-  Outlet,
-  useActionData,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+import { Form, Outlet, useActionData, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import React, { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
+import { DocsHelpSubject } from "~/components/docs-help";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import {
+  ActionSingle,
   FilterFewOptionsSpread,
   FilterManyOptions,
   NavMultipleCompact,
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
+import { PeriodSelect } from "~/components/period-select";
+import { StandardDivider } from "~/components/standard-divider";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -71,6 +64,7 @@ import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -78,21 +72,14 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
-import { PeriodSelect } from "~/components/period-select";
-import { StandardDivider } from "~/components/standard-divider";
-import { useBigScreen } from "~/rendering/use-big-screen";
 enum View {
   MERGED = "merged",
   BY_PROJECT = "by-project",
 }
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -112,7 +99,7 @@ export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -181,7 +168,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -243,7 +230,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 export default function TimePlanView() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const isBigScreen = useBigScreen();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
@@ -251,20 +238,20 @@ export default function TimePlanView() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.timePlan.archived;
+    navigation.state === "idle" && !loaderData.timePlan.archived;
 
   const targetInboxTasksByRefId = new Map<string, InboxTask>(
-    loaderData.targetInboxTasks.map((it) => [it.ref_id, it])
+    loaderData.targetInboxTasks.map((it) => [it.ref_id, it]),
   );
   const actitiviesByBigPlanRefId = new Map<string, TimePlanActivity>(
     loaderData.activities
       .filter((a) => a.target === TimePlanActivityTarget.BIG_PLAN)
-      .map((a) => [a.target_ref_id, a])
+      .map((a) => [a.target_ref_id, a]),
   );
   const targetBigPlansByRefId = new Map<string, BigPlan>(
     loaderData.targetBigPlans
       ? loaderData.targetBigPlans.map((bp) => [bp.ref_id, bp])
-      : []
+      : [],
   );
   const timeEventsByRefId = new Map();
   for (const e of loaderData.timeEventForInboxTasks) {
@@ -276,14 +263,14 @@ export default function TimePlanView() {
   // }
 
   const sortedSubTimePlans = sortTimePlansNaturally(
-    loaderData.subPeriodTimePlans
+    loaderData.subPeriodTimePlans,
   );
 
   const [selectedView, setSelectedView] = useState(
-    inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan)
+    inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan),
   );
   const [selectedKinds, setSelectedKinds] = useState<TimePlanActivityKind[]>(
-    []
+    [],
   );
   const [selectedFeasabilities, setSelectedFeasabilities] = useState<
     TimePlanActivityFeasability[]
@@ -295,27 +282,27 @@ export default function TimePlanView() {
     actitiviesByBigPlanRefId,
     targetInboxTasksByRefId,
     targetBigPlansByRefId,
-    TimePlanActivityFeasability.MUST_DO
+    TimePlanActivityFeasability.MUST_DO,
   );
   const niceToHaveActivities = filterActivityByFeasabilityWithParents(
     loaderData.activities,
     actitiviesByBigPlanRefId,
     targetInboxTasksByRefId,
     targetBigPlansByRefId,
-    TimePlanActivityFeasability.NICE_TO_HAVE
+    TimePlanActivityFeasability.NICE_TO_HAVE,
   );
   const stretchActivities = filterActivityByFeasabilityWithParents(
     loaderData.activities,
     actitiviesByBigPlanRefId,
     targetInboxTasksByRefId,
     targetBigPlansByRefId,
-    TimePlanActivityFeasability.STRETCH
+    TimePlanActivityFeasability.STRETCH,
   );
   const otherActivities = niceToHaveActivities.concat(stretchActivities);
 
   useEffect(() => {
     setSelectedView(
-      inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan)
+      inferDefaultSelectedView(topLevelInfo.workspace, loaderData.timePlan),
     );
     setSelectedKinds([]);
     setSelectedFeasabilities([]);
@@ -324,7 +311,7 @@ export default function TimePlanView() {
 
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
-    loaderData.allProjects?.map((p) => [p.ref_id, p])
+    loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
@@ -342,21 +329,24 @@ export default function TimePlanView() {
       <Form method="post">
         <NestingAwareBlock shouldHide={shouldShowALeaf}>
           <GlobalError actionResult={actionData} />
-          <SectionCard
+          <SectionCardNew
             title="Properties"
-            actions={[
-              <Button
-                key="change-time-config"
-                id="time-plan-update"
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="change-time-config"
-              >
-                Save
-              </Button>,
-            ]}
+            actions={
+              <SectionActions
+                id="time-plan-properties"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    id: "change-time-config",
+                    text: "Change Time Config",
+                    value: "change-time-config",
+                    disabled: !inputsEnabled,
+                    highlight: true,
+                  }),
+                ]}
+              />
+            }
           >
             <Stack
               direction={isBigScreen ? "row" : "column"}
@@ -391,13 +381,13 @@ export default function TimePlanView() {
                 <FieldError actionResult={actionData} fieldName="/status" />
               </FormControl>
             </Stack>
-          </SectionCard>
-          <SectionCard title="Notes">
+          </SectionCardNew>
+          <SectionCardNew title="Notes">
             <EntityNoteEditor
               initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
-          </SectionCard>
+          </SectionCardNew>
 
           <SectionCardNew
             id="time-plan-activities"
@@ -454,7 +444,7 @@ export default function TimePlanView() {
                         gatedOn: WorkspaceFeature.PROJECTS,
                       },
                     ],
-                    (selected) => setSelectedView(selected)
+                    (selected) => setSelectedView(selected),
                   ),
                 ]}
                 extraActions={[
@@ -467,7 +457,7 @@ export default function TimePlanView() {
                         text: "Make Progress",
                       },
                     ],
-                    setSelectedKinds
+                    setSelectedKinds,
                   ),
                   FilterManyOptions(
                     "Feasability",
@@ -485,7 +475,7 @@ export default function TimePlanView() {
                         text: "Stretch",
                       },
                     ],
-                    setSelectedFeasabilities
+                    setSelectedFeasabilities,
                   ),
                   FilterManyOptions(
                     "Done",
@@ -493,7 +483,7 @@ export default function TimePlanView() {
                       { value: true, text: "Done" },
                       { value: false, text: "Not Done" },
                     ],
-                    setSelectedDoneness
+                    setSelectedDoneness,
                   ),
                 ]}
               />
@@ -619,11 +609,11 @@ export default function TimePlanView() {
                     const fullProjectName =
                       computeProjectHierarchicalNameFromRoot(
                         p,
-                        allProjectsByRefId
+                        allProjectsByRefId,
                       );
 
                     return (
-                      <React.Fragment key={`project-${p.ref_id}`}>
+                      <Fragment key={`project-${p.ref_id}`}>
                         <StandardDivider title={fullProjectName} size="large" />
 
                         <TimePlanActivityList
@@ -639,7 +629,7 @@ export default function TimePlanView() {
                           filterDoneness={selectedDoneness}
                           timeEventsByRefId={timeEventsByRefId}
                         />
-                      </React.Fragment>
+                      </Fragment>
                     );
                   })}
                 </>
@@ -715,7 +705,7 @@ export default function TimePlanView() {
 
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.JOURNALS
+            WorkspaceFeature.JOURNALS,
           ) &&
             (loaderData.journal || sortedSubJournals.length > 0) && (
               <SectionCardNew
@@ -747,15 +737,14 @@ export default function TimePlanView() {
   );
 }
 
-export const CatchBoundary = makeBranchCatchBoundary(
-  "/app/workspace/time-plans",
-  () => `Could not find time plan #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/time-plans",
-  () =>
-    `There was an error loading time plan #${useParams().id}. Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find time plan #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time plan #${params.id}. Please try again!`,
+  },
 );
 
 function inferDefaultSelectedView(workspace: Workspace, timePlan: TimePlan) {

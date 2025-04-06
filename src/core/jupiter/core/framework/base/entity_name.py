@@ -1,4 +1,5 @@
 """The name for an entity."""
+
 import re
 from functools import total_ordering
 from typing import (

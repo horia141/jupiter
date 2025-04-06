@@ -12,19 +12,19 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useTransition } from "@remix-run/react";
+import { useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
-import { FieldError, GlobalError } from "~/components/infra/errors";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { PeriodSelect } from "~/components/period-select";
 import { ShowReport } from "~/components/show-report";
@@ -41,7 +41,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const QuerySchema = z.object({
   today: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
@@ -50,13 +50,13 @@ const QuerySchema = {
   breakdownPeriod: z
     .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
     .optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { today, period, breakdownPeriod } = parseQuery(request, QuerySchema);
 
@@ -84,7 +84,7 @@ export async function loader({ request }: LoaderArgs) {
       noErrorSomeData({
         allProjects: summaryResponse.projects as Array<ProjectSummary>,
         report: reportResponse,
-      })
+      }),
     );
   } catch (error) {
     if (
@@ -108,7 +108,7 @@ export default function Report() {
     allProjects: Array<ProjectSummary> | undefined;
     report: ReportResult | undefined;
   }>;
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
@@ -117,10 +117,10 @@ export default function Report() {
     RecurringTaskPeriod | "none"
   >(RecurringTaskPeriod.WEEKLY);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   function handleChangePeriod(
-    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none",
   ) {
     if (newPeriod === "none") {
       return;
@@ -137,7 +137,7 @@ export default function Report() {
   }
 
   function handleChangeBreakdownPeriod(
-    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none",
   ) {
     if (Array.isArray(newPeriod)) {
       newPeriod = newPeriod[0];
@@ -162,10 +162,10 @@ export default function Report() {
                 name="today"
                 defaultValue={
                   isNoErrorSomeData(loaderData)
-                    ? loaderData.data.report?.period_result.today ??
+                    ? (loaderData.data.report?.period_result.today ??
                       DateTime.local({
                         zone: topLevelInfo.user.timezone,
-                      }).toISODate()
+                      }).toISODate())
                     : DateTime.local({
                         zone: topLevelInfo.user.timezone,
                       }).toISODate()
@@ -237,5 +237,5 @@ export default function Report() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error running the report! Please try again!`
+  () => `There was an error running the report! Please try again!`,
 );

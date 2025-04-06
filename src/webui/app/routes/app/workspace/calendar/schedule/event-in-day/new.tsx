@@ -8,22 +8,22 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
+  useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -40,7 +40,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const QuerySchema = {
+const ParamsSchema = z.object({});
+
+const QuerySchema = z.object({
   date: z
     .string()
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
@@ -50,22 +52,22 @@ const QuerySchema = {
     .regex(/[0-9][0-9][0-9][0-9][-][0-9][0-9][-][0-9][0-9]/)
     .optional(),
   initialStartTimeInDay: z.string().optional(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   scheduleStreamRefId: z.string(),
   userTimezone: z.string(),
   name: z.string(),
   startDate: z.string(),
   startTimeInDay: z.string().optional(),
   durationMins: z.string().transform((v) => parseInt(v, 10)),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const query = parseQuery(request, QuerySchema);
 
@@ -80,7 +82,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
   const url = new URL(request.url);
@@ -88,7 +90,7 @@ export async function action({ request }: ActionArgs) {
   try {
     const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
       form,
-      form.userTimezone
+      form.userTimezone,
     );
     const response = await apiClient.eventInDay.scheduleEventInDayCreate({
       schedule_stream_ref_id: form.scheduleStreamRefId,
@@ -99,7 +101,7 @@ export async function action({ request }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/calendar/schedule/event-in-day/${response.new_schedule_event_in_day.ref_id}?${url.searchParams}`
+      `/app/workspace/calendar/schedule/event-in-day/${response.new_schedule_event_in_day.ref_id}?${url.searchParams}`,
     );
   } catch (error) {
     if (
@@ -120,16 +122,16 @@ export default function ScheduleEventInDayNew() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const [startDate, setStartDate] = useState(rightNow.toFormat("yyyy-MM-dd"));
   const [startTimeInDay, setStartTimeInDay] = useState(
-    rightNow.toFormat("HH:mm")
+    rightNow.toFormat("HH:mm"),
   );
   const [durationMins, setDurationMins] = useState(30);
 
@@ -295,6 +297,10 @@ export default function ScheduleEventInDayNew() {
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event in day! Please try again!`
+  (_params, searchParams) => `/app/workspace/calendar?${searchParams}`,
+  ParamsSchema,
+  {
+    error: () =>
+      `There was an error creating the event in day! Please try again!`,
+  },
 );

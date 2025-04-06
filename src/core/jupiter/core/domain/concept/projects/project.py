@@ -1,4 +1,5 @@
 """The project."""
+
 import abc
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan

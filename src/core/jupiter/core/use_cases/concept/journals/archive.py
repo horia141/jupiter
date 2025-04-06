@@ -1,4 +1,5 @@
 """Use case for archiving a journal."""
+
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver

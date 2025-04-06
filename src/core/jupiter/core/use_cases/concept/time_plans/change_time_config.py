@@ -1,4 +1,5 @@
 """Command for updating the time configuration of a time_plan."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod

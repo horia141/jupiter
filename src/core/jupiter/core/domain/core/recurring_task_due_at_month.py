@@ -1,4 +1,5 @@
 """The due month for a recurring task."""
+
 from typing import Final
 
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod

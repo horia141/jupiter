@@ -1,11 +1,12 @@
-import { WorkspaceFeature, type EmailTask } from "@jupiter/webapi-client";
+import { type EmailTask, WorkspaceFeature } from "@jupiter/webapi-client";
 import { Button } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { DifficultyTag } from "~/components/difficulty-tag";
@@ -30,7 +31,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.email.emailTaskFind({
     allow_archived: false,
@@ -58,7 +59,7 @@ export default function EmailTasks() {
         <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS
+            WorkspaceFeature.PROJECTS,
           ) && (
             <Button
               variant="contained"
@@ -124,7 +125,6 @@ export default function EmailTasks() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the email tasks! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the email tasks! Please try again!`,
+});

@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
+
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 export interface TabPanelProps {

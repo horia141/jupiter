@@ -1,5 +1,6 @@
 import type { CombinedTimeEventInDayEntry } from "~/logic/domain/time-event";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { NavSingle, SectionActions } from "./infra/section-actions";
 import { SectionCardNew } from "./infra/section-card-new";
 import { TimeEventInDayBlockCard } from "./time-event-in-day-block-card";

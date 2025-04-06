@@ -1,5 +1,7 @@
 import type { TimePlan } from "@jupiter/webapi-client";
+
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 import { PeriodTag } from "./period-tag";

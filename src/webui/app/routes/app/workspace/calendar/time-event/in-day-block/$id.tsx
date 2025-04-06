@@ -16,22 +16,21 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
-  useParams,
+  useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -57,9 +56,9 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormInboxTaskSchema = {
   inboxTaskRefId: z.string(),
@@ -126,7 +125,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -172,7 +171,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -183,7 +182,7 @@ export async function action({ request, params }: ActionArgs) {
       case "update": {
         const { startDate, startTimeInDay } = timeEventInDayBlockParamsToUtc(
           form,
-          form.userTimezone
+          form.userTimezone,
         );
         await apiClient.inDayBlock.timeEventInDayBlockUpdate({
           ref_id: id,
@@ -226,7 +225,7 @@ export async function action({ request, params }: ActionArgs) {
       case "inbox-task-reactivate":
       case "inbox-task-update": {
         const corePropertyEditable = isInboxTaskCoreFieldEditable(
-          form.inboxTaskSource
+          form.inboxTaskSource,
         );
 
         let status = form.inboxTaskStatus;
@@ -336,13 +335,13 @@ export default function TimeEventInDayBlockViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.inDayBlock.archived;
+    navigation.state === "idle" && !loaderData.inDayBlock.archived;
   const corePropertyEditable = isTimeEventInDayBlockEditable(
-    loaderData.inDayBlock.namespace
+    loaderData.inDayBlock.namespace,
   );
 
   let name = null;
@@ -364,14 +363,14 @@ export default function TimeEventInDayBlockViewOne() {
       startDate: loaderData.inDayBlock.start_date,
       startTimeInDay: loaderData.inDayBlock.start_time_in_day,
     },
-    topLevelInfo.user.timezone
+    topLevelInfo.user.timezone,
   );
   const [startDate, setStartDate] = useState(blockParamsInTz.startDate);
   const [startTimeInDay, setStartTimeInDay] = useState(
-    blockParamsInTz.startTimeInDay!
+    blockParamsInTz.startTimeInDay!,
   );
   const [durationMins, setDurationMins] = useState(
-    loaderData.inDayBlock.duration_mins
+    loaderData.inDayBlock.duration_mins,
   );
   useEffect(() => {
     const blockParamsInTz = timeEventInDayBlockParamsToTimezone(
@@ -379,7 +378,7 @@ export default function TimeEventInDayBlockViewOne() {
         startDate: loaderData.inDayBlock.start_date,
         startTimeInDay: loaderData.inDayBlock.start_time_in_day,
       },
-      topLevelInfo.user.timezone
+      topLevelInfo.user.timezone,
     );
     setStartDate(blockParamsInTz.startDate);
     setStartTimeInDay(blockParamsInTz.startTimeInDay!);
@@ -573,15 +572,13 @@ export default function TimeEventInDayBlockViewOne() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find time event in day block #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () =>
-    `There was an error loading time event in day block #${
-      useParams().id
-    }. Please try again!`
+  (params) => `/app/workspace/calendar/time-event/in-day-block/${params.id}`,
+  ParamsSchema,
+  {
+    notFound: (params) =>
+      `Could not find time event in day block #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time event in day block #${params.id}! Please try again!`,
+  },
 );

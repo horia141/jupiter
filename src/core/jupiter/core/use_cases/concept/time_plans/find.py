@@ -1,4 +1,5 @@
 """Use case for finding time plans."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.core.notes.note import Note

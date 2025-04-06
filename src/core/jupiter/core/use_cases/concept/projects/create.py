@@ -31,7 +31,7 @@ class ProjectCreateArgs(UseCaseArgsBase):
 
 
 @use_case_result
-class ProjectCreateResult(UseCaseResultBase):  # type: ignore
+class ProjectCreateResult(UseCaseResultBase):
     """Project create results."""
 
     new_project: Project

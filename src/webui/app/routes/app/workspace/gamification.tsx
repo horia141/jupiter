@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, Stack } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ScoreHistory } from "~/components/gamification/score-history";
 import { ScoreOverview } from "~/components/gamification/score-overview";
@@ -16,7 +17,7 @@ export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const result = await apiClient.users.userLoad({});
 
@@ -58,8 +59,7 @@ export default function Gamification() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () =>
-    `There was an error displaying gamification information! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () =>
+    `There was an error displaying gamification information! Please try again!`,
+});

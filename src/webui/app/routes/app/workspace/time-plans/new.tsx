@@ -1,27 +1,30 @@
 import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
-  Button,
   FormControl,
   FormLabel,
   InputLabel,
   OutlinedInput,
 } from "@mui/material";
 import { Stack } from "@mui/system";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCardNew } from "~/components/infra/section-card-new";
 import { PeriodSelect } from "~/components/period-select";
 import {
   aGlobalError,
@@ -31,16 +34,18 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   rightNow: z.string(),
   period: z.nativeEnum(RecurringTaskPeriod),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
 
@@ -71,11 +76,11 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewTimePlan() {
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const actionData = useActionData<typeof action>();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -84,21 +89,24 @@ export default function NewTimePlan() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard
+      <SectionCardNew
         title="Properties"
-        actions={[
-          <Button
-            key="add"
+        actions={
+          <SectionActions
             id="time-plan-create"
-            variant="contained"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="create"
-          >
-            Create
-          </Button>,
-        ]}
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "create",
+                text: "Create",
+                value: "create",
+                disabled: !inputsEnabled,
+                highlight: true,
+              }),
+            ]}
+          />
+        }
       >
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
@@ -131,12 +139,15 @@ export default function NewTimePlan() {
             <FieldError actionResult={actionData} fieldName="/period" />
           </FormControl>
         </Stack>
-      </SectionCard>
+      </SectionCardNew>
     </LeafPanel>
   );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/time-plans",
-  () => `There was an error creating the time plan! Please try again!`
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the time plan! Please try again!`,
+  },
 );

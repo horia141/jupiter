@@ -15,23 +15,24 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import { FormControl, FormLabel, Stack } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
+  useNavigation,
   useParams,
   useRouteLoaderData,
-  useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/big-plan-stack";
 import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
-
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -55,18 +56,15 @@ import {
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { useBigScreen } from "~/rendering/use-big-screen";
-
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   activityId: z.string(),
-};
+});
 
 const UpdateFormTargetInboxTaskSchema = {
   targetInboxTaskRefId: z.string(),
@@ -131,7 +129,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { activityId } = parseParams(params, ParamsSchema);
 
@@ -181,7 +179,7 @@ export async function loader({ request, params }: LoaderArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id, activityId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -229,7 +227,7 @@ export async function action({ request, params }: ActionArgs) {
       case "target-inbox-task-reactivate":
       case "target-inbox-task-update": {
         const corePropertyEditable = isInboxTaskCoreFieldEditable(
-          form.targetInboxTaskSource
+          form.targetInboxTaskSource,
         );
 
         let status = form.targetInboxTaskStatus;
@@ -336,22 +334,23 @@ export async function action({ request, params }: ActionArgs) {
 export default function TimePlanActivity() {
   const { id, activityId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const timePlan = useRouteLoaderData("routes/app/workspace/time-plans/$id")
-    .timePlan as TimePlan;
+  const timePlan = useRouteLoaderData<{ timePlan: TimePlan }>(
+    "routes/app/workspace/time-plans/$id",
+  )!.timePlan;
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.timePlanActivity.archived;
+    navigation.state === "idle" && !loaderData.timePlanActivity.archived;
 
   const inboxTaskTimeEventEntries = (
     loaderData.targetInboxTaskTimeEventBlocks || []
   ).map((block) => ({
     time_event_in_tz: timeEventInDayBlockToTimezone(
       block,
-      topLevelInfo.user.timezone
+      topLevelInfo.user.timezone,
     ),
     entry: {
       inbox_task: loaderData.targetInboxTask!,
@@ -359,7 +358,7 @@ export default function TimePlanActivity() {
     },
   }));
   const sortedInboxTaskTimeEventEntries = sortInboxTaskTimeEventsNaturally(
-    inboxTaskTimeEventEntries
+    inboxTaskTimeEventEntries,
   );
 
   let newInboxTaskTimeEventLocation = undefined;
@@ -456,7 +455,7 @@ export default function TimePlanActivity() {
 
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
-            WorkspaceFeature.SCHEDULE
+            WorkspaceFeature.SCHEDULE,
           ) && (
             <TimeEventInDayBlockStack
               topLevelInfo={topLevelInfo}
@@ -471,7 +470,7 @@ export default function TimePlanActivity() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.BIG_PLANS
+        WorkspaceFeature.BIG_PLANS,
       ) &&
         loaderData.targetBigPlan && (
           <SectionCardNew
@@ -518,18 +517,13 @@ export default function TimePlanActivity() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `Could not find time plan activity #${useParams().id}:#${
-      useParams().activityId
-    }!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `There was an error loading time plan activity #${useParams().id}:#${
-      useParams().activityId
-    }! Please try again!`
+  "/app/workspace/time-plans",
+  ParamsSchema,
+  {
+    notFound: (params) =>
+      `Could not find activity ${params.activityId} in time plan ${params.id}!`,
+    error: (params) =>
+      `There was an error loading activity ${params.activityId} in time plan ${params.id}! Please try again!`,
+  },
 );

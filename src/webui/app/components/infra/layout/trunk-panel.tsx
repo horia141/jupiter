@@ -7,14 +7,15 @@ import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
 import { Link, useLocation } from "@remix-run/react";
 import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useHydrated } from "remix-utils";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+
 import { extractTrunkFromPath } from "~/rendering/routes";
 import {
   restoreScrollPosition,
   saveScrollPosition,
 } from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { useHydrated } from "~/rendering/use-hidrated";
 import {
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
@@ -46,7 +47,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   // to be relative to the viewport, not this element. So we use this function to
   // not emit a translateX in case of 0px. So whenever any trunk element appears
   // it'll work relative to the whole viewport.
-  function template({ x }: { x: string }, generatedTransform: string): string {
+  function template({ x }: { x: string }, _generatedTransform: string): string {
     if (x === "0px" || x === "0vw" || x === "0%" || x === "0") {
       if (isHydrated) {
         return "";
@@ -68,7 +69,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
 
       saveScrollPosition(ref, pathname);
     },
-    [isPresent, isBigScreen]
+    [isPresent, isBigScreen],
   );
 
   useEffect(() => {
@@ -86,7 +87,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       handleScroll(
         theRef,
         extractTrunkFromPath(location.pathname),
-        shouldShowABranch || shouldShowALeaf
+        shouldShowABranch || shouldShowALeaf,
       );
     }
 
@@ -131,7 +132,6 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       id="trunk-panel"
       key={extractTrunkFromPath(location.pathname)}
       transformTemplate={template}
-      isBigScreen={isBigScreen}
       initial={{
         opacity: 0,
         x: isBigScreen ? undefined : SMALL_SCREEN_ANIMATION_START,
@@ -197,16 +197,10 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   );
 }
 
-interface TrunkPanelFrameProps {
-  isBigScreen: boolean;
-}
-
-const TrunkPanelFrame = styled(motion.div)<TrunkPanelFrameProps>(
-  ({ theme, isBigScreen }) => ({
-    backgroundColor: theme.palette.background.paper,
-    width: "100vw",
-  })
-);
+const TrunkPanelFrame = styled(motion.div)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  width: "100vw",
+}));
 
 const TrunkPanelControls = styled("div")(
   ({ theme }) => `
@@ -215,7 +209,7 @@ const TrunkPanelControls = styled("div")(
       background-color: ${theme.palette.background.paper};
       border-radius: 0px;
       box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
-      `
+      `,
 );
 
 interface TrunkPanelControlsInnerProps {
@@ -230,7 +224,7 @@ const TrunkPanelControlsInner = styled(Box)<TrunkPanelControlsInnerProps>(
     display: "flex",
     alignItems: "center",
     gap: isbigscreen === "true" ? "1rem" : "0.2rem",
-  })
+  }),
 );
 
 interface TrunkPanelExtraControlsProps {
@@ -248,7 +242,7 @@ function TrunkPanelExtraControls({
     return (
       <>
         {controls.map((c, i) => (
-          <React.Fragment key={i}>{c}</React.Fragment>
+          <Fragment key={i}>{c}</Fragment>
         ))}
       </>
     );
@@ -277,7 +271,7 @@ function TrunkPanelExtraControls({
             <TrunkPanelExtraControlsOuterContainer>
               <TrunkPanelExtraControlsInnerContainer>
                 {controls.map((c, i) => (
-                  <React.Fragment key={i}>{c}</React.Fragment>
+                  <Fragment key={i}>{c}</Fragment>
                 ))}
               </TrunkPanelExtraControlsInnerContainer>
             </TrunkPanelExtraControlsOuterContainer>
@@ -358,10 +352,10 @@ const TrunkPanelContent = styled("div")<TrunkPanelContentProps>(
         ? isbigscreen === "true"
           ? "4rem"
           : hasleaf === "false"
-          ? "4rem"
-          : "0px"
+            ? "4rem"
+            : "0px"
         : "0px"
     })`,
     overflowY: "scroll",
-  })
+  }),
 );

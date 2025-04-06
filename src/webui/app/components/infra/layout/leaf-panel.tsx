@@ -22,6 +22,7 @@ import { Form, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import {
   LeafPanelExpansionState,
   loadLeafPanelExpansion,
@@ -70,7 +71,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     useState<LeafPanelExpansionState | null>(null);
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
-    BIG_SCREEN_WIDTH_FULL_INT
+    BIG_SCREEN_WIDTH_FULL_INT,
   );
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
@@ -81,7 +82,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       }
       saveScrollPosition(ref, pathname);
     },
-    [isPresent]
+    [isPresent],
   );
 
   useEffect(() => {
@@ -116,10 +117,10 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   // pixel value and then it works.
   function handleChangeExpansionFullRight() {
     setExpansionFullRight(
-      Math.max(0, (window.innerWidth - BIG_SCREEN_WIDTH_FULL_INT) / 2)
+      Math.max(0, (window.innerWidth - BIG_SCREEN_WIDTH_FULL_INT) / 2),
     );
     setExpansionFullWidth(
-      Math.min(BIG_SCREEN_WIDTH_FULL_INT, window.innerWidth)
+      Math.min(BIG_SCREEN_WIDTH_FULL_INT, window.innerWidth),
     );
   }
 
@@ -134,17 +135,17 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
 
   function handleExpansion() {
     setExpansionState((e) =>
-      cycleExpansionState(e, props.allowedExpansionStates)
+      cycleExpansionState(e, props.allowedExpansionStates),
     );
     saveLeafPanelExpansion(
       `${props.returnLocation}/${props.returnLocationDiscriminator}`,
-      cycleExpansionState(expansionState, props.allowedExpansionStates)
+      cycleExpansionState(expansionState, props.allowedExpansionStates),
     );
   }
 
   useEffect(() => {
     const savedExpansionState = loadLeafPanelExpansion(
-      `${props.returnLocation}/${props.returnLocationDiscriminator}`
+      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
     );
     if (!savedExpansionState) {
       return;
@@ -361,7 +362,7 @@ const LeafPanelFrame = styled(motion.div)<LeafPanelFrameProps>(
       z-index: ${theme.zIndex.appBar + 200};
       background-color: ${theme.palette.background.paper};
       border-left: 1px solid rgba(0, 0, 0, 0.12);
-    `
+    `,
 );
 
 const LeafPanelControls = styled("div")(
@@ -375,7 +376,7 @@ const LeafPanelControls = styled("div")(
       z-index: ${theme.zIndex.drawer + 1};
       border-radius: 0px;
       box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
-      `
+      `,
 );
 
 interface LeafPanelContentProps {
@@ -389,12 +390,12 @@ const LeafPanelContent = styled("div")<LeafPanelContentProps>(
       isbigscreen === "true" ? "4rem" : "3.5rem"
     })`,
     overflowY: "scroll",
-  })
+  }),
 );
 
 function cycleExpansionState(
   expansionState: LeafPanelExpansionState | "shrunk" | "exit",
-  allowedExpansionStates?: LeafPanelExpansionState[]
+  allowedExpansionStates?: LeafPanelExpansionState[],
 ): LeafPanelExpansionState {
   if (expansionState === "shrunk" || expansionState === "exit") {
     return LeafPanelExpansionState.SMALL;

@@ -1,6 +1,5 @@
 """Common errors."""
 
-
 from collections.abc import Mapping
 
 

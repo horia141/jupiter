@@ -1,11 +1,12 @@
 import type { HabitFindResultEntry, Project } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultyTag } from "~/components/difficulty-tag";
 import { DocsHelpSubject } from "~/components/docs-help";
@@ -33,7 +34,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.habits.habitFind({
     allow_archived: false,
@@ -79,7 +80,7 @@ export default function Habits() {
         <EntityStack>
           {sortedHabits.map((habit) => {
             const entry = entriesByRefId.get(
-              habit.ref_id
+              habit.ref_id,
             ) as HabitFindResultEntry;
             return (
               <EntityCard
@@ -90,7 +91,7 @@ export default function Habits() {
                   <EntityNameComponent name={habit.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PROJECTS
+                    WorkspaceFeature.PROJECTS,
                   ) && <ProjectTag project={entry.project as Project} />}
                   {habit.suspended && <span className="tag">Suspended</span>}
                   <PeriodTag period={habit.gen_params.period} />
@@ -114,7 +115,6 @@ export default function Habits() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the habits! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the habits! Please try again!`,
+});

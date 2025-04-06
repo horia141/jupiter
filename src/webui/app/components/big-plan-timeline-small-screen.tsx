@@ -1,8 +1,10 @@
 import type { ADate, BigPlan } from "@jupiter/webapi-client";
-import { styled, Tooltip } from "@mui/material";
+import { Tooltip, styled } from "@mui/material";
 import { Link } from "@remix-run/react";
 import type { DateTime } from "luxon";
+
 import { aDateToDate } from "~/logic/domain/adate";
+
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameOneLineComponent } from "./entity-name";
 import { EntityStack } from "./infra/entity-stack";
@@ -56,7 +58,7 @@ export function BigPlanTimelineSmallScreen({
               }
               const markerPosition = computeMarkerPosition(
                 thisYear,
-                marker.date
+                marker.date,
               );
               return (
                 <MarkerLabel
@@ -91,7 +93,7 @@ export function BigPlanTimelineSmallScreen({
               {dateMarkers?.map((marker, idx) => {
                 const markerPosition = computeMarkerPosition(
                   thisYear,
-                  marker.date
+                  marker.date,
                 );
                 return (
                   <Tooltip key={idx} title={marker.label} placement="top">
@@ -122,7 +124,7 @@ export function BigPlanTimelineSmallScreen({
               }
               const markerPosition = computeMarkerPosition(
                 thisYear,
-                marker.date
+                marker.date,
               );
               return (
                 <MarkerLabel
@@ -141,14 +143,14 @@ export function BigPlanTimelineSmallScreen({
   );
 }
 
-const SmallScreenTimelineList = styled("div")(({ theme }) => ({
+const SmallScreenTimelineList = styled("div")(() => ({
   display: "flex",
   flexDirection: "column",
   gap: "1rem",
   fontSize: "0.8rem",
 }));
 
-const SmallScreenTimelineHeader = styled("div")(({ theme }) => ({
+const SmallScreenTimelineHeader = styled("div")(() => ({
   display: "flex",
   justifyContent: "space-between",
   flexWrap: "nowrap",
@@ -163,7 +165,7 @@ const SmallScreenTimelineLine = styled("div")<SmallScreenTimelineLineProps>(
     position: "relative",
     height: "1.5rem",
     backgroundColor: selected ? theme.palette.action.hover : "transparent",
-  })
+  }),
 );
 
 interface TimelineGnattBlobProps {
@@ -181,7 +183,7 @@ const TimelineGnattBlob = styled("div")<TimelineGnattBlobProps>(
     backgroundColor: theme.palette.action.disabledBackground,
     borderRadius: "0.25rem",
     height: "1.5rem",
-  })
+  }),
 );
 
 interface TimelineLinkProps {
@@ -190,7 +192,7 @@ interface TimelineLinkProps {
 }
 
 const TimelineLink = styled(Link)<TimelineLinkProps>(
-  ({ theme, leftmargin, width }) => ({
+  ({ leftmargin, width }) => ({
     position: "absolute",
     display: "flex",
     marginLeft: `${leftmargin * 100}%`,
@@ -203,7 +205,7 @@ const TimelineLink = styled(Link)<TimelineLinkProps>(
     height: "1.5rem",
     lineHeight: "1.5rem",
     zIndex: 2,
-  })
+  }),
 );
 
 interface TimelineMarkerProps {
@@ -222,7 +224,7 @@ const TimelineMarker = styled("div")<TimelineMarkerProps>(
     left: `${leftmargin * 100}%`,
     zIndex: 1,
     cursor: "pointer",
-  })
+  }),
 );
 
 interface MarkerLabelProps {
@@ -239,7 +241,7 @@ const MarkerLabel = styled("div")<MarkerLabelProps>(
     fontSize: "0.75rem",
     whiteSpace: "nowrap",
     fontWeight: "bold",
-  })
+  }),
 );
 
 function computeBigPlanGnattPosition(thisYear: DateTime, entry: BigPlan) {

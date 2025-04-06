@@ -13,19 +13,19 @@
   "documentation": "https://docs.get-thriving.com",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@electron-forge/cli": "^7.6.0",
-    "@electron-forge/maker-dmg": "^7.6.0",
-    "@electron-forge/maker-pkg": "^7.6.0",
-    "@electron-forge/maker-squirrel": "^7.6.0",
-    "@electron-forge/maker-zip": "^7.6.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
-    "@electron-forge/plugin-fuses": "^7.6.0",
+    "@electron-forge/cli": "^7.7.0",
+    "@electron-forge/maker-dmg": "^7.7.0",
+    "@electron-forge/maker-pkg": "^7.7.0",
+    "@electron-forge/maker-squirrel": "^7.7.0",
+    "@electron-forge/maker-zip": "^7.7.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.7.0",
+    "@electron-forge/plugin-fuses": "^7.7.0",
     "@electron/fuses": "^1.8.0",
-    "@electron/osx-sign": "1.3.0",
-    "electron": "^33.2.1",
+    "@electron/osx-sign": "1.3.3",
+    "electron": "^35.0.3",
     "plist": "^3.1.0",
-    "vite": "^6.0.7",
-    "vite-plugin-handlebars": "^2.0.0"
+    "vite": "^6.2.2",
+    "vite-plugin-handlebars": "^1.5.0"
   },
   "dependencies": {
     "@braintree/sanitize-url": "^7.1.1",
@@ -36,6 +36,6 @@
     "semver": "^7.7.1"
   },
   "overrides": {
-    "@electron/osx-sign": "1.3.0"
+    "@electron/osx-sign": "1.3.3"
   }
 }

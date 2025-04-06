@@ -10,16 +10,15 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -27,19 +26,19 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const CreateFormSchema = {
+const CreateFormSchema = z.object({
   name: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -55,7 +54,7 @@ export async function loader({ request, params }: LoaderArgs) {
   });
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, CreateFormSchema);
@@ -67,7 +66,7 @@ export async function action({ request, params }: ActionArgs) {
     });
 
     return redirect(
-      `/app/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`
+      `/app/workspace/smart-lists/${id}/tags/${response.new_smart_list_tag.ref_id}`,
     );
   } catch (error) {
     if (
@@ -87,9 +86,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewSmartListTag() {
   const { id } = useParams();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -131,15 +130,12 @@ export default function NewSmartListTag() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/tags`,
-  () => `Could not find smart list tag #${useParams().id}`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/smart-lists/${useParams().id}/tags`,
-  () =>
-    `There was an error loading smart list tag #${
-      useParams().id
-    }! Please try again!`
+  (params) => `/app/workspace/smart-lists/${params.id}/tags`,
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find smart list tag #${params.id}`,
+    error: (params) =>
+      `There was an error loading smart list tag #${params.id}! Please try again!`,
+  },
 );

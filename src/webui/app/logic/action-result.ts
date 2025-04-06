@@ -22,7 +22,7 @@ export type ActionResult<T> =
   | NoErrorSomeData<T>;
 
 export function isNoErrorSomeData<T>(
-  action: ActionResult<T>
+  action: ActionResult<T>,
 ): action is NoErrorSomeData<T> {
   return action.theType === "no-error-some-data";
 }
@@ -60,7 +60,7 @@ export function aFieldError(fieldName: string, error: string): SomeErrorNoData {
 
 export function getFieldError(
   uiErrorInfo: SomeErrorNoData | undefined,
-  fieldPrefix: string
+  fieldPrefix: string,
 ): string | undefined {
   if (uiErrorInfo === undefined) {
     return undefined;
@@ -80,13 +80,13 @@ const ValidationErrorSchema = z.object({
     z.object({
       loc: z.array(z.string().or(z.number())),
       msg: z.string(),
-    })
+    }),
   ),
 });
 
 export function validationErrorToUIErrorInfo(
   errorBodyRaw: object,
-  intent?: string
+  intent?: string,
 ): SomeErrorNoData {
   const errorBody = ValidationErrorSchema.parse(errorBodyRaw);
   const detail = errorBody.detail;

@@ -1,27 +1,25 @@
 import type { MetricEntry } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
+import TuneIcon from "@mui/icons-material/Tune";
+import { Button, IconButton, styled } from "@mui/material";
 import { ResponsiveLine } from "@nivo/line";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useParams, useTransition } from "@remix-run/react";
+import { Link, Outlet, useNavigation } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { DateTime } from "luxon";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
-import TuneIcon from "@mui/icons-material/Tune";
-import { Button, IconButton, styled } from "@mui/material";
-import { AnimatePresence } from "framer-motion";
-import { DateTime } from "luxon";
-import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameComponent } from "~/components/entity-name";
-import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
+import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
-
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -37,9 +35,9 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -54,7 +52,7 @@ export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -81,7 +79,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: LoaderArgs) {
+export async function action({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -112,10 +110,8 @@ export default function Metric() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
-
-  const inputsEnabled =
-    transition.state === "idle" && !loaderData.metric.archived;
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   const sortedEntries = [...loaderData.metricEntries].sort((e1, e2) => {
     return -compareADate(e1.collection_time, e2.collection_time);
@@ -195,15 +191,14 @@ export default function Metric() {
   );
 }
 
-export const CatchBoundary = makeBranchCatchBoundary(
-  "/app/workspace/metrics",
-  () => `Could not find metric #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/metrics",
-  () =>
-    `There was an error loading metric #${useParams().id}! Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find metric #${params.id}!`,
+    error: (params) =>
+      `There was an error loading metric #${params.id}! Please try again!`,
+  },
 );
 
 interface MetricGraphProps {

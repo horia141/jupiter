@@ -8,21 +8,20 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   useActionData,
-  useParams,
+  useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -40,15 +39,15 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -76,7 +75,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   await getSession(request.headers.get("Cookie"));
   parseParams(params, ParamsSchema);
   const url = new URL(request.url);
@@ -90,15 +89,15 @@ export default function TimeEventFullDaysBlockViewOne() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const transition = useTransition();
+  const navigation = useNavigation();
   const [query] = useSearchParams();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.fullDaysBlock.archived;
+    navigation.state === "idle" && !loaderData.fullDaysBlock.archived;
   const corePropertyEditable = false;
 
   const [durationDays, setDurationDays] = useState(
-    loaderData.fullDaysBlock.duration_days
+    loaderData.fullDaysBlock.duration_days,
   );
   useEffect(() => {
     setDurationDays(loaderData.fullDaysBlock.duration_days);
@@ -113,7 +112,7 @@ export default function TimeEventFullDaysBlockViewOne() {
     case TimeEventNamespace.PERSON_BIRTHDAY:
       name = birthdayTimeEventName(
         loaderData.fullDaysBlock,
-        loaderData.person!
+        loaderData.person!,
       );
       break;
 
@@ -239,15 +238,13 @@ export default function TimeEventFullDaysBlockViewOne() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `Could not find time event full days block #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () =>
-    `There was an error loading time event full days block #${
-      useParams().id
-    }. Please try again!`
+  (params) => `/app/workspace/calendar/time-event/full-days-block/${params.id}`,
+  ParamsSchema,
+  {
+    notFound: (params) =>
+      `Could not find time event full days block #${params.id}!`,
+    error: (params) =>
+      `There was an error loading time event full days block #${params.id}! Please try again!`,
+  },
 );

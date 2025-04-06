@@ -1,6 +1,7 @@
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import { IconButton } from "@mui/material";
 import { useContext } from "react";
+
 import { GlobalPropertiesContext } from "~/global-properties-client";
 
 export enum DocsHelpSubject {
@@ -35,7 +36,7 @@ export function DocsHelp(props: DocsHelpProps) {
 
   const helpUrl = new URL(
     subjectToUrl(props.subject),
-    globalProperties.docsUrl
+    globalProperties.docsUrl,
   );
 
   return (

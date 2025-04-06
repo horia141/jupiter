@@ -1,4 +1,5 @@
 """Framework level elements for value object."""
+
 import enum
 from dataclasses import dataclass
 from typing import Generic, TypeVar, cast, get_args

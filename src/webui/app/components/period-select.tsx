@@ -1,6 +1,7 @@
 import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useEffect, useState } from "react";
+
 import { periodName } from "~/logic/domain/period";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
@@ -14,7 +15,7 @@ interface PeriodSelectProps {
   defaultValue?: RecurringTaskPeriod | RecurringTaskPeriod[] | "none";
   value?: RecurringTaskPeriod | RecurringTaskPeriod[] | "none";
   onChange?: (
-    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none"
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | "none",
   ) => void;
   allowedValues?: RecurringTaskPeriod[];
 }
@@ -26,7 +27,7 @@ export function PeriodSelect(props: PeriodSelectProps) {
       props.value ||
       (props.multiSelect
         ? [RecurringTaskPeriod.DAILY]
-        : RecurringTaskPeriod.DAILY)
+        : RecurringTaskPeriod.DAILY),
   );
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export function PeriodSelect(props: PeriodSelectProps) {
 
   function handleChangePeriod(
     event: React.MouseEvent<HTMLElement>,
-    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | null
+    newPeriod: RecurringTaskPeriod | RecurringTaskPeriod[] | null,
   ) {
     if (newPeriod === null) {
       return;
@@ -67,7 +68,7 @@ export function PeriodSelect(props: PeriodSelectProps) {
         )}
         {Object.values(RecurringTaskPeriod)
           .filter(
-            (p) => !props.allowedValues || props.allowedValues.includes(p)
+            (p) => !props.allowedValues || props.allowedValues.includes(p),
           )
           .map((s) => (
             <ToggleButton

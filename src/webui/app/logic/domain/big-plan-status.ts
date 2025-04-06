@@ -40,7 +40,7 @@ const BIG_PLAN_STATUS_MAP = {
 
 export function compareBigPlanStatus(
   status1: BigPlanStatus,
-  status2: BigPlanStatus
+  status2: BigPlanStatus,
 ): number {
   return BIG_PLAN_STATUS_MAP[status1] - BIG_PLAN_STATUS_MAP[status2];
 }

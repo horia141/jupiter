@@ -1,4 +1,5 @@
 """A metric collection."""
+
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext

@@ -18,15 +18,15 @@ import {
   Select,
   Stack,
 } from "@mui/material";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
-import { getLoggedInApiClient } from "~/api-clients.server";
 
+import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -38,7 +38,9 @@ import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const CreateFormSchema = {
+const ParamsSchema = z.object({});
+
+const CreateFormSchema = z.object({
   name: z.string(),
   relationship: z.string(),
   birthdayDay: z.string(),
@@ -50,13 +52,13 @@ const CreateFormSchema = {
   catchUpActionableFromMonth: z.string().optional(),
   catchUpDueAtDay: z.string().optional(),
   catchUpDueAtMonth: z.string().optional(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, CreateFormSchema);
 
@@ -80,35 +82,35 @@ export async function action({ request }: ActionArgs) {
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpActionableFromDay === undefined ||
-            form.catchUpActionableFromDay === ""
-          ? undefined
-          : parseInt(form.catchUpActionableFromDay),
+              form.catchUpActionableFromDay === ""
+            ? undefined
+            : parseInt(form.catchUpActionableFromDay),
       catch_up_actionable_from_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpActionableFromMonth === undefined ||
-            form.catchUpActionableFromMonth === ""
-          ? undefined
-          : parseInt(form.catchUpActionableFromMonth),
+              form.catchUpActionableFromMonth === ""
+            ? undefined
+            : parseInt(form.catchUpActionableFromMonth),
       catch_up_due_at_day:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtDay === undefined || form.catchUpDueAtDay === ""
-          ? undefined
-          : parseInt(form.catchUpDueAtDay),
+            ? undefined
+            : parseInt(form.catchUpDueAtDay),
       catch_up_due_at_month:
         form.catchUpPeriod === "none"
           ? undefined
           : form.catchUpDueAtMonth === undefined ||
-            form.catchUpDueAtMonth === ""
-          ? undefined
-          : parseInt(form.catchUpDueAtMonth),
+              form.catchUpDueAtMonth === ""
+            ? undefined
+            : parseInt(form.catchUpDueAtMonth),
       birthday:
         form.birthdayDay === "N/A" || form.birthdayMonth === "N/A"
           ? undefined
           : birthdayFromParts(
               parseInt(form.birthdayDay),
-              parseInt(form.birthdayMonth)
+              parseInt(form.birthdayMonth),
             ),
     });
 
@@ -129,10 +131,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function NewPerson() {
-  const transition = useTransition();
   const actionData = useActionData<typeof action>();
-
-  const inputsEnabled = transition.state === "idle";
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
@@ -290,5 +291,8 @@ export default function NewPerson() {
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   `/app/workspace/persons`,
-  () => `There was an error creating the person! Please try again!`
+  ParamsSchema,
+  {
+    error: () => `There was an error creating the person! Please try again!`,
+  },
 );

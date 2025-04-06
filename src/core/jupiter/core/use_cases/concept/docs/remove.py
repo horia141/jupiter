@@ -1,4 +1,5 @@
 """The command for removing a doc."""
+
 from jupiter.core.domain.app import AppCore
 from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.concept.docs.service.doc_remove_service import (

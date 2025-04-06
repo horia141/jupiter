@@ -1,11 +1,18 @@
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
-import type { LoaderArgs, SerializeFrom } from "@remix-run/node";
+import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
+import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Links, LiveReload, Meta, Outlet, Scripts } from "@remix-run/react";
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  useLoaderData,
+} from "@remix-run/react";
 import { SnackbarProvider } from "notistack";
-
 import { StrictMode } from "react";
+
 import { EnvBanner } from "./components/infra/env-banner";
 import { serverToClientGlobalProperties } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
@@ -37,29 +44,31 @@ const THEME = createTheme({
   },
 });
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   // This is the only place where we can read this field.
   const frontDoor = await loadFrontDoorInfo(
     GLOBAL_PROPERTIES.version,
     request.headers.get("Cookie"),
-    request.headers.get("User-Agent")
+    request.headers.get("User-Agent"),
   );
 
   return json({
     globalProperties: serverToClientGlobalProperties(
       GLOBAL_PROPERTIES,
-      frontDoor
+      frontDoor,
     ),
   });
 }
 
 export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
-  return {
-    charset: "utf-8",
-    title: data.globalProperties.title,
-    viewport:
-      "width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no",
-  };
+  return [
+    { charset: "utf-8" },
+    { title: data.globalProperties.title },
+    {
+      viewport:
+        "width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no",
+    },
+  ];
 }
 
 export function links() {
@@ -70,6 +79,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Root() {
+  const loaderData = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
@@ -81,7 +91,7 @@ export default function Root() {
           <ThemeProvider theme={THEME}>
             <SnackbarProvider>
               <CssBaseline />
-              <EnvBanner />
+              <EnvBanner env={loaderData.globalProperties.env} />
               <Outlet />
             </SnackbarProvider>
           </ThemeProvider>

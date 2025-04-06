@@ -1,4 +1,5 @@
 """Use case for removing a time_plan."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover

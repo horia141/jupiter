@@ -1,4 +1,5 @@
 """Use case for archiving a time plan activity."""
+
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,

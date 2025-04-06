@@ -1,4 +1,5 @@
 """A habit."""
+
 from jupiter.core.domain.concept.habits.habit_name import HabitName
 from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
     HabitRepeatsStrategy,

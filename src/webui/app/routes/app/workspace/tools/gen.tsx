@@ -21,19 +21,20 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  styled,
   Switch,
   TextField,
+  styled,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import React, { useContext, useState } from "react";
+import { Fragment, useContext, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
@@ -89,7 +90,7 @@ interface PersonOptions {
   label: string;
 }
 
-const GenFormSchema = {
+const GenFormSchema = z.object({
   gen_even_if_not_modified: CheckboxAsString,
   today: z.optional(z.string()),
   gen_targets: selectZod(z.nativeEnum(SyncTarget)),
@@ -99,13 +100,13 @@ const GenFormSchema = {
   filter_chore_ref_ids: selectZod(z.string()),
   filter_metric_ref_ids: selectZod(z.string()),
   filter_person_ref_ids: selectZod(z.string()),
-};
+});
 
 export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const summariesResponse = await apiClient.getSummaries.getSummaries({
     include_projects: true,
@@ -122,7 +123,7 @@ export async function loader({ request }: LoaderArgs) {
   };
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, GenFormSchema);
 
@@ -138,15 +139,15 @@ export async function action({ request }: ActionArgs) {
       gen_targets: fixSelectOutputToEnum<SyncTarget>(form.gen_targets),
       period: fixSelectOutputToEnum<RecurringTaskPeriod>(form.period),
       filter_project_ref_ids: fixSelectOutputEntityId(
-        form.filter_project_ref_ids
+        form.filter_project_ref_ids,
       ),
       filter_habit_ref_ids: fixSelectOutputEntityId(form.filter_habit_ref_ids),
       filter_chore_ref_ids: fixSelectOutputEntityId(form.filter_chore_ref_ids),
       filter_metric_ref_ids: fixSelectOutputEntityId(
-        form.filter_metric_ref_ids
+        form.filter_metric_ref_ids,
       ),
       filter_person_ref_ids: fixSelectOutputEntityId(
-        form.filter_person_ref_ids
+        form.filter_person_ref_ids,
       ),
     });
 
@@ -167,12 +168,12 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Gen() {
-  const transition = useTransition();
+  const navigation = useNavigation();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const [selectedProjects, setSelectedProjects] = useState<ProjectOption[]>([]);
   const projectOptions =
@@ -288,7 +289,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PROJECTS
+                    WorkspaceFeature.PROJECTS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -322,7 +323,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.HABITS
+                    WorkspaceFeature.HABITS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -356,7 +357,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.CHORES
+                    WorkspaceFeature.CHORES,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -390,7 +391,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.METRICS
+                    WorkspaceFeature.METRICS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -424,7 +425,7 @@ export default function Gen() {
 
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PERSONS
+                    WorkspaceFeature.PERSONS,
                   ) && (
                     <FormControl fullWidth>
                       <Autocomplete
@@ -517,7 +518,7 @@ export default function Gen() {
                 Filter projects ref ids:{" "}
                 {entry.filter_project_ref_ids &&
                   entry.filter_project_ref_ids.map((refId) => (
-                    <React.Fragment key={refId}>{refId}</React.Fragment>
+                    <Fragment key={refId}>{refId}</Fragment>
                   ))}
                 {!entry.filter_project_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -525,7 +526,7 @@ export default function Gen() {
                 Filter habits ref ids:{" "}
                 {entry.filter_habit_ref_ids &&
                   entry.filter_habit_ref_ids.map((refId) => (
-                    <React.Fragment key={refId}>{refId}</React.Fragment>
+                    <Fragment key={refId}>{refId}</Fragment>
                   ))}
                 {!entry.filter_habit_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -533,7 +534,7 @@ export default function Gen() {
                 Filter chores ref ids:{" "}
                 {entry.filter_chore_ref_ids &&
                   entry.filter_chore_ref_ids.map((refId) => (
-                    <React.Fragment key={refId}>{refId}</React.Fragment>
+                    <Fragment key={refId}>{refId}</Fragment>
                   ))}
                 {!entry.filter_chore_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -541,7 +542,7 @@ export default function Gen() {
                 Filter metrics ref ids:{" "}
                 {entry.filter_metric_ref_ids &&
                   entry.filter_metric_ref_ids.map((refId) => (
-                    <React.Fragment key={refId}>{refId}</React.Fragment>
+                    <Fragment key={refId}>{refId}</Fragment>
                   ))}
                 {!entry.filter_metric_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -549,7 +550,7 @@ export default function Gen() {
                 Filter persons ref ids:{" "}
                 {entry.filter_person_ref_ids &&
                   entry.filter_person_ref_ids.map((refId) => (
-                    <React.Fragment key={refId}>{refId}</React.Fragment>
+                    <Fragment key={refId}>{refId}</Fragment>
                   ))}
                 {!entry.filter_person_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -557,7 +558,7 @@ export default function Gen() {
                 Filter Slack task ref ids:{" "}
                 {entry.filter_slack_task_ref_ids &&
                   entry.filter_slack_task_ref_ids.map((refId) => (
-                    <React.Fragment key={refId}>{refId}</React.Fragment>
+                    <Fragment key={refId}>{refId}</Fragment>
                   ))}
                 {!entry.filter_slack_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -565,7 +566,7 @@ export default function Gen() {
                 Filter email task ref ids:{" "}
                 {entry.filter_email_task_ref_ids &&
                   entry.filter_email_task_ref_ids.map((refId) => (
-                    <React.Fragment key={refId}>{refId}</React.Fragment>
+                    <Fragment key={refId}>{refId}</Fragment>
                   ))}
                 {!entry.filter_email_task_ref_ids && <SlimChip label={"All"} />}
               </GenTargetsSection>
@@ -618,7 +619,7 @@ export default function Gen() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error generating tasks! Please try again!`
+  () => `There was an error generating tasks! Please try again!`,
 );
 
 const AccordionHeader = styled(Box)(({ theme }) => ({

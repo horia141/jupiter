@@ -1,4 +1,4 @@
-FROM python:3.10.8
+FROM python:3.13.0
 LABEL maintainer='horia141@gmail.com'
 
 RUN apt-get update && \

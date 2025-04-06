@@ -5,15 +5,16 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  styled,
   Typography,
+  styled,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
@@ -24,12 +25,12 @@ import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/logo";
 import { Title } from "~/components/title";
 
-const QuerySchema = {
+const QuerySchema = z.object({
   recoveryToken: z.string(),
-};
+});
 
 // @secureFn
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
 
@@ -101,9 +102,9 @@ export default function ShowRecoveryToken() {
   );
 }
 
-export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error creating the workspace! Please try again!`
-);
+export const ErrorBoundary = makeRootErrorBoundary({
+  error: () => `There was an error creating the workspace! Please try again!`,
+});
 
 const RecoveryTokenBox = styled(Typography)(({ theme }) => ({
   marginTop: "1rem",

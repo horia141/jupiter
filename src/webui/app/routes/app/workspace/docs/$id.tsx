@@ -1,16 +1,15 @@
 import { ApiError } from "@jupiter/webapi-client";
 import { Card, CardContent, FormControl } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect, Response } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocEditor } from "~/components/doc-editor";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -20,9 +19,9 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({ intent: z.literal("archive") }),
@@ -33,7 +32,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -59,7 +58,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -101,9 +100,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Doc() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const inputsEnabled = transition.state === "idle" && !loaderData.doc.archived;
+  const inputsEnabled = navigation.state === "idle" && !loaderData.doc.archived;
 
   return (
     <LeafPanel
@@ -130,12 +129,12 @@ export default function Doc() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  "/app/workspace/docs",
-  () => `Could not find doc #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/docs",
-  () => `There was an error loading doc #${useParams().id}. Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find doc #${params.id}!`,
+    error: (params) =>
+      `There was an error loading doc #${params.id}! Please try again!`,
+  },
 );

@@ -2,7 +2,8 @@ import { Button, ButtonGroup, OutlinedInput } from "@mui/material";
 import type { EmojiClickData } from "emoji-picker-react";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { useState } from "react";
-import { ClientOnly } from "remix-utils";
+
+import { ClientOnly } from "~/components/infra/client-only";
 
 interface Props {
   defaultIcon?: string | null;
@@ -21,7 +22,7 @@ export function IconSelector({ defaultIcon, readOnly }: Props) {
     setShowIconSelector((i) => !i);
   }
 
-  function handleSelect(emojiData: EmojiClickData, event: MouseEvent) {
+  function handleSelect(emojiData: EmojiClickData) {
     setSelectedIcon(emojiData.emoji);
     setShowIconSelector(false);
   }

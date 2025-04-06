@@ -1,4 +1,5 @@
 """A client facing application."""
+
 from jupiter.core.framework.value import AtomicValue, EnumValue, enum_value, value
 
 

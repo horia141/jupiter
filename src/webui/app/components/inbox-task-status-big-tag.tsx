@@ -1,5 +1,6 @@
 import type { InboxTaskStatus } from "@jupiter/webapi-client";
 import { Box, useTheme } from "@mui/material";
+
 import {
   inboxTaskStatusIcon,
   inboxTaskStatusName,

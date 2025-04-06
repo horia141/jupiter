@@ -1,4 +1,5 @@
 """Use case for loading a particular chore."""
+
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,

@@ -1,8 +1,9 @@
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -23,7 +24,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const body = await apiClient.docs.docFind({
     include_notes: false,
@@ -79,7 +80,6 @@ export default function Docs() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the docs! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the docs! Please try again!`,
+});

@@ -16,8 +16,8 @@ export function StandardDivider(props: StandardDividerProps) {
           props.size === "small"
             ? "subtitle2"
             : props.size === "medium"
-            ? "subtitle2"
-            : "h6"
+              ? "subtitle2"
+              : "h6"
         }
         sx={{
           overflow: "hidden",

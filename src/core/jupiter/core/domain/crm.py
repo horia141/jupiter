@@ -1,4 +1,5 @@
 """A representation of the CRM domain."""
+
 from abc import ABC, abstractmethod
 
 from jupiter.core.domain.concept.user.user import User

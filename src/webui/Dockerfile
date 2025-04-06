@@ -1,4 +1,4 @@
-FROM node:19.3
+FROM node:22.14
 LABEL maintainer='horia141@gmail.com'
 
 RUN apt-get update && \
@@ -21,7 +21,7 @@ COPY src/webui/remix.config.js src/webui/remix.config.js
 COPY src/webui/remix.env.d.ts src/webui/remix.env.d.ts
 COPY src/webui/from-electron.d.ts src/webui/from-electron.d.ts
 
-RUN npm install --ws --include-workspace-root
+RUN npm install
 
 # hadolint ignore=DL3003
 RUN cd gen/ts/webapi-client && npx tsc

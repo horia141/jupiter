@@ -1,11 +1,12 @@
 import type { ChoreFindResultEntry, Project } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import Check from "~/components/check";
 import { DifficultyTag } from "~/components/difficulty-tag";
@@ -34,7 +35,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.chores.choreFind({
     allow_archived: false,
@@ -80,7 +81,7 @@ export default function Chores() {
         <EntityStack>
           {sortedChores.map((chore) => {
             const entry = entriesByRefId.get(
-              chore.ref_id
+              chore.ref_id,
             ) as ChoreFindResultEntry;
             return (
               <EntityCard
@@ -91,7 +92,7 @@ export default function Chores() {
                   <EntityNameComponent name={chore.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    WorkspaceFeature.PROJECTS
+                    WorkspaceFeature.PROJECTS,
                   ) && <ProjectTag project={entry.project as Project} />}
                   <Check isDone={!chore.suspended} label="Active" />
                   <PeriodTag period={chore.gen_params.period} />
@@ -115,7 +116,6 @@ export default function Chores() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the chores! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the chores! Please try again!`,
+});

@@ -1,4 +1,5 @@
 """Use case for updateing a full day block in the schedule."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
 )

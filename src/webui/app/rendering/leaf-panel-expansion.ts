@@ -9,19 +9,19 @@ export enum LeafPanelExpansionState {
 
 export function saveLeafPanelExpansion(
   entityRoot: string,
-  expansionState: LeafPanelExpansionState
+  expansionState: LeafPanelExpansionState,
 ) {
   window.sessionStorage.setItem(
     `leaf-panel-expansion:${entityRoot}`,
-    expansionState
+    expansionState,
   );
 }
 
 export function loadLeafPanelExpansion(
-  entityRoot: string
+  entityRoot: string,
 ): LeafPanelExpansionState | null {
   const expansionStr = window.sessionStorage.getItem(
-    `leaf-panel-expansion:${entityRoot}`
+    `leaf-panel-expansion:${entityRoot}`,
   );
   return z.nativeEnum(LeafPanelExpansionState).or(z.null()).parse(expansionStr);
 }

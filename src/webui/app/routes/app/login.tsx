@@ -11,13 +11,14 @@ import {
   OutlinedInput,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useTransition } from "@remix-run/react";
+import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getGuestApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/community-link";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
@@ -36,17 +37,17 @@ import { AUTH_TOKEN_NAME } from "~/names";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { commitSession, getSession } from "~/sessions";
 
-const LoginFormSchema = {
+const LoginFormSchema = z.object({
   emailAddress: z.string(),
   password: z.string(),
-};
+});
 
 export const handle = {
   displayType: DisplayType.ROOT,
 };
 
 // @secureFn
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const apiClient = await getGuestApiClient(request);
 
@@ -61,7 +62,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 // @secureFn
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const apiClient = await getGuestApiClient(request);
   const form = await parseForm(request, LoginFormSchema);
@@ -95,11 +96,11 @@ export async function action({ request }: ActionArgs) {
 // @secureFn
 export default function Login() {
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const globalProperties = useContext(GlobalPropertiesContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <StandaloneContainer>
@@ -205,6 +206,6 @@ export default function Login() {
   );
 }
 
-export const ErrorBoundary = makeRootErrorBoundary(
-  () => `There was an error logging in! Please try again!`
-);
+export const ErrorBoundary = makeRootErrorBoundary({
+  error: () => `There was an error logging in! Please try again!`,
+});

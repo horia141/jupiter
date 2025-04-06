@@ -24,11 +24,13 @@ import {
   TextField,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+
 import type { SomeErrorNoData } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { DifficultySelect } from "../difficulty-select";
 import { EisenhowerSelect } from "../eisenhower-select";
 import { InboxTaskSourceLink } from "../inbox-task-source-link";
@@ -64,7 +66,7 @@ type BigPlanACOption = {
 };
 
 export function InboxTaskPropertiesEditor(
-  props: InboxTaskPropertiesEditorProps
+  props: InboxTaskPropertiesEditorProps,
 ) {
   const [selectedBigPlan, setSelectedBigPlan] = useState(
     props.inboxTaskInfo.big_plan
@@ -75,24 +77,24 @@ export function InboxTaskPropertiesEditor(
       : {
           label: "None",
           big_plan_id: "none",
-        }
+        },
   );
 
   const [selectedProject, setSelectedProject] = useState(
-    props.inboxTaskInfo.project.ref_id
+    props.inboxTaskInfo.project.ref_id,
   );
   const [blockedToSelectProject, setBlockedToSelectProject] = useState(
-    props.inboxTask.source === InboxTaskSource.BIG_PLAN
+    props.inboxTask.source === InboxTaskSource.BIG_PLAN,
   );
   const corePropertyEditable = isInboxTaskCoreFieldEditable(
-    props.inboxTask.source
+    props.inboxTask.source,
   );
 
   const allProjectsById: { [k: string]: ProjectSummary } = {};
   if (
     isWorkspaceFeatureAvailable(
       props.topLevelInfo.workspace,
-      WorkspaceFeature.PROJECTS
+      WorkspaceFeature.PROJECTS,
     )
   ) {
     for (const project of props.allProjects) {
@@ -106,7 +108,7 @@ export function InboxTaskPropertiesEditor(
   if (
     isWorkspaceFeatureAvailable(
       props.topLevelInfo.workspace,
-      WorkspaceFeature.BIG_PLANS
+      WorkspaceFeature.BIG_PLANS,
     )
   ) {
     for (const bigPlan of props.allBigPlans) {
@@ -122,13 +124,13 @@ export function InboxTaskPropertiesEditor(
       props.allBigPlans.map((bp: BigPlanSummary) => ({
         label: bp.name,
         big_plan_id: bp.ref_id,
-      }))
+      })),
     );
   }
 
   function handleChangeBigPlan(
     e: React.SyntheticEvent,
-    { label, big_plan_id }: BigPlanACOption
+    { label, big_plan_id }: BigPlanACOption,
   ) {
     setSelectedBigPlan({ label, big_plan_id });
     if (big_plan_id === "none") {
@@ -155,7 +157,7 @@ export function InboxTaskPropertiesEditor(
         : {
             label: "None",
             big_plan_id: "none",
-          }
+          },
     );
 
     setSelectedProject(props.inboxTaskInfo.project.ref_id);
@@ -238,7 +240,7 @@ export function InboxTaskPropertiesEditor(
 
         {isWorkspaceFeatureAvailable(
           props.topLevelInfo.workspace,
-          WorkspaceFeature.BIG_PLANS
+          WorkspaceFeature.BIG_PLANS,
         ) &&
           (props.inboxTask.source === InboxTaskSource.USER ||
             props.inboxTask.source === InboxTaskSource.BIG_PLAN) && (
@@ -265,7 +267,7 @@ export function InboxTaskPropertiesEditor(
                   actionResult={props.actionData}
                   fieldName={constructFieldErrorName(
                     props.fieldsPrefix,
-                    "big_plan_ref_id"
+                    "big_plan_ref_id",
                   )}
                 />
 
@@ -280,7 +282,7 @@ export function InboxTaskPropertiesEditor(
 
         {isWorkspaceFeatureAvailable(
           props.topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS
+          WorkspaceFeature.PROJECTS,
         ) && (
           <FormControl fullWidth>
             <ProjectSelect
@@ -296,7 +298,7 @@ export function InboxTaskPropertiesEditor(
               actionResult={props.actionData}
               fieldName={constructFieldErrorName(
                 props.fieldsPrefix,
-                "project_ref_id"
+                "project_ref_id",
               )}
             />
           </FormControl>
@@ -326,7 +328,7 @@ export function InboxTaskPropertiesEditor(
             actionResult={props.actionData}
             fieldName={constructFieldErrorName(
               props.fieldsPrefix,
-              "difficulty"
+              "difficulty",
             )}
           />
         </FormControl>
@@ -343,7 +345,7 @@ export function InboxTaskPropertiesEditor(
             defaultValue={
               props.inboxTask.actionable_date
                 ? aDateToDate(props.inboxTask.actionable_date).toFormat(
-                    "yyyy-MM-dd"
+                    "yyyy-MM-dd",
                   )
                 : undefined
             }
@@ -354,7 +356,7 @@ export function InboxTaskPropertiesEditor(
             actionResult={props.actionData}
             fieldName={constructFieldErrorName(
               props.fieldsPrefix,
-              "actionable_date"
+              "actionable_date",
             )}
           />
         </FormControl>
@@ -544,7 +546,7 @@ export function InboxTaskPropertiesEditor(
 
 function constructIntentName(
   intentPrefix: string | undefined,
-  intent: string
+  intent: string,
 ): string {
   if (!intentPrefix) {
     return intent;
@@ -555,7 +557,7 @@ function constructIntentName(
 
 function constructFieldName(
   namePrefix: string | undefined,
-  fieldName: string
+  fieldName: string,
 ): string {
   if (!namePrefix) {
     return fieldName;
@@ -567,7 +569,7 @@ function constructFieldName(
 
 function constructFieldErrorName(
   fieldsPrefix: string | undefined,
-  fieldName: string
+  fieldName: string,
 ): string {
   if (!fieldsPrefix) {
     return `/${fieldName}`;

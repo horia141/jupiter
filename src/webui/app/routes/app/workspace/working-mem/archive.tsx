@@ -1,11 +1,11 @@
-import type { LoaderArgs } from "@remix-run/node";
+import { type WorkingMemFindResultEntry } from "@jupiter/webapi-client";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
-
-import { type WorkingMemFindResultEntry } from "@jupiter/webapi-client";
-
 import { AnimatePresence } from "framer-motion";
+import { z } from "zod";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -27,7 +27,9 @@ export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request }: LoaderArgs) {
+const ParamsSchema = z.object({});
+
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.workingMem.workingMemFind({
     allow_archived: true,
@@ -40,11 +42,11 @@ export async function loader({ request }: LoaderArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function WorkingMemArchive({ request }: LoaderArgs) {
+export default function WorkingMemArchive() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
 
   const sortedWorkingMems = sortWorkingMemsNaturally(
-    entries.map((e) => e.working_mem)
+    entries.map((e) => e.working_mem),
   );
   const workingMemsByRefId = new Map<string, WorkingMemFindResultEntry>();
   for (const entry of entries) {
@@ -88,5 +90,8 @@ export default function WorkingMemArchive({ request }: LoaderArgs) {
 
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/working-mem",
-  () => `There was an error loading the vacations! Please try again!`
+  ParamsSchema,
+  {
+    error: () => `There was an error loading the vacations! Please try again!`,
+  },
 );

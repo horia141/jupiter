@@ -1,4 +1,5 @@
 """Update a person."""
+
 import typing
 
 from jupiter.core.domain.application.gen.service.gen_service import GenService

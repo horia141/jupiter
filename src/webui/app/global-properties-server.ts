@@ -1,5 +1,5 @@
 import type { Env, Hosting } from "@jupiter/webapi-client";
-import dotenv from "dotenv";
+import { config } from "dotenv";
 
 export interface GlobalPropertiesServer {
   env: Env;
@@ -33,14 +33,14 @@ export interface GlobalPropertiesServer {
 
 // @secureFn
 function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
-  dotenv.config({ path: `${process.cwd()}/../Config.global` });
-  dotenv.config({ path: `${process.cwd()}/Config.project` });
+  config({ path: `${process.cwd()}/../Config.global` });
+  config({ path: `${process.cwd()}/Config.project` });
 
   const hostedGlobalWebApiServerHost = process.env
     .HOSTED_GLOBAL_WEBAPI_SERVER_HOST as string;
   const hostedGlobalWebApiServerPort = parseInt(
     process.env.HOSTED_GLOBAL_WEBAPI_SERVER_PORT as string,
-    10
+    10,
   );
 
   const hostedGlobalWebApiServerUrl = `http://${hostedGlobalWebApiServerHost}:${hostedGlobalWebApiServerPort}`;
@@ -75,12 +75,12 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,
     inboxTasksToAskForGC: parseInt(
       process.env.INBOX_TASKS_TO_ASK_FOR_GC as string,
-      10
+      10,
     ),
     overdueInfoDays: parseInt(process.env.OVERDUE_INFO_DAYS as string, 10),
     overdueWarningDays: parseInt(
       process.env.OVERDUE_WARNING_DAYS as string,
-      10
+      10,
     ),
     overdueDangerDays: parseInt(process.env.OVERDUE_DANGER_DAYS as string, 10),
   };

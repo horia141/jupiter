@@ -1,4 +1,5 @@
 """The jupiter Web RPC API."""
+
 import asyncio
 import logging
 
@@ -129,6 +130,9 @@ async def main() -> None:
     )
 
     await sqlite_connection.prepare()
+    # await domain_storage_engine.initialize()
+    # await search_storage_engine.initialize()
+    # await usecase_storage_engine.initialize()
 
     print("=" * 80)
     print("Starting Jupiter WebAPI:")

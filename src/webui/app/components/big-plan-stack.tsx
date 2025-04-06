@@ -1,6 +1,8 @@
 import type { BigPlan } from "@jupiter/webapi-client";
+
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import type { BigPlanShowOptions } from "./big-plan-card";
 import { BigPlanCard } from "./big-plan-card";
 import { EntityStack } from "./infra/entity-stack";

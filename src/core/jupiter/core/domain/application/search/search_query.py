@@ -1,4 +1,5 @@
 """A search query parameter for searches."""
+
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.value import AtomicValue, value

@@ -1,4 +1,5 @@
 """Use case for creating a schedule stream."""
+
 from jupiter.core.domain.concept.schedule.schedule_domain import ScheduleDomain
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.concept.schedule.schedule_stream_color import (

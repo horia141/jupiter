@@ -1,4 +1,5 @@
 """Use case for archiving a time plan."""
+
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver

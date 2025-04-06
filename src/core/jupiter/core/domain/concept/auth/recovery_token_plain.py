@@ -1,4 +1,5 @@
 """A recovery token for auth systems."""
+
 import uuid
 
 from jupiter.core.framework.errors import InputValidationError

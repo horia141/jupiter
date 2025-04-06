@@ -22,25 +22,23 @@ import {
   Select,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect, Response } from "@remix-run/node";
-import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  useActionData,
-  useFetcher,
-  useParams,
-  useTransition,
-} from "@remix-run/react";
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  json,
+  redirect,
+} from "@remix-run/node";
+import type { ShouldRevalidateFunction } from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -61,11 +59,11 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
-const QuerySchema = {
+const QuerySchema = z.object({
   catchUpTasksRetrieveOffset: z
     .string()
     .transform((s) => parseInt(s, 10))
@@ -74,7 +72,7 @@ const QuerySchema = {
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-};
+});
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -111,7 +109,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const query = parseQuery(request, QuerySchema);
@@ -146,7 +144,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -191,9 +189,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpActionableFromDay === undefined ||
-                  form.catchUpActionableFromDay === ""
-                ? undefined
-                : parseInt(form.catchUpActionableFromDay),
+                    form.catchUpActionableFromDay === ""
+                  ? undefined
+                  : parseInt(form.catchUpActionableFromDay),
           },
           catch_up_actionable_from_month: {
             should_change: true,
@@ -201,9 +199,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpActionableFromMonth === undefined ||
-                  form.catchUpActionableFromMonth === ""
-                ? undefined
-                : parseInt(form.catchUpActionableFromMonth),
+                    form.catchUpActionableFromMonth === ""
+                  ? undefined
+                  : parseInt(form.catchUpActionableFromMonth),
           },
           catch_up_due_at_day: {
             should_change: true,
@@ -211,9 +209,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpDueAtDay === undefined ||
-                  form.catchUpDueAtDay === ""
-                ? undefined
-                : parseInt(form.catchUpDueAtDay),
+                    form.catchUpDueAtDay === ""
+                  ? undefined
+                  : parseInt(form.catchUpDueAtDay),
           },
           catch_up_due_at_month: {
             should_change: true,
@@ -221,9 +219,9 @@ export async function action({ request, params }: ActionArgs) {
               form.catchUpPeriod === undefined || form.catchUpPeriod === "none"
                 ? undefined
                 : form.catchUpDueAtMonth === undefined ||
-                  form.catchUpDueAtMonth === ""
-                ? undefined
-                : parseInt(form.catchUpDueAtMonth),
+                    form.catchUpDueAtMonth === ""
+                  ? undefined
+                  : parseInt(form.catchUpDueAtMonth),
           },
           birthday: {
             should_change: true,
@@ -235,7 +233,7 @@ export async function action({ request, params }: ActionArgs) {
                 ? undefined
                 : birthdayFromParts(
                     parseInt(form.birthdayDay, 10),
-                    parseInt(form.birthdayMonth, 10)
+                    parseInt(form.birthdayMonth, 10),
                   ),
           },
         });
@@ -298,7 +296,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Person() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const person = loaderData.person;
@@ -310,7 +308,7 @@ export default function Person() {
     loaderData.birthdayTasks,
     {
       dueDateAscending: false,
-    }
+    },
   );
   const sortedCatchUpTasks = sortInboxTasksNaturally(loaderData.catchUpTasks, {
     dueDateAscending: false,
@@ -326,10 +324,10 @@ export default function Person() {
       },
     }));
   const sortedBirthdayTimeEventEntries = sortBirthdayTimeEventsNaturally(
-    birthdayTimeEventEntries
+    birthdayTimeEventEntries,
   );
 
-  const inputsEnabled = transition.state === "idle" && !person.archived;
+  const inputsEnabled = navigation.state === "idle" && !person.archived;
 
   const cardActionFetcher = useFetcher();
 
@@ -342,7 +340,7 @@ export default function Person() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -355,7 +353,7 @@ export default function Person() {
       {
         method: "post",
         action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      }
+      },
     );
   }
 
@@ -596,7 +594,7 @@ export default function Person() {
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.SCHEDULE
+        WorkspaceFeature.SCHEDULE,
       ) &&
         sortedBirthdayTimeEventEntries.length > 0 && (
           <TimeEventFullDaysBlockStack
@@ -610,13 +608,12 @@ export default function Person() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  `/app/workspace/persons`,
-  () => `Could not find person #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  `/app/workspace/persons`,
-  () =>
-    `There was an error loading person #${useParams().id}! Please try again!`
+  "/app/workspace/persons",
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find person with ID ${params.id}!`,
+    error: (params) =>
+      `There was an error loading person with ID ${params.id}! Please try again!`,
+  },
 );

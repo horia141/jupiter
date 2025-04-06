@@ -5,13 +5,14 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  styled,
   Typography,
+  styled,
 } from "@mui/material";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Duration } from "luxon";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { ClientOnly } from "remix-utils";
+
+import { ClientOnly } from "~/components/infra/client-only";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -39,7 +40,7 @@ export default function Pomodoro() {
   const [timerStarted, setTimerStarted] = useState(false);
   const [timerFinished, setTimerFinished] = useState(false);
   const [intervalHandle, setIntervalHandle] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   function startTimer() {
@@ -74,7 +75,7 @@ export default function Pomodoro() {
     new Notification(`${globalProperties.title}} Pomodoro Timer`, {
       icon: "/favicon.ico",
       body: `Your ${actualDuration.toFormat(
-        "m"
+        "m",
       )} minutes Pomodor interval is finished!`,
     });
   }, [actualDuration, globalProperties]);
@@ -134,7 +135,7 @@ export default function Pomodoro() {
 }
 
 export const ErrorBoundary = makeToolErrorBoundary(
-  () => `There was an error with the pomodoro timing! Please try again!`
+  () => `There was an error with the pomodoro timing! Please try again!`,
 );
 
 interface PomodoroCardProps {
@@ -147,12 +148,12 @@ const PomodoroCard = styled(CardContent)<PomodoroCardProps>(
       finished === "true"
         ? theme.palette.info.light
         : theme.palette.background.paper,
-  })
+  }),
 );
 
 function NotificationControl() {
   const [permissionStatus, setPermissionStatus] = useState(
-    Notification.permission
+    Notification.permission,
   );
 
   function enableNotifications() {

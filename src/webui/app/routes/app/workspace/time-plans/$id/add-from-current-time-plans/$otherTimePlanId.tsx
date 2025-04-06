@@ -8,17 +8,18 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import { FormControl, FormLabel, Stack } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityStack } from "~/components/infra/entity-stack";
-
+import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -27,6 +28,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { StandardDivider } from "~/components/standard-divider";
 import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
 import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
@@ -45,13 +47,11 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-import { makeLeafCatchBoundary } from "~/components/infra/catch-boundary";
-import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { StandardDivider } from "~/components/standard-divider";
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
   otherTimePlanId: z.string(),
-};
+});
+
 const CommonParamsSchema = {
   targetActivitiesRefIds: z
     .string()
@@ -75,7 +75,7 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id, otherTimePlanId } = parseParams(params, ParamsSchema);
 
@@ -155,7 +155,7 @@ export async function loader({ request, params }: LoaderArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id, otherTimePlanId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
@@ -207,34 +207,34 @@ export default function TimePlanAddFromCurrentTimePlans() {
   const { id, otherTimePlanId } = useParams();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.mainTimePlan.archived;
+    navigation.state === "idle" && !loaderData.mainTimePlan.archived;
 
   const alreadyIncludedActivities = new Set(
     loaderData.otherActivities
       .filter(
         (s) =>
           loaderData.mainActivities.findIndex(
-            (r) => r.target === s.target && r.target_ref_id === s.target_ref_id
-          ) !== -1
+            (r) => r.target === s.target && r.target_ref_id === s.target_ref_id,
+          ) !== -1,
       )
-      .map((tpa) => tpa.ref_id)
+      .map((tpa) => tpa.ref_id),
   );
   const [targetActivitiesRefIds, setTargetActivitiesRefIds] = useState(
-    new Set<string>()
+    new Set<string>(),
   );
 
   const otherTargetInboxTasksByRefId = new Map<string, InboxTask>(
-    loaderData.otherTargetInboxTasks.map((it) => [it.ref_id, it])
+    loaderData.otherTargetInboxTasks.map((it) => [it.ref_id, it]),
   );
   const otherTargetBigPlansByRefId = new Map<string, BigPlan>(
     loaderData.otherTargetBigPlans
       ? loaderData.otherTargetBigPlans.map((bp) => [bp.ref_id, bp])
-      : []
+      : [],
   );
   const otherTimeEventsByRefId = new Map();
   for (const e of loaderData.otherTimeEventForInboxTasks) {
@@ -249,12 +249,11 @@ export default function TimePlanAddFromCurrentTimePlans() {
     loaderData.otherActivities,
     otherTargetInboxTasksByRefId,
     otherTargetBigPlansByRefId,
-    loaderData.otherActivityDoneness
+    loaderData.otherActivityDoneness,
   );
   const sortedOtherActivities = sortTimePlanActivitiesNaturally(
     filteredOtherActivities,
     otherTargetInboxTasksByRefId,
-    otherTargetBigPlansByRefId
   );
 
   return (
@@ -338,13 +337,13 @@ export default function TimePlanAddFromCurrentTimePlans() {
                   ? 2
                   : 0
               }
-              onClick={(a) => {
+              onClick={() => {
                 if (alreadyIncludedActivities.has(activity.ref_id)) {
                   return;
                 }
 
                 setTargetActivitiesRefIds((at) =>
-                  toggleActivitiesRefIds(at, activity.ref_id)
+                  toggleActivitiesRefIds(at, activity.ref_id),
                 );
               }}
               fullInfo={true}
@@ -405,25 +404,20 @@ export default function TimePlanAddFromCurrentTimePlans() {
   );
 }
 
-export const CatchBoundary = makeLeafCatchBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `Could not find time plan  #${useParams().id}:#${
-      useParams().otherTimePlanId
-    }`
-);
-
 export const ErrorBoundary = makeLeafErrorBoundary(
-  () => `/app/workspace/time-plans/${useParams().id}`,
-  () =>
-    `There was an error loading time plan activity #${useParams().id}:#${
-      useParams().otherTimePlanId
-    }. Please try again!`
+  "/app/workspace/time-plans",
+  ParamsSchema,
+  {
+    notFound: (params) =>
+      `Could not find time plan ${params.otherTimePlanId} to add to time plan ${params.id}!`,
+    error: (params) =>
+      `There was an error loading time plan ${params.otherTimePlanId} to add to time plan ${params.id}! Please try again!`,
+  },
 );
 
 function toggleActivitiesRefIds(
   ActivitiesRefIds: Set<string>,
-  newRefId: string
+  newRefId: string,
 ): Set<string> {
   if (ActivitiesRefIds.has(newRefId)) {
     const newActivitiesRefIds = new Set<string>();

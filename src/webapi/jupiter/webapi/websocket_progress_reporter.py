@@ -1,4 +1,5 @@
 """Progress reporter that uses a websocket to push progress updates."""
+
 import asyncio
 import logging
 from collections import defaultdict
@@ -310,9 +311,9 @@ class WebsocketProgressReporterFactory(
     def new_reporter(self, context: AppLoggedInUseCaseContext) -> ProgressReporter:
         """Construct a new progress reporter based on web sockets."""
         if context.user_ref_id not in self._web_sockets:
-            self._web_sockets[
-                context.user_ref_id
-            ] = _WebsocketHandle.with_no_websocket()
+            self._web_sockets[context.user_ref_id] = (
+                _WebsocketHandle.with_no_websocket()
+            )
         return WebsocketProgressReporter(
             websocket=self._web_sockets[context.user_ref_id],
             sections=[],

@@ -1,4 +1,5 @@
 """A journal attached to a workspace."""
+
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
@@ -84,22 +85,25 @@ class JournalCollection(TrunkEntity):
             writing_task_project_ref_id=writing_task_project_ref_id.or_else(
                 self.writing_task_project_ref_id
             ),
-            writing_task_gen_params=RecurringTaskGenParams(
-                period=self.writing_task_gen_params.period,
-                eisen=writing_task_eisen.or_else(
-                    self.writing_task_gen_params.eisen or Eisen.REGULAR
-                ),
-                difficulty=writing_task_difficulty.or_else(
-                    self.writing_task_gen_params.difficulty or Difficulty.EASY
-                ),
-                actionable_from_day=None,
-                actionable_from_month=None,
-                due_at_day=None,
-                due_at_month=None,
-                skip_rule=None,
-            )
-            if writing_task_eisen.should_change or writing_task_difficulty.should_change
-            else self.writing_task_gen_params,
+            writing_task_gen_params=(
+                RecurringTaskGenParams(
+                    period=self.writing_task_gen_params.period,
+                    eisen=writing_task_eisen.or_else(
+                        self.writing_task_gen_params.eisen
+                    ),
+                    difficulty=writing_task_difficulty.or_else(
+                        self.writing_task_gen_params.difficulty
+                    ),
+                    actionable_from_day=None,
+                    actionable_from_month=None,
+                    due_at_day=None,
+                    due_at_month=None,
+                    skip_rule=None,
+                )
+                if writing_task_eisen.should_change
+                or writing_task_difficulty.should_change
+                else self.writing_task_gen_params
+            ),
         )
 
     @staticmethod

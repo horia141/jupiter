@@ -1,4 +1,5 @@
 """A particular block of content in a note."""
+
 import abc
 from typing import Literal
 

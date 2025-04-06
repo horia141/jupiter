@@ -108,9 +108,11 @@ class SlackTaskFindUseCase(
             entries=[
                 SlackTaskFindResultEntry(
                     slack_task=st,
-                    inbox_task=inbox_tasks_by_slack_task_ref_id.get(st.ref_id, None)
-                    if inbox_tasks_by_slack_task_ref_id
-                    else None,
+                    inbox_task=(
+                        inbox_tasks_by_slack_task_ref_id.get(st.ref_id, None)
+                        if inbox_tasks_by_slack_task_ref_id
+                        else None
+                    ),
                 )
                 for st in slack_tasks
             ],

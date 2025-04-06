@@ -10,13 +10,14 @@ import {
   InputLabel,
   Stack,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -41,12 +42,12 @@ export const handle = {
   displayType: DisplayType.TOOL,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await getLoggedInApiClient(request);
   return json({});
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -84,9 +85,8 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Security() {
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
-
-  const inputsEnabled = transition.state === "idle";
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   return (
     <TrunkPanel key={"security"} returnLocation="/app/workspace">
@@ -103,7 +103,7 @@ export default function Security() {
                     label="Current Password"
                     name="currentPassword"
                     autoComplete="current-password"
-                    inputsEnabled={!inputsEnabled}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -117,7 +117,7 @@ export default function Security() {
                     label="newPassword"
                     name="newPassword"
                     autoComplete="new-password"
-                    inputsEnabled={!inputsEnabled}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -133,7 +133,7 @@ export default function Security() {
                     label="New Password Repeat"
                     name="newPasswordRepeat"
                     autoComplete="new-password"
-                    inputsEnabled={!inputsEnabled}
+                    inputsEnabled={inputsEnabled}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -164,7 +164,7 @@ export default function Security() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error changing security settings! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () =>
+    `There was an error changing security settings! Please try again!`,
+});

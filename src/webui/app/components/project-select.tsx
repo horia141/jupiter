@@ -1,6 +1,7 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { Autocomplete, TextField } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
+
 import {
   computeProjectDistanceFromRoot,
   sortProjectsByTreeOrder,
@@ -21,7 +22,7 @@ export function ProjectSelect(props: ProjectSelectProps) {
   const rootProject = props.allProjects.find((p) => !p.parent_project_ref_id)!;
   const allProjectsByRefId = useMemo(
     () => new Map(props.allProjects.map((p) => [p.ref_id, p])),
-    [props.allProjects]
+    [props.allProjects],
   );
   const sortedProjects = sortProjectsByTreeOrder(props.allProjects);
   const allProjectsAsOptions = sortedProjects.map((project) => ({
@@ -42,7 +43,7 @@ export function ProjectSelect(props: ProjectSelectProps) {
   }
 
   const [selectedProject, setSelectedProject] = useState(
-    selectedProjectToOption()
+    selectedProjectToOption(),
   );
   useEffect(() => {
     const projectRefId =
@@ -93,7 +94,7 @@ export function ProjectSelect(props: ProjectSelectProps) {
 
 function fullProjectName(
   project: ProjectSummary,
-  allProjectsByRefId: Map<string, ProjectSummary>
+  allProjectsByRefId: Map<string, ProjectSummary>,
 ): string {
   const indent = computeProjectDistanceFromRoot(project, allProjectsByRefId);
   return `${"-".repeat(indent)} ${project.name}`;

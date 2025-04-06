@@ -2,7 +2,7 @@ import { ApiError } from "@jupiter/webapi-client";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { IconButton } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Outlet, useActionData } from "@remix-run/react";
@@ -10,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -44,7 +45,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.projects.projectFind({
     allow_archived: false,
@@ -53,7 +54,7 @@ export async function loader({ request }: LoaderArgs) {
   return json(response.entries);
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
@@ -102,10 +103,10 @@ export default function Projects() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const sortedProjects = sortProjectsByTreeOrder(
-    projects.map((entry) => entry.project)
+    projects.map((entry) => entry.project),
   );
   const allProjectsByRefId = new Map(
-    projects.map((entry) => [entry.project.ref_id, entry.project])
+    projects.map((entry) => [entry.project.ref_id, entry.project]),
   );
 
   return (
@@ -124,7 +125,7 @@ export default function Projects() {
                 : undefined;
               const indent = computeProjectDistanceFromRoot(
                 project,
-                allProjectsByRefId
+                allProjectsByRefId,
               );
               return (
                 <EntityCard
@@ -144,7 +145,7 @@ export default function Projects() {
                             newOrderOfChildProjects:
                               shiftProjectUpInListOfChildren(
                                 project,
-                                parentProject.order_of_child_projects
+                                parentProject.order_of_child_projects,
                               ),
                           })}
                         >
@@ -160,7 +161,7 @@ export default function Projects() {
                             newOrderOfChildProjects:
                               shiftProjectDownInListOfChildren(
                                 project,
-                                parentProject.order_of_child_projects
+                                parentProject.order_of_child_projects,
                               ),
                           })}
                         >
@@ -187,7 +188,6 @@ export default function Projects() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the projects! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the projects! Please try again!`,
+});

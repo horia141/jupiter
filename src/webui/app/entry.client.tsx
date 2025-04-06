@@ -1,6 +1,6 @@
 import { RemixBrowser } from "@remix-run/react";
 import { Buffer } from "buffer-polyfill";
-import { startTransition, StrictMode } from "react";
+import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 
 function hydrate() {
@@ -9,7 +9,7 @@ function hydrate() {
       document,
       <StrictMode>
         <RemixBrowser />
-      </StrictMode>
+      </StrictMode>,
     );
   });
 }
@@ -25,13 +25,13 @@ document
       "html > *:not(body, head)",
       'script[src*="extension://"]',
       'link[href*="extension://"]',
-    ].join(", ")
+    ].join(", "),
   )
   .forEach((s) => {
     s.parentNode?.removeChild(s);
   });
 
-window.onerror = (event: Event | string, url, line) => {
+window.onerror = (event: Event | string) => {
   if (
     typeof event === "string" &&
     (event.indexOf("Hydration failed") !== -1 ||
@@ -50,7 +50,7 @@ window.onerror = (event: Event | string, url, line) => {
 
     const destUrl = Buffer.from(
       `${window.location.pathname}?${window.location.search}`,
-      "utf-8"
+      "utf-8",
     ).toString("base64");
     window.location.replace(`/app/render-fix?returnTo=${destUrl}`);
     return true;

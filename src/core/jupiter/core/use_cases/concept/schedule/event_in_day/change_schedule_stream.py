@@ -1,4 +1,5 @@
 """Use case for changing the schedule stream of an event."""
+
 from jupiter.core.domain.concept.schedule.schedule_event_in_day import (
     ScheduleEventInDay,
 )

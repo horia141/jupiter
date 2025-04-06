@@ -1,4 +1,5 @@
 """A query-like repository for scanning information quickly about entities."""
+
 import abc
 
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName

@@ -1,13 +1,21 @@
 {
-  "include": ["remix.env.d.ts", "from-electron.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "remix.env.d.ts",
+    "from-electron.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "vite.config.mts"
+  ],
   "compilerOptions": {
+    "types": ["@remix-run/node", "vite/client"],
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
     "target": "ES2019",
     "strict": true,
@@ -18,7 +26,6 @@
       "~/*": ["./app/*"]
     },
     "noEmit": true,
-    "skipLibCheck": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   }

@@ -1,4 +1,5 @@
 """A plan for a particular period of time."""
+
 import abc
 
 from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity

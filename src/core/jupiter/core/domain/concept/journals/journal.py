@@ -1,4 +1,5 @@
 """A journal for a particular time range."""
+
 import abc
 
 from jupiter.core.domain.application.report.report_period_result import (

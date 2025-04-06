@@ -1,9 +1,10 @@
 import { ApiError } from "@jupiter/webapi-client";
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import {
   noErrorNoData,
@@ -11,7 +12,7 @@ import {
 } from "~/logic/action-result";
 import { NoteContentParser } from "~/logic/domain/notes";
 
-const UpdateFormSchema = {
+const UpdateFormSchema = z.object({
   docId: z.string(),
   noteId: z.string(),
   name: z.string(),
@@ -19,9 +20,9 @@ const UpdateFormSchema = {
     const utf8Buffer = Buffer.from(String(value), "base64");
     return JSON.parse(utf8Buffer.toString("utf-8"));
   }, NoteContentParser),
-};
+});
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 

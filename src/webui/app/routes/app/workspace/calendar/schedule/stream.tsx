@@ -1,9 +1,11 @@
 import { Button } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useSearchParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
+import { z } from "zod";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNameComponent } from "~/components/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -19,11 +21,13 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 
+const ParamsSchema = z.object({});
+
 export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.stream.scheduleStreamFind({
     allow_archived: false,
@@ -85,6 +89,9 @@ export default function ScheduleStreamViewAll() {
 }
 
 export const ErrorBoundary = makeBranchErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => "There was an error loading time plan calendar streams!"
+  (_params, searchParams) => `/app/workspace/calendar?${searchParams}`,
+  ParamsSchema,
+  {
+    error: () => "There was an error loading time plan calendar streams!",
+  },
 );

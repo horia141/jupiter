@@ -4,18 +4,18 @@ import ReorderIcon from "@mui/icons-material/Reorder";
 import TagIcon from "@mui/icons-material/Tag";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useParams, useTransition } from "@remix-run/react";
+import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelpSubject } from "~/components/docs-help";
 import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { makeBranchCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
@@ -30,9 +30,9 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 
-const ParamsSchema = {
+const ParamsSchema = z.object({
   id: z.string(),
-};
+});
 
 const UpdateSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -47,7 +47,7 @@ export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
 
@@ -75,7 +75,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export async function action({ request, params }: LoaderArgs) {
+export async function action({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateSchema);
@@ -104,10 +104,10 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function SmartListViewTags() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const inputsEnabled =
-    transition.state === "idle" && !loaderData.smartList.archived;
+    navigation.state === "idle" && !loaderData.smartList.archived;
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
@@ -143,11 +143,11 @@ export default function SmartListViewTags() {
             component={Link}
             startIcon={<ReorderIcon />}
           >
-            "Items"
+            Items
           </Button>
 
           <Button variant="contained" startIcon={<TagIcon />}>
-            "Tags"
+            Tags
           </Button>
         </ButtonGroup>,
       ]}
@@ -182,15 +182,12 @@ export default function SmartListViewTags() {
   );
 }
 
-export const CatchBoundary = makeBranchCatchBoundary(
-  "/app/workspace/smart-lists",
-  () => `Could not find smart list #${useParams().id}!`
-);
-
 export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/smart-lists",
-  () =>
-    `There was an error loading smart list #${
-      useParams().id
-    }! Please try again!`
+  ParamsSchema,
+  {
+    notFound: (params) => `Could not find smart list #${params.id}!`,
+    error: (params) =>
+      `There was an error loading smart list #${params.id}! Please try again!`,
+  },
 );

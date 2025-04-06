@@ -1,4 +1,5 @@
 """An inbox task."""
+
 import abc
 import textwrap
 from collections.abc import Iterable
@@ -71,7 +72,9 @@ class InboxTask(LeafEntity):
     source_entity_ref_id: EntityId | None
     recurring_timeline: str | None
     recurring_repeat_index: int | None
-    recurring_gen_right_now: Timestamp | None  # Time for which this inbox task was generated
+    recurring_gen_right_now: (
+        Timestamp | None
+    )  # Time for which this inbox task was generated
     working_time: Timestamp | None
     completed_time: Timestamp | None
 
@@ -109,9 +112,11 @@ class InboxTask(LeafEntity):
         return InboxTask._create(
             ctx,
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
-            source=InboxTaskSource.USER
-            if big_plan_ref_id is None
-            else InboxTaskSource.BIG_PLAN,
+            source=(
+                InboxTaskSource.USER
+                if big_plan_ref_id is None
+                else InboxTaskSource.BIG_PLAN
+            ),
             name=name,
             status=status,
             eisen=eisen,
@@ -119,9 +124,9 @@ class InboxTask(LeafEntity):
             actionable_date=actionable_date
             or (big_plan_actionable_date if big_plan_ref_id else None),
             due_date=due_date or (big_plan_due_date if big_plan_ref_id else None),
-            project_ref_id=big_plan_project_ref_id
-            if big_plan_ref_id
-            else project_ref_id,
+            project_ref_id=(
+                big_plan_project_ref_id if big_plan_ref_id else project_ref_id
+            ),
             source_entity_ref_id=big_plan_ref_id,
             notes=None,
             recurring_timeline=None,
@@ -401,7 +406,7 @@ class InboxTask(LeafEntity):
                 generation_extra_info,
             ),
             status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
-            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
@@ -441,7 +446,7 @@ class InboxTask(LeafEntity):
                 generation_extra_info,
             ),
             status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
-            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
@@ -808,12 +813,17 @@ class InboxTask(LeafEntity):
         return self._new_version(
             ctx,
             name=the_name,
-            source=InboxTaskSource.BIG_PLAN
-            if big_plan_ref_id.should_change
-            and big_plan_ref_id.just_the_value is not None
-            else InboxTaskSource.USER
-            if big_plan_ref_id.should_change and big_plan_ref_id.just_the_value is None
-            else self.source,
+            source=(
+                InboxTaskSource.BIG_PLAN
+                if big_plan_ref_id.should_change
+                and big_plan_ref_id.just_the_value is not None
+                else (
+                    InboxTaskSource.USER
+                    if big_plan_ref_id.should_change
+                    and big_plan_ref_id.just_the_value is None
+                    else self.source
+                )
+            ),
             status=the_status,
             project_ref_id=the_project,
             source_entity_ref_id=the_source_entity_ref_id,

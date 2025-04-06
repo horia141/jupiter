@@ -1,5 +1,6 @@
 """SQLite implementation of gamification task scores classes."""
-from typing import Final
+
+from typing import Final, Mapping, cast
 
 from jupiter.core.domain.application.gamification.score_log import (
     ScoreLog,
@@ -20,7 +21,7 @@ from jupiter.core.domain.application.gamification.score_stats import (
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.realm import RealmCodecRegistry
+from jupiter.core.framework.realm import RealmCodecRegistry, RealmThing
 from jupiter.core.framework.repository import (
     RecordAlreadyExistsError,
     RecordNotFoundError,
@@ -130,7 +131,12 @@ class SqliteScoreStatsRepository(
         try:
             await self._connection.execute(
                 insert(self._score_stats_table).values(
-                    **self._realm_codec_registry.db_encode(record)
+                    **(
+                        cast(
+                            Mapping[str, RealmThing],
+                            self._realm_codec_registry.db_encode(record),
+                        )
+                    ),
                 ),
             )
         except IntegrityError as err:
@@ -152,7 +158,14 @@ class SqliteScoreStatsRepository(
                 else self._score_stats_table.c.period.is_(None)
             )
             .where(self._score_stats_table.c.timeline == record.timeline)
-            .values(**self._realm_codec_registry.db_encode(record)),
+            .values(
+                **(
+                    cast(
+                        Mapping[str, RealmThing],
+                        self._realm_codec_registry.db_encode(record),
+                    )
+                )
+            ),
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(
@@ -235,7 +248,9 @@ class SqliteScoreStatsRepository(
         return [self._row_to_entity(row) for row in result]
 
     def _row_to_entity(self, row: RowType) -> ScoreStats:
-        return self._realm_codec_registry.db_decode(ScoreStats, row._mapping)  # type: ignore[attr-defined]
+        return self._realm_codec_registry.db_decode(
+            ScoreStats, cast(Mapping[str, RealmThing], row._mapping)
+        )
 
 
 class SqliteScorePeriodBestRepository(
@@ -282,7 +297,12 @@ class SqliteScorePeriodBestRepository(
         try:
             await self._connection.execute(
                 insert(self._score_period_best_table).values(
-                    **self._realm_codec_registry.db_encode(record)
+                    **(
+                        cast(
+                            Mapping[str, RealmThing],
+                            self._realm_codec_registry.db_encode(record),
+                        )
+                    ),
                 ),
             )
         except IntegrityError as err:
@@ -308,7 +328,14 @@ class SqliteScorePeriodBestRepository(
             .where(
                 self._score_period_best_table.c.sub_period == record.sub_period.value
             )
-            .values(**self._realm_codec_registry.db_encode(record)),
+            .values(
+                **(
+                    cast(
+                        Mapping[str, RealmThing],
+                        self._realm_codec_registry.db_encode(record),
+                    )
+                ),
+            ),
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(
@@ -370,4 +397,6 @@ class SqliteScorePeriodBestRepository(
         return [self._row_to_entity(row) for row in result]
 
     def _row_to_entity(self, row: RowType) -> ScorePeriodBest:
-        return self._realm_codec_registry.db_decode(ScorePeriodBest, row._mapping)  # type: ignore[attr-defined]
+        return self._realm_codec_registry.db_decode(
+            ScorePeriodBest, cast(Mapping[str, RealmThing], row._mapping)
+        )

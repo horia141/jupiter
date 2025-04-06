@@ -13,23 +13,24 @@ import {
   FormControl,
   FormControlLabel,
   InputLabel,
-  styled,
   Switch,
+  styled,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Form,
   useActionData,
+  useNavigation,
   useSearchParams,
-  useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntitySummaryLink } from "~/components/entity-summary-link";
 import { EventSourceTag } from "~/components/event-source-tag";
@@ -50,16 +51,18 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
-const ScheduleExternalSyncFormSchema = {
+const ParamsSchema = z.object({});
+
+const ScheduleExternalSyncFormSchema = z.object({
   scheduleStreamRefIds: selectZod(z.string()),
   syncEvenIfNotModified: CheckboxAsString,
-};
+});
 
 export const handle = {
   displayType: DisplayType.BRANCH,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_schedule_streams: true,
@@ -72,7 +75,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, ScheduleExternalSyncFormSchema);
 
@@ -101,17 +104,17 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function CalendarSettings() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const inputsEnabled = transition.state === "idle";
+  const inputsEnabled = navigation.state === "idle";
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const query = useSearchParams();
 
   const scheduleStreamsByRefId = new Map(
-    loaderData.scheduleStreams.map((stream) => [stream.ref_id, stream])
+    loaderData.scheduleStreams.map((stream) => [stream.ref_id, stream]),
   );
 
   return (
@@ -130,7 +133,7 @@ export default function CalendarSettings() {
                 name="scheduleStreamRefIds"
                 readOnly={!inputsEnabled}
                 allScheduleStreams={loaderData.scheduleStreams.filter(
-                  (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL
+                  (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
                 )}
               />
               <FieldError
@@ -239,8 +242,12 @@ export default function CalendarSettings() {
 }
 
 export const ErrorBoundary = makeBranchErrorBoundary(
-  () => `/app/workspace/calendar?${useSearchParams()}`,
-  () => `There was an error creating the event in day! Please try again!`
+  (_params, searchParams) => `/app/workspace/calendar?${searchParams}`,
+  ParamsSchema,
+  {
+    error: () =>
+      `There was an error creating the event in day! Please try again!`,
+  },
 );
 
 const AccordionHeader = styled(Box)(({ theme }) => ({

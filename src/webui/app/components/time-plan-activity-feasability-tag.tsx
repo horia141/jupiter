@@ -1,5 +1,7 @@
 import { TimePlanActivityFeasability } from "@jupiter/webapi-client";
+
 import { timePlanActivityFeasabilityName } from "~/logic/domain/time-plan-activity-feasability";
+
 import { SlimChip } from "./infra/chips";
 
 interface TimePlanActivityFeasabilityTagProps {
@@ -7,7 +9,7 @@ interface TimePlanActivityFeasabilityTagProps {
 }
 
 export function TimePlanActivityFeasabilityTag(
-  props: TimePlanActivityFeasabilityTagProps
+  props: TimePlanActivityFeasabilityTagProps,
 ) {
   return (
     <SlimChip
@@ -18,7 +20,7 @@ export function TimePlanActivityFeasabilityTag(
 }
 
 function feasabilityToColor(
-  props: TimePlanActivityFeasability
+  props: TimePlanActivityFeasability,
 ): "success" | "warning" | "info" {
   switch (props) {
     case TimePlanActivityFeasability.MUST_DO:

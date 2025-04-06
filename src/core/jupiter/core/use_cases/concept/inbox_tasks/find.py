@@ -1,4 +1,5 @@
 """The command for finding a inbox task."""
+
 from collections import defaultdict
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
@@ -326,31 +327,47 @@ class InboxTaskFindUseCase(
                 InboxTaskFindResultEntry(
                     inbox_task=it,
                     project=project_by_ref_id[it.project_ref_id],
-                    working_mem=working_mems_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.WORKING_MEM_CLEANUP
-                    else None,
-                    habit=habits_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.HABIT
-                    else None,
-                    chore=chores_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.CHORE
-                    else None,
-                    big_plan=big_plans_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.BIG_PLAN
-                    else None,
-                    metric=metrics_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.METRIC
-                    else None,
-                    person=persons_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.PERSON_BIRTHDAY
-                    or it.source == InboxTaskSource.PERSON_CATCH_UP
-                    else None,
-                    slack_task=slack_tasks_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.SLACK_TASK
-                    else None,
-                    email_task=email_tasks_by_ref_id[it.source_entity_ref_id_for_sure]
-                    if it.source == InboxTaskSource.EMAIL_TASK
-                    else None,
+                    working_mem=(
+                        working_mems_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.WORKING_MEM_CLEANUP
+                        else None
+                    ),
+                    habit=(
+                        habits_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.HABIT
+                        else None
+                    ),
+                    chore=(
+                        chores_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.CHORE
+                        else None
+                    ),
+                    big_plan=(
+                        big_plans_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.BIG_PLAN
+                        else None
+                    ),
+                    metric=(
+                        metrics_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.METRIC
+                        else None
+                    ),
+                    person=(
+                        persons_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.PERSON_BIRTHDAY
+                        or it.source == InboxTaskSource.PERSON_CATCH_UP
+                        else None
+                    ),
+                    slack_task=(
+                        slack_tasks_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.SLACK_TASK
+                        else None
+                    ),
+                    email_task=(
+                        email_tasks_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.EMAIL_TASK
+                        else None
+                    ),
                     note=notes_by_inbox_task_ref_id.get(it.ref_id, None),
                     time_event_blocks=time_event_blocks_by_inbox_task_ref_id.get(
                         it.ref_id, None

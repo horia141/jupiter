@@ -1,9 +1,24 @@
 import type {
   DragStart,
-  DroppableStateSnapshot,
   DropResult,
+  DroppableStateSnapshot,
 } from "@hello-pangea/dnd";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import type {
+  InboxTask,
+  InboxTaskFindResultEntry,
+} from "@jupiter/webapi-client";
+import {
+  Eisen,
+  InboxTaskSource,
+  InboxTaskStatus,
+  RecurringTaskPeriod,
+  WorkspaceFeature,
+} from "@jupiter/webapi-client";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FlareIcon from "@mui/icons-material/Flare";
+import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
+import ViewListIcon from "@mui/icons-material/ViewList";
 import {
   Box,
   Button,
@@ -16,42 +31,26 @@ import {
   FormControlLabel,
   FormGroup,
   Stack,
-  styled,
   Tab,
   Tabs,
   Typography,
+  styled,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import Grid from "@mui/material/Grid2";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
-
-import type {
-  InboxTask,
-  InboxTaskFindResultEntry,
-} from "@jupiter/webapi-client";
-import {
-  Eisen,
-  InboxTaskSource,
-  InboxTaskStatus,
-  RecurringTaskPeriod,
-  WorkspaceFeature,
-} from "@jupiter/webapi-client";
-import React, { memo, useContext, useState } from "react";
-import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
-
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import FlareIcon from "@mui/icons-material/Flare";
-import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
-import ViewListIcon from "@mui/icons-material/ViewList";
-import Grid from "@mui/material/Unstable_Grid2";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
+import { Fragment, memo, useContext, useState } from "react";
 import { z } from "zod";
+
 import { getLoggedInApiClient } from "~/api-clients.server";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
 import { InboxTasksNoNothingCard } from "~/components/inbox-tasks-no-nothing-card";
 import { InboxTasksNoTasksCard } from "~/components/inbox-tasks-no-tasks-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -129,7 +128,7 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const response = await apiClient.inboxTasks.inboxTaskFind({
     allow_archived: false,
@@ -154,7 +153,7 @@ export default function InboxTasks() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const sortedInboxTasks = sortInboxTasksNaturally(
-    entries.map((e) => e.inbox_task)
+    entries.map((e) => e.inbox_task),
   );
   const inboxTasksByRefId: { [key: string]: InboxTask } = {};
   for (const entry of entries) {
@@ -224,7 +223,7 @@ export default function InboxTasks() {
         {
           method: "post",
           action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-        }
+        },
       );
     } else {
       kanbanBoardMoveFetcher.submit(
@@ -232,7 +231,7 @@ export default function InboxTasks() {
         {
           method: "post",
           action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-        }
+        },
       );
     }
   }
@@ -257,7 +256,7 @@ export default function InboxTasks() {
         {
           method: "post",
           action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-        }
+        },
       );
     }, 0);
   }
@@ -282,7 +281,7 @@ export default function InboxTasks() {
         {
           method: "post",
           action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-        }
+        },
       );
     }, 0);
   }
@@ -290,7 +289,7 @@ export default function InboxTasks() {
   const [showViewsDialog, setShowViewsDialog] = useState(false);
   const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [selectedActionableTime, setSelectedActionableTime] = useState(
-    ActionableTime.NOW
+    ActionableTime.NOW,
   );
   const [showEisenBoard, setShowEisenBoard] = useState({
     [Eisen.IMPORTANT_AND_URGENT]: true,
@@ -311,7 +310,7 @@ export default function InboxTasks() {
   const shouldDoAGc = figureOutIfGcIsRecommended(
     entries,
     optimisticUpdates,
-    globalProperties.inboxTasksToAskForGC
+    globalProperties.inboxTasksToAskForGC,
   );
 
   let extraControls = [];
@@ -380,7 +379,7 @@ export default function InboxTasks() {
   }
 
   const today = DateTime.local({ zone: topLevelInfo.user.timezone }).endOf(
-    "day"
+    "day",
   );
 
   return (
@@ -671,10 +670,9 @@ export default function InboxTasks() {
   );
 }
 
-export const ErrorBoundary = makeTrunkErrorBoundary(
-  "/app/workspace",
-  () => `There was an error loading the inbox tasks! Please try again!`
-);
+export const ErrorBoundary = makeTrunkErrorBoundary("/app/workspace", {
+  error: () => `There was an error loading the inbox tasks! Please try again!`,
+});
 
 const GCSection = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.grey[100],
@@ -701,7 +699,7 @@ function SwiftView(props: SwiftViewProps) {
   const endOfTheYear = props.today.endOf("year").endOf("day");
   const actionableTime = actionableTimeToDateTime(
     props.actionableTime,
-    props.topLevelInfo.user.timezone
+    props.topLevelInfo.user.timezone,
   );
 
   const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(props.inboxTasks);
@@ -722,7 +720,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: props.today,
       allowPeriodsIfHabit: [RecurringTaskPeriod.DAILY],
-    }
+    },
   );
 
   const inboxTasksForHabitsDueThisWeek = filterInboxTasksForDisplay(
@@ -741,7 +739,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: endOfTheWeek,
       allowPeriodsIfHabit: [RecurringTaskPeriod.WEEKLY],
-    }
+    },
   );
 
   const inboxTasksForHabitsDueThisMonth = filterInboxTasksForDisplay(
@@ -760,7 +758,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: endOfTheMonth,
       allowPeriodsIfHabit: [RecurringTaskPeriod.MONTHLY],
-    }
+    },
   );
 
   const inboxTasksForHabitsDueThisQuarter = filterInboxTasksForDisplay(
@@ -779,7 +777,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: endOfTheQuarter,
       allowPeriodsIfHabit: [RecurringTaskPeriod.QUARTERLY],
-    }
+    },
   );
 
   const inboxTasksForHabitsDueThisYear = filterInboxTasksForDisplay(
@@ -799,7 +797,7 @@ function SwiftView(props: SwiftViewProps) {
       includeIfNoDueDate: true,
       dueDateEnd: endOfTheYear,
       allowPeriodsIfHabit: [RecurringTaskPeriod.YEARLY],
-    }
+    },
   );
 
   const inboxTasksForChoresDueToday = filterInboxTasksForDisplay(
@@ -818,7 +816,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: props.today,
       allowPeriodsIfChore: [RecurringTaskPeriod.DAILY],
-    }
+    },
   );
 
   const inboxTasksForChoresDueThisWeek = filterInboxTasksForDisplay(
@@ -837,7 +835,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: endOfTheWeek,
       allowPeriodsIfChore: [RecurringTaskPeriod.WEEKLY],
-    }
+    },
   );
 
   const inboxTasksForChoresDueThisMonth = filterInboxTasksForDisplay(
@@ -856,7 +854,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: endOfTheMonth,
       allowPeriodsIfChore: [RecurringTaskPeriod.MONTHLY],
-    }
+    },
   );
 
   const inboxTasksForChoresDueThisQuarter = filterInboxTasksForDisplay(
@@ -875,7 +873,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateEnd: endOfTheQuarter,
       allowPeriodsIfChore: [RecurringTaskPeriod.QUARTERLY],
-    }
+    },
   );
 
   const inboxTasksForChoresDueThisYear = filterInboxTasksForDisplay(
@@ -895,7 +893,7 @@ function SwiftView(props: SwiftViewProps) {
       includeIfNoDueDate: true,
       dueDateEnd: endOfTheYear,
       allowPeriodsIfChore: [RecurringTaskPeriod.YEARLY],
-    }
+    },
   );
 
   const inboxTasksForRestsDueToday = filterInboxTasksForDisplay(
@@ -922,7 +920,7 @@ function SwiftView(props: SwiftViewProps) {
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
       dueDateEnd: props.today,
-    }
+    },
   );
 
   const inboxTasksForRestsDueThisWeek = filterInboxTasksForDisplay(
@@ -950,7 +948,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateStart: props.today,
       dueDateEnd: endOfTheWeek,
-    }
+    },
   );
 
   const inboxTasksForRestsDueThisMonth = filterInboxTasksForDisplay(
@@ -978,7 +976,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateStart: endOfTheWeek,
       dueDateEnd: endOfTheMonth,
-    }
+    },
   );
 
   const inboxTasksForRestsDueThisQuarter = filterInboxTasksForDisplay(
@@ -1006,7 +1004,7 @@ function SwiftView(props: SwiftViewProps) {
       actionableDateEnd: actionableTime,
       dueDateStart: endOfTheMonth,
       dueDateEnd: endOfTheQuarter,
-    }
+    },
   );
 
   const inboxTasksForRestsDueThisYear = filterInboxTasksForDisplay(
@@ -1035,7 +1033,7 @@ function SwiftView(props: SwiftViewProps) {
       includeIfNoDueDate: true,
       dueDateStart: endOfTheQuarter,
       dueDateEnd: endOfTheYear,
-    }
+    },
   );
 
   const habitsStack = (
@@ -1440,7 +1438,7 @@ function SwiftView(props: SwiftViewProps) {
   }
 
   const [smallScreenSelectedTab, setSmallScreenSelectedTab] = useState(
-    initialSmallScreenSelectedTab
+    initialSmallScreenSelectedTab,
   );
 
   if (noNothing) {
@@ -1453,9 +1451,9 @@ function SwiftView(props: SwiftViewProps) {
         <>
           {isWorkspaceFeatureAvailable(
             props.topLevelInfo.workspace,
-            WorkspaceFeature.HABITS
+            WorkspaceFeature.HABITS,
           ) && (
-            <Grid md>
+            <Grid size={{ md: 4 }}>
               <Typography variant="h5">💪 Habits</Typography>
               {!noHabits && habitsStack}
               {noHabits && noHabitsCard}
@@ -1464,16 +1462,16 @@ function SwiftView(props: SwiftViewProps) {
 
           {isWorkspaceFeatureAvailable(
             props.topLevelInfo.workspace,
-            WorkspaceFeature.CHORES
+            WorkspaceFeature.CHORES,
           ) && (
-            <Grid md>
+            <Grid size={{ md: 4 }}>
               <Typography variant="h5">♻️ Chores</Typography>
               {!noChores && choresStack}
               {noChores && noChoresCard}
             </Grid>
           )}
 
-          <Grid md>
+          <Grid size={{ md: 4 }}>
             <Typography variant="h5">🌍 Other Tasks</Typography>
             {!noRests && restStack}
             {noRests && noRestsCard}
@@ -1482,7 +1480,7 @@ function SwiftView(props: SwiftViewProps) {
       )}
 
       {!props.isBigScreen && !noNothing && (
-        <Grid xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Tabs
             value={smallScreenSelectedTab}
             variant="fullWidth"
@@ -1551,7 +1549,7 @@ function BigScreenKanbanByEisen({
         <>
           {EISENS.filter((e) => showEisenBoard[e]).map((e) => {
             return (
-              <React.Fragment key={e}>
+              <Fragment key={e}>
                 <StandardDivider
                   title={`${eisenIcon(e)} ${eisenName(e)}`}
                   size="large"
@@ -1568,7 +1566,7 @@ function BigScreenKanbanByEisen({
                   draggedInboxTaskId={draggedInboxTaskId}
                   collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
-              </React.Fragment>
+              </Fragment>
             );
           })}
         </>
@@ -1656,7 +1654,7 @@ function KanbanBoard({
 }: KanbanBoardProps) {
   return (
     <Grid container spacing={2}>
-      <Grid xs={2} sx={{ position: "relative" }}>
+      <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1679,7 +1677,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+      <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1704,7 +1702,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+      <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1727,7 +1725,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+      <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1750,7 +1748,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+      <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1773,7 +1771,7 @@ function KanbanBoard({
         />
       </Grid>
 
-      <Grid xs={2} sx={{ position: "relative" }}>
+      <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
           today={today}
           topLevelInfo={topLevelInfo}
@@ -1815,7 +1813,7 @@ interface SmallScreenKanbanByEisenProps {
 function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
   const actionableDate = actionableTimeToDateTime(
     props.actionableTime,
-    props.topLevelInfo.user.timezone
+    props.topLevelInfo.user.timezone,
   );
   const importantAndUrgentTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -1827,7 +1825,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const urgentTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -1839,7 +1837,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const importantTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -1851,7 +1849,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const regularTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -1863,7 +1861,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
 
   let initialSmallScreenSelectedTab = 0;
@@ -1878,7 +1876,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
   }
 
   const [smallScreenSelectedTab, setSmallScreenSelectedTab] = useState(
-    initialSmallScreenSelectedTab
+    initialSmallScreenSelectedTab,
   );
 
   return (
@@ -1984,7 +1982,7 @@ interface SmallScreenKanbanProps {
 function SmallScreenKanban(props: SmallScreenKanbanProps) {
   const actionableDate = actionableTimeToDateTime(
     props.actionableTime,
-    props.topLevelInfo.user.timezone
+    props.topLevelInfo.user.timezone,
   );
   const notStartedTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -1996,7 +1994,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const recurringTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -2008,7 +2006,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const inProgressTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -2020,7 +2018,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const blockedTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -2032,7 +2030,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const notDoneTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -2044,7 +2042,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
   const doneTasks = filterInboxTasksForDisplay(
     props.inboxTasks,
@@ -2056,7 +2054,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
       includeIfNoActionableDate: true,
       includeIfNoDueDate: true,
       actionableDateEnd: actionableDate,
-    }
+    },
   );
 
   let initialSmallScreenSelectedTab = 0;
@@ -2075,7 +2073,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
   }
 
   const [smallScreenSelectedTab, setSmallScreenSelectedTab] = useState(
-    initialSmallScreenSelectedTab
+    initialSmallScreenSelectedTab,
   );
 
   return (
@@ -2421,7 +2419,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
 
   const actionableTime = actionableTimeToDateTime(
     props.actionableTime,
-    props.topLevelInfo.user.timezone
+    props.topLevelInfo.user.timezone,
   );
 
   const filteredInboxTasks = filterInboxTasksForDisplay(
@@ -2435,7 +2433,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
       includeIfNoDueDate: true,
-    }
+    },
   );
 
   const formattedCountStr = formatTasksCount(filteredInboxTasks.length);
@@ -2510,13 +2508,13 @@ const InboxTasksColumnHighDiv = styled("div")<InboxTasksColumnHighDivProps>(
       divStatus === DragTargetStatus.SOURCE_DRAG
         ? "rgb(191, 204, 229)"
         : divStatus === DragTargetStatus.SELECT_DRAG
-        ? "#f5f5f5"
-        : divStatus === DragTargetStatus.ALLOW_DRAG
-        ? "rgb(234, 246, 215)"
-        : divStatus === DragTargetStatus.FORBID_DRAG
-        ? "rgb(243, 196, 196)"
-        : theme.palette.background.paper,
-  })
+          ? "#f5f5f5"
+          : divStatus === DragTargetStatus.ALLOW_DRAG
+            ? "rgb(234, 246, 215)"
+            : divStatus === DragTargetStatus.FORBID_DRAG
+              ? "rgb(243, 196, 196)"
+              : theme.palette.background.paper,
+  }),
 );
 
 interface InboxTaskColumnTasksProps {
@@ -2528,7 +2526,7 @@ interface InboxTaskColumnTasksProps {
 }
 
 const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
-  props: InboxTaskColumnTasksProps
+  props: InboxTaskColumnTasksProps,
 ) {
   return (
     <Stack spacing={1} useFlexGap>
@@ -2541,7 +2539,7 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
             draggableId={inboxTask.ref_id}
             index={index}
           >
-            {(provided, snapshpt) => (
+            {(provided, _snapshpt) => (
               <div
                 ref={provided.innerRef}
                 {...provided.draggableProps}
@@ -2577,7 +2575,7 @@ function formatTasksCount(tasksCnt: number) {
 function figureOutIfGcIsRecommended(
   entries: Array<InboxTaskFindResultEntry>,
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState },
-  inboxTasksToAskForGC: number
+  inboxTasksToAskForGC: number,
 ): boolean {
   let finishedTasksCnt = 0;
 

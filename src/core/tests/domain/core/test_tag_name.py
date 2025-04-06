@@ -1,4 +1,5 @@
 """Tests for tag name."""
+
 from jupiter.core.domain.core.tags.tag_name import TagName
 
 

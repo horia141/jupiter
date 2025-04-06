@@ -1,4 +1,5 @@
 """A CRM backed by Wix."""
+
 from typing import Final
 
 import aiohttp

@@ -1,5 +1,6 @@
 import type { CombinedTimeEventFullDaysEntry } from "~/logic/domain/time-event";
 import type { TopLevelInfo } from "~/top-level-context";
+
 import { SectionCardNew } from "./infra/section-card-new";
 import { TimeEventFullDaysBlockCard } from "./time-event-full-days-block-card";
 
@@ -11,9 +12,9 @@ interface TimeEventFullDaysBlockStackProps {
 }
 
 export function TimeEventFullDaysBlockStack(
-  props: TimeEventFullDaysBlockStackProps
+  props: TimeEventFullDaysBlockStackProps,
 ) {
-  let actions = undefined;
+  const actions = undefined;
 
   return (
     <SectionCardNew

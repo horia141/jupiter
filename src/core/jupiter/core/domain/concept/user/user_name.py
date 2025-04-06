@@ -1,4 +1,5 @@
 """The user name for a user of jupiter."""
+
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.value import hashable_value
 

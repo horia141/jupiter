@@ -1,4 +1,5 @@
 """The use case for finding docs."""
+
 from collections import defaultdict
 
 from jupiter.core.domain.app import AppCore
