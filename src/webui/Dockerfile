@@ -33,6 +33,8 @@ COPY src/webui/app src/webui/app
 COPY src/webui/public/favicon.ico src/webui/public/favicon.ico
 COPY src/webui/public/logo.png src/webui/public/logo.png
 COPY src/webui/public/pomodoro-notification.mp3 src/webui/public/pomodoro-notification.mp3
+COPY src/webui/public/frontdoor-redirect-hack-init.html src/webui/public/frontdoor-redirect-hack-init.html
+COPY src/webui/public/frontdoor-redirect-hack-workspace.html src/webui/public/frontdoor-redirect-hack-workspace.html
 
 ARG PORT=10020
 ENV HOST=0.0.0.0
