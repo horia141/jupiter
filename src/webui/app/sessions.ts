@@ -22,7 +22,6 @@ const { getSession, commitSession, destroySession } =
   createCookieSessionStorage({
     cookie: {
       name: SESSION_COOKIE_NAME,
-      // domain: "http://localhost:10020", // TODO: solve this!
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: "/",

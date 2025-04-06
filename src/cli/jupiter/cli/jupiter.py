@@ -1,5 +1,4 @@
 """The CLI entry-point for jupiter."""
-
 import asyncio
 import logging
 import sys
@@ -143,8 +142,6 @@ async def main() -> None:
     finally:
         await sqlite_connection.dispose()
 
-
-# coverage.process_startup()  # type: ignore
 
 if __name__ == "__main__":
     asyncio.run(main())

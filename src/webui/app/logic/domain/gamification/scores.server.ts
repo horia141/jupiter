@@ -3,7 +3,6 @@ import { createCookie } from "@remix-run/node";
 
 import { SCORE_ACTION_COOKIE_NAME } from "~/names";
 
-// TODO(horia141): secrets!
 const scoreActionCookie = createCookie(SCORE_ACTION_COOKIE_NAME, {
   maxAge: 60 * 60, // 1 hour
   path: "/",

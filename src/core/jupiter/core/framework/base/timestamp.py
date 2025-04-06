@@ -40,11 +40,11 @@ class Timestamp(AtomicValue[datetime.datetime]):
 
     def as_date(self) -> Date:
         """The raw date of the timestamp."""
-        return cast(Date, self.the_ts.date())  # type: ignore
+        return self.the_ts.date()
 
     def mins_since(self, other: "Timestamp") -> int:
         """Get the minutes since another timestamp."""
-        return cast(int, self.the_ts.diff(other.the_ts).in_minutes())  # type: ignore
+        return self.the_ts.diff(other.the_ts).in_minutes()
 
     @property
     def value(self) -> DateTime:
@@ -66,7 +66,7 @@ class Timestamp(AtomicValue[datetime.datetime]):
 
     def __str__(self) -> str:
         """Transform this to a string version."""
-        return cast(str, self.the_ts.to_datetime_string())  # type: ignore
+        return self.the_ts.to_datetime_string()
 
 
 class TimestampDatabaseEncoder(RealmEncoder[Timestamp, DatabaseRealm]):

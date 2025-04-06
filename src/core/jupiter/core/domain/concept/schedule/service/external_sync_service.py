@@ -824,6 +824,6 @@ class ScheduleExternalSyncService:
     def _build_processing_window(self, today: ADate) -> tuple[ADate, ADate]:
         """Build the processing window."""
         today_date = today.the_date
-        start_of_window = cast(Date, today_date.start_of("year").add(years=-1))  # type: ignore
-        end_of_window = cast(Date, today_date.add(days=30).end_of("year"))  # type: ignore
+        start_of_window = today_date.start_of("year").add(years=-1)
+        end_of_window = today_date.add(days=30).end_of("year")
         return (ADate.from_date(start_of_window), ADate.from_date(end_of_window))

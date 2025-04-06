@@ -82,7 +82,7 @@ class WorkingMem(LeafEntity):
 
     def can_be_archived_at(self, current_time: Timestamp) -> bool:
         """Can this working mem be archived at a given time."""
-        return self.right_now <= ADate.from_date(cast(Date, current_time.as_date()).add(days=-14))  # type: ignore
+        return self.right_now <= ADate.from_date(current_time.as_date().add(days=-14))
 
     @staticmethod
     def build_name(right_now: ADate, period: RecurringTaskPeriod) -> EntityName:
