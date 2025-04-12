@@ -5,6 +5,7 @@ from jupiter.core.domain.concept.schedule.schedule_source import (
     ScheduleSource,
 )
 from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -56,5 +57,10 @@ class ScheduleStreamArchiveUseCase(
                 raise InputValidationError("You cannot archive the last user schedule")
 
         await generic_crown_archiver(
-            context.domain_context, uow, progress_reporter, ScheduleStream, args.ref_id
+            context.domain_context,
+            uow,
+            progress_reporter,
+            ScheduleStream,
+            args.ref_id,
+            ArchivalReason.USER,
         )

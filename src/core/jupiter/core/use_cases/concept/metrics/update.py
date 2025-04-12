@@ -19,6 +19,7 @@ from jupiter.core.domain.concept.metrics.metric_collection import MetricCollecti
 from jupiter.core.domain.concept.metrics.metric_name import MetricName
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core import schedules
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.entity_icon import EntityIcon
@@ -198,7 +199,11 @@ class MetricUpdateUseCase(
             inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in metric_collection_tasks:
                 await inbox_task_archive_service.do_it(
-                    context.domain_context, uow, progress_reporter, inbox_task
+                    context.domain_context,
+                    uow,
+                    progress_reporter,
+                    inbox_task,
+                    ArchivalReason.USER,
                 )
         else:
             # Situation 2: we need to update the existing metrics.

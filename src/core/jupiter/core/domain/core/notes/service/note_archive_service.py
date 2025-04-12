@@ -1,5 +1,6 @@
-"""Archive a note."""
+"""Shared service for archiving a note."""
 
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -15,6 +16,7 @@ class NoteArchiveService:
         ctx: DomainContext,
         uow: DomainUnitOfWork,
         note: Note,
+        archival_reason: ArchivalReason,
     ) -> None:
         """Execute the command's action."""
         if note.archived:
@@ -23,7 +25,7 @@ class NoteArchiveService:
         if note.can_be_removed_independently:
             raise Exception(f"Note {note.ref_id} cannot be removed independently")
 
-        note = note.mark_archived(ctx)
+        note = note.mark_archived(ctx, archival_reason)
         await uow.get_for(Note).save(note)
 
     async def archive_for_source(
@@ -32,6 +34,7 @@ class NoteArchiveService:
         uow: DomainUnitOfWork,
         domain: NoteDomain,
         source_entity_ref_id: EntityId,
+        archival_reason: ArchivalReason,
     ) -> None:
         """Execute the command's action."""
         note = await uow.get(NoteRepository).load_optional_for_source(
@@ -44,5 +47,5 @@ class NoteArchiveService:
         if note.archived:
             return
 
-        note = note.mark_archived(ctx)
+        note = note.mark_archived(ctx, archival_reason)
         await uow.get_for(Note).save(note)

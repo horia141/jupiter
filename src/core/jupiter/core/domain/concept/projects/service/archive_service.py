@@ -39,6 +39,7 @@ from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
@@ -58,6 +59,7 @@ class ProjectArchiveService:
         progress_reporter: ProgressReporter,
         workspace: Workspace,
         project: Project,
+        archival_reason: ArchivalReason,
     ) -> None:
         """Archive the project."""
         if project.is_root:
@@ -115,7 +117,9 @@ class ProjectArchiveService:
         )
         inbox_task_archive_service = InboxTaskArchiveService()
         for it in inbox_tasks:
-            await inbox_task_archive_service.do_it(ctx, uow, progress_reporter, it)
+            await inbox_task_archive_service.do_it(
+                ctx, uow, progress_reporter, it, archival_reason
+            )
 
         # archive chores
         chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
@@ -128,7 +132,9 @@ class ProjectArchiveService:
         )
         chore_archive_service = ChoreArchiveService()
         for chore in chores:
-            await chore_archive_service.do_it(ctx, uow, progress_reporter, chore)
+            await chore_archive_service.do_it(
+                ctx, uow, progress_reporter, chore, archival_reason
+            )
 
         # archive habits
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -141,7 +147,9 @@ class ProjectArchiveService:
         )
         habit_archive_service = HabitArchiveService()
         for habit in habits:
-            await habit_archive_service.do_it(ctx, uow, progress_reporter, habit)
+            await habit_archive_service.do_it(
+                ctx, uow, progress_reporter, habit, archival_reason
+            )
 
         # archive big plans
         big_plan_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -154,12 +162,14 @@ class ProjectArchiveService:
         )
         big_plan_archive_service = BigPlanArchiveService()
         for big_plan in big_plans:
-            await big_plan_archive_service.do_it(ctx, uow, progress_reporter, big_plan)
+            await big_plan_archive_service.do_it(
+                ctx, uow, progress_reporter, big_plan, archival_reason
+            )
 
         # archive note
         note_archive_service = NoteArchiveService()
         await note_archive_service.archive_for_source(
-            ctx, uow, NoteDomain.PROJECT, project.ref_id
+            ctx, uow, NoteDomain.PROJECT, project.ref_id, archival_reason
         )
 
         # archive child projects
@@ -172,7 +182,9 @@ class ProjectArchiveService:
             parent_project_ref_id=[project.ref_id],
         )
         for child_project in child_projects:
-            await self.do_it(ctx, uow, progress_reporter, workspace, child_project)
+            await self.do_it(
+                ctx, uow, progress_reporter, workspace, child_project, archival_reason
+            )
 
         # remove from parent project list
         parent_project = await uow.get_for(Project).load_by_id(
@@ -182,6 +194,6 @@ class ProjectArchiveService:
         await uow.get_for(Project).save(parent_project)
 
         # archive project
-        project = project.mark_archived(ctx)
+        project = project.mark_archived(ctx, archival_reason)
         await uow.get_for(Project).save(project)
         await progress_reporter.mark_updated(project)

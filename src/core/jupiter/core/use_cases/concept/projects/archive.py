@@ -23,6 +23,7 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -157,5 +158,10 @@ class ProjectArchiveUseCase(
 
         project_archive_service = ProjectArchiveService()
         await project_archive_service.do_it(
-            context.domain_context, uow, progress_reporter, workspace, project
+            context.domain_context,
+            uow,
+            progress_reporter,
+            workspace,
+            project,
+            ArchivalReason.USER,
         )

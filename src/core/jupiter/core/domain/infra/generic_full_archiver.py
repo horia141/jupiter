@@ -1,5 +1,6 @@
 """A generic archiver service."""
 
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
@@ -18,6 +19,7 @@ async def generic_full_archiver(
     uow: DomainUnitOfWork,
     entity_type: type[RootEntity],
     ref_id: EntityId,
+    archival_reason: ArchivalReason,
 ) -> None:
     """Archives all entities descending from a given root, no exceptions."""
 
@@ -27,7 +29,7 @@ async def generic_full_archiver(
         if entity.archived:
             return
         if entity.is_safe_to_archive:
-            entity = entity.mark_archived(ctx)
+            entity = entity.mark_archived(ctx, archival_reason)
             # Typing is faulty here, as it can't map A|B|C|D to
             # save(A) or save(B) or save(C) or save(D)
             await uow.get_for(entity.__class__).save(entity)  # type: ignore

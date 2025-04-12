@@ -1,5 +1,6 @@
 """A generic archiver service."""
 
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
@@ -18,6 +19,7 @@ async def generic_crown_archiver(
     progress_reporter: ProgressReporter,
     entity_type: type[CrownEntity],
     ref_id: EntityId,
+    archival_reason: ArchivalReason,
 ) -> None:
     """Generic archiver for entities."""
 
@@ -25,7 +27,7 @@ async def generic_crown_archiver(
         if entity.archived:
             return
         if entity.is_safe_to_archive:
-            entity = entity.mark_archived(ctx)
+            entity = entity.mark_archived(ctx, archival_reason)
             await uow.get_for(entity.__class__).save(entity)
             if not isinstance(entity, LeafSupportEntity):
                 await progress_reporter.mark_updated(entity)

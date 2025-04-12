@@ -61,10 +61,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
-  return [
-    { charset: "utf-8" },
-    { title: data.globalProperties.title },
-  ];
+  return [{ charset: "utf-8" }, { title: data.globalProperties.title }];
 }
 
 export function links() {
@@ -79,7 +76,10 @@ export default function Root() {
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+        />
         <Meta />
         <Links />
       </head>

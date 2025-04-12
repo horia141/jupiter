@@ -7,8 +7,8 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
-    InboxTaskArchiveService,
+from jupiter.core.domain.concept.inbox_tasks.service.remove_service import (
+    InboxTaskRemoveService,
 )
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_remove_service import NoteRemoveService
@@ -45,7 +45,7 @@ class HabitRemoveService:
             source_entity_ref_id=habit.ref_id,
         )
 
-        inbox_task_remove_service = InboxTaskArchiveService()
+        inbox_task_remove_service = InboxTaskRemoveService()
 
         for inbox_task in inbox_tasks_to_archive:
             await inbox_task_remove_service.do_it(

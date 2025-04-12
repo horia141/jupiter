@@ -28,6 +28,7 @@ from jupiter.core.domain.concept.schedule.schedule_stream import ScheduleStream
 from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_content_block import (
@@ -748,6 +749,7 @@ class ScheduleExternalSyncService:
                             progress_reporter,
                             ScheduleEventFullDays,
                             schedule_event_full_days.ref_id,
+                            ArchivalReason.SYNC,
                         )
                         sync_log_entry = sync_log_entry.add_entity(
                             ctx, schedule_event_full_days
@@ -775,6 +777,7 @@ class ScheduleExternalSyncService:
                             progress_reporter,
                             ScheduleEventInDay,
                             schedule_event_in_day.ref_id,
+                            ArchivalReason.SYNC,
                         )
                         sync_log_entry = sync_log_entry.add_entity(
                             ctx, schedule_event_in_day

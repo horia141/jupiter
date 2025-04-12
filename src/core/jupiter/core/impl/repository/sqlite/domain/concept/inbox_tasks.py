@@ -10,6 +10,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.impl.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
@@ -27,7 +28,7 @@ class SqliteInboxTaskRepository(
         parent_ref_id: EntityId,
         source: InboxTaskSource,
         source_entity_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
     ) -> int:
         """Count all the inbox task for a source."""
         query_stmt = select(func.count()).where(
@@ -35,8 +36,23 @@ class SqliteInboxTaskRepository(
             self._table.c.source == source.value,
             self._table.c.source_entity_ref_id == source_entity_ref_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         results = await self._connection.execute(query_stmt)
         return cast(int, results.scalar_one())
 
@@ -45,7 +61,7 @@ class SqliteInboxTaskRepository(
         parent_ref_id: EntityId,
         source: InboxTaskSource,
         source_entity_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
         retrieve_offset: int | None = None,
         retrieve_limit: int | None = None,
     ) -> list[InboxTask]:
@@ -64,8 +80,23 @@ class SqliteInboxTaskRepository(
             self._table.c.source == source.value,
             self._table.c.source_entity_ref_id == source_entity_ref_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         if retrieve_offset is not None and retrieve_limit is not None:
             query_stmt = query_stmt.offset(retrieve_offset).limit(retrieve_limit)
         query_stmt = query_stmt.order_by(self._table.c.created_time.desc())
@@ -75,7 +106,7 @@ class SqliteInboxTaskRepository(
     async def find_modified_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
         filter_sources: Iterable[InboxTaskSource] | None = None,
         filter_project_ref_ids: Iterable[EntityId] | None = None,
@@ -86,8 +117,23 @@ class SqliteInboxTaskRepository(
         query_stmt = select(self._table).where(
             self._table.c.inbox_task_collection_ref_id == parent_ref_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids),
@@ -120,7 +166,7 @@ class SqliteInboxTaskRepository(
     async def find_completed_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_start_completed_date: ADate,
         filter_end_completed_date: ADate,
         filter_include_sources: Iterable[InboxTaskSource],
@@ -130,8 +176,23 @@ class SqliteInboxTaskRepository(
         query_stmt = select(self._table).where(
             self._table.c.inbox_task_collection_ref_id == parent_ref_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
 
         start_completed_time = (
             filter_start_completed_date.to_timestamp_at_start_of_day()

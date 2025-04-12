@@ -9,6 +9,7 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanAc
 from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -76,6 +77,7 @@ class TimePlanActivityArchiveUseCase(
                         progress_reporter,
                         TimePlanActivity,
                         inbox_task_activity.ref_id,
+                        ArchivalReason.USER,
                     )
 
         await generic_crown_archiver(
@@ -84,4 +86,5 @@ class TimePlanActivityArchiveUseCase(
             progress_reporter,
             TimePlanActivity,
             args.ref_id,
+            ArchivalReason.USER,
         )

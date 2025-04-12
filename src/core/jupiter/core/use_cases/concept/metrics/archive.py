@@ -10,6 +10,7 @@ from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
 )
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.metrics.metric_entry import MetricEntry
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
@@ -71,11 +72,17 @@ class MetricArchiveUseCase(
         inbox_task_archive_service = InboxTaskArchiveService()
         for inbox_task in inbox_tasks_to_archive:
             await inbox_task_archive_service.do_it(
-                context.domain_context, uow, progress_reporter, inbox_task
+                context.domain_context,
+                uow,
+                progress_reporter,
+                inbox_task,
+                ArchivalReason.USER,
             )
 
         for metric_entry in metric_entries_to_archive:
-            metric_entry = metric_entry.mark_archived(context.domain_context)
+            metric_entry = metric_entry.mark_archived(
+                context.domain_context, ArchivalReason.USER
+            )
             await uow.get_for(MetricEntry).save(metric_entry)
             await progress_reporter.mark_updated(metric_entry)
 
@@ -85,13 +92,18 @@ class MetricArchiveUseCase(
                 uow,
                 NoteDomain.METRIC_ENTRY,
                 metric_entry.ref_id,
+                ArchivalReason.USER,
             )
 
         note_archive_service = NoteArchiveService()
         await note_archive_service.archive_for_source(
-            context.domain_context, uow, NoteDomain.METRIC, metric.ref_id
+            context.domain_context,
+            uow,
+            NoteDomain.METRIC,
+            metric.ref_id,
+            ArchivalReason.USER,
         )
 
-        metric = metric.mark_archived(context.domain_context)
+        metric = metric.mark_archived(context.domain_context, ArchivalReason.USER)
         await uow.get_for(Metric).save(metric)
         await progress_reporter.mark_updated(metric)

@@ -15,6 +15,7 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
 )
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -50,7 +51,7 @@ class SqliteTimePlanRepository(
     async def find_all_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_periods: list[RecurringTaskPeriod],
         filter_start_date: ADate,
         filter_end_date: ADate,
@@ -63,8 +64,23 @@ class SqliteTimePlanRepository(
             self._table.c.time_plan_domain_ref_id == parent_ref_id.as_int(),
         )
 
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
 
         query_stmt = query_stmt.where(
             self._table.c.period.in_([p.value for p in filter_periods])
@@ -82,7 +98,7 @@ class SqliteTimePlanRepository(
     async def find_higher(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         period: RecurringTaskPeriod,
         right_now: ADate,
     ) -> TimePlan | None:
@@ -92,8 +108,23 @@ class SqliteTimePlanRepository(
                 self._table.c.time_plan_domain_ref_id == parent_ref_id.as_int(),
             )
 
-            if not allow_archived:
-                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+            if isinstance(allow_archived, bool):
+                if not allow_archived:
+                    query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+            elif isinstance(allow_archived, ArchivalReason):
+                query_stmt = query_stmt.where(
+                    (self._table.c.archived.is_(False))
+                    | (self._table.c.archival_reason == str(allow_archived.value))
+                )
+            elif isinstance(allow_archived, list):
+                query_stmt = query_stmt.where(
+                    (self._table.c.archived.is_(False))
+                    | (
+                        self._table.c.archival_reason.in_(
+                            [str(reason.value) for reason in allow_archived]
+                        )
+                    )
+                )
 
             higher_schedule = schedules.get_schedule(
                 higher_period,
@@ -119,7 +150,7 @@ class SqliteTimePlanRepository(
     async def find_previous(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         period: RecurringTaskPeriod,
         right_now: ADate,
     ) -> TimePlan | None:
@@ -128,8 +159,23 @@ class SqliteTimePlanRepository(
             self._table.c.time_plan_domain_ref_id == parent_ref_id.as_int(),
         )
 
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
 
         query_stmt = (
             query_stmt.where(self._table.c.period == period.value)
@@ -168,7 +214,7 @@ class SqliteTimePlanActivityRepository(
         self,
         target: TimePlanActivityTarget,
         target_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
     ) -> list[EntityId]:
         """Find all time plan activities with a target."""
         query_stmt = (
@@ -181,8 +227,23 @@ class SqliteTimePlanActivityRepository(
             )
         )
 
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
 
         results = await self._connection.execute(query_stmt)
 

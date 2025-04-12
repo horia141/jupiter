@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.service.archive_service import (
     HabitArchiveService,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -41,5 +42,5 @@ class HabitArchiveUseCase(
         """Execute the command's action."""
         habit = await uow.get_for(Habit).load_by_id(args.ref_id)
         await HabitArchiveService().do_it(
-            context.domain_context, uow, progress_reporter, habit
+            context.domain_context, uow, progress_reporter, habit, ArchivalReason.USER
         )

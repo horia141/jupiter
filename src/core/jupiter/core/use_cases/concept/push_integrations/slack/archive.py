@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.push_integrations.slack.service.archive_service
     SlackTaskArchiveService,
 )
 from jupiter.core.domain.concept.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -44,5 +45,9 @@ class SlackTaskArchiveUseCase(
         slack_task_archive_service = SlackTaskArchiveService()
 
         await slack_task_archive_service.do_it(
-            context.domain_context, uow, progress_reporter, slack_task
+            context.domain_context,
+            uow,
+            progress_reporter,
+            slack_task,
+            ArchivalReason.USER,
         )

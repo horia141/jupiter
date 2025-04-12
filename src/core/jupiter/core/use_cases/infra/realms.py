@@ -854,6 +854,18 @@ class _StandardEntityDecoder(
                 f"Expected archived field of type {self._the_type.__name__} to be a boolean"
             )
         archived = value["archived"]
+        if "archival_reason" not in value:
+            raise RealmDecodingError(
+                f"Expected value of type {self._the_type.__name__} to have an archival reason"
+            )
+        if not (
+            value["archival_reason"] is None
+            or isinstance(value["archival_reason"], str)
+        ):
+            raise RealmDecodingError(
+                f"Expected archival reason field of type {self._the_type.__name__} to be a string or None"
+            )
+        archival_reason = value["archival_reason"]
         if "created_time" not in value:
             raise RealmDecodingError(
                 f"Expected value of type {self._the_type.__name__} to have a created time"
@@ -879,6 +891,7 @@ class _StandardEntityDecoder(
                 "ref_id",
                 "version",
                 "archived",
+                "archival_reason",
                 "created_time",
                 "last_modified_time",
                 "archived_time",
@@ -913,6 +926,7 @@ class _StandardEntityDecoder(
             ref_id=ref_id,
             version=version,
             archived=archived,
+            archival_reason=archival_reason,
             created_time=created_time,
             last_modified_time=last_modified_time,
             archived_time=archived_time,

@@ -8,6 +8,7 @@ from jupiter.core.domain.concept.big_plans.big_plan import (
 )
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.impl.repository.sqlite.infra.repository import (
     SqliteLeafEntityRepository,
@@ -23,7 +24,7 @@ class SqliteBigPlanRepository(SqliteLeafEntityRepository[BigPlan], BigPlanReposi
     async def find_completed_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_start_completed_date: ADate,
         filter_end_completed_date: ADate,
         filter_exclude_ref_ids: Iterable[EntityId] | None = None,
@@ -32,8 +33,23 @@ class SqliteBigPlanRepository(SqliteLeafEntityRepository[BigPlan], BigPlanReposi
         query_stmt = select(self._table).where(
             self._table.c.big_plan_collection_ref_id == parent_ref_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
 
         start_completed_time = (
             filter_start_completed_date.to_timestamp_at_start_of_day()

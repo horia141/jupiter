@@ -21,6 +21,7 @@ from jupiter.core.domain.concept.persons.person_name import PersonName
 from jupiter.core.domain.concept.persons.person_relationship import PersonRelationship
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.core import schedules
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -220,7 +221,11 @@ class PersonUpdateUseCase(
             inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in person_catch_up_tasks:
                 await inbox_task_archive_service.do_it(
-                    context.domain_context, uow, progress_reporter, inbox_task
+                    context.domain_context,
+                    uow,
+                    progress_reporter,
+                    inbox_task,
+                    ArchivalReason.USER,
                 )
         else:
             # Situation 2: we need to update the existing persons.
@@ -256,12 +261,16 @@ class PersonUpdateUseCase(
             inbox_task_archive_service = InboxTaskArchiveService()
             for inbox_task in person_birthday_tasks:
                 await inbox_task_archive_service.do_it(
-                    context.domain_context, uow, progress_reporter, inbox_task
+                    context.domain_context,
+                    uow,
+                    progress_reporter,
+                    inbox_task,
+                    ArchivalReason.USER,
                 )
 
             for time_event_block in birthday_time_event_blocks:
                 time_event_block = time_event_block.mark_archived(
-                    context.domain_context
+                    context.domain_context, ArchivalReason.USER
                 )
                 await uow.get(TimeEventFullDaysBlockRepository).save(time_event_block)
         else:

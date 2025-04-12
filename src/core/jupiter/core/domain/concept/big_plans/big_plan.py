@@ -8,6 +8,7 @@ from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
@@ -174,7 +175,7 @@ class BigPlanRepository(LeafEntityRepository[BigPlan], abc.ABC):
     async def find_completed_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_start_completed_date: ADate,
         filter_end_completed_date: ADate,
         filter_exclude_ref_ids: Iterable[EntityId] | None = None,

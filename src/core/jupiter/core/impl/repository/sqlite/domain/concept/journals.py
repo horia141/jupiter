@@ -6,6 +6,7 @@ from jupiter.core.domain.concept.journals.journal import (
     JournalRepository,
 )
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.realm import RealmCodecRegistry
@@ -38,7 +39,7 @@ class SqliteJournalRepository(SqliteLeafEntityRepository[Journal], JournalReposi
     async def find_all_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_periods: list[RecurringTaskPeriod],
         filter_start_date: ADate,
         filter_end_date: ADate,
@@ -51,8 +52,23 @@ class SqliteJournalRepository(SqliteLeafEntityRepository[Journal], JournalReposi
             self._table.c.journal_collection_ref_id == parent_ref_id.as_int(),
         )
 
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
 
         query_stmt = query_stmt.where(
             self._table.c.period.in_([p.value for p in filter_periods])

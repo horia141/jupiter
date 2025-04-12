@@ -20,6 +20,7 @@ from typing import (
 
 import inflection
 import pendulum
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -78,6 +79,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 _EntityT = TypeVar("_EntityT", bound=Entity)
 _RecordT = TypeVar("_RecordT", bound=Record)
 _RecordKeyPrefixT = TypeVar("_RecordKeyPrefixT")
+_ArchivalReasonT = TypeVar("_ArchivalReasonT", bound=EnumValue)
 
 
 class SqliteRepository(abc.ABC):
@@ -475,14 +477,31 @@ class SqliteRootEntityRepository(
     """A repository for root entities backed by SQLite, meant to be used as a mixin."""
 
     async def load_by_id(
-        self, entity_id: EntityId, allow_archived: bool = False
+        self,
+        entity_id: EntityId,
+        allow_archived: bool | _ArchivalReasonT | list[_ArchivalReasonT] = False,
     ) -> _RootEntityT:
         """Loads the root entity."""
         query_stmt = select(self._table).where(
             self._table.c.ref_id == entity_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
@@ -502,13 +521,28 @@ class SqliteRootEntityRepository(
 
     async def find_all(
         self,
-        allow_archived: bool = False,
+        allow_archived: bool | _ArchivalReasonT | list[_ArchivalReasonT] = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[_RootEntityT]:
         """Find all entities links matching some criteria."""
         query_stmt = select(self._table)
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._table.c.ref_id.in_([ref_id.as_int() for ref_id in filter_ref_ids])
@@ -539,14 +573,31 @@ class SqliteTrunkEntityRepository(
         return self._row_to_entity(result)
 
     async def load_by_id(
-        self, entity_id: EntityId, allow_archived: bool = False
+        self,
+        entity_id: EntityId,
+        allow_archived: bool | _ArchivalReasonT | list[_ArchivalReasonT] = False,
     ) -> _TrunkEntityT:
         """Loads the trunk entity."""
         query_stmt = select(self._table).where(
             self._table.c.ref_id == entity_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
@@ -623,14 +674,29 @@ class SqliteCrownEntityRepository(
     async def load_by_id(
         self,
         ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | _ArchivalReasonT | list[_ArchivalReasonT] = False,
     ) -> _CrownEntityT:
         """Find a note by id."""
         query_stmt = select(self._table).where(
             self._table.c.ref_id == ref_id.as_int(),
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise self._not_found_err_cls(
@@ -641,15 +707,30 @@ class SqliteCrownEntityRepository(
     async def find_all(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | _ArchivalReasonT | list[_ArchivalReasonT] = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[_CrownEntityT]:
         """Find all crowns matching some criteria."""
         query_stmt = select(self._table).where(
             self._table.c[self._get_parent_field_name()] == parent_ref_id.as_int()
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._table.c.ref_id.in_([fi.as_int() for fi in filter_ref_ids])
@@ -661,7 +742,7 @@ class SqliteCrownEntityRepository(
         self,
         *,
         parent_ref_id: EntityId | None = None,
-        allow_archived: bool = False,
+        allow_archived: bool | _ArchivalReasonT | list[_ArchivalReasonT] = False,
         **kwargs: EntityLinkFilterCompiled,
     ) -> list[_CrownEntityT]:
         """Find all crowns with generic filters."""
@@ -671,8 +752,23 @@ class SqliteCrownEntityRepository(
             query_stmt = query_stmt.where(
                 self._table.c[self._get_parent_field_name()] == parent_ref_id.as_int()
             )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
 
         query_stmt = compile_query_relative_to(
             self._realm_codec_registry, query_stmt, self._table, kwargs

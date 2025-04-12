@@ -16,6 +16,7 @@ from jupiter.core.framework.entity import (
     TrunkEntity,
 )
 from jupiter.core.framework.record import Record
+from jupiter.core.framework.value import EnumValue
 
 
 class Repository:
@@ -68,6 +69,7 @@ class EntityNotFoundError(Exception):
 
 
 EntityT = TypeVar("EntityT", bound=Entity)
+ArchivalReasonT = TypeVar("ArchivalReasonT", bound=EnumValue)
 
 
 class EntityRepository(Generic[EntityT], Repository, abc.ABC):
@@ -94,7 +96,9 @@ class RootEntityRepository(EntityRepository[RootEntityT], abc.ABC):
 
     @abc.abstractmethod
     async def load_by_id(
-        self, entity_id: EntityId, allow_archived: bool = False
+        self,
+        entity_id: EntityId,
+        allow_archived: bool | ArchivalReasonT | list[ArchivalReasonT] = False,
     ) -> RootEntityT:
         """Loads the root entity."""
 
@@ -105,7 +109,7 @@ class RootEntityRepository(EntityRepository[RootEntityT], abc.ABC):
     @abc.abstractmethod
     async def find_all(
         self,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReasonT | list[ArchivalReasonT] = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[RootEntityT]:
         """Find all root entities matching some criteria."""
@@ -131,7 +135,9 @@ class TrunkEntityRepository(EntityRepository[TrunkEntityT], abc.ABC):
 
     @abc.abstractmethod
     async def load_by_id(
-        self, ref_id: EntityId, allow_archived: bool = False
+        self,
+        ref_id: EntityId,
+        allow_archived: bool | ArchivalReasonT | list[ArchivalReasonT] = False,
     ) -> TrunkEntityT:
         """Retrieve a trunk by its id."""
 
@@ -171,7 +177,9 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
 
     @abc.abstractmethod
     async def load_by_id(
-        self, ref_id: EntityId, allow_archived: bool = False
+        self,
+        ref_id: EntityId,
+        allow_archived: bool | ArchivalReasonT | list[ArchivalReasonT] = False,
     ) -> CrownEntityT:
         """Retrieve a crown by its id."""
 
@@ -179,7 +187,7 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
     async def find_all(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReasonT | list[ArchivalReasonT] = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
     ) -> list[CrownEntityT]:
         """Find all crowns matching some criteria."""
@@ -189,7 +197,7 @@ class CrownEntityRepository(EntityRepository[CrownEntityT], abc.ABC):
         self,
         *,
         parent_ref_id: EntityId | None = None,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReasonT | list[ArchivalReasonT] = False,
         **kwargs: EntityLinkFilterCompiled,
     ) -> list[CrownEntityT]:
         """Find all crowns with generic filters."""

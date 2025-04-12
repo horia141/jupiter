@@ -9,6 +9,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.journals.journal_source import JournalSource
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -140,7 +141,7 @@ class JournalRepository(LeafEntityRepository[Journal], abc.ABC):
     async def find_all_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_periods: list[RecurringTaskPeriod],
         filter_start_date: ADate,
         filter_end_date: ADate,

@@ -294,18 +294,29 @@ export function makeToolErrorBoundary(labelFn: () => string) {
   function ErrorBoundary({ error }: { error: Error }) {
     const globalProperties = useContext(GlobalPropertiesContext);
 
+    if (error instanceof Error) {
+      return (
+        <ToolPanel key="error">
+          <Alert severity="error">
+            <AlertTitle>Danger</AlertTitle>
+            {labelFn()}
+
+            {isDevelopment(globalProperties.env) && (
+              <Box>
+                <pre>{error.message}</pre>
+                <pre>{error.stack}</pre>
+              </Box>
+            )}
+          </Alert>
+        </ToolPanel>
+      );
+    }
+
     return (
       <ToolPanel key="error">
         <Alert severity="error">
-          <AlertTitle>Danger</AlertTitle>
-          {labelFn()}
-
-          {isDevelopment(globalProperties.env) && (
-            <Box>
-              <pre>{error.message}</pre>
-              <pre>{error.stack}</pre>
-            </Box>
-          )}
+          <AlertTitle>Critical</AlertTitle>
+          Unknown error!
         </Alert>
       </ToolPanel>
     );

@@ -3,6 +3,7 @@
 from typing import cast
 
 from jupiter.core.domain.core.adate import ADate, ADateDatabaseDecoder
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
     TimeEventFullDaysBlock,
     TimeEventFullDaysBlockRepository,
@@ -36,7 +37,7 @@ class SqliteTimeEventInDayBlockRepository(
         self,
         namespace: TimeEventNamespace,
         source_entity_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
     ) -> TimeEventInDayBlock:
         """Retrieve a time event in day block via its namespace."""
         query_stmt = (
@@ -44,8 +45,23 @@ class SqliteTimeEventInDayBlockRepository(
             .where(self._table.c.namespace == namespace.value)
             .where(self._table.c.source_entity_ref_id == source_entity_ref_id.as_int())
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise EntityNotFoundError(
@@ -108,7 +124,7 @@ class SqliteTimeEventFullDaysBlockRepository(
         self,
         namespace: TimeEventNamespace,
         source_entity_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
     ) -> TimeEventFullDaysBlock:
         """Retrieve a time event in full day block via its namespace."""
         query_stmt = (
@@ -116,8 +132,23 @@ class SqliteTimeEventFullDaysBlockRepository(
             .where(self._table.c.namespace == namespace.value)
             .where(self._table.c.source_entity_ref_id == source_entity_ref_id.as_int())
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         result = (await self._connection.execute(query_stmt)).first()
         if result is None:
             raise EntityNotFoundError(
@@ -129,7 +160,7 @@ class SqliteTimeEventFullDaysBlockRepository(
         self,
         namespace: TimeEventNamespace,
         source_entity_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
     ) -> list[TimeEventFullDaysBlock]:
         """Retrieve a time event in full day block via its namespace."""
         query_stmt = (
@@ -137,8 +168,23 @@ class SqliteTimeEventFullDaysBlockRepository(
             .where(self._table.c.namespace == namespace.value)
             .where(self._table.c.source_entity_ref_id == source_entity_ref_id.as_int())
         )
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        if isinstance(allow_archived, bool):
+            if not allow_archived:
+                query_stmt = query_stmt.where(self._table.c.archived.is_(False))
+        elif isinstance(allow_archived, ArchivalReason):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (self._table.c.archival_reason == str(allow_archived.value))
+            )
+        elif isinstance(allow_archived, list):
+            query_stmt = query_stmt.where(
+                (self._table.c.archived.is_(False))
+                | (
+                    self._table.c.archival_reason.in_(
+                        [str(reason.value) for reason in allow_archived]
+                    )
+                )
+            )
         result = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in result]
 

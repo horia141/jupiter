@@ -13,6 +13,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskS
 from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
@@ -39,6 +40,7 @@ class BigPlanArchiveService:
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         big_plan: BigPlan,
+        archival_reason: ArchivalReason,
     ) -> BigPlanArchiveServiceResult:
         """Execute the service's action."""
         if big_plan.archived:
@@ -67,16 +69,16 @@ class BigPlanArchiveService:
             if inbox_task.archived:
                 continue
             await inbox_task_archive_service.do_it(
-                ctx, uow, progress_reporter, inbox_task
+                ctx, uow, progress_reporter, inbox_task, archival_reason
             )
             archived_inbox_tasks.append(inbox_task)
 
         note_archive_service = NoteArchiveService()
         await note_archive_service.archive_for_source(
-            ctx, uow, NoteDomain.BIG_PLAN, big_plan.ref_id
+            ctx, uow, NoteDomain.BIG_PLAN, big_plan.ref_id, archival_reason
         )
 
-        big_plan = big_plan.mark_archived(ctx)
+        big_plan = big_plan.mark_archived(ctx, archival_reason)
         await uow.get_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 

@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.concept.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.concept.smart_lists.smart_list_tag import SmartListTag
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -59,6 +60,8 @@ class SmartListTagArchiveUseCase(
             await uow.get_for(SmartListItem).save(smart_list_item)
             await progress_reporter.mark_updated(smart_list_item)
 
-        smart_list_tag = smart_list_tag.mark_archived(context.domain_context)
+        smart_list_tag = smart_list_tag.mark_archived(
+            context.domain_context, ArchivalReason.USER
+        )
         await uow.get_for(SmartListTag).save(smart_list_tag)
         await progress_reporter.mark_updated(smart_list_tag)
