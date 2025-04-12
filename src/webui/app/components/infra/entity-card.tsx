@@ -21,7 +21,7 @@ const SWIPE_COMPLETE_THRESHOLD = 150;
 interface EntityCardProps {
   entityId?: string;
   showAsArchived?: boolean;
-  backgroundHint?: "neutral" | "success" | "failure";
+  backgroundHint?: "neutral" | "success" | "failure" | "warning";
   extraControls?: JSX.Element;
   allowSwipe?: boolean;
   allowSelect?: boolean;
@@ -113,7 +113,9 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
                 : "transparent"
               : backgroundHint === "success"
                 ? `${theme.palette.success.light}22`
-                : `${theme.palette.error.light}22`,
+                : backgroundHint === "warning"
+                  ? `${theme.palette.warning.light}22`
+                  : `${theme.palette.error.light}22`,
         }}
         onClick={props.onClick}
       >

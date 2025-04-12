@@ -1,8 +1,11 @@
 """The kind of an activity."""
 
+from functools import total_ordering
+
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
+@total_ordering
 @enum_value
 class TimePlanActivityKind(EnumValue):
     """The kind of a time plan activity."""

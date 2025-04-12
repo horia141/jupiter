@@ -36,6 +36,7 @@ class GenLogEntry:
         entity_created_records (list['EntitySummary']):
         entity_updated_records (list['EntitySummary']):
         entity_removed_records (list['EntitySummary']):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         period (Union[None, Unset, list[RecurringTaskPeriod]]):
         filter_project_ref_ids (Union[None, Unset, list[str]]):
@@ -62,6 +63,7 @@ class GenLogEntry:
     entity_created_records: list["EntitySummary"]
     entity_updated_records: list["EntitySummary"]
     entity_removed_records: list["EntitySummary"]
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     period: Union[None, Unset, list[RecurringTaskPeriod]] = UNSET
     filter_project_ref_ids: Union[None, Unset, list[str]] = UNSET
@@ -115,6 +117,12 @@ class GenLogEntry:
         for entity_removed_records_item_data in self.entity_removed_records:
             entity_removed_records_item = entity_removed_records_item_data.to_dict()
             entity_removed_records.append(entity_removed_records_item)
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -218,6 +226,8 @@ class GenLogEntry:
                 "entity_removed_records": entity_removed_records,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if period is not UNSET:
@@ -293,6 +303,15 @@ class GenLogEntry:
             entity_removed_records_item = EntitySummary.from_dict(entity_removed_records_item_data)
 
             entity_removed_records.append(entity_removed_records_item)
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -460,6 +479,7 @@ class GenLogEntry:
             entity_created_records=entity_created_records,
             entity_updated_records=entity_updated_records,
             entity_removed_records=entity_removed_records,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             period=period,
             filter_project_ref_ids=filter_project_ref_ids,

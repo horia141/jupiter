@@ -32,6 +32,7 @@ class Journal:
         period (RecurringTaskPeriod): A period for a particular task.
         timeline (str):
         report (ReportPeriodResult): Report result.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -47,6 +48,7 @@ class Journal:
     period: RecurringTaskPeriod
     timeline: str
     report: "ReportPeriodResult"
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -75,6 +77,12 @@ class Journal:
 
         report = self.report.to_dict()
 
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
+
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
@@ -99,6 +107,8 @@ class Journal:
                 "report": report,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -133,6 +143,15 @@ class Journal:
 
         report = ReportPeriodResult.from_dict(d.pop("report"))
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -155,6 +174,7 @@ class Journal:
             period=period,
             timeline=timeline,
             report=report,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

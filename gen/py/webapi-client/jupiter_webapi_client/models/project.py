@@ -22,6 +22,7 @@ class Project:
         name (str): The project name.
         project_collection_ref_id (str):
         order_of_child_projects (list[str]):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         parent_project_ref_id (Union[None, Unset, str]):
     """
@@ -34,6 +35,7 @@ class Project:
     name: str
     project_collection_ref_id: str
     order_of_child_projects: list[str]
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     parent_project_ref_id: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -54,6 +56,12 @@ class Project:
         project_collection_ref_id = self.project_collection_ref_id
 
         order_of_child_projects = self.order_of_child_projects
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -81,6 +89,8 @@ class Project:
                 "order_of_child_projects": order_of_child_projects,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if parent_project_ref_id is not UNSET:
@@ -106,6 +116,15 @@ class Project:
         project_collection_ref_id = d.pop("project_collection_ref_id")
 
         order_of_child_projects = cast(list[str], d.pop("order_of_child_projects"))
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -134,6 +153,7 @@ class Project:
             name=name,
             project_collection_ref_id=project_collection_ref_id,
             order_of_child_projects=order_of_child_projects,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             parent_project_ref_id=parent_project_ref_id,
         )

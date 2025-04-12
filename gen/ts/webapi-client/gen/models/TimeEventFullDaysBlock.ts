@@ -14,6 +14,7 @@ export type TimeEventFullDaysBlock = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
+    archival_reason?: (string | null);
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);

@@ -1,11 +1,10 @@
-import type {
+import {
   BigPlan,
   InboxTask,
   TimeEventInDayBlock,
   TimePlan,
   TimePlanActivity,
-} from "@jupiter/webapi-client";
-import {
+  TimePlanActivityDoneness,
   BigPlanStatus,
   InboxTaskStatus,
   TimePlanActivityTarget,
@@ -30,7 +29,7 @@ interface TimePlanActivityCardProps {
   timePlansByRefId: Map<string, TimePlan>;
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
-  activityDoneness: Record<string, boolean>;
+  activityDoneness: Record<string, TimePlanActivityDoneness>;
   timeEventsByRefId: Map<string, Array<TimeEventInDayBlock>>;
   fullInfo: boolean;
   allowSelect?: boolean;
@@ -64,11 +63,15 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
             : undefined
         }
         backgroundHint={
-          props.activityDoneness[props.activity.ref_id]
+          props.activityDoneness[props.activity.ref_id] ===
+          TimePlanActivityDoneness.DONE
             ? inboxTask?.status === InboxTaskStatus.NOT_DONE
               ? "failure"
               : "success"
-            : "neutral"
+            : props.activityDoneness[props.activity.ref_id] ===
+                TimePlanActivityDoneness.WORKING
+              ? "warning"
+              : "neutral"
         }
       >
         <EntityLink
@@ -78,7 +81,8 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           <Typography
             sx={{
               fontWeight: inboxTask
-                ? props.activityDoneness[props.activity.ref_id]
+                ? props.activityDoneness[props.activity.ref_id] ===
+                  TimePlanActivityDoneness.DONE
                   ? "bold"
                   : "normal"
                 : "lighter",
@@ -131,11 +135,15 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
             : undefined
         }
         backgroundHint={
-          props.activityDoneness[props.activity.ref_id]
+          props.activityDoneness[props.activity.ref_id] ===
+          TimePlanActivityDoneness.DONE
             ? bigPlan?.status === BigPlanStatus.NOT_DONE
               ? "failure"
               : "success"
-            : "neutral"
+            : props.activityDoneness[props.activity.ref_id] ===
+                TimePlanActivityDoneness.WORKING
+              ? "warning"
+              : "neutral"
         }
       >
         <EntityLink
@@ -145,7 +153,8 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           <Typography
             sx={{
               fontWeight: bigPlan
-                ? props.activityDoneness[props.activity.ref_id]
+                ? props.activityDoneness[props.activity.ref_id] ===
+                  TimePlanActivityDoneness.DONE
                   ? "bold"
                   : "normal"
                 : "lighter",

@@ -21,6 +21,7 @@ class EmailTaskCollection:
         last_modified_time (str): A timestamp in the application.
         push_integration_group_ref_id (str):
         generation_project_ref_id (str): A generic entity id.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -31,6 +32,7 @@ class EmailTaskCollection:
     last_modified_time: str
     push_integration_group_ref_id: str
     generation_project_ref_id: str
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -48,6 +50,12 @@ class EmailTaskCollection:
         push_integration_group_ref_id = self.push_integration_group_ref_id
 
         generation_project_ref_id = self.generation_project_ref_id
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -68,6 +76,8 @@ class EmailTaskCollection:
                 "generation_project_ref_id": generation_project_ref_id,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -90,6 +100,15 @@ class EmailTaskCollection:
 
         generation_project_ref_id = d.pop("generation_project_ref_id")
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -107,6 +126,7 @@ class EmailTaskCollection:
             last_modified_time=last_modified_time,
             push_integration_group_ref_id=push_integration_group_ref_id,
             generation_project_ref_id=generation_project_ref_id,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

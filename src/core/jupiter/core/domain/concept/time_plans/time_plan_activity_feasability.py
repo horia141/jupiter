@@ -1,8 +1,11 @@
 """The feasability of a particular activity within a plan."""
 
+from functools import total_ordering
+
 from jupiter.core.framework.value import EnumValue, enum_value
 
 
+@total_ordering
 @enum_value
 class TimePlanActivityFeasability(EnumValue):
     """The feasability of a particular activity within a plan."""

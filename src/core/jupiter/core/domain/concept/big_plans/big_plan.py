@@ -145,6 +145,11 @@ class BigPlan(LeafEntity):
         )
 
     @property
+    def is_working(self) -> bool:
+        """Whether this task is being worked on or not."""
+        return self.status.is_working
+
+    @property
     def is_working_or_more(self) -> bool:
         """Whether this task is being worked on or not."""
         return self.status.is_working_or_more

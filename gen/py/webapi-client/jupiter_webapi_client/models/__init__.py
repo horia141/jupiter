@@ -5,6 +5,7 @@ from .app_distribution import AppDistribution
 from .app_distribution_state import AppDistributionState
 from .app_platform import AppPlatform
 from .app_shell import AppShell
+from .archival_reason import ArchivalReason
 from .big_plan import BigPlan
 from .big_plan_archive_args import BigPlanArchiveArgs
 from .big_plan_archive_service_result import BigPlanArchiveServiceResult
@@ -493,6 +494,7 @@ from .time_event_namespace import TimeEventNamespace
 from .time_plan import TimePlan
 from .time_plan_activity import TimePlanActivity
 from .time_plan_activity_archive_args import TimePlanActivityArchiveArgs
+from .time_plan_activity_doneness import TimePlanActivityDoneness
 from .time_plan_activity_feasability import TimePlanActivityFeasability
 from .time_plan_activity_find_for_target_args import TimePlanActivityFindForTargetArgs
 from .time_plan_activity_find_for_target_result import TimePlanActivityFindForTargetResult
@@ -598,6 +600,7 @@ __all__ = (
     "AppDistributionState",
     "AppPlatform",
     "AppShell",
+    "ArchivalReason",
     "BigPlan",
     "BigPlanArchiveArgs",
     "BigPlanArchiveServiceResult",
@@ -1084,6 +1087,7 @@ __all__ = (
     "TimePlan",
     "TimePlanActivity",
     "TimePlanActivityArchiveArgs",
+    "TimePlanActivityDoneness",
     "TimePlanActivityFeasability",
     "TimePlanActivityFindForTargetArgs",
     "TimePlanActivityFindForTargetResult",

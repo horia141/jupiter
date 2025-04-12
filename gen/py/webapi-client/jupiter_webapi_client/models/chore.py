@@ -30,6 +30,7 @@ class Chore:
         suspended (bool):
         must_do (bool):
         start_at_date (str): A date or possibly a datetime for the application.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         end_at_date (Union[None, Unset, str]):
     """
@@ -46,6 +47,7 @@ class Chore:
     suspended: bool
     must_do: bool
     start_at_date: str
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     end_at_date: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -74,6 +76,12 @@ class Chore:
         must_do = self.must_do
 
         start_at_date = self.start_at_date
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -105,6 +113,8 @@ class Chore:
                 "start_at_date": start_at_date,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if end_at_date is not UNSET:
@@ -141,6 +151,15 @@ class Chore:
 
         start_at_date = d.pop("start_at_date")
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -172,6 +191,7 @@ class Chore:
             suspended=suspended,
             must_do=must_do,
             start_at_date=start_at_date,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             end_at_date=end_at_date,
         )

@@ -3,6 +3,7 @@ import type {
   InboxTask,
   TimePlan,
   TimePlanActivity,
+  TimePlanActivityDoneness,
   Workspace,
 } from "@jupiter/webapi-client";
 import {
@@ -143,7 +144,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       activities: result.activities,
       targetInboxTasks: result.target_inbox_tasks as Array<InboxTask>,
       targetBigPlans: result.target_big_plans,
-      activityDoneness: result.activity_doneness as Record<string, boolean>,
+      activityDoneness: result.activity_doneness as Record<
+        string,
+        TimePlanActivityDoneness
+      >,
       completedNontargetInboxTasks:
         result.completed_nontarget_inbox_tasks as Array<InboxTask>,
       completedNontargetBigPlans: result.completed_nottarget_big_plans,

@@ -25,6 +25,7 @@ class Workspace:
         last_modified_time (str): A timestamp in the application.
         name (str): The workspace name.
         feature_flags (WorkspaceFeatureFlags):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -35,6 +36,7 @@ class Workspace:
     last_modified_time: str
     name: str
     feature_flags: "WorkspaceFeatureFlags"
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -52,6 +54,12 @@ class Workspace:
         name = self.name
 
         feature_flags = self.feature_flags.to_dict()
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -72,6 +80,8 @@ class Workspace:
                 "feature_flags": feature_flags,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -96,6 +106,15 @@ class Workspace:
 
         feature_flags = WorkspaceFeatureFlags.from_dict(d.pop("feature_flags"))
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -113,6 +132,7 @@ class Workspace:
             last_modified_time=last_modified_time,
             name=name,
             feature_flags=feature_flags,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

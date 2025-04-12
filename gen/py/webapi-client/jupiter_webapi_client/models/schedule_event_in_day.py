@@ -24,6 +24,7 @@ class ScheduleEventInDay:
         schedule_domain_ref_id (str):
         schedule_stream_ref_id (str): A generic entity id.
         source (ScheduleSource): The source of a schedule.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         external_uid (Union[None, Unset, str]):
     """
@@ -37,6 +38,7 @@ class ScheduleEventInDay:
     schedule_domain_ref_id: str
     schedule_stream_ref_id: str
     source: ScheduleSource
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     external_uid: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -59,6 +61,12 @@ class ScheduleEventInDay:
         schedule_stream_ref_id = self.schedule_stream_ref_id
 
         source = self.source.value
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -87,6 +95,8 @@ class ScheduleEventInDay:
                 "source": source,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if external_uid is not UNSET:
@@ -114,6 +124,15 @@ class ScheduleEventInDay:
         schedule_stream_ref_id = d.pop("schedule_stream_ref_id")
 
         source = ScheduleSource(d.pop("source"))
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -143,6 +162,7 @@ class ScheduleEventInDay:
             schedule_domain_ref_id=schedule_domain_ref_id,
             schedule_stream_ref_id=schedule_stream_ref_id,
             source=source,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             external_uid=external_uid,
         )

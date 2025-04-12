@@ -30,6 +30,7 @@ class InboxTask:
         status (InboxTaskStatus): The status of an inbox task.
         eisen (Eisen): The Eisenhower status of a particular task.
         difficulty (Difficulty): The difficulty of a particular task.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         actionable_date (Union[None, Unset, str]):
         due_date (Union[None, Unset, str]):
@@ -54,6 +55,7 @@ class InboxTask:
     status: InboxTaskStatus
     eisen: Eisen
     difficulty: Difficulty
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     actionable_date: Union[None, Unset, str] = UNSET
     due_date: Union[None, Unset, str] = UNSET
@@ -90,6 +92,12 @@ class InboxTask:
         eisen = self.eisen.value
 
         difficulty = self.difficulty.value
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -169,6 +177,8 @@ class InboxTask:
                 "difficulty": difficulty,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if actionable_date is not UNSET:
@@ -218,6 +228,15 @@ class InboxTask:
         eisen = Eisen(d.pop("eisen"))
 
         difficulty = Difficulty(d.pop("difficulty"))
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -322,6 +341,7 @@ class InboxTask:
             status=status,
             eisen=eisen,
             difficulty=difficulty,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             actionable_date=actionable_date,
             due_date=due_date,

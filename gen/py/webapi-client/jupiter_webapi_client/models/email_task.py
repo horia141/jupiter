@@ -32,6 +32,7 @@ class EmailTask:
         body (str):
         generation_extra_info (PushGenerationExtraInfo): Extra information for how to generate an inbox task.
         has_generated_task (bool):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -49,6 +50,7 @@ class EmailTask:
     body: str
     generation_extra_info: "PushGenerationExtraInfo"
     has_generated_task: bool
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -81,6 +83,12 @@ class EmailTask:
 
         has_generated_task = self.has_generated_task
 
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
+
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
@@ -107,6 +115,8 @@ class EmailTask:
                 "has_generated_task": has_generated_task,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -145,6 +155,15 @@ class EmailTask:
 
         has_generated_task = d.pop("has_generated_task")
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -169,6 +188,7 @@ class EmailTask:
             body=body,
             generation_extra_info=generation_extra_info,
             has_generated_task=has_generated_task,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

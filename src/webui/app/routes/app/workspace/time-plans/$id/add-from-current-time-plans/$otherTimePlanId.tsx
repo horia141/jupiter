@@ -1,4 +1,9 @@
-import type { BigPlan, InboxTask, TimePlan } from "@jupiter/webapi-client";
+import type {
+  BigPlan,
+  InboxTask,
+  TimePlan,
+  TimePlanActivityDoneness,
+} from "@jupiter/webapi-client";
 import {
   ApiError,
   InboxTaskSource,
@@ -130,7 +135,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       otherTargetBigPlans: otherResult.target_big_plans,
       otherActivityDoneness: otherResult.activity_doneness as Record<
         string,
-        boolean
+        TimePlanActivityDoneness
       >,
       otherTimeEventForInboxTasks:
         otherTimeEventResult?.entries?.inbox_task_entries || [],

@@ -1,13 +1,12 @@
-import type {
+import {
   BigPlan,
   InboxTask,
   TimeEventInDayBlock,
   TimePlan,
   TimePlanActivity,
+  TimePlanActivityDoneness,
   TimePlanActivityFeasability,
   TimePlanActivityKind,
-} from "@jupiter/webapi-client";
-import {
   InboxTaskSource,
   TimePlanActivityTarget,
 } from "@jupiter/webapi-client";
@@ -24,7 +23,7 @@ interface TimePlanActivityListProps {
   timePlansByRefId: Map<string, TimePlan>;
   inboxTasksByRefId: Map<string, InboxTask>;
   bigPlansByRefId: Map<string, BigPlan>;
-  activityDoneness: Record<string, boolean>;
+  activityDoneness: Record<string, TimePlanActivityDoneness>;
   timeEventsByRefId: Map<string, Array<TimeEventInDayBlock>>;
   fullInfo: boolean;
   filterKind?: TimePlanActivityKind[];
@@ -60,7 +59,10 @@ export function TimePlanActivityList(props: TimePlanActivityListProps) {
         if (
           props.filterDoneness &&
           props.filterDoneness.length > 0 &&
-          !props.filterDoneness.includes(props.activityDoneness[entry.ref_id])
+          !props.filterDoneness.includes(
+            props.activityDoneness[entry.ref_id] ===
+              TimePlanActivityDoneness.DONE,
+          )
         ) {
           return null;
         }
