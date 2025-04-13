@@ -295,15 +295,11 @@ class TimePlanLoadUseCase(
                         <= time_plan.end_date.add_days(60).to_timestamp_at_end_of_day()
                     )
 
-                    if (
-                        (big_plan.is_completed
-                        or modified_in_time_plan)
-                        and all_subactivities_are_done
-                    ):
+                    if big_plan.is_completed or all_subactivities_are_done:
                         activity_doneness[activity.ref_id] = (
                             TimePlanActivityDoneness.DONE
                         )
-                    elif some_subactivity_is_working_or_done:
+                    elif modified_in_time_plan or some_subactivity_is_working_or_done:
                         activity_doneness[activity.ref_id] = (
                             TimePlanActivityDoneness.WORKING
                         )
