@@ -9,12 +9,16 @@ import { Stack } from "@mui/system";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation } from "@remix-run/react";
+import {
+  useActionData,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm } from "zodix";
+import { parseForm, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
@@ -35,6 +39,11 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
+
+const QuerySchema = z.object({
+  initialRightNow: z.string().optional(),
+  initialPeriod: z.nativeEnum(RecurringTaskPeriod).optional(),
+});
 
 const CreateFormSchema = z.object({
   rightNow: z.string(),
@@ -79,12 +88,20 @@ export default function NewTimePlan() {
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const actionData = useActionData<typeof action>();
-
+  const [queryRaw] = useSearchParams();
   const inputsEnabled = navigation.state === "idle";
+
+  const query = parseQuery(queryRaw, QuerySchema);
+  const initialRightNow =
+    query.initialRightNow ||
+    DateTime.local({
+      zone: topLevelInfo.user.timezone,
+    }).toISODate();
+  const initialPeriod = query.initialPeriod || RecurringTaskPeriod.WEEKLY;
 
   return (
     <LeafPanel
-      key={"time-plans"}
+      key={`time-plans-${initialRightNow}-${initialPeriod}`}
       returnLocation="/app/workspace/time-plans"
       inputsEnabled={inputsEnabled}
     >
@@ -119,9 +136,7 @@ export default function NewTimePlan() {
               label="rightNow"
               name="rightNow"
               readOnly={!inputsEnabled}
-              defaultValue={DateTime.local({
-                zone: topLevelInfo.user.timezone,
-              }).toISODate()}
+              defaultValue={initialRightNow}
             />
 
             <FieldError actionResult={actionData} fieldName="/right_now" />
@@ -134,7 +149,7 @@ export default function NewTimePlan() {
               label="Period"
               name="period"
               inputsEnabled={inputsEnabled}
-              defaultValue={RecurringTaskPeriod.WEEKLY}
+              defaultValue={initialPeriod}
             />
             <FieldError actionResult={actionData} fieldName="/period" />
           </FormControl>

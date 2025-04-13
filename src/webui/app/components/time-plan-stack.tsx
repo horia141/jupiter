@@ -3,9 +3,11 @@ import type { TimePlan } from "@jupiter/webapi-client";
 import type { TopLevelInfo } from "~/top-level-context";
 
 import { EntityStack } from "./infra/entity-stack";
+import { StandardDivider } from "./standard-divider";
 import { TimePlanCard } from "./time-plan-card";
 
 interface TimePlanStackProps {
+  label?: string;
   topLevelInfo: TopLevelInfo;
   timePlans: Array<TimePlan>;
   allowSwipe?: boolean;
@@ -17,6 +19,8 @@ interface TimePlanStackProps {
 export function TimePlanStack(props: TimePlanStackProps) {
   return (
     <EntityStack>
+      {props.label && <StandardDivider title={props.label} size="large" />}
+
       {props.timePlans.map((timePlan) => (
         <TimePlanCard
           key={`time-plan-${timePlan.ref_id}`}

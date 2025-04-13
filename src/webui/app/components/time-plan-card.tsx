@@ -8,6 +8,7 @@ import { PeriodTag } from "./period-tag";
 import { TimePlanSourceTag } from "./time-plan-source-tag";
 
 interface TimePlanCardProps {
+  label?: string;
   topLevelInfo: TopLevelInfo;
   timePlan: TimePlan;
   relativeToTimePlan?: TimePlan;
@@ -30,7 +31,7 @@ export function TimePlanCard(props: TimePlanCardProps) {
       onMarkNotDone={() => props.onMarkNotDone && props.onMarkNotDone(timePlan)}
     >
       <EntityLink to={link}>
-        <EntityNameComponent name={timePlan.name} />
+        <EntityNameComponent name={props.label ?? timePlan.name} />
         <TimePlanSourceTag source={timePlan.source} />
         <PeriodTag period={timePlan.period} />
       </EntityLink>
