@@ -21,6 +21,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.errors import ProjectInSignificantUseError
@@ -35,6 +36,7 @@ from jupiter.core.domain.concept.push_integrations.group.push_integration_group 
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
@@ -66,6 +68,22 @@ class ProjectArchiveService:
             raise Exception("The root project cannot be archived")
 
         # test it's not the workspace default project nor a metric collection project nor a person catchup one
+        time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
+            workspace.ref_id
+        )
+        if time_plan_domain.planning_task_project_ref_id == project.ref_id:
+            raise ProjectInSignificantUseError(
+                "The project is being used as the time plan default one"
+            )
+        
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
+            workspace.ref_id
+        )
+        if journal_collection.writing_task_project_ref_id == project.ref_id:
+            raise ProjectInSignificantUseError(
+                "The project is being used as the journal default one"
+            )
+        
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id
         )
@@ -73,6 +91,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the metric collection default one"
             )
+    
         person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id
         )
@@ -84,6 +103,7 @@ class ProjectArchiveService:
         push_integration_group = await uow.get_for(PushIntegrationGroup).load_by_parent(
             workspace.ref_id,
         )
+
         slack_task_collection = await uow.get_for(SlackTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
@@ -91,6 +111,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the Slack task collection default one"
             )
+        
         email_task_collection = await uow.get_for(EmailTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
@@ -98,6 +119,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the email task collection default one"
             )
+        
         working_mem_collection = await uow.get_for(WorkingMemCollection).load_by_parent(
             workspace.ref_id
         )

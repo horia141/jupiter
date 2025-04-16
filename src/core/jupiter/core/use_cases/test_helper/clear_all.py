@@ -154,14 +154,6 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
 
                 await uow.get_for(Workspace).save(workspace)
 
-                time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
-                    workspace.ref_id
-                )
-                time_plan_domain = time_plan_domain.update(
-                    context.domain_context, days_until_gc=7
-                )
-                await uow.get_for(TimePlanDomain).save(time_plan_domain)
-
                 root_project = await uow.get(ProjectRepository).load_root_project(
                     project_collection.ref_id
                 )
@@ -170,6 +162,21 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     name=UpdateAction.change_to(args.workspace_root_project_name),
                 )
                 await uow.get_for(Project).save(root_project)
+
+                time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
+                    workspace.ref_id
+                )
+                time_plan_domain = time_plan_domain.update(
+                    context.domain_context,
+                    periods=UpdateAction.change_to(set()),
+                    planning_task_project_ref_id=UpdateAction.change_to(
+                        root_project.ref_id
+                    ),
+                    planning_task_eisen=UpdateAction.change_to(Eisen.IMPORTANT),
+                    planning_task_difficulty=UpdateAction.change_to(Difficulty.MEDIUM),
+                    days_until_gc=UpdateAction.change_to(7),
+                )
+                await uow.get_for(TimePlanDomain).save(time_plan_domain)
 
                 journal_collection = await uow.get_for(
                     JournalCollection

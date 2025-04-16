@@ -65,6 +65,7 @@ from jupiter.core.domain.features import (
     WorkspaceFeature,
 )
 from jupiter.core.framework.secure import secure_class
+from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -232,7 +233,11 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_time_plan_domain = TimePlanDomain.new_time_plan_domain(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                days_until_gc=7,
+                periods={RecurringTaskPeriod.WEEKLY},
+                planning_task_project_ref_id=new_root_project.ref_id,
+                planning_task_eisen=(Eisen.IMPORTANT),
+                planning_task_difficulty=(Difficulty.MEDIUM),
+                days_until_gc=30,
             )
             new_time_plan_domain = await uow.get_for(TimePlanDomain).create(
                 new_time_plan_domain

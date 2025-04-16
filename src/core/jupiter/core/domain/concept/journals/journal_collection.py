@@ -105,6 +105,18 @@ class JournalCollection(TrunkEntity):
                 else self.writing_task_gen_params
             ),
         )
+    
+    @update_entity_action
+    def change_writing_task_project(
+        self,
+        ctx: DomainContext,
+        writing_task_project_ref_id: EntityId,
+    ) -> "JournalCollection":
+        """Change the writing task project."""
+        return self._new_version(
+            ctx,
+            writing_task_project_ref_id=writing_task_project_ref_id,
+        )
 
     @staticmethod
     def _check_periods_are_safe(periods: set[RecurringTaskPeriod]) -> None:
