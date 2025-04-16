@@ -1,11 +1,11 @@
 import type { BigPlan } from "@jupiter/webapi-client";
+import { Stack } from "@mui/material";
 
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import type { TopLevelInfo } from "~/top-level-context";
 
 import type { BigPlanShowOptions } from "./big-plan-card";
 import { BigPlanCard } from "./big-plan-card";
-import { EntityStack } from "./infra/entity-stack";
 import { StandardDivider } from "./standard-divider";
 
 interface BigPlanStackProps {
@@ -25,7 +25,7 @@ interface BigPlanStackProps {
 
 export function BigPlanStack(props: BigPlanStackProps) {
   return (
-    <EntityStack>
+    <Stack spacing={0.5}>
       {props.label && <StandardDivider title={props.label} size="large" />}
 
       {props.bigPlans.map((entry) => {
@@ -59,6 +59,6 @@ export function BigPlanStack(props: BigPlanStackProps) {
           />
         );
       })}
-    </EntityStack>
+    </Stack>
   );
 }

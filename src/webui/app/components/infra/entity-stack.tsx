@@ -11,9 +11,9 @@ export function EntityStack2(props: PropsWithChildren) {
     <Stack
       spacing={2}
       sx={{
-        marginTop: "-16px",
+        marginTop: "-8px",
         "& > :first-child": {
-          marginTop: "16px",
+          marginTop: "8px",
         },
       }}
     >

@@ -106,9 +106,13 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           alignItems: "center",
           touchAction: "pan-y",
           position: "relative",
+          boxShadow:
+            props.allowSelect && props.selected
+              ? `inset 0 0 4px ${theme.palette.primary.main};`
+              : undefined,
           backgroundColor:
             backgroundHint === "neutral"
-              ? (props.allowSelect && props.selected) || props.showAsArchived
+              ? props.showAsArchived
                 ? theme.palette.action.hover
                 : "transparent"
               : backgroundHint === "success"

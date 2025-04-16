@@ -323,21 +323,24 @@ export default function TimePlanAddFromCurrentBigPlans() {
         </Stack>
 
         {selectedView === View.LIST_MERGED && (
-          <BigPlanList
-            topLevelInfo={topLevelInfo}
-            bigPlans={sortedBigPlans}
-            alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
-            targetBigPlanRefIds={targetBigPlanRefIds}
-            bigPlansByRefId={entriesByRefId}
-            onSelected={(it) =>
-              setTargetBigPlanRefIds((itri) => {
-                if (alreadyIncludedBigPlanRefIds.has(it.ref_id)) {
-                  return itri;
-                }
-                return toggleBigPlanRefIds(itri, it.ref_id);
-              })
-            }
-          />
+          <Fragment>
+            <StandardDivider title="All Big Plans" size="large" />
+            <BigPlanList
+              topLevelInfo={topLevelInfo}
+              bigPlans={sortedBigPlans}
+              alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
+              targetBigPlanRefIds={targetBigPlanRefIds}
+              bigPlansByRefId={entriesByRefId}
+              onSelected={(it) =>
+                setTargetBigPlanRefIds((itri) => {
+                  if (alreadyIncludedBigPlanRefIds.has(it.ref_id)) {
+                    return itri;
+                  }
+                  return toggleBigPlanRefIds(itri, it.ref_id);
+                })
+              }
+            />
+          </Fragment>
         )}
 
         {selectedView === View.LIST_BY_PROJECT && (

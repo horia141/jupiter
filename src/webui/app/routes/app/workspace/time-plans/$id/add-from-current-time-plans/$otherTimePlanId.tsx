@@ -376,6 +376,10 @@ export default function TimePlanAddFromCurrentTimePlans() {
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.otherHigherTimePlan}
             relativeToTimePlan={loaderData.mainTimePlan}
+            showOptions={{
+              showSource: true,
+              showPeriod: true,
+            }}
           />
         </SectionCardNew>
       )}
@@ -389,6 +393,10 @@ export default function TimePlanAddFromCurrentTimePlans() {
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.otherPreviousTimePlan}
             relativeToTimePlan={loaderData.mainTimePlan}
+            showOptions={{
+              showSource: true,
+              showPeriod: true,
+            }}
           />
         </SectionCardNew>
       )}

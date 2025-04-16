@@ -165,10 +165,8 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
       transition={{ duration: 1 }}
     >
       <StyledCard
-        enabled={(
-          ((!props.allowSelect || !props.selected) && inputsEnabled) ||
-          false
-        ).toString()}
+        selected={((props.allowSelect && props.selected) || false).toString()}
+        enabled={inputsEnabled.toString()}
         onClick={() => props.onClick && props.onClick(props.inboxTask)}
       >
         <OverdueWarning
@@ -330,17 +328,24 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
 
 interface StyledCardProps {
   enabled: string;
+  selected: string;
 }
 
-const StyledCard = styled(Card)<StyledCardProps>(({ theme, enabled }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  touchAction: "pan-y",
-  position: "relative",
-  backgroundColor:
-    enabled === "true" ? "transparent" : theme.palette.action.hover,
-}));
+const StyledCard = styled(Card)<StyledCardProps>(
+  ({ theme, enabled, selected }) => ({
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    touchAction: "pan-y",
+    position: "relative",
+    boxShadow:
+      selected === "true"
+        ? `inset 0 0 4px ${theme.palette.primary.main};`
+        : undefined,
+    backgroundColor:
+      enabled === "true" ? "transparent" : theme.palette.action.hover,
+  }),
+);
 
 const TagsContained = styled(Box)({
   display: "flex",

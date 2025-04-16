@@ -26,6 +26,10 @@ export function TimePlanStack(props: TimePlanStackProps) {
           key={`time-plan-${timePlan.ref_id}`}
           topLevelInfo={props.topLevelInfo}
           timePlan={timePlan}
+          showOptions={{
+            showSource: true,
+            showPeriod: true,
+          }}
           allowSwipe={props.allowSwipe}
           allowMarkNotDone={props.allowMarkNotDone}
           onMarkNotDone={props.onMarkNotDone}

@@ -192,6 +192,10 @@ function CurrentTimePlan(props: CurrentTimePlanProps) {
       topLevelInfo={props.topLevelInfo}
       timePlan={props.timePlan}
       label={props.label}
+      showOptions={{
+        showSource: false,
+        showPeriod: false,
+      }}
     />
   );
 }

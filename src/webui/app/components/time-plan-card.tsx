@@ -7,11 +7,17 @@ import { EntityCard, EntityLink } from "./infra/entity-card";
 import { PeriodTag } from "./period-tag";
 import { TimePlanSourceTag } from "./time-plan-source-tag";
 
+export interface TimePlanShowOptions {
+  showSource?: boolean;
+  showPeriod?: boolean;
+}
+
 interface TimePlanCardProps {
   label?: string;
   topLevelInfo: TopLevelInfo;
   timePlan: TimePlan;
   relativeToTimePlan?: TimePlan;
+  showOptions: TimePlanShowOptions;
   allowSwipe?: boolean;
   allowMarkNotDone?: boolean;
   onMarkNotDone?: (timePlan: TimePlan) => void;
@@ -32,8 +38,10 @@ export function TimePlanCard(props: TimePlanCardProps) {
     >
       <EntityLink to={link}>
         <EntityNameComponent name={props.label ?? timePlan.name} />
-        <TimePlanSourceTag source={timePlan.source} />
-        <PeriodTag period={timePlan.period} />
+        {props.showOptions.showSource && (
+          <TimePlanSourceTag source={timePlan.source} />
+        )}
+        {props.showOptions.showPeriod && <PeriodTag period={timePlan.period} />}
       </EntityLink>
     </EntityCard>
   );
