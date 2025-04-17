@@ -174,7 +174,6 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     ),
                     planning_task_eisen=UpdateAction.change_to(Eisen.IMPORTANT),
                     planning_task_difficulty=UpdateAction.change_to(Difficulty.MEDIUM),
-                    days_until_gc=UpdateAction.change_to(7),
                 )
                 await uow.get_for(TimePlanDomain).save(time_plan_domain)
 
