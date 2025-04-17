@@ -13,7 +13,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation } from "@remix-run/react";
+import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -22,7 +22,7 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { ProjectSelect } from "~/components/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -38,7 +38,7 @@ const UpdateFormSchema = z.object({
 });
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.BRANCH,
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -94,7 +94,7 @@ export default function PersonsSettings() {
   const inputsEnabled = navigation.state === "idle";
 
   return (
-    <LeafPanel
+    <BranchPanel
       key={"persons/settings"}
       returnLocation="/app/workspace/persons"
       inputsEnabled={inputsEnabled}
@@ -103,6 +103,7 @@ export default function PersonsSettings() {
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
       ) && (
+        <Form method="post">
         <Card>
           <GlobalError actionResult={actionData} />
           <CardHeader title="Catch Up Project" />
@@ -137,8 +138,9 @@ export default function PersonsSettings() {
             </ButtonGroup>
           </CardActions>
         </Card>
+        </Form>
       )}
-    </LeafPanel>
+    </BranchPanel>
   );
 }
 

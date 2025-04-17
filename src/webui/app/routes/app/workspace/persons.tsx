@@ -28,6 +28,7 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
+  useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -58,6 +59,7 @@ export default function Persons() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
+  const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const isBigScreen = useBigScreen();
@@ -87,7 +89,9 @@ export default function Persons() {
       ]}
       returnLocation="/app/workspace"
     >
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+      <NestingAwareBlock 
+          branchForceHide={shouldShowABranch}
+          shouldHide={shouldShowABranch || shouldShowALeaf}>
         {loaderData.entries.length === 0 && (
           <EntityNoNothingCard
             title="You Have To Start Somewhere"
