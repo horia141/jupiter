@@ -82,6 +82,9 @@ def upgrade() -> None:
     op.execute("""
         UPDATE time_plan_domain SET workspace_ref_id=workspace_ref_id-10000
     """)
+    op.execute("""
+        UPDATE time_plan SET time_plan_domain_ref_id=time_plan_domain_ref_id+10000
+    """)
 
 def downgrade() -> None:
     pass
