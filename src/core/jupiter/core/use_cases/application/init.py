@@ -237,7 +237,6 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 planning_task_project_ref_id=new_root_project.ref_id,
                 planning_task_eisen=(Eisen.IMPORTANT),
                 planning_task_difficulty=(Difficulty.MEDIUM),
-                days_until_gc=30,
             )
             new_time_plan_domain = await uow.get_for(TimePlanDomain).create(
                 new_time_plan_domain

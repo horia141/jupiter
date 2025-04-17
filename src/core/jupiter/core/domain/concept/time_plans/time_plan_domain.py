@@ -29,7 +29,6 @@ class TimePlanDomain(TrunkEntity):
     periods: set[RecurringTaskPeriod]
     planning_task_project_ref_id: EntityId
     planning_task_gen_params: RecurringTaskGenParams
-    days_until_gc: int
 
     time_plans = ContainsMany(TimePlan, time_plan_domain_ref_id=IsRefId())
 
@@ -42,13 +41,8 @@ class TimePlanDomain(TrunkEntity):
         planning_task_project_ref_id: EntityId,
         planning_task_eisen: Eisen,
         planning_task_difficulty: Difficulty,
-        days_until_gc: int,
     ) -> "TimePlanDomain":
         """Create a new time plan domain."""
-        if days_until_gc < 0:
-            raise InputValidationError("Days until gc cannot be negative")
-        if days_until_gc > 30:
-            raise InputValidationError("Days until GC cannot be larger than 30")
         return TimePlanDomain._create(
             ctx,
             workspace=ParentLink(workspace_ref_id),
@@ -64,7 +58,6 @@ class TimePlanDomain(TrunkEntity):
                 due_at_month=None,
                 skip_rule=None,
             ),
-            days_until_gc=days_until_gc,
         )
 
     @update_entity_action
@@ -75,13 +68,8 @@ class TimePlanDomain(TrunkEntity):
         planning_task_project_ref_id: UpdateAction[EntityId],
         planning_task_eisen: UpdateAction[Eisen],
         planning_task_difficulty: UpdateAction[Difficulty],
-        days_until_gc: UpdateAction[int],
     ) -> "TimePlanDomain":
         """Update the time plan domain."""
-        if days_until_gc.test(lambda x: x < 0):
-            raise InputValidationError("Days until gc cannot be negative")
-        if days_until_gc.test(lambda x: x > 30):
-            raise InputValidationError("Days until GC cannot be larger than 30")
         return self._new_version(
             ctx,
             periods=periods.or_else(self.periods),
@@ -107,7 +95,6 @@ class TimePlanDomain(TrunkEntity):
                 or planning_task_difficulty.should_change
                 else self.planning_task_gen_params
             ),
-            days_until_gc=days_until_gc.or_else(self.days_until_gc),
         )
     
     @update_entity_action
