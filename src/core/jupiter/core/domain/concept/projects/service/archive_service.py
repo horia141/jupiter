@@ -75,7 +75,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the time plan default one"
             )
-        
+
         journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id
         )
@@ -83,7 +83,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the journal default one"
             )
-        
+
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id
         )
@@ -91,7 +91,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the metric collection default one"
             )
-    
+
         person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id
         )
@@ -111,7 +111,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the Slack task collection default one"
             )
-        
+
         email_task_collection = await uow.get_for(EmailTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
@@ -119,7 +119,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the email task collection default one"
             )
-        
+
         working_mem_collection = await uow.get_for(WorkingMemCollection).load_by_parent(
             workspace.ref_id
         )

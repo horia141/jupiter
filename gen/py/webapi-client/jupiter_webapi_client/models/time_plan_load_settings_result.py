@@ -9,59 +9,33 @@ from ..models.time_plan_generation_approach import TimePlanGenerationApproach
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.project import Project
     from ..models.recurring_task_gen_params import RecurringTaskGenParams
 
 
-T = TypeVar("T", bound="TimePlanDomain")
+T = TypeVar("T", bound="TimePlanLoadSettingsResult")
 
 
 @_attrs_define
-class TimePlanDomain:
-    """A time plan trunk domain object.
+class TimePlanLoadSettingsResult:
+    """TimePlanLoadSettingsResult.
 
     Attributes:
-        ref_id (str): A generic entity id.
-        version (int):
-        archived (bool):
-        created_time (str): A timestamp in the application.
-        last_modified_time (str): A timestamp in the application.
-        workspace_ref_id (str):
         periods (list[RecurringTaskPeriod]):
         generation_approach (TimePlanGenerationApproach): The approach to generate time plans.
-        archival_reason (Union[None, Unset, str]):
-        archived_time (Union[None, Unset, str]):
-        planning_task_project_ref_id (Union[None, Unset, str]):
+        planning_task_project (Union['Project', None, Unset]):
         planning_task_gen_params (Union['RecurringTaskGenParams', None, Unset]):
     """
 
-    ref_id: str
-    version: int
-    archived: bool
-    created_time: str
-    last_modified_time: str
-    workspace_ref_id: str
     periods: list[RecurringTaskPeriod]
     generation_approach: TimePlanGenerationApproach
-    archival_reason: Union[None, Unset, str] = UNSET
-    archived_time: Union[None, Unset, str] = UNSET
-    planning_task_project_ref_id: Union[None, Unset, str] = UNSET
+    planning_task_project: Union["Project", None, Unset] = UNSET
     planning_task_gen_params: Union["RecurringTaskGenParams", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.project import Project
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
-
-        ref_id = self.ref_id
-
-        version = self.version
-
-        archived = self.archived
-
-        created_time = self.created_time
-
-        last_modified_time = self.last_modified_time
-
-        workspace_ref_id = self.workspace_ref_id
 
         periods = []
         for periods_item_data in self.periods:
@@ -70,23 +44,13 @@ class TimePlanDomain:
 
         generation_approach = self.generation_approach.value
 
-        archival_reason: Union[None, Unset, str]
-        if isinstance(self.archival_reason, Unset):
-            archival_reason = UNSET
+        planning_task_project: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.planning_task_project, Unset):
+            planning_task_project = UNSET
+        elif isinstance(self.planning_task_project, Project):
+            planning_task_project = self.planning_task_project.to_dict()
         else:
-            archival_reason = self.archival_reason
-
-        archived_time: Union[None, Unset, str]
-        if isinstance(self.archived_time, Unset):
-            archived_time = UNSET
-        else:
-            archived_time = self.archived_time
-
-        planning_task_project_ref_id: Union[None, Unset, str]
-        if isinstance(self.planning_task_project_ref_id, Unset):
-            planning_task_project_ref_id = UNSET
-        else:
-            planning_task_project_ref_id = self.planning_task_project_ref_id
+            planning_task_project = self.planning_task_project
 
         planning_task_gen_params: Union[None, Unset, dict[str, Any]]
         if isinstance(self.planning_task_gen_params, Unset):
@@ -100,22 +64,12 @@ class TimePlanDomain:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "ref_id": ref_id,
-                "version": version,
-                "archived": archived,
-                "created_time": created_time,
-                "last_modified_time": last_modified_time,
-                "workspace_ref_id": workspace_ref_id,
                 "periods": periods,
                 "generation_approach": generation_approach,
             }
         )
-        if archival_reason is not UNSET:
-            field_dict["archival_reason"] = archival_reason
-        if archived_time is not UNSET:
-            field_dict["archived_time"] = archived_time
-        if planning_task_project_ref_id is not UNSET:
-            field_dict["planning_task_project_ref_id"] = planning_task_project_ref_id
+        if planning_task_project is not UNSET:
+            field_dict["planning_task_project"] = planning_task_project
         if planning_task_gen_params is not UNSET:
             field_dict["planning_task_gen_params"] = planning_task_gen_params
 
@@ -123,21 +77,10 @@ class TimePlanDomain:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.project import Project
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
 
         d = dict(src_dict)
-        ref_id = d.pop("ref_id")
-
-        version = d.pop("version")
-
-        archived = d.pop("archived")
-
-        created_time = d.pop("created_time")
-
-        last_modified_time = d.pop("last_modified_time")
-
-        workspace_ref_id = d.pop("workspace_ref_id")
-
         periods = []
         _periods = d.pop("periods")
         for periods_item_data in _periods:
@@ -147,32 +90,22 @@ class TimePlanDomain:
 
         generation_approach = TimePlanGenerationApproach(d.pop("generation_approach"))
 
-        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+        def _parse_planning_task_project(data: object) -> Union["Project", None, Unset]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
-            return cast(Union[None, Unset, str], data)
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                planning_task_project_type_0 = Project.from_dict(data)
 
-        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+                return planning_task_project_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Project", None, Unset], data)
 
-        def _parse_archived_time(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
-
-        def _parse_planning_task_project_ref_id(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        planning_task_project_ref_id = _parse_planning_task_project_ref_id(d.pop("planning_task_project_ref_id", UNSET))
+        planning_task_project = _parse_planning_task_project(d.pop("planning_task_project", UNSET))
 
         def _parse_planning_task_gen_params(data: object) -> Union["RecurringTaskGenParams", None, Unset]:
             if data is None:
@@ -191,23 +124,15 @@ class TimePlanDomain:
 
         planning_task_gen_params = _parse_planning_task_gen_params(d.pop("planning_task_gen_params", UNSET))
 
-        time_plan_domain = cls(
-            ref_id=ref_id,
-            version=version,
-            archived=archived,
-            created_time=created_time,
-            last_modified_time=last_modified_time,
-            workspace_ref_id=workspace_ref_id,
+        time_plan_load_settings_result = cls(
             periods=periods,
             generation_approach=generation_approach,
-            archival_reason=archival_reason,
-            archived_time=archived_time,
-            planning_task_project_ref_id=planning_task_project_ref_id,
+            planning_task_project=planning_task_project,
             planning_task_gen_params=planning_task_gen_params,
         )
 
-        time_plan_domain.additional_properties = d
-        return time_plan_domain
+        time_plan_load_settings_result.additional_properties = d
+        return time_plan_load_settings_result
 
     @property
     def additional_keys(self) -> list[str]:

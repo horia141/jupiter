@@ -339,7 +339,7 @@ const StyledCard = styled(Card)<StyledCardProps>(
     touchAction: "pan-y",
     position: "relative",
     boxShadow:
-    isselected === "true"
+      isselected === "true"
         ? `inset 0 0 4px ${theme.palette.primary.main};`
         : undefined,
     backgroundColor:

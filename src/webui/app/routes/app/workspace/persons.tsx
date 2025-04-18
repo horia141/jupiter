@@ -89,9 +89,10 @@ export default function Persons() {
       ]}
       returnLocation="/app/workspace"
     >
-      <NestingAwareBlock 
-          branchForceHide={shouldShowABranch}
-          shouldHide={shouldShowABranch || shouldShowALeaf}>
+      <NestingAwareBlock
+        branchForceHide={shouldShowABranch}
+        shouldHide={shouldShowABranch || shouldShowALeaf}
+      >
         {loaderData.entries.length === 0 && (
           <EntityNoNothingCard
             title="You Have To Start Somewhere"

@@ -2,9 +2,9 @@
 
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
+from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import TimePlanGenerationApproach
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
-from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -12,7 +12,11 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext, AppTransactionalLoggedInMutationUseCase, mutation_use_case
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInMutationUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
+)
 
 
 @use_case_args
@@ -20,9 +24,10 @@ class TimePlanUpdateSettingsArgs(UseCaseArgsBase):
     """Args."""
 
     periods: UpdateAction[list[RecurringTaskPeriod]]
-    planning_task_project_ref_id: UpdateAction[EntityId]
-    planning_task_eisen: UpdateAction[Eisen]
-    planning_task_difficulty: UpdateAction[Difficulty]
+    generation_approach: UpdateAction[TimePlanGenerationApproach]
+    planning_task_project_ref_id: UpdateAction[EntityId | None]
+    planning_task_eisen: UpdateAction[Eisen | None]
+    planning_task_difficulty: UpdateAction[Difficulty | None]
 
 
 @mutation_use_case(WorkspaceFeature.TIME_PLANS)
@@ -50,19 +55,24 @@ class TimePlanUpdateSettingsUseCase(
             pass
 
         if args.planning_task_project_ref_id.should_change:
-            _ = await uow.get_for(Project).load_by_id(
-                args.planning_task_project_ref_id.just_the_value
-            )
+            if args.planning_task_project_ref_id.just_the_value is not None:
+                _ = await uow.get_for(Project).load_by_id(
+                    args.planning_task_project_ref_id.just_the_value
+                )
 
-        if args.planning_task_eisen.should_change or args.planning_task_difficulty.should_change:
+        if (
+            args.planning_task_eisen.should_change
+            or args.planning_task_difficulty.should_change
+        ):
             # Process all auto-generated tasks
             pass
 
         time_plan_domain = time_plan_domain.update(
             context.domain_context,
             periods=args.periods.transform(lambda s: set(s)),
+            generation_approach=args.generation_approach,
             planning_task_project_ref_id=args.planning_task_project_ref_id,
             planning_task_eisen=args.planning_task_eisen,
-            planning_task_difficulty=args.planning_task_difficulty
+            planning_task_difficulty=args.planning_task_difficulty,
         )
         await uow.get_for(TimePlanDomain).save(time_plan_domain)

@@ -20,7 +20,9 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+import {
+  makeBranchErrorBoundary,
+} from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { ProjectSelect } from "~/components/project-select";
@@ -104,47 +106,47 @@ export default function PersonsSettings() {
         WorkspaceFeature.PROJECTS,
       ) && (
         <Form method="post">
-        <Card>
-          <GlobalError actionResult={actionData} />
-          <CardHeader title="Catch Up Project" />
-          <CardContent>
-            <Stack spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Catch Up Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.catchUpProject.ref_id}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/catch_up_project_key"
-                />
-              </FormControl>
-            </Stack>
-          </CardContent>
+          <Card>
+            <GlobalError actionResult={actionData} />
+            <CardHeader title="Catch Up Project" />
+            <CardContent>
+              <Stack spacing={2} useFlexGap>
+                <FormControl fullWidth>
+                  <ProjectSelect
+                    name="project"
+                    label="Catch Up Project"
+                    inputsEnabled={inputsEnabled}
+                    disabled={false}
+                    allProjects={loaderData.allProjects}
+                    defaultValue={loaderData.catchUpProject.ref_id}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/catch_up_project_key"
+                  />
+                </FormControl>
+              </Stack>
+            </CardContent>
 
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-              >
-                Change Catch Up Project
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                >
+                  Change Catch Up Project
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          </Card>
         </Form>
       )}
     </BranchPanel>
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
+export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/persons",
   ParamsSchema,
   {

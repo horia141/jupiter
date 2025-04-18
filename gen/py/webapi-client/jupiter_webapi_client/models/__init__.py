@@ -524,13 +524,24 @@ from .time_plan_find_args import TimePlanFindArgs
 from .time_plan_find_result import TimePlanFindResult
 from .time_plan_find_result_entry import TimePlanFindResultEntry
 from .time_plan_gen_for_time_plan_args import TimePlanGenForTimePlanArgs
+from .time_plan_generation_approach import TimePlanGenerationApproach
 from .time_plan_load_args import TimePlanLoadArgs
 from .time_plan_load_for_date_and_period_args import TimePlanLoadForDateAndPeriodArgs
 from .time_plan_load_for_date_and_period_result import TimePlanLoadForDateAndPeriodResult
 from .time_plan_load_result import TimePlanLoadResult
 from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
+from .time_plan_load_settings_args import TimePlanLoadSettingsArgs
+from .time_plan_load_settings_result import TimePlanLoadSettingsResult
 from .time_plan_remove_args import TimePlanRemoveArgs
 from .time_plan_source import TimePlanSource
+from .time_plan_update_settings_args import TimePlanUpdateSettingsArgs
+from .time_plan_update_settings_args_generation_approach import TimePlanUpdateSettingsArgsGenerationApproach
+from .time_plan_update_settings_args_periods import TimePlanUpdateSettingsArgsPeriods
+from .time_plan_update_settings_args_planning_task_difficulty import TimePlanUpdateSettingsArgsPlanningTaskDifficulty
+from .time_plan_update_settings_args_planning_task_eisen import TimePlanUpdateSettingsArgsPlanningTaskEisen
+from .time_plan_update_settings_args_planning_task_project_ref_id import (
+    TimePlanUpdateSettingsArgsPlanningTaskProjectRefId,
+)
 from .user import User
 from .user_category import UserCategory
 from .user_change_feature_flags_args import UserChangeFeatureFlagsArgs
@@ -1116,14 +1127,23 @@ __all__ = (
     "TimePlanFindArgs",
     "TimePlanFindResult",
     "TimePlanFindResultEntry",
+    "TimePlanGenerationApproach",
     "TimePlanGenForTimePlanArgs",
     "TimePlanLoadArgs",
     "TimePlanLoadForDateAndPeriodArgs",
     "TimePlanLoadForDateAndPeriodResult",
     "TimePlanLoadResult",
     "TimePlanLoadResultActivityDonenessType0",
+    "TimePlanLoadSettingsArgs",
+    "TimePlanLoadSettingsResult",
     "TimePlanRemoveArgs",
     "TimePlanSource",
+    "TimePlanUpdateSettingsArgs",
+    "TimePlanUpdateSettingsArgsGenerationApproach",
+    "TimePlanUpdateSettingsArgsPeriods",
+    "TimePlanUpdateSettingsArgsPlanningTaskDifficulty",
+    "TimePlanUpdateSettingsArgsPlanningTaskEisen",
+    "TimePlanUpdateSettingsArgsPlanningTaskProjectRefId",
     "User",
     "UserCategory",
     "UserChangeFeatureFlagsArgs",

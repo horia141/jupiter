@@ -4,10 +4,11 @@ import {
   type TimePlanFindResultEntry,
 } from "@jupiter/webapi-client";
 import { Button, Stack } from "@mui/material";
+import TuneIcon from "@mui/icons-material/Tune";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet } from "@remix-run/react";
+import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext } from "react";
@@ -18,6 +19,7 @@ import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
 import { TimePlanCard } from "~/components/time-plan-card";
 import { TimePlanStack } from "~/components/time-plan-stack";
 import {
@@ -44,17 +46,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
     allow_archived: false,
     include_notes: false,
   });
-  return json(response.entries);
+  const timePlanSettingsResponse =
+    await apiClient.timePlans.timePlanLoadSettings({});
+  return json({
+    entries: response.entries,
+    timePlanSettings: timePlanSettingsResponse,
+  });
 }
 
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function TimePlans() {
-  const entries = useLoaderDataSafeForAnimation<typeof loader>();
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
+
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
@@ -64,7 +74,7 @@ export default function TimePlans() {
   );
 
   const activeTimePlans = findTimePlansThatAreActive(
-    entries.map((e) => e.time_plan),
+    loaderData.entries.map((e) => e.time_plan),
     rightNow,
   );
   const yearTimePlan = activeTimePlans.find(
@@ -83,10 +93,10 @@ export default function TimePlans() {
     (tp) => tp.period === RecurringTaskPeriod.DAILY,
   );
   const sortedTimePlans = sortTimePlansNaturally(
-    entries.map((e) => e.time_plan),
+    loaderData.entries.map((e) => e.time_plan),
   );
   const entriesByRefId = new Map<string, TimePlanFindResultEntry>();
-  for (const entry of entries) {
+  for (const entry of loaderData.entries) {
     entriesByRefId.set(entry.time_plan.ref_id, entry);
   }
 
@@ -95,6 +105,20 @@ export default function TimePlans() {
       key={"time-plans"}
       createLocation="/app/workspace/time-plans/new"
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="time-plans"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              link: `/app/workspace/time-plans/settings`,
+              icon: <TuneIcon />,
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock
         branchForceHide={shouldShowABranch}
@@ -110,45 +134,65 @@ export default function TimePlans() {
         )}
 
         <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
-          <CurrentTimePlan
-            today={rightNow}
-            period={RecurringTaskPeriod.YEARLY}
-            topLevelInfo={topLevelInfo}
-            timePlan={yearTimePlan}
-            label="Yearly Time Plan"
-          />
+          {loaderData.timePlanSettings.periods.includes(
+            RecurringTaskPeriod.YEARLY,
+          ) && (
+            <CurrentTimePlan
+              today={rightNow}
+              period={RecurringTaskPeriod.YEARLY}
+              topLevelInfo={topLevelInfo}
+              timePlan={yearTimePlan}
+              label="Yearly Time Plan"
+            />
+          )}
 
-          <CurrentTimePlan
-            today={rightNow}
-            period={RecurringTaskPeriod.QUARTERLY}
-            topLevelInfo={topLevelInfo}
-            timePlan={quarterTimePlan}
-            label="Quarterly Time Plan"
-          />
+          {loaderData.timePlanSettings.periods.includes(
+            RecurringTaskPeriod.QUARTERLY,
+          ) && (
+            <CurrentTimePlan
+              today={rightNow}
+              period={RecurringTaskPeriod.QUARTERLY}
+              topLevelInfo={topLevelInfo}
+              timePlan={quarterTimePlan}
+              label="Quarterly Time Plan"
+            />
+          )}
 
-          <CurrentTimePlan
-            today={rightNow}
-            period={RecurringTaskPeriod.MONTHLY}
-            topLevelInfo={topLevelInfo}
-            timePlan={monthTimePlan}
-            label="Monthly Time Plan"
-          />
+          {loaderData.timePlanSettings.periods.includes(
+            RecurringTaskPeriod.MONTHLY,
+          ) && (
+            <CurrentTimePlan
+              today={rightNow}
+              period={RecurringTaskPeriod.MONTHLY}
+              topLevelInfo={topLevelInfo}
+              timePlan={monthTimePlan}
+              label="Monthly Time Plan"
+            />
+          )}
 
-          <CurrentTimePlan
-            today={rightNow}
-            period={RecurringTaskPeriod.WEEKLY}
-            topLevelInfo={topLevelInfo}
-            timePlan={weekTimePlan}
-            label="Weekly Time Plan"
-          />
+          {loaderData.timePlanSettings.periods.includes(
+            RecurringTaskPeriod.WEEKLY,
+          ) && (
+            <CurrentTimePlan
+              today={rightNow}
+              period={RecurringTaskPeriod.WEEKLY}
+              topLevelInfo={topLevelInfo}
+              timePlan={weekTimePlan}
+              label="Weekly Time Plan"
+            />
+          )}
 
-          <CurrentTimePlan
-            today={rightNow}
-            period={RecurringTaskPeriod.DAILY}
-            topLevelInfo={topLevelInfo}
-            timePlan={dayTimePlan}
-            label="Daily Time Plan"
-          />
+          {loaderData.timePlanSettings.periods.includes(
+            RecurringTaskPeriod.DAILY,
+          ) && (
+            <CurrentTimePlan
+              today={rightNow}
+              period={RecurringTaskPeriod.DAILY}
+              topLevelInfo={topLevelInfo}
+              timePlan={dayTimePlan}
+              label="Daily Time Plan"
+            />
+          )}
         </Stack>
 
         <TimePlanStack

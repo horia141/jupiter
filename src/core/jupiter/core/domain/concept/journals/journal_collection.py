@@ -105,7 +105,7 @@ class JournalCollection(TrunkEntity):
                 else self.writing_task_gen_params
             ),
         )
-    
+
     @update_entity_action
     def change_writing_task_project(
         self,

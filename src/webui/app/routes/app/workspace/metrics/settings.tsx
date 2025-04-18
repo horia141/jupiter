@@ -20,7 +20,9 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+import {
+  makeBranchErrorBoundary,
+} from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { ProjectSelect } from "~/components/project-select";
@@ -100,48 +102,48 @@ export default function MetricsSettings() {
         WorkspaceFeature.PROJECTS,
       ) && (
         <Form method="post">
-        <Card>
-          <GlobalError actionResult={actionData} />
+          <Card>
+            <GlobalError actionResult={actionData} />
 
-          <CardHeader title="Collection Project" />
-          <CardContent>
-            <Stack spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Collection Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.collectionProject.ref_id}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/collection_project_ref_id"
-                />
-              </FormControl>
-            </Stack>
-          </CardContent>
+            <CardHeader title="Collection Project" />
+            <CardContent>
+              <Stack spacing={2} useFlexGap>
+                <FormControl fullWidth>
+                  <ProjectSelect
+                    name="project"
+                    label="Collection Project"
+                    inputsEnabled={inputsEnabled}
+                    disabled={false}
+                    allProjects={loaderData.allProjects}
+                    defaultValue={loaderData.collectionProject.ref_id}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/collection_project_ref_id"
+                  />
+                </FormControl>
+              </Stack>
+            </CardContent>
 
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-              >
-                Change Collection Project
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                >
+                  Change Collection Project
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          </Card>
         </Form>
       )}
     </BranchPanel>
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
+export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/metrics",
   ParamsSchema,
   {

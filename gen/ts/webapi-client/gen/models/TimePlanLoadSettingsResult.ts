@@ -2,26 +2,17 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
+import type { Project } from './Project';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { TimePlanGenerationApproach } from './TimePlanGenerationApproach';
-import type { Timestamp } from './Timestamp';
 /**
- * A time plan trunk domain object.
+ * TimePlanLoadSettingsResult.
  */
-export type TimePlanDomain = {
-    ref_id: EntityId;
-    version: number;
-    archived: boolean;
-    archival_reason?: (string | null);
-    created_time: Timestamp;
-    last_modified_time: Timestamp;
-    archived_time?: (Timestamp | null);
-    workspace_ref_id: string;
+export type TimePlanLoadSettingsResult = {
     periods: Array<RecurringTaskPeriod>;
     generation_approach: TimePlanGenerationApproach;
-    planning_task_project_ref_id?: (EntityId | null);
+    planning_task_project?: (Project | null);
     planning_task_gen_params?: (RecurringTaskGenParams | null);
 };
 
