@@ -8,4 +8,4 @@ class JournalSource(EnumValue):
     """The source of a journal entry."""
 
     USER = "user"
-    RECURRING = "recurring"
+    GENERATED = "generated"

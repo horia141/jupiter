@@ -169,6 +169,42 @@ class InboxTask(LeafEntity):
             working_time=None,
             completed_time=None,
         )
+    
+    @staticmethod
+    @create_entity_action
+    def new_inbox_task_for_time_plan(
+        ctx: DomainContext,
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        eisen: Eisen,
+        difficulty: Difficulty,
+        actionable_date: ADate | None,
+        due_date: ADate | None,
+        project_ref_id: EntityId,
+        time_plan_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_gen_right_now: Timestamp,
+    ) -> "InboxTask":
+        """Create an inbox task."""
+        return InboxTask._create(
+            ctx,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
+            source=InboxTaskSource.TIME_PLAN,
+            name=name,
+            status=InboxTaskStatus.NOT_STARTED_GEN,
+            eisen=eisen,
+            difficulty=difficulty,
+            actionable_date=actionable_date,
+            due_date=due_date,
+            project_ref_id=project_ref_id,
+            source_entity_ref_id=time_plan_ref_id,
+            notes=None,
+            recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=None,
+            recurring_gen_right_now=recurring_task_gen_right_now,
+            working_time=None,
+            completed_time=None,
+        )
 
     @staticmethod
     @create_entity_action
@@ -509,6 +545,26 @@ class InboxTask(LeafEntity):
         return self._new_version(
             ctx,
             project_ref_id=project_ref_id,
+        )
+    
+    @update_entity_action
+    def update_link_to_time_plan(
+        self,
+        ctx: DomainContext,
+        project_ref_id: EntityId,
+        eisen: Eisen,
+        difficulty: Difficulty,
+    ) -> "InboxTask":
+        """Update all the info associated with a time plan."""
+        if self.source is not InboxTaskSource.TIME_PLAN:
+            raise Exception(
+                f"Cannot associate a task which is not a time plan for '{self.name}'",
+            )
+        return self._new_version(
+            ctx,
+            project_ref_id=project_ref_id,
+            eisen=eisen,
+            difficulty=difficulty,
         )
 
     @update_entity_action

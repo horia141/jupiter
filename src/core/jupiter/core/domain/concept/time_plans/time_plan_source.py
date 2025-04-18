@@ -8,4 +8,4 @@ class TimePlanSource(EnumValue):
     """The source of a time plan."""
 
     USER = "user"
-    RECURRING = "recurring"
+    GENERATED = "generated"
