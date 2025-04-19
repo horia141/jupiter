@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -14,17 +14,21 @@ class TimePlanUpdateSettingsArgsPlanningTaskProjectRefId:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, str]): A generic entity id.
+        value (Union[None, Unset, str]):
     """
 
     should_change: bool
-    value: Union[Unset, str] = UNSET
+    value: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         should_change = self.should_change
 
-        value = self.value
+        value: Union[None, Unset, str]
+        if isinstance(self.value, Unset):
+            value = UNSET
+        else:
+            value = self.value
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -43,7 +47,14 @@ class TimePlanUpdateSettingsArgsPlanningTaskProjectRefId:
         d = dict(src_dict)
         should_change = d.pop("should_change")
 
-        value = d.pop("value", UNSET)
+        def _parse_value(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        value = _parse_value(d.pop("value", UNSET))
 
         time_plan_update_settings_args_planning_task_project_ref_id = cls(
             should_change=should_change,

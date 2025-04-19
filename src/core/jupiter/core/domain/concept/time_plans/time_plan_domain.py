@@ -146,3 +146,5 @@ class TimePlanDomain(TrunkEntity):
             ctx,
             planning_task_project_ref_id=planning_task_project_ref_id,
         )
+
+    def get_gen_params_for_period(self, period: RecurringTaskPeriod) -> RecurringTaskGenParams:

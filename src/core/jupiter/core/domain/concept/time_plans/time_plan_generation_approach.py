@@ -10,3 +10,13 @@ class TimePlanGenerationApproach(EnumValue):
     BOTH_PLAN_AND_TASK = "both-plan-and-task"
     ONLY_PLAN = "only-plan"
     NONE = "none"
+
+    @property
+    def should_generate_a_time_plan(self) -> bool:
+        """Whether to generate a time plan."""
+        return self == TimePlanGenerationApproach.BOTH_PLAN_AND_TASK or self == TimePlanGenerationApproach.ONLY_PLAN
+
+    @property
+    def should_generate_a_planning_task(self) -> bool:
+        """Whether to generate a planning task."""
+        return self == TimePlanGenerationApproach.BOTH_PLAN_AND_TASK

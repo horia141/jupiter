@@ -21,15 +21,15 @@ export type TimePlanUpdateSettingsArgs = {
     };
     planning_task_project_ref_id: {
         should_change: boolean;
-        value?: EntityId;
+        value?: (EntityId | null);
     };
     planning_task_eisen: {
         should_change: boolean;
-        value?: Eisen;
+        value?: (Eisen | null);
     };
     planning_task_difficulty: {
         should_change: boolean;
-        value?: Difficulty;
+        value?: (Difficulty | null);
     };
 };
 

@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -15,19 +15,23 @@ class TimePlanUpdateSettingsArgsPlanningTaskEisen:
     """
     Attributes:
         should_change (bool):
-        value (Union[Unset, Eisen]): The Eisenhower status of a particular task.
+        value (Union[Eisen, None, Unset]):
     """
 
     should_change: bool
-    value: Union[Unset, Eisen] = UNSET
+    value: Union[Eisen, None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         should_change = self.should_change
 
-        value: Union[Unset, str] = UNSET
-        if not isinstance(self.value, Unset):
+        value: Union[None, Unset, str]
+        if isinstance(self.value, Unset):
+            value = UNSET
+        elif isinstance(self.value, Eisen):
             value = self.value.value
+        else:
+            value = self.value
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -46,12 +50,22 @@ class TimePlanUpdateSettingsArgsPlanningTaskEisen:
         d = dict(src_dict)
         should_change = d.pop("should_change")
 
-        _value = d.pop("value", UNSET)
-        value: Union[Unset, Eisen]
-        if isinstance(_value, Unset):
-            value = UNSET
-        else:
-            value = Eisen(_value)
+        def _parse_value(data: object) -> Union[Eisen, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                value_type_0 = Eisen(data)
+
+                return value_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[Eisen, None, Unset], data)
+
+        value = _parse_value(d.pop("value", UNSET))
 
         time_plan_update_settings_args_planning_task_eisen = cls(
             should_change=should_change,

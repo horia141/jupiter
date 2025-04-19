@@ -9,3 +9,8 @@ class TimePlanSource(EnumValue):
 
     USER = "user"
     GENERATED = "generated"
+
+    @property
+    def allow_user_changes(self) -> bool:
+        """Whether the user can change the time plan."""
+        return self == TimePlanSource.USER

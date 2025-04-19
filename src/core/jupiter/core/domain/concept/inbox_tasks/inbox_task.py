@@ -931,6 +931,19 @@ class InboxTask(LeafEntity):
     def is_completed(self) -> bool:
         """Whether this task is complete or not."""
         return self.status.is_completed
+    
+    @staticmethod
+    def _build_name_for_working_mem_cleanup(
+        recurring_task_timeline: str,
+    ) -> InboxTaskName:
+        return InboxTaskName(f"Clean up working memory for [{recurring_task_timeline}]")
+    
+    @staticmethod
+    def _build_name_for_time_plan(
+        period: RecurringTaskPeriod,
+        recurring_task_timeline: str,
+    ) -> InboxTaskName:
+        return InboxTaskName(f"Make {period.value} plan for [{recurring_task_timeline}]")
 
     @staticmethod
     def _build_name_for_habit(
