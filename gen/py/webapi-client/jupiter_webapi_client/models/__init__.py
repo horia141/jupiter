@@ -520,6 +520,7 @@ from .time_plan_change_time_config_args_right_now import TimePlanChangeTimeConfi
 from .time_plan_create_args import TimePlanCreateArgs
 from .time_plan_create_result import TimePlanCreateResult
 from .time_plan_domain import TimePlanDomain
+from .time_plan_domain_generation_in_advance_days import TimePlanDomainGenerationInAdvanceDays
 from .time_plan_find_args import TimePlanFindArgs
 from .time_plan_find_result import TimePlanFindResult
 from .time_plan_find_result_entry import TimePlanFindResultEntry
@@ -532,10 +533,15 @@ from .time_plan_load_result import TimePlanLoadResult
 from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
 from .time_plan_load_settings_args import TimePlanLoadSettingsArgs
 from .time_plan_load_settings_result import TimePlanLoadSettingsResult
+from .time_plan_load_settings_result_generation_in_advance_days import TimePlanLoadSettingsResultGenerationInAdvanceDays
 from .time_plan_remove_args import TimePlanRemoveArgs
 from .time_plan_source import TimePlanSource
 from .time_plan_update_settings_args import TimePlanUpdateSettingsArgs
 from .time_plan_update_settings_args_generation_approach import TimePlanUpdateSettingsArgsGenerationApproach
+from .time_plan_update_settings_args_generation_in_advance_days import TimePlanUpdateSettingsArgsGenerationInAdvanceDays
+from .time_plan_update_settings_args_generation_in_advance_days_value import (
+    TimePlanUpdateSettingsArgsGenerationInAdvanceDaysValue,
+)
 from .time_plan_update_settings_args_periods import TimePlanUpdateSettingsArgsPeriods
 from .time_plan_update_settings_args_planning_task_difficulty import TimePlanUpdateSettingsArgsPlanningTaskDifficulty
 from .time_plan_update_settings_args_planning_task_eisen import TimePlanUpdateSettingsArgsPlanningTaskEisen
@@ -1124,6 +1130,7 @@ __all__ = (
     "TimePlanCreateArgs",
     "TimePlanCreateResult",
     "TimePlanDomain",
+    "TimePlanDomainGenerationInAdvanceDays",
     "TimePlanFindArgs",
     "TimePlanFindResult",
     "TimePlanFindResultEntry",
@@ -1136,10 +1143,13 @@ __all__ = (
     "TimePlanLoadResultActivityDonenessType0",
     "TimePlanLoadSettingsArgs",
     "TimePlanLoadSettingsResult",
+    "TimePlanLoadSettingsResultGenerationInAdvanceDays",
     "TimePlanRemoveArgs",
     "TimePlanSource",
     "TimePlanUpdateSettingsArgs",
     "TimePlanUpdateSettingsArgsGenerationApproach",
+    "TimePlanUpdateSettingsArgsGenerationInAdvanceDays",
+    "TimePlanUpdateSettingsArgsGenerationInAdvanceDaysValue",
     "TimePlanUpdateSettingsArgsPeriods",
     "TimePlanUpdateSettingsArgsPlanningTaskDifficulty",
     "TimePlanUpdateSettingsArgsPlanningTaskEisen",

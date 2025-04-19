@@ -32,6 +32,7 @@ class TimePlanLoadSettingsResult(UseCaseResultBase):
 
     periods: list[RecurringTaskPeriod]
     generation_approach: TimePlanGenerationApproach
+    generation_in_advance_days: dict[RecurringTaskPeriod, int]
     planning_task_project: Project | None
     planning_task_gen_params: RecurringTaskGenParams | None
 
@@ -68,6 +69,7 @@ class TimePlanLoadSettingsUseCase(
         return TimePlanLoadSettingsResult(
             periods=list(time_plan_domain.periods),
             generation_approach=time_plan_domain.generation_approach,
+            generation_in_advance_days=time_plan_domain.generation_in_advance_days,
             planning_task_project=planning_task_project,
             planning_task_gen_params=time_plan_domain.planning_task_gen_params,
         )

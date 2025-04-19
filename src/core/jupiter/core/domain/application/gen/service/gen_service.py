@@ -928,6 +928,8 @@ class GenService:
             if period_filter is not None and period not in period_filter:
                 continue
 
+            real_today = today.add_days(time_plan_domain.generation_in_advance_days[period])
+
             # Get better!
             if time_plan_domain.planning_task_project_ref_id is None:
                 raise Exception("Planning task project ref id is not set")
@@ -935,10 +937,11 @@ class GenService:
                 raise Exception("Planning task gen params is not set")
             project = all_projects_by_ref_id[time_plan_domain.planning_task_project_ref_id]
             gen_params = time_plan_domain.planning_task_gen_params
+
             schedule = schedules.get_schedule(
                 period,
                 EntityName(f"Make {period.value} plan for"),
-                today.to_timestamp_at_end_of_day(),
+                real_today.to_timestamp_at_end_of_day(),
                 gen_params.skip_rule,
                 gen_params.actionable_from_day,
                 gen_params.actionable_from_month,
@@ -965,7 +968,7 @@ class GenService:
                     
                     found_time_plan = found_time_plan.update_link_to_time_plan_domain(
                         ctx,
-                        right_now=today,
+                        right_now=real_today,
                     )
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -979,14 +982,12 @@ class GenService:
                     time_plan = TimePlan.new_time_plan_generated(
                         ctx,
                         time_plan_domain_ref_id=time_plan_domain.ref_id,
-                        right_now=today,
+                        right_now=real_today,
                         period=period,
                         timeline=schedule.timeline,
                         start_date=schedule.first_day,
                         end_date=schedule.end_day,
                     )
-
-                    
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
                         time_plan = await uow.get_for(TimePlan).create(time_plan)
@@ -1041,7 +1042,7 @@ class GenService:
                         project_ref_id=project.ref_id,
                         time_plan_ref_id=time_plan.ref_id,
                         recurring_task_timeline=schedule.timeline,
-                        recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                        recurring_task_gen_right_now=real_today.to_timestamp_at_end_of_day(),
                     )
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:

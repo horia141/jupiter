@@ -171,6 +171,10 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     context.domain_context,
                     periods=UpdateAction.change_to(set()),
                     generation_approach=UpdateAction.change_to(TimePlanGenerationApproach.BOTH_PLAN_AND_TASK),
+                    generation_in_advance_days=UpdateAction.change_to({
+                        RecurringTaskPeriod.QUARTERLY: 14,
+                        RecurringTaskPeriod.WEEKLY: 3,
+                    }),
                     planning_task_project_ref_id=UpdateAction.change_to(
                         root_project.ref_id
                     ),

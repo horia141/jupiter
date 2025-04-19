@@ -29,6 +29,9 @@ def upgrade() -> None:
             sa.Column("generation_approach", sa.String(), nullable=True)
         )
         batch_op.add_column(
+            sa.Column("generation_in_advance_days", sa.JSON(), nullable=True)
+        )
+        batch_op.add_column(
             sa.Column("planning_task_project_ref_id", sa.Integer(), nullable=True)
         )
         batch_op.add_column(
@@ -50,6 +53,11 @@ def upgrade() -> None:
     op.execute(
         """
         UPDATE time_plan_domain SET generation_approach='both-plan-and-task' where generation_approach is NULL
+    """
+    )
+    op.execute(
+        """
+        UPDATE time_plan_domain SET generation_in_advance_days='{"quarterly": 14, "weekly": 3}' where generation_in_advance_days is NULL
     """
     )
     op.execute(
@@ -81,6 +89,7 @@ def upgrade() -> None:
             td.archival_reason as archival_reason,
             td.periods as persiods,
             td.generation_approach as generation_approach,
+            td.generation_in_advance_days as generation_in_advance_days,
             p.ref_id as planning_task_project_ref_id,
             td.planning_task_gen_params as planning_task_gen_params
         FROM time_plan_domain td 

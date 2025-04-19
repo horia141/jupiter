@@ -10,6 +10,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.recurring_task_gen_params import RecurringTaskGenParams
+    from ..models.time_plan_domain_generation_in_advance_days import TimePlanDomainGenerationInAdvanceDays
 
 
 T = TypeVar("T", bound="TimePlanDomain")
@@ -28,6 +29,7 @@ class TimePlanDomain:
         workspace_ref_id (str):
         periods (list[RecurringTaskPeriod]):
         generation_approach (TimePlanGenerationApproach): The approach to generate time plans.
+        generation_in_advance_days (TimePlanDomainGenerationInAdvanceDays):
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         planning_task_project_ref_id (Union[None, Unset, str]):
@@ -42,6 +44,7 @@ class TimePlanDomain:
     workspace_ref_id: str
     periods: list[RecurringTaskPeriod]
     generation_approach: TimePlanGenerationApproach
+    generation_in_advance_days: "TimePlanDomainGenerationInAdvanceDays"
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     planning_task_project_ref_id: Union[None, Unset, str] = UNSET
@@ -69,6 +72,8 @@ class TimePlanDomain:
             periods.append(periods_item)
 
         generation_approach = self.generation_approach.value
+
+        generation_in_advance_days = self.generation_in_advance_days.to_dict()
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -108,6 +113,7 @@ class TimePlanDomain:
                 "workspace_ref_id": workspace_ref_id,
                 "periods": periods,
                 "generation_approach": generation_approach,
+                "generation_in_advance_days": generation_in_advance_days,
             }
         )
         if archival_reason is not UNSET:
@@ -124,6 +130,7 @@ class TimePlanDomain:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
+        from ..models.time_plan_domain_generation_in_advance_days import TimePlanDomainGenerationInAdvanceDays
 
         d = dict(src_dict)
         ref_id = d.pop("ref_id")
@@ -146,6 +153,10 @@ class TimePlanDomain:
             periods.append(periods_item)
 
         generation_approach = TimePlanGenerationApproach(d.pop("generation_approach"))
+
+        generation_in_advance_days = TimePlanDomainGenerationInAdvanceDays.from_dict(
+            d.pop("generation_in_advance_days")
+        )
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -200,6 +211,7 @@ class TimePlanDomain:
             workspace_ref_id=workspace_ref_id,
             periods=periods,
             generation_approach=generation_approach,
+            generation_in_advance_days=generation_in_advance_days,
             archival_reason=archival_reason,
             archived_time=archived_time,
             planning_task_project_ref_id=planning_task_project_ref_id,

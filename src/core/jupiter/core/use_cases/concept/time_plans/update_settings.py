@@ -25,6 +25,7 @@ class TimePlanUpdateSettingsArgs(UseCaseArgsBase):
 
     periods: UpdateAction[list[RecurringTaskPeriod]]
     generation_approach: UpdateAction[TimePlanGenerationApproach]
+    generation_in_advance_days: UpdateAction[dict[RecurringTaskPeriod, int]]
     planning_task_project_ref_id: UpdateAction[EntityId | None]
     planning_task_eisen: UpdateAction[Eisen | None]
     planning_task_difficulty: UpdateAction[Difficulty | None]
@@ -71,6 +72,7 @@ class TimePlanUpdateSettingsUseCase(
             context.domain_context,
             periods=args.periods.transform(lambda s: set(s)),
             generation_approach=args.generation_approach,
+            generation_in_advance_days=args.generation_in_advance_days,
             planning_task_project_ref_id=args.planning_task_project_ref_id,
             planning_task_eisen=args.planning_task_eisen,
             planning_task_difficulty=args.planning_task_difficulty,

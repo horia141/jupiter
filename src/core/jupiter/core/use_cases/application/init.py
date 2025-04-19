@@ -235,6 +235,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_ref_id=new_workspace.ref_id,
                 periods={RecurringTaskPeriod.QUARTERLY, RecurringTaskPeriod.WEEKLY},
                 generation_approach=TimePlanGenerationApproach.BOTH_PLAN_AND_TASK,
+                generation_in_advance_days={
+                    RecurringTaskPeriod.QUARTERLY: 14,
+                    RecurringTaskPeriod.WEEKLY: 3,
+                },
                 planning_task_project_ref_id=new_root_project.ref_id,
                 planning_task_eisen=Eisen.IMPORTANT,
                 planning_task_difficulty=Difficulty.MEDIUM,

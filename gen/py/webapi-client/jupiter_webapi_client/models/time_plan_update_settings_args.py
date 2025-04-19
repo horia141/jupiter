@@ -6,6 +6,9 @@ from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
     from ..models.time_plan_update_settings_args_generation_approach import TimePlanUpdateSettingsArgsGenerationApproach
+    from ..models.time_plan_update_settings_args_generation_in_advance_days import (
+        TimePlanUpdateSettingsArgsGenerationInAdvanceDays,
+    )
     from ..models.time_plan_update_settings_args_periods import TimePlanUpdateSettingsArgsPeriods
     from ..models.time_plan_update_settings_args_planning_task_difficulty import (
         TimePlanUpdateSettingsArgsPlanningTaskDifficulty,
@@ -26,6 +29,7 @@ class TimePlanUpdateSettingsArgs:
     Attributes:
         periods (TimePlanUpdateSettingsArgsPeriods):
         generation_approach (TimePlanUpdateSettingsArgsGenerationApproach):
+        generation_in_advance_days (TimePlanUpdateSettingsArgsGenerationInAdvanceDays):
         planning_task_project_ref_id (TimePlanUpdateSettingsArgsPlanningTaskProjectRefId):
         planning_task_eisen (TimePlanUpdateSettingsArgsPlanningTaskEisen):
         planning_task_difficulty (TimePlanUpdateSettingsArgsPlanningTaskDifficulty):
@@ -33,6 +37,7 @@ class TimePlanUpdateSettingsArgs:
 
     periods: "TimePlanUpdateSettingsArgsPeriods"
     generation_approach: "TimePlanUpdateSettingsArgsGenerationApproach"
+    generation_in_advance_days: "TimePlanUpdateSettingsArgsGenerationInAdvanceDays"
     planning_task_project_ref_id: "TimePlanUpdateSettingsArgsPlanningTaskProjectRefId"
     planning_task_eisen: "TimePlanUpdateSettingsArgsPlanningTaskEisen"
     planning_task_difficulty: "TimePlanUpdateSettingsArgsPlanningTaskDifficulty"
@@ -42,6 +47,8 @@ class TimePlanUpdateSettingsArgs:
         periods = self.periods.to_dict()
 
         generation_approach = self.generation_approach.to_dict()
+
+        generation_in_advance_days = self.generation_in_advance_days.to_dict()
 
         planning_task_project_ref_id = self.planning_task_project_ref_id.to_dict()
 
@@ -55,6 +62,7 @@ class TimePlanUpdateSettingsArgs:
             {
                 "periods": periods,
                 "generation_approach": generation_approach,
+                "generation_in_advance_days": generation_in_advance_days,
                 "planning_task_project_ref_id": planning_task_project_ref_id,
                 "planning_task_eisen": planning_task_eisen,
                 "planning_task_difficulty": planning_task_difficulty,
@@ -67,6 +75,9 @@ class TimePlanUpdateSettingsArgs:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.time_plan_update_settings_args_generation_approach import (
             TimePlanUpdateSettingsArgsGenerationApproach,
+        )
+        from ..models.time_plan_update_settings_args_generation_in_advance_days import (
+            TimePlanUpdateSettingsArgsGenerationInAdvanceDays,
         )
         from ..models.time_plan_update_settings_args_periods import TimePlanUpdateSettingsArgsPeriods
         from ..models.time_plan_update_settings_args_planning_task_difficulty import (
@@ -84,6 +95,10 @@ class TimePlanUpdateSettingsArgs:
 
         generation_approach = TimePlanUpdateSettingsArgsGenerationApproach.from_dict(d.pop("generation_approach"))
 
+        generation_in_advance_days = TimePlanUpdateSettingsArgsGenerationInAdvanceDays.from_dict(
+            d.pop("generation_in_advance_days")
+        )
+
         planning_task_project_ref_id = TimePlanUpdateSettingsArgsPlanningTaskProjectRefId.from_dict(
             d.pop("planning_task_project_ref_id")
         )
@@ -97,6 +112,7 @@ class TimePlanUpdateSettingsArgs:
         time_plan_update_settings_args = cls(
             periods=periods,
             generation_approach=generation_approach,
+            generation_in_advance_days=generation_in_advance_days,
             planning_task_project_ref_id=planning_task_project_ref_id,
             planning_task_eisen=planning_task_eisen,
             planning_task_difficulty=planning_task_difficulty,

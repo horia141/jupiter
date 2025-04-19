@@ -7,7 +7,7 @@ import { ProjectSummary, RecurringTaskPeriod ,
 } from "@jupiter/webapi-client";
 import { z } from "zod";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
-import { parseForm } from "zodix";
+import { parseForm, parseFormSafe } from "zodix";
 import { StatusCodes } from "http-status-codes";
 import {
   Form,
@@ -26,6 +26,11 @@ import {
   Button,
   ButtonGroup,
   CardActions,
+  TextField,
+  InputLabel,
+  OutlinedInput,
+  Divider,
+  Typography,
 } from "@mui/material";
 
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -53,12 +58,18 @@ import {
 } from "~/logic/select";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { TimePlanGenerationApproachSelect } from "~/components/time-plan-generation-approach-select";
+import { periodName } from "~/logic/domain/period";
 
 const ParamsSchema = z.object({});
 
 const UpdateFormSchema = z.object({
   periods: selectZod(z.nativeEnum(RecurringTaskPeriod)),
   generationApproach: z.nativeEnum(TimePlanGenerationApproach),
+  generationInAdvanceDaysForDaily: z.coerce.number().optional(),
+  generationInAdvanceDaysForWeekly: z.coerce.number().optional(),
+  generationInAdvanceDaysForMonthly: z.coerce.number().optional(),
+  generationInAdvanceDaysForQuarterly: z.coerce.number().optional(),
+  generationInAdvanceDaysForYearly: z.coerce.number().optional(),
   planningTaskProject: z.string().optional(),
   planningTaskEisen: z.nativeEnum(Eisen).optional(),
   planningTaskDifficulty: z.nativeEnum(Difficulty).optional(),
@@ -82,6 +93,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     periods: timePlanSettingsResponse.periods,
     generationApproach: timePlanSettingsResponse.generation_approach,
+    generationInAdvanceDays: timePlanSettingsResponse.generation_in_advance_days,
     planningTaskProject: timePlanSettingsResponse.planning_task_project,
     planningTaskGenParams: timePlanSettingsResponse.planning_task_gen_params,
     allProjects: summaryResponse.projects as Array<ProjectSummary>,
@@ -93,6 +105,23 @@ export async function action({ request }: ActionFunctionArgs) {
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
+    const generationInAdvanceDays: Record<string, number> = {};
+    if (form.generationInAdvanceDaysForDaily !== undefined) {
+      generationInAdvanceDays[RecurringTaskPeriod.DAILY] = form.generationInAdvanceDaysForDaily;
+    }
+    if (form.generationInAdvanceDaysForWeekly !== undefined) {
+      generationInAdvanceDays[RecurringTaskPeriod.WEEKLY] = form.generationInAdvanceDaysForWeekly;
+    }
+    if (form.generationInAdvanceDaysForMonthly !== undefined) {
+      generationInAdvanceDays[RecurringTaskPeriod.MONTHLY] = form.generationInAdvanceDaysForMonthly;
+    }
+    if (form.generationInAdvanceDaysForQuarterly !== undefined) {
+      generationInAdvanceDays[RecurringTaskPeriod.QUARTERLY] = form.generationInAdvanceDaysForQuarterly;
+    }
+    if (form.generationInAdvanceDaysForYearly !== undefined) {
+      generationInAdvanceDays[RecurringTaskPeriod.YEARLY] = form.generationInAdvanceDaysForYearly;
+    }
+
     await apiClient.timePlans.timePlanUpdateSettings({
       periods: {
         should_change: true,
@@ -101,6 +130,10 @@ export async function action({ request }: ActionFunctionArgs) {
       generation_approach: {
         should_change: true,
         value: form.generationApproach,
+      },
+      generation_in_advance_days: {
+        should_change: true,
+        value: generationInAdvanceDays,
       },
       planning_task_project_ref_id: {
         should_change: true,
@@ -141,11 +174,19 @@ export default function TimePlansSettings() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
+  const [periods, setPeriods] = useState<RecurringTaskPeriod[]>(
+    loaderData.periods
+  );
+
   const [approach, setApproach] = useState<TimePlanGenerationApproach>(
     loaderData.generationApproach
   );
 
   const inputsEnabled = navigation.state === "idle";
+
+  useEffect(() => {
+    setPeriods(loaderData.periods);
+  }, [loaderData.periods]);
 
   useEffect(() => {
     setApproach(loaderData.generationApproach);
@@ -177,7 +218,10 @@ export default function TimePlansSettings() {
                       name="periods"
                       multiSelect
                       inputsEnabled={inputsEnabled}
-                      defaultValue={loaderData.periods}
+                      defaultValue={periods}
+                      onChange={(newPeriods) => {
+                        setPeriods(newPeriods as RecurringTaskPeriod[]);
+                      }}
                     />
                     <FieldError
                       actionResult={actionData}
@@ -204,6 +248,12 @@ export default function TimePlansSettings() {
                 </Stack>
 
                 {approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK && (
+                    <>
+
+                <Divider>
+                    <Typography variant="h6">Planning Inbox Task Properties</Typography>
+                  </Divider>
+                  
                   <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
@@ -255,6 +305,36 @@ export default function TimePlansSettings() {
                     />
                     </FormControl>
                   </Stack>
+
+                  <Divider>
+                    <Typography variant="h6">Days To Generate In Advance</Typography>
+                  </Divider>
+
+                  <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
+                    {Object.values(RecurringTaskPeriod).map((period) => {
+                        if (!periods.includes(period)) {
+                            return null;
+                        }
+
+                        return (
+                            <FormControl fullWidth key={period}>
+                                <InputLabel id={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}>
+                                    For {periodName(period)}
+                                </InputLabel>
+                                <OutlinedInput
+                                    name={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
+                                    label={`For ${periodName(period)}`}
+                                    disabled={!inputsEnabled}
+                                    defaultValue={loaderData.generationInAdvanceDays[period] ?? 3} />
+                                <FieldError
+                                    actionResult={actionData}
+                                    fieldName={`/generation_in_advance_days`}
+                                />
+                            </FormControl>
+                        );
+                    })}
+                  </Stack>
+                  </>
                 )}
               </Stack>
             </CardContent>
