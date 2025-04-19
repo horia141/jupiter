@@ -930,7 +930,6 @@ class GenService:
 
             real_today = today.add_days(time_plan_domain.generation_in_advance_days[period])
 
-            # Get better!
             if time_plan_domain.planning_task_project_ref_id is None:
                 raise Exception("Planning task project ref id is not set")
             if time_plan_domain.planning_task_gen_params is None:
@@ -942,11 +941,6 @@ class GenService:
                 period,
                 EntityName(f"Make {period.value} plan for"),
                 real_today.to_timestamp_at_end_of_day(),
-                gen_params.skip_rule,
-                gen_params.actionable_from_day,
-                gen_params.actionable_from_month,
-                gen_params.due_at_day,
-                gen_params.due_at_month,
             )
 
             if not schedule.should_keep:
@@ -1008,6 +1002,8 @@ class GenService:
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
                         new_note = await uow.get_for(Note).create(new_note)
 
+                    found_time_plan = time_plan
+
             if time_plan_domain.generation_approach.should_generate_a_planning_task:
                 if found_planning_task:
                     if (
@@ -1021,6 +1017,7 @@ class GenService:
                         project_ref_id=project.ref_id,
                         eisen=gen_params.eisen,
                         difficulty=gen_params.difficulty,
+                        due_date=found_time_plan.start_date,
                     )
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1038,7 +1035,7 @@ class GenService:
                         eisen=gen_params.eisen,
                         difficulty=gen_params.difficulty,
                         actionable_date=schedule.actionable_date,
-                        due_date=schedule.due_date,
+                        due_date=found_time_plan.start_date,
                         project_ref_id=project.ref_id,
                         time_plan_ref_id=time_plan.ref_id,
                         recurring_task_timeline=schedule.timeline,

@@ -554,6 +554,7 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         eisen: Eisen,
         difficulty: Difficulty,
+        due_date: ADate,
     ) -> "InboxTask":
         """Update all the info associated with a time plan."""
         if self.source is not InboxTaskSource.TIME_PLAN:
@@ -565,6 +566,7 @@ class InboxTask(LeafEntity):
             project_ref_id=project_ref_id,
             eisen=eisen,
             difficulty=difficulty,
+            due_date=due_date,
         )
 
     @update_entity_action

@@ -94,7 +94,7 @@ class TimePlanDomain(TrunkEntity):
                 due_at_month=None,
                 skip_rule=None,
             )
-
+        TimePlanDomain._validate_generation_in_advance_days(final_generation_in_advance_days)
         return TimePlanDomain._create(
             ctx,
             workspace=ParentLink(workspace_ref_id),
@@ -163,6 +163,7 @@ class TimePlanDomain(TrunkEntity):
                 due_at_month=None,
                 skip_rule=None,
             )
+        TimePlanDomain._validate_generation_in_advance_days(final_generation_in_advance_days)
     
         return self._new_version(
             ctx,
@@ -186,3 +187,24 @@ class TimePlanDomain(TrunkEntity):
             ctx,
             planning_task_project_ref_id=planning_task_project_ref_id,
         )
+
+    @staticmethod
+    def _validate_generation_in_advance_days(
+        generation_in_advance_days: dict[RecurringTaskPeriod, int],
+    ) -> None:
+        """Validate the generation in advance days."""
+        if RecurringTaskPeriod.DAILY in generation_in_advance_days:
+            if generation_in_advance_days[RecurringTaskPeriod.DAILY] != 1:
+                raise InputValidationError("Generation in advance days for daily must be 1")
+        if RecurringTaskPeriod.WEEKLY in generation_in_advance_days:
+            if generation_in_advance_days[RecurringTaskPeriod.WEEKLY] < 1 or generation_in_advance_days[RecurringTaskPeriod.WEEKLY] > 7:
+                raise InputValidationError("Generation in advance days for weekly must be between 1 and 7")
+        if RecurringTaskPeriod.MONTHLY in generation_in_advance_days:
+            if generation_in_advance_days[RecurringTaskPeriod.MONTHLY] < 1 or generation_in_advance_days[RecurringTaskPeriod.MONTHLY] > 30:
+                raise InputValidationError("Generation in advance days for monthly must be between 1 and 30")
+        if RecurringTaskPeriod.QUARTERLY in generation_in_advance_days:
+            if generation_in_advance_days[RecurringTaskPeriod.QUARTERLY] < 1 or generation_in_advance_days[RecurringTaskPeriod.QUARTERLY] > 90:
+                raise InputValidationError("Generation in advance days for quarterly must be between 1 and 90")
+        if RecurringTaskPeriod.YEARLY in generation_in_advance_days:
+            if generation_in_advance_days[RecurringTaskPeriod.YEARLY] < 1 or generation_in_advance_days[RecurringTaskPeriod.YEARLY] > 365:
+                raise InputValidationError("Generation in advance days for yearly must be between 1 and 365")

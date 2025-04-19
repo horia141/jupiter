@@ -186,11 +186,8 @@ export default function TimePlansSettings() {
 
   useEffect(() => {
     setPeriods(loaderData.periods);
-  }, [loaderData.periods]);
-
-  useEffect(() => {
     setApproach(loaderData.generationApproach);
-  }, [loaderData.generationApproach]);
+  }, [loaderData]);
 
   return (
     <BranchPanel
@@ -218,7 +215,7 @@ export default function TimePlansSettings() {
                       name="periods"
                       multiSelect
                       inputsEnabled={inputsEnabled}
-                      defaultValue={periods}
+                      value={periods}
                       onChange={(newPeriods) => {
                         setPeriods(newPeriods as RecurringTaskPeriod[]);
                       }}
@@ -253,7 +250,7 @@ export default function TimePlansSettings() {
                 <Divider>
                     <Typography variant="h6">Planning Inbox Task Properties</Typography>
                   </Divider>
-                  
+
                   <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
@@ -325,7 +322,7 @@ export default function TimePlansSettings() {
                                     name={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
                                     label={`For ${periodName(period)}`}
                                     disabled={!inputsEnabled}
-                                    defaultValue={loaderData.generationInAdvanceDays[period] ?? 3} />
+                                    defaultValue={loaderData.generationInAdvanceDays[period] ?? 1} />
                                 <FieldError
                                     actionResult={actionData}
                                     fieldName={`/generation_in_advance_days`}

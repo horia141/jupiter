@@ -18,7 +18,7 @@ function sourceToClass(source: TimePlanSource): "info" | "warning" {
   switch (source) {
     case TimePlanSource.USER:
       return "info";
-    case TimePlanSource.RECURRING:
+    case TimePlanSource.GENERATED:
       return "warning";
   }
 }
