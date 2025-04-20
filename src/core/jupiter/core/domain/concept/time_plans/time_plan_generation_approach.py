@@ -29,8 +29,10 @@ class TimePlanGenerationApproach(EnumValue):
         """Whether to not generate a time plan."""
         return self == TimePlanGenerationApproach.NONE
 
-
     @property
     def should_not_generate_a_planning_task(self) -> bool:
         """Whether to not generate a planning task."""
-        return self == TimePlanGenerationApproach.NONE or self == TimePlanGenerationApproach.ONLY_PLAN
+        return (
+            self == TimePlanGenerationApproach.NONE
+            or self == TimePlanGenerationApproach.ONLY_PLAN
+        )

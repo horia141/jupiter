@@ -8,8 +8,13 @@ import {
   TimePlanGenerationApproach,
 } from "@jupiter/webapi-client";
 import { z } from "zod";
-import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from "@remix-run/node";
-import { parseForm, parseFormSafe } from "zodix";
+import {
+  ActionFunctionArgs,
+  json,
+  LoaderFunctionArgs,
+  redirect,
+} from "@remix-run/node";
+import { parseForm } from "zodix";
 import { StatusCodes } from "http-status-codes";
 import {
   Form,
@@ -19,16 +24,9 @@ import {
 } from "@remix-run/react";
 import { useContext, useEffect, useState } from "react";
 import {
-  Card,
-  CardContent,
   Stack,
   FormControl,
-  CardHeader,
   FormLabel,
-  Button,
-  ButtonGroup,
-  CardActions,
-  TextField,
   InputLabel,
   OutlinedInput,
   Divider,
@@ -38,10 +36,7 @@ import { DateTime } from "luxon";
 
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getLoggedInApiClient } from "~/api-clients.server";
-import {
-  noErrorNoData,
-  validationErrorToUIErrorInfo,
-} from "~/logic/action-result";
+import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -63,7 +58,6 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { TimePlanStack } from "~/components/time-plan-stack";
 
 const ParamsSchema = z.object({});
 
@@ -119,66 +113,68 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     switch (form.intent) {
-        case "update": {
-            const generationInAdvanceDays: Record<string, number> = {};
-            if (form.generationInAdvanceDaysForDaily !== undefined) {
-            generationInAdvanceDays[RecurringTaskPeriod.DAILY] =
-                form.generationInAdvanceDaysForDaily;
-            }
-            if (form.generationInAdvanceDaysForWeekly !== undefined) {
-            generationInAdvanceDays[RecurringTaskPeriod.WEEKLY] =
-                form.generationInAdvanceDaysForWeekly;
-            }
-            if (form.generationInAdvanceDaysForMonthly !== undefined) {
-            generationInAdvanceDays[RecurringTaskPeriod.MONTHLY] =
-                form.generationInAdvanceDaysForMonthly;
-            }
-            if (form.generationInAdvanceDaysForQuarterly !== undefined) {
-            generationInAdvanceDays[RecurringTaskPeriod.QUARTERLY] =
-                form.generationInAdvanceDaysForQuarterly;
-            }
-            if (form.generationInAdvanceDaysForYearly !== undefined) {
-            generationInAdvanceDays[RecurringTaskPeriod.YEARLY] =
-                form.generationInAdvanceDaysForYearly;
-            }
-
-            await apiClient.timePlans.timePlanUpdateSettings({
-            periods: {
-                should_change: true,
-                value: fixSelectOutputToEnumStrict<RecurringTaskPeriod>(form.periods),
-            },
-            generation_approach: {
-                should_change: true,
-                value: form.generationApproach,
-            },
-            generation_in_advance_days: {
-                should_change: true,
-                value: generationInAdvanceDays,
-            },
-            planning_task_project_ref_id: {
-                should_change: true,
-                value: form.planningTaskProject,
-            },
-            planning_task_eisen: {
-                should_change: true,
-                value: form.planningTaskEisen,
-            },
-            planning_task_difficulty: {
-                should_change: true,
-                value: form.planningTaskDifficulty,
-            },
-            });
-
-            return redirect(`/app/workspace/time-plans/settings`);
+      case "update": {
+        const generationInAdvanceDays: Record<string, number> = {};
+        if (form.generationInAdvanceDaysForDaily !== undefined) {
+          generationInAdvanceDays[RecurringTaskPeriod.DAILY] =
+            form.generationInAdvanceDaysForDaily;
+        }
+        if (form.generationInAdvanceDaysForWeekly !== undefined) {
+          generationInAdvanceDays[RecurringTaskPeriod.WEEKLY] =
+            form.generationInAdvanceDaysForWeekly;
+        }
+        if (form.generationInAdvanceDaysForMonthly !== undefined) {
+          generationInAdvanceDays[RecurringTaskPeriod.MONTHLY] =
+            form.generationInAdvanceDaysForMonthly;
+        }
+        if (form.generationInAdvanceDaysForQuarterly !== undefined) {
+          generationInAdvanceDays[RecurringTaskPeriod.QUARTERLY] =
+            form.generationInAdvanceDaysForQuarterly;
+        }
+        if (form.generationInAdvanceDaysForYearly !== undefined) {
+          generationInAdvanceDays[RecurringTaskPeriod.YEARLY] =
+            form.generationInAdvanceDaysForYearly;
         }
 
-        case "regen": {
-            await apiClient.timePlans.timePlanRegen({});
-            return redirect(`/app/workspace/time-plans/settings`);
-        }
+        await apiClient.timePlans.timePlanUpdateSettings({
+          periods: {
+            should_change: true,
+            value: fixSelectOutputToEnumStrict<RecurringTaskPeriod>(
+              form.periods,
+            ),
+          },
+          generation_approach: {
+            should_change: true,
+            value: form.generationApproach,
+          },
+          generation_in_advance_days: {
+            should_change: true,
+            value: generationInAdvanceDays,
+          },
+          planning_task_project_ref_id: {
+            should_change: true,
+            value: form.planningTaskProject,
+          },
+          planning_task_eisen: {
+            should_change: true,
+            value: form.planningTaskEisen,
+          },
+          planning_task_difficulty: {
+            should_change: true,
+            value: form.planningTaskDifficulty,
+          },
+        });
 
-        default:
-            throw new Response("Bad Intent", { status: 500 });
+        return redirect(`/app/workspace/time-plans/settings`);
+      }
+
+      case "regen": {
+        await apiClient.timePlans.timePlanRegen({});
+        return redirect(`/app/workspace/time-plans/settings`);
+      }
+
+      default:
+        throw new Response("Bad Intent", { status: 500 });
     }
   } catch (error) {
     if (
@@ -360,7 +356,8 @@ export default function TimePlansSettings() {
                 </>
               )}
 
-              {(approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK || approach === TimePlanGenerationApproach.ONLY_PLAN) && (
+              {(approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK ||
+                approach === TimePlanGenerationApproach.ONLY_PLAN) && (
                 <>
                   <Divider>
                     <Typography variant="h6">

@@ -1,12 +1,19 @@
 """Update settings around time plans."""
 
+from typing import cast
+
 from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
-from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
-from jupiter.core.domain.concept.time_plans.time_plan import TimePlan, TimePlanRepository
+from jupiter.core.domain.concept.time_plans.time_plan import (
+    TimePlan,
+    TimePlanRepository,
+)
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import (
     TimePlanGenerationApproach,
@@ -19,7 +26,6 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
-from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -29,7 +35,6 @@ from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
     AppLoggedInMutationUseCaseContext,
-    AppTransactionalLoggedInMutationUseCase,
     mutation_use_case,
 )
 
@@ -65,9 +70,9 @@ class TimePlanUpdateSettingsUseCase(
             time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
                 workspace.ref_id
             )
-            inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
-                workspace.ref_id
-            )
+            inbox_task_collection = await uow.get_for(
+                InboxTaskCollection
+            ).load_by_parent(workspace.ref_id)
             project_collection = await uow.get_for(ProjectCollection).load_by_parent(
                 workspace.ref_id
             )
@@ -77,11 +82,13 @@ class TimePlanUpdateSettingsUseCase(
                     raise Exception("Planning task project ref id is required")
                 if args.planning_task_project_ref_id.should_change:
                     project = await uow.get_for(Project).load_by_id(
-                        args.planning_task_project_ref_id.just_changed
+                        cast(EntityId, args.planning_task_project_ref_id.just_the_value)
                     )
-                    planning_task_project_ref_id = UpdateAction.change_to(project.ref_id)
+                    planning_task_project_ref_id = UpdateAction.change_to(
+                        project.ref_id
+                    )
                 else:
-                    planning_task_project_ref_id = UpdateAction.do_not_change()
+                    planning_task_project_ref_id = UpdateAction.do_nothing()
             else:
                 root_project = await uow.get_for(Project).find_all_generic(
                     parent_ref_id=project_collection.ref_id,
@@ -90,7 +97,9 @@ class TimePlanUpdateSettingsUseCase(
                 )
                 if len(root_project) != 1:
                     raise Exception("Root project not found")
-                planning_task_project_ref_id = UpdateAction.change_to(root_project[0].ref_id)
+                planning_task_project_ref_id = UpdateAction.change_to(
+                    root_project[0].ref_id
+                )
 
             time_plan_domain = time_plan_domain.update(
                 context.domain_context,
@@ -126,7 +135,9 @@ class TimePlanUpdateSettingsUseCase(
                     right_now=self._time_provider.get_current_date().to_timestamp_at_end_of_day(),
                 )
 
-                time_plan_for_periods = await uow.get(TimePlanRepository).find_all_in_range(
+                time_plan_for_periods = await uow.get(
+                    TimePlanRepository
+                ).find_all_in_range(
                     parent_ref_id=time_plan_domain.ref_id,
                     allow_archived=False,
                     filter_periods=[period],
@@ -144,21 +155,25 @@ class TimePlanUpdateSettingsUseCase(
                 if time_plan.source == TimePlanSource.USER:
                     continue
 
-                planning_task = await uow.get_for(InboxTask).find_all_generic(
+                planning_tasks = await uow.get_for(InboxTask).find_all_generic(
                     parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=False,
                     source=InboxTaskSource.TIME_PLAN,
                     source_entity_ref_id=time_plan.ref_id,
                 )
 
-                if len(planning_task) == 0:
+                planning_task: InboxTask | None
+                if len(planning_tasks) == 0:
                     planning_task = None
-                elif len(planning_task) == 1:
-                    planning_task = planning_task[0]
+                elif len(planning_tasks) == 1:
+                    planning_task = planning_tasks[0]
                 else:
                     raise Exception("Found multiple planning tasks for time plan")
 
-                if period not in time_plan_domain.periods or time_plan_domain.generation_approach.should_not_generate_a_time_plan:
+                if (
+                    period not in time_plan_domain.periods
+                    or time_plan_domain.generation_approach.should_not_generate_a_time_plan
+                ):
                     await generic_crown_archiver(
                         context.domain_context,
                         uow,
@@ -167,7 +182,10 @@ class TimePlanUpdateSettingsUseCase(
                         time_plan.ref_id,
                         ArchivalReason.USER,
                     )
-                if planning_task and time_plan_domain.generation_approach.should_not_generate_a_planning_task:
+                if (
+                    planning_task
+                    and time_plan_domain.generation_approach.should_not_generate_a_planning_task
+                ):
                     await generic_crown_archiver(
                         context.domain_context,
                         uow,

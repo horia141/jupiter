@@ -931,7 +931,7 @@ class GenService:
                 continue
 
             real_today = today.add_days(
-                0 # time_plan_domain.generation_in_advance_days.get(period, 0)
+                0  # time_plan_domain.generation_in_advance_days.get(period, 0)
             )
 
             schedule = schedules.get_schedule(
@@ -1016,7 +1016,7 @@ class GenService:
                     time_plan_domain.planning_task_project_ref_id
                 ]
                 gen_params = time_plan_domain.planning_task_gen_params
-            
+
                 if found_planning_task:
                     if (
                         not gen_even_if_not_modified

@@ -69,7 +69,7 @@ class TimePlanLoadSettingsUseCase(
             workspace.ref_id,
         )
 
-        if time_plan_domain.planning_task_project_ref_id is not None:
+        if workspace.is_feature_available(WorkspaceFeature.PROJECTS):
             planning_task_project = await uow.get_for(Project).load_by_id(
                 time_plan_domain.planning_task_project_ref_id,
             )

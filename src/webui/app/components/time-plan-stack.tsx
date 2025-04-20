@@ -2,7 +2,7 @@ import type { TimePlan } from "@jupiter/webapi-client";
 
 import type { TopLevelInfo } from "~/top-level-context";
 
-import { EntityStack, EntityStack2 } from "./infra/entity-stack";
+import { EntityStack2 } from "./infra/entity-stack";
 import { StandardDivider } from "./standard-divider";
 import { TimePlanCard } from "./time-plan-card";
 
