@@ -74,9 +74,11 @@ class ProjectRemoveUseCase(
                 workspace.ref_id
             )
             if time_plan_domain.planning_task_project_ref_id == args.ref_id:
-                time_plan_domain = time_plan_domain.change_planning_task_project_if_required(
-                    context.domain_context,
-                    args.backup_project_ref_id,
+                time_plan_domain = (
+                    time_plan_domain.change_planning_task_project_if_required(
+                        context.domain_context,
+                        args.backup_project_ref_id,
+                    )
                 )
                 await uow.get_for(TimePlanDomain).save(time_plan_domain)
 

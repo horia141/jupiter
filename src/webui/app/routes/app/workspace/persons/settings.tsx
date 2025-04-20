@@ -20,9 +20,7 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import {
-  makeBranchErrorBoundary,
-} from "~/components/infra/error-boundary";
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { ProjectSelect } from "~/components/project-select";

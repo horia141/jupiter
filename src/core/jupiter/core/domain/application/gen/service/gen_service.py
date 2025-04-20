@@ -2,7 +2,7 @@
 
 import typing
 from collections import defaultdict
-from typing import Final, Sequence, cast
+from typing import Final, Sequence
 
 from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
@@ -38,7 +38,6 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
 )
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
-from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import TimePlanGenerationApproach
 from jupiter.core.domain.concept.time_plans.time_plan_source import TimePlanSource
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.vacations.vacation import Vacation
@@ -288,7 +287,8 @@ class GenService:
                     gen_log_entry=gen_log_entry,
                 )
 
-        if (workspace.is_feature_available(WorkspaceFeature.TIME_PLANS)
+        if (
+            workspace.is_feature_available(WorkspaceFeature.TIME_PLANS)
             and SyncTarget.TIME_PLANS in gen_targets
         ):
             async with progress_reporter.section("Generating time plans"):
@@ -323,7 +323,9 @@ class GenService:
                         raise Exception(
                             f"Expected that inbox task with id='{inbox_task.ref_id}'",
                         )
-                    all_inbox_tasks_by_timeline[inbox_task.recurring_timeline] = inbox_task
+                    all_inbox_tasks_by_timeline[inbox_task.recurring_timeline] = (
+                        inbox_task
+                    )
 
                 gen_log_entry = await self._generate_time_plans_and_planning_tasks_for_time_plan_domain(
                     ctx,
@@ -907,7 +909,7 @@ class GenService:
             )
 
         return gen_log_entry
-    
+
     async def _generate_time_plans_and_planning_tasks_for_time_plan_domain(
         self,
         ctx: DomainContext,
@@ -928,13 +930,17 @@ class GenService:
             if period_filter is not None and period not in period_filter:
                 continue
 
-            real_today = today.add_days(time_plan_domain.generation_in_advance_days[period])
+            real_today = today.add_days(
+                time_plan_domain.generation_in_advance_days[period]
+            )
 
             if time_plan_domain.planning_task_project_ref_id is None:
                 raise Exception("Planning task project ref id is not set")
             if time_plan_domain.planning_task_gen_params is None:
                 raise Exception("Planning task gen params is not set")
-            project = all_projects_by_ref_id[time_plan_domain.planning_task_project_ref_id]
+            project = all_projects_by_ref_id[
+                time_plan_domain.planning_task_project_ref_id
+            ]
             gen_params = time_plan_domain.planning_task_gen_params
 
             schedule = schedules.get_schedule(
@@ -947,19 +953,25 @@ class GenService:
                 continue
 
             found_time_plan = all_time_plans_by_timeline.get(schedule.timeline, None)
-            found_planning_task = all_inbox_tasks_by_timeline.get(schedule.timeline, None)
+            found_planning_task = all_inbox_tasks_by_timeline.get(
+                schedule.timeline, None
+            )
 
-            if found_time_plan and found_time_plan.source is not TimePlanSource.GENERATED:
+            if (
+                found_time_plan
+                and found_time_plan.source is not TimePlanSource.GENERATED
+            ):
                 continue
 
             if time_plan_domain.generation_approach.should_generate_a_time_plan:
                 if found_time_plan:
                     if (
                         not gen_even_if_not_modified
-                        and found_time_plan.last_modified_time >= time_plan_domain.last_modified_time
+                        and found_time_plan.last_modified_time
+                        >= time_plan_domain.last_modified_time
                     ):
                         continue
-                    
+
                     found_time_plan = found_time_plan.update_link_to_time_plan_domain(
                         ctx,
                         right_now=real_today,
@@ -1008,7 +1020,8 @@ class GenService:
                 if found_planning_task:
                     if (
                         not gen_even_if_not_modified
-                        and found_planning_task.last_modified_time >= time_plan_domain.last_modified_time
+                        and found_planning_task.last_modified_time
+                        >= time_plan_domain.last_modified_time
                     ):
                         continue
 

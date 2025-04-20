@@ -19,7 +19,9 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection i
     SlackTaskCollection,
 )
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
-from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import TimePlanGenerationApproach
+from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import (
+    TimePlanGenerationApproach,
+)
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.user.user_name import UserName
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
@@ -170,11 +172,15 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 time_plan_domain = time_plan_domain.update(
                     context.domain_context,
                     periods=UpdateAction.change_to(set()),
-                    generation_approach=UpdateAction.change_to(TimePlanGenerationApproach.BOTH_PLAN_AND_TASK),
-                    generation_in_advance_days=UpdateAction.change_to({
-                        RecurringTaskPeriod.QUARTERLY: 14,
-                        RecurringTaskPeriod.WEEKLY: 3,
-                    }),
+                    generation_approach=UpdateAction.change_to(
+                        TimePlanGenerationApproach.BOTH_PLAN_AND_TASK
+                    ),
+                    generation_in_advance_days=UpdateAction.change_to(
+                        {
+                            RecurringTaskPeriod.QUARTERLY: 14,
+                            RecurringTaskPeriod.WEEKLY: 3,
+                        }
+                    ),
                     planning_task_project_ref_id=UpdateAction.change_to(
                         root_project.ref_id
                     ),

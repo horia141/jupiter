@@ -9,6 +9,7 @@ from ..models.time_plan_generation_approach import TimePlanGenerationApproach
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.inbox_task import InboxTask
     from ..models.project import Project
     from ..models.recurring_task_gen_params import RecurringTaskGenParams
     from ..models.time_plan_load_settings_result_generation_in_advance_days import (
@@ -27,6 +28,7 @@ class TimePlanLoadSettingsResult:
         periods (list[RecurringTaskPeriod]):
         generation_approach (TimePlanGenerationApproach): The approach to generate time plans.
         generation_in_advance_days (TimePlanLoadSettingsResultGenerationInAdvanceDays):
+        planning_tasks (list['InboxTask']):
         planning_task_project (Union['Project', None, Unset]):
         planning_task_gen_params (Union['RecurringTaskGenParams', None, Unset]):
     """
@@ -34,6 +36,7 @@ class TimePlanLoadSettingsResult:
     periods: list[RecurringTaskPeriod]
     generation_approach: TimePlanGenerationApproach
     generation_in_advance_days: "TimePlanLoadSettingsResultGenerationInAdvanceDays"
+    planning_tasks: list["InboxTask"]
     planning_task_project: Union["Project", None, Unset] = UNSET
     planning_task_gen_params: Union["RecurringTaskGenParams", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -50,6 +53,11 @@ class TimePlanLoadSettingsResult:
         generation_approach = self.generation_approach.value
 
         generation_in_advance_days = self.generation_in_advance_days.to_dict()
+
+        planning_tasks = []
+        for planning_tasks_item_data in self.planning_tasks:
+            planning_tasks_item = planning_tasks_item_data.to_dict()
+            planning_tasks.append(planning_tasks_item)
 
         planning_task_project: Union[None, Unset, dict[str, Any]]
         if isinstance(self.planning_task_project, Unset):
@@ -74,6 +82,7 @@ class TimePlanLoadSettingsResult:
                 "periods": periods,
                 "generation_approach": generation_approach,
                 "generation_in_advance_days": generation_in_advance_days,
+                "planning_tasks": planning_tasks,
             }
         )
         if planning_task_project is not UNSET:
@@ -85,6 +94,7 @@ class TimePlanLoadSettingsResult:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.inbox_task import InboxTask
         from ..models.project import Project
         from ..models.recurring_task_gen_params import RecurringTaskGenParams
         from ..models.time_plan_load_settings_result_generation_in_advance_days import (
@@ -104,6 +114,13 @@ class TimePlanLoadSettingsResult:
         generation_in_advance_days = TimePlanLoadSettingsResultGenerationInAdvanceDays.from_dict(
             d.pop("generation_in_advance_days")
         )
+
+        planning_tasks = []
+        _planning_tasks = d.pop("planning_tasks")
+        for planning_tasks_item_data in _planning_tasks:
+            planning_tasks_item = InboxTask.from_dict(planning_tasks_item_data)
+
+            planning_tasks.append(planning_tasks_item)
 
         def _parse_planning_task_project(data: object) -> Union["Project", None, Unset]:
             if data is None:
@@ -143,6 +160,7 @@ class TimePlanLoadSettingsResult:
             periods=periods,
             generation_approach=generation_approach,
             generation_in_advance_days=generation_in_advance_days,
+            planning_tasks=planning_tasks,
             planning_task_project=planning_task_project,
             planning_task_gen_params=planning_task_gen_params,
         )

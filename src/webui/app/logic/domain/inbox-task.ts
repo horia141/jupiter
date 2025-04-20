@@ -277,6 +277,7 @@ export function canInboxTaskBeInStatus(
 
       return true;
     case InboxTaskSource.WORKING_MEM_CLEANUP:
+    case InboxTaskSource.TIME_PLAN:
     case InboxTaskSource.HABIT:
     case InboxTaskSource.CHORE:
     case InboxTaskSource.JOURNAL:

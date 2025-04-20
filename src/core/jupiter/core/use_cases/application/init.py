@@ -42,7 +42,9 @@ from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
     SmartListCollection,
 )
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
-from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import TimePlanGenerationApproach
+from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import (
+    TimePlanGenerationApproach,
+)
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.user.user_name import UserName
 from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (

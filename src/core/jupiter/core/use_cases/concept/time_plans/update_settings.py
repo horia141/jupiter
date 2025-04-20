@@ -2,7 +2,9 @@
 
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
-from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import TimePlanGenerationApproach
+from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import (
+    TimePlanGenerationApproach,
+)
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod

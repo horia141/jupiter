@@ -13,9 +13,13 @@ interface TimePlanGenerationApproachSelectProps {
   inputsEnabled: boolean;
 }
 
-export function TimePlanGenerationApproachSelect(props: TimePlanGenerationApproachSelectProps) {
+export function TimePlanGenerationApproachSelect(
+  props: TimePlanGenerationApproachSelectProps,
+) {
   const [approach, setApproach] = useState<TimePlanGenerationApproach>(
-    props.defaultValue || props.value || TimePlanGenerationApproach.BOTH_PLAN_AND_TASK
+    props.defaultValue ||
+      props.value ||
+      TimePlanGenerationApproach.BOTH_PLAN_AND_TASK,
   );
   const isBigScreen = useBigScreen();
 
@@ -52,7 +56,10 @@ export function TimePlanGenerationApproachSelect(props: TimePlanGenerationApproa
           disabled={!props.inputsEnabled}
           value={TimePlanGenerationApproach.BOTH_PLAN_AND_TASK}
         >
-          {approachName(TimePlanGenerationApproach.BOTH_PLAN_AND_TASK, !isBigScreen)}
+          {approachName(
+            TimePlanGenerationApproach.BOTH_PLAN_AND_TASK,
+            !isBigScreen,
+          )}
         </ToggleButton>
         <ToggleButton
           size="small"
@@ -74,4 +81,4 @@ export function TimePlanGenerationApproachSelect(props: TimePlanGenerationApproa
       <input name={props.name} type="hidden" value={approach} />
     </>
   );
-} 
+}

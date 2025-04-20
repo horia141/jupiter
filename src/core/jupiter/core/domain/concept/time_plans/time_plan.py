@@ -2,6 +2,8 @@
 
 import abc
 
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
 from jupiter.core.domain.concept.time_plans.time_plan_source import TimePlanSource
 from jupiter.core.domain.core import schedules
@@ -17,6 +19,7 @@ from jupiter.core.framework.entity import (
     ContainsMany,
     IsRefId,
     LeafEntity,
+    OwnsAtMostOne,
     OwnsOne,
     ParentLink,
     create_entity_action,
@@ -49,6 +52,9 @@ class TimePlan(LeafEntity):
 
     activities = ContainsMany(TimePlanActivity, time_plan_ref_id=IsRefId())
     note = OwnsOne(Note, domain=NoteDomain.TIME_PLAN, source_entity_ref_id=IsRefId())
+    planning_task = OwnsAtMostOne(
+        InboxTask, source=InboxTaskSource.TIME_PLAN, source_entity_ref_id=IsRefId()
+    )
 
     @staticmethod
     @create_entity_action
@@ -76,7 +82,7 @@ class TimePlan(LeafEntity):
             start_date=schedule.first_day,
             end_date=schedule.end_day,
         )
-    
+
     @staticmethod
     @create_entity_action
     def new_time_plan_generated(
@@ -110,7 +116,7 @@ class TimePlan(LeafEntity):
     ) -> "TimePlan":
         """Update the time plan."""
         if not self.source.allow_user_changes:
-            raise CannotModifyGeneratedTimePlanError()
+            raise CannotModifyGeneratedTimePlanError
         schedule = schedules.get_schedule(
             period=period.or_else(self.period),
             name=EntityName("Test"),
@@ -131,7 +137,7 @@ class TimePlan(LeafEntity):
             start_date=schedule.first_day,
             end_date=schedule.end_day,
         )
-    
+
     @update_entity_action
     def update_link_to_time_plan_domain(
         self,
@@ -140,7 +146,7 @@ class TimePlan(LeafEntity):
     ) -> "TimePlan":
         """Update the link to the time plan domain."""
         if self.source is not TimePlanSource.GENERATED:
-            raise CannotModifyGeneratedTimePlanError()
+            raise CannotModifyGeneratedTimePlanError
         return self._new_version(
             ctx,
             right_now=right_now,

@@ -169,7 +169,7 @@ class InboxTask(LeafEntity):
             working_time=None,
             completed_time=None,
         )
-    
+
     @staticmethod
     @create_entity_action
     def new_inbox_task_for_time_plan(
@@ -546,7 +546,7 @@ class InboxTask(LeafEntity):
             ctx,
             project_ref_id=project_ref_id,
         )
-    
+
     @update_entity_action
     def update_link_to_time_plan(
         self,
@@ -933,19 +933,21 @@ class InboxTask(LeafEntity):
     def is_completed(self) -> bool:
         """Whether this task is complete or not."""
         return self.status.is_completed
-    
+
     @staticmethod
     def _build_name_for_working_mem_cleanup(
         recurring_task_timeline: str,
     ) -> InboxTaskName:
         return InboxTaskName(f"Clean up working memory for [{recurring_task_timeline}]")
-    
+
     @staticmethod
     def _build_name_for_time_plan(
         period: RecurringTaskPeriod,
         recurring_task_timeline: str,
     ) -> InboxTaskName:
-        return InboxTaskName(f"Make {period.value} plan for [{recurring_task_timeline}]")
+        return InboxTaskName(
+            f"Make {period.value} plan for [{recurring_task_timeline}]"
+        )
 
     @staticmethod
     def _build_name_for_habit(

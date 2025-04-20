@@ -32,12 +32,3 @@ export function sortTimePlansNaturally(timePlans: Array<TimePlan>): TimePlan[] {
     );
   });
 }
-
-export function timePlanSourceName(source: TimePlanSource) {
-  switch (source) {
-    case TimePlanSource.USER:
-      return "User";
-    case TimePlanSource.GENERATED:
-      return "Recurring";
-  }
-}

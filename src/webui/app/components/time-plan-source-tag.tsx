@@ -1,6 +1,6 @@
 import { TimePlanSource } from "@jupiter/webapi-client";
 
-import { timePlanSourceName } from "~/logic/domain/time-plan";
+import { timePlanSourceName } from "~/logic/domain/time-plan-source";
 
 import { SlimChip } from "./infra/chips";
 

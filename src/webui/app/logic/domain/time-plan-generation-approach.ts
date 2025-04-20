@@ -1,6 +1,9 @@
 import { TimePlanGenerationApproach } from "@jupiter/webapi-client";
 
-export function approachName(approach: TimePlanGenerationApproach, short: boolean): string {
+export function approachName(
+  approach: TimePlanGenerationApproach,
+  short: boolean,
+): string {
   switch (approach) {
     case TimePlanGenerationApproach.BOTH_PLAN_AND_TASK:
       return short ? "Both" : "Both Plan and Task";
@@ -9,4 +12,4 @@ export function approachName(approach: TimePlanGenerationApproach, short: boolea
     case TimePlanGenerationApproach.NONE:
       return short ? "None" : "None";
   }
-} 
+}

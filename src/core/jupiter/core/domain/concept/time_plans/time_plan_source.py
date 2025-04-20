@@ -13,4 +13,5 @@ class TimePlanSource(EnumValue):
     @property
     def allow_user_changes(self) -> bool:
         """Whether the user can change the time plan."""
+        # Keep synced with ts:time-plan-source.ts
         return self == TimePlanSource.USER
