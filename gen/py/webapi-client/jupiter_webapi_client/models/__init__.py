@@ -534,6 +534,7 @@ from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultAc
 from .time_plan_load_settings_args import TimePlanLoadSettingsArgs
 from .time_plan_load_settings_result import TimePlanLoadSettingsResult
 from .time_plan_load_settings_result_generation_in_advance_days import TimePlanLoadSettingsResultGenerationInAdvanceDays
+from .time_plan_regen_args import TimePlanRegenArgs
 from .time_plan_remove_args import TimePlanRemoveArgs
 from .time_plan_source import TimePlanSource
 from .time_plan_update_settings_args import TimePlanUpdateSettingsArgs
@@ -1144,6 +1145,7 @@ __all__ = (
     "TimePlanLoadSettingsArgs",
     "TimePlanLoadSettingsResult",
     "TimePlanLoadSettingsResultGenerationInAdvanceDays",
+    "TimePlanRegenArgs",
     "TimePlanRemoveArgs",
     "TimePlanSource",
     "TimePlanUpdateSettingsArgs",

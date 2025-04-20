@@ -8,7 +8,7 @@ import {
   TimePlanGenerationApproach,
 } from "@jupiter/webapi-client";
 import { z } from "zod";
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { parseForm, parseFormSafe } from "zodix";
 import { StatusCodes } from "http-status-codes";
 import {
@@ -67,18 +67,24 @@ import { TimePlanStack } from "~/components/time-plan-stack";
 
 const ParamsSchema = z.object({});
 
-const UpdateFormSchema = z.object({
-  periods: selectZod(z.nativeEnum(RecurringTaskPeriod)),
-  generationApproach: z.nativeEnum(TimePlanGenerationApproach),
-  generationInAdvanceDaysForDaily: z.coerce.number().optional(),
-  generationInAdvanceDaysForWeekly: z.coerce.number().optional(),
-  generationInAdvanceDaysForMonthly: z.coerce.number().optional(),
-  generationInAdvanceDaysForQuarterly: z.coerce.number().optional(),
-  generationInAdvanceDaysForYearly: z.coerce.number().optional(),
-  planningTaskProject: z.string().optional(),
-  planningTaskEisen: z.nativeEnum(Eisen).optional(),
-  planningTaskDifficulty: z.nativeEnum(Difficulty).optional(),
-});
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+    periods: selectZod(z.nativeEnum(RecurringTaskPeriod)),
+    generationApproach: z.nativeEnum(TimePlanGenerationApproach),
+    generationInAdvanceDaysForDaily: z.coerce.number().optional(),
+    generationInAdvanceDaysForWeekly: z.coerce.number().optional(),
+    generationInAdvanceDaysForMonthly: z.coerce.number().optional(),
+    generationInAdvanceDaysForQuarterly: z.coerce.number().optional(),
+    generationInAdvanceDaysForYearly: z.coerce.number().optional(),
+    planningTaskProject: z.string().optional(),
+    planningTaskEisen: z.nativeEnum(Eisen).optional(),
+    planningTaskDifficulty: z.nativeEnum(Difficulty).optional(),
+  }),
+  z.object({
+    intent: z.literal("regen"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -112,56 +118,68 @@ export async function action({ request }: ActionFunctionArgs) {
   const form = await parseForm(request, UpdateFormSchema);
 
   try {
-    const generationInAdvanceDays: Record<string, number> = {};
-    if (form.generationInAdvanceDaysForDaily !== undefined) {
-      generationInAdvanceDays[RecurringTaskPeriod.DAILY] =
-        form.generationInAdvanceDaysForDaily;
-    }
-    if (form.generationInAdvanceDaysForWeekly !== undefined) {
-      generationInAdvanceDays[RecurringTaskPeriod.WEEKLY] =
-        form.generationInAdvanceDaysForWeekly;
-    }
-    if (form.generationInAdvanceDaysForMonthly !== undefined) {
-      generationInAdvanceDays[RecurringTaskPeriod.MONTHLY] =
-        form.generationInAdvanceDaysForMonthly;
-    }
-    if (form.generationInAdvanceDaysForQuarterly !== undefined) {
-      generationInAdvanceDays[RecurringTaskPeriod.QUARTERLY] =
-        form.generationInAdvanceDaysForQuarterly;
-    }
-    if (form.generationInAdvanceDaysForYearly !== undefined) {
-      generationInAdvanceDays[RecurringTaskPeriod.YEARLY] =
-        form.generationInAdvanceDaysForYearly;
-    }
+    switch (form.intent) {
+        case "update": {
+            const generationInAdvanceDays: Record<string, number> = {};
+            if (form.generationInAdvanceDaysForDaily !== undefined) {
+            generationInAdvanceDays[RecurringTaskPeriod.DAILY] =
+                form.generationInAdvanceDaysForDaily;
+            }
+            if (form.generationInAdvanceDaysForWeekly !== undefined) {
+            generationInAdvanceDays[RecurringTaskPeriod.WEEKLY] =
+                form.generationInAdvanceDaysForWeekly;
+            }
+            if (form.generationInAdvanceDaysForMonthly !== undefined) {
+            generationInAdvanceDays[RecurringTaskPeriod.MONTHLY] =
+                form.generationInAdvanceDaysForMonthly;
+            }
+            if (form.generationInAdvanceDaysForQuarterly !== undefined) {
+            generationInAdvanceDays[RecurringTaskPeriod.QUARTERLY] =
+                form.generationInAdvanceDaysForQuarterly;
+            }
+            if (form.generationInAdvanceDaysForYearly !== undefined) {
+            generationInAdvanceDays[RecurringTaskPeriod.YEARLY] =
+                form.generationInAdvanceDaysForYearly;
+            }
 
-    await apiClient.timePlans.timePlanUpdateSettings({
-      periods: {
-        should_change: true,
-        value: fixSelectOutputToEnumStrict<RecurringTaskPeriod>(form.periods),
-      },
-      generation_approach: {
-        should_change: true,
-        value: form.generationApproach,
-      },
-      generation_in_advance_days: {
-        should_change: true,
-        value: generationInAdvanceDays,
-      },
-      planning_task_project_ref_id: {
-        should_change: true,
-        value: form.planningTaskProject,
-      },
-      planning_task_eisen: {
-        should_change: true,
-        value: form.planningTaskEisen,
-      },
-      planning_task_difficulty: {
-        should_change: true,
-        value: form.planningTaskDifficulty,
-      },
-    });
+            await apiClient.timePlans.timePlanUpdateSettings({
+            periods: {
+                should_change: true,
+                value: fixSelectOutputToEnumStrict<RecurringTaskPeriod>(form.periods),
+            },
+            generation_approach: {
+                should_change: true,
+                value: form.generationApproach,
+            },
+            generation_in_advance_days: {
+                should_change: true,
+                value: generationInAdvanceDays,
+            },
+            planning_task_project_ref_id: {
+                should_change: true,
+                value: form.planningTaskProject,
+            },
+            planning_task_eisen: {
+                should_change: true,
+                value: form.planningTaskEisen,
+            },
+            planning_task_difficulty: {
+                should_change: true,
+                value: form.planningTaskDifficulty,
+            },
+            });
 
-    return json(noErrorNoData());
+            return redirect(`/app/workspace/time-plans/settings`);
+        }
+
+        case "regen": {
+            await apiClient.timePlans.timePlanRegen({});
+            return redirect(`/app/workspace/time-plans/settings`);
+        }
+
+        default:
+            throw new Response("Bad Intent", { status: 500 });
+    }
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -226,8 +244,13 @@ export default function TimePlansSettings() {
                   ActionSingle({
                     id: "time-plans-settings-save",
                     text: "Save",
-                    value: "save",
+                    value: "update",
                     highlight: true,
+                  }),
+                  ActionSingle({
+                    id: "time-plans-settings-regen",
+                    text: "Regen",
+                    value: "regen",
                   }),
                 ]}
               />

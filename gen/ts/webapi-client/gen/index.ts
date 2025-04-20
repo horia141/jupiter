@@ -455,6 +455,7 @@ export type { TimePlanLoadForDateAndPeriodResult } from './models/TimePlanLoadFo
 export type { TimePlanLoadResult } from './models/TimePlanLoadResult';
 export type { TimePlanLoadSettingsArgs } from './models/TimePlanLoadSettingsArgs';
 export type { TimePlanLoadSettingsResult } from './models/TimePlanLoadSettingsResult';
+export type { TimePlanRegenArgs } from './models/TimePlanRegenArgs';
 export type { TimePlanRemoveArgs } from './models/TimePlanRemoveArgs';
 export { TimePlanSource } from './models/TimePlanSource';
 export type { TimePlanUpdateSettingsArgs } from './models/TimePlanUpdateSettingsArgs';

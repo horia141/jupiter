@@ -21,6 +21,7 @@ import type { TimePlanLoadForDateAndPeriodResult } from '../models/TimePlanLoadF
 import type { TimePlanLoadResult } from '../models/TimePlanLoadResult';
 import type { TimePlanLoadSettingsArgs } from '../models/TimePlanLoadSettingsArgs';
 import type { TimePlanLoadSettingsResult } from '../models/TimePlanLoadSettingsResult';
+import type { TimePlanRegenArgs } from '../models/TimePlanRegenArgs';
 import type { TimePlanRemoveArgs } from '../models/TimePlanRemoveArgs';
 import type { TimePlanUpdateSettingsArgs } from '../models/TimePlanUpdateSettingsArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -260,6 +261,28 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-load-settings',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * A use case for regenerating time plans.
+     * A use case for regenerating time plans.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public timePlanRegen(
+        requestBody?: TimePlanRegenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-regen',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

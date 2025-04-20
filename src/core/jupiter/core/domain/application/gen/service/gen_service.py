@@ -2,7 +2,7 @@
 
 import typing
 from collections import defaultdict
-from typing import Final, Sequence
+from typing import Final, Sequence, cast
 
 from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
@@ -1030,7 +1030,7 @@ class GenService:
                         project_ref_id=project.ref_id,
                         eisen=gen_params.eisen,
                         difficulty=gen_params.difficulty,
-                        due_date=found_time_plan.start_date,
+                        due_date=cast(TimePlan, found_time_plan).start_date,
                     )
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1048,7 +1048,7 @@ class GenService:
                         eisen=gen_params.eisen,
                         difficulty=gen_params.difficulty,
                         actionable_date=schedule.actionable_date,
-                        due_date=found_time_plan.start_date,
+                        due_date=cast(TimePlan, found_time_plan).start_date,
                         project_ref_id=project.ref_id,
                         time_plan_ref_id=time_plan.ref_id,
                         recurring_task_timeline=schedule.timeline,
