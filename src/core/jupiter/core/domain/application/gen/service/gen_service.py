@@ -931,17 +931,8 @@ class GenService:
                 continue
 
             real_today = today.add_days(
-                time_plan_domain.generation_in_advance_days[period]
+                0 # time_plan_domain.generation_in_advance_days.get(period, 0)
             )
-
-            if time_plan_domain.planning_task_project_ref_id is None:
-                raise Exception("Planning task project ref id is not set")
-            if time_plan_domain.planning_task_gen_params is None:
-                raise Exception("Planning task gen params is not set")
-            project = all_projects_by_ref_id[
-                time_plan_domain.planning_task_project_ref_id
-            ]
-            gen_params = time_plan_domain.planning_task_gen_params
 
             schedule = schedules.get_schedule(
                 period,
@@ -1017,6 +1008,15 @@ class GenService:
                     found_time_plan = time_plan
 
             if time_plan_domain.generation_approach.should_generate_a_planning_task:
+                if time_plan_domain.planning_task_project_ref_id is None:
+                    raise Exception("Planning task project ref id is not set")
+                if time_plan_domain.planning_task_gen_params is None:
+                    raise Exception("Planning task gen params is not set")
+                project = all_projects_by_ref_id[
+                    time_plan_domain.planning_task_project_ref_id
+                ]
+                gen_params = time_plan_domain.planning_task_gen_params
+            
                 if found_planning_task:
                     if (
                         not gen_even_if_not_modified

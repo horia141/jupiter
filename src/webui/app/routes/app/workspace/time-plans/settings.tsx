@@ -357,7 +357,11 @@ export default function TimePlansSettings() {
                       />
                     </FormControl>
                   </Stack>
+                </>
+              )}
 
+              {(approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK || approach === TimePlanGenerationApproach.ONLY_PLAN) && (
+                <>
                   <Divider>
                     <Typography variant="h6">
                       Days To Generate In Advance

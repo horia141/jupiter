@@ -35,7 +35,7 @@ class TimePlanDomain(TrunkEntity):
     periods: set[RecurringTaskPeriod]
     generation_approach: TimePlanGenerationApproach
     generation_in_advance_days: dict[RecurringTaskPeriod, int]
-    planning_task_project_ref_id: EntityId | None
+    planning_task_project_ref_id: EntityId
     planning_task_gen_params: RecurringTaskGenParams | None
 
     time_plans = ContainsMany(TimePlan, time_plan_domain_ref_id=IsRefId())
@@ -49,7 +49,7 @@ class TimePlanDomain(TrunkEntity):
         periods: set[RecurringTaskPeriod],
         generation_approach: TimePlanGenerationApproach,
         generation_in_advance_days: dict[RecurringTaskPeriod, int],
-        planning_task_project_ref_id: EntityId | None,
+        planning_task_project_ref_id: EntityId,
         planning_task_eisen: Eisen | None,
         planning_task_difficulty: Difficulty | None,
     ) -> "TimePlanDomain":
@@ -60,10 +60,6 @@ class TimePlanDomain(TrunkEntity):
                 raise InputValidationError(
                     "Generation in advance days cannot be set if generation approach is NONE"
                 )
-            if planning_task_project_ref_id is not None:
-                raise InputValidationError(
-                    "Planning task project ref id cannot be set if generation approach is NONE"
-                )
             if planning_task_eisen is not None:
                 raise InputValidationError(
                     "Planning task eisen cannot be set if generation approach is NONE"
@@ -73,17 +69,12 @@ class TimePlanDomain(TrunkEntity):
                     "Planning task difficulty cannot be set if generation approach is NONE"
                 )
             final_generation_in_advance_days = {}
-            final_planning_task_project_ref_id = None
             final_planning_task_gen_params = None
         elif generation_approach == TimePlanGenerationApproach.ONLY_PLAN:
             if periods != generation_in_advance_days.keys():
                 raise InputValidationError(
                     "Periods must be set if generation approach is ONLY_PLAN"
                 )
-            if planning_task_project_ref_id is not None:
-                raise InputValidationError(
-                    "Planning task project ref id cannot be set if generation approach is NONE"
-                )
             if planning_task_eisen is not None:
                 raise InputValidationError(
                     "Planning task eisen cannot be set if generation approach is NONE"
@@ -93,16 +84,11 @@ class TimePlanDomain(TrunkEntity):
                     "Planning task difficulty cannot be set if generation approach is NONE"
                 )
             final_generation_in_advance_days = {}
-            final_planning_task_project_ref_id = None
             final_planning_task_gen_params = None
         elif generation_approach == TimePlanGenerationApproach.BOTH_PLAN_AND_TASK:
             if periods != generation_in_advance_days.keys():
                 raise InputValidationError(
                     "Periods must be set if generation approach is BOTH_PLAN_AND_TASK"
-                )
-            if planning_task_project_ref_id is None:
-                raise InputValidationError(
-                    "Planning task project ref id must be set if generation approach is BOTH_PLAN_AND_TASK"
                 )
             if planning_task_eisen is None:
                 raise InputValidationError(
@@ -113,7 +99,6 @@ class TimePlanDomain(TrunkEntity):
                     "Planning task difficulty must be set if generation approach is BOTH_PLAN_AND_TASK"
                 )
             final_generation_in_advance_days = generation_in_advance_days
-            final_planning_task_project_ref_id = planning_task_project_ref_id
             final_planning_task_gen_params = RecurringTaskGenParams(
                 period=RecurringTaskPeriod.DAILY,
                 eisen=planning_task_eisen,
@@ -133,7 +118,7 @@ class TimePlanDomain(TrunkEntity):
             periods=periods,
             generation_approach=generation_approach,
             generation_in_advance_days=final_generation_in_advance_days,
-            planning_task_project_ref_id=final_planning_task_project_ref_id,
+            planning_task_project_ref_id=planning_task_project_ref_id,
             planning_task_gen_params=final_planning_task_gen_params,
         )
 
@@ -144,7 +129,7 @@ class TimePlanDomain(TrunkEntity):
         periods: UpdateAction[set[RecurringTaskPeriod]],
         generation_approach: UpdateAction[TimePlanGenerationApproach],
         generation_in_advance_days: UpdateAction[dict[RecurringTaskPeriod, int]],
-        planning_task_project_ref_id: UpdateAction[EntityId | None],
+        planning_task_project_ref_id: UpdateAction[EntityId],
         planning_task_eisen: UpdateAction[Eisen | None],
         planning_task_difficulty: UpdateAction[Difficulty | None],
     ) -> "TimePlanDomain":
@@ -175,10 +160,6 @@ class TimePlanDomain(TrunkEntity):
                 raise InputValidationError(
                     "Generation in advance days cannot be set if generation approach is NONE"
                 )
-            if final_planning_task_project_ref_id is not None:
-                raise InputValidationError(
-                    "Planning task project ref id cannot be set if generation approach is NONE"
-                )
             if final_planning_task_eisen is not None:
                 raise InputValidationError(
                     "Planning task eisen cannot be set if generation approach is NONE"
@@ -187,16 +168,12 @@ class TimePlanDomain(TrunkEntity):
                 raise InputValidationError(
                     "Planning task difficulty cannot be set if generation approach is NONE"
                 )
-            final_planning_task_project_ref_id = None
+            final_planning_task_gen_params = None
         elif final_generation_approach == TimePlanGenerationApproach.ONLY_PLAN:
             if final_periods != final_generation_in_advance_days.keys():
                 raise InputValidationError(
                     "Periods must be set if generation approach is ONLY_PLAN"
                 )
-            if final_planning_task_project_ref_id is not None:
-                raise InputValidationError(
-                    "Planning task project ref id cannot be set if generation approach is NONE"
-                )
             if final_planning_task_eisen is not None:
                 raise InputValidationError(
                     "Planning task eisen cannot be set if generation approach is NONE"
@@ -205,15 +182,11 @@ class TimePlanDomain(TrunkEntity):
                 raise InputValidationError(
                     "Planning task difficulty cannot be set if generation approach is NONE"
                 )
-            final_planning_task_project_ref_id = None
+            final_planning_task_gen_params = None
         elif final_generation_approach == TimePlanGenerationApproach.BOTH_PLAN_AND_TASK:
             if final_periods != final_generation_in_advance_days.keys():
                 raise InputValidationError(
                     "Periods must be set if generation approach is BOTH_PLAN_AND_TASK"
-                )
-            if final_planning_task_project_ref_id is None:
-                raise InputValidationError(
-                    "Planning task project ref id must be set if generation approach is BOTH_PLAN_AND_TASK"
                 )
             if final_planning_task_eisen is None:
                 raise InputValidationError(
@@ -253,8 +226,6 @@ class TimePlanDomain(TrunkEntity):
         planning_task_project_ref_id: EntityId,
     ) -> "TimePlanDomain":
         """Change the planning task project."""
-        if self.planning_task_project_ref_id is None:
-            return self
         return self._new_version(
             ctx,
             planning_task_project_ref_id=planning_task_project_ref_id,
