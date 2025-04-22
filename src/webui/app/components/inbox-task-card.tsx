@@ -165,7 +165,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
       transition={{ duration: 1 }}
     >
       <StyledCard
-        selected={((props.allowSelect && props.selected) || false).toString()}
+        isselected={((props.allowSelect && props.selected) || false).toString()}
         enabled={inputsEnabled.toString()}
         onClick={() => props.onClick && props.onClick(props.inboxTask)}
       >
@@ -328,18 +328,18 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
 
 interface StyledCardProps {
   enabled: string;
-  selected: string;
+  isselected: string;
 }
 
 const StyledCard = styled(Card)<StyledCardProps>(
-  ({ theme, enabled, selected }) => ({
+  ({ theme, enabled, isselected }) => ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     touchAction: "pan-y",
     position: "relative",
     boxShadow:
-      selected === "true"
+      isselected === "true"
         ? `inset 0 0 4px ${theme.palette.primary.main};`
         : undefined,
     backgroundColor:

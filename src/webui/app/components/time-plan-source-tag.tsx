@@ -1,6 +1,6 @@
 import { TimePlanSource } from "@jupiter/webapi-client";
 
-import { timePlanSourceName } from "~/logic/domain/time-plan";
+import { timePlanSourceName } from "~/logic/domain/time-plan-source";
 
 import { SlimChip } from "./infra/chips";
 
@@ -18,7 +18,7 @@ function sourceToClass(source: TimePlanSource): "info" | "warning" {
   switch (source) {
     case TimePlanSource.USER:
       return "info";
-    case TimePlanSource.RECURRING:
+    case TimePlanSource.GENERATED:
       return "warning";
   }
 }

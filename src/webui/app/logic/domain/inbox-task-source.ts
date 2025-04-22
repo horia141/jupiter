@@ -16,6 +16,8 @@ export function inboxTaskSourceName(source: InboxTaskSource): string {
       return "User";
     case InboxTaskSource.WORKING_MEM_CLEANUP:
       return "Working Mem Cleanup";
+    case InboxTaskSource.TIME_PLAN:
+      return "Time Plan";
     case InboxTaskSource.HABIT:
       return "Habit";
     case InboxTaskSource.CHORE:

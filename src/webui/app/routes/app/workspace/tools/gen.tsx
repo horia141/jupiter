@@ -464,6 +464,7 @@ export default function Gen() {
 
         <CardActions>
           <Button
+            id="generate"
             variant="contained"
             disabled={!inputsEnabled}
             type="submit"

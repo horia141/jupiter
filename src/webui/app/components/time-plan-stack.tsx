@@ -2,11 +2,12 @@ import type { TimePlan } from "@jupiter/webapi-client";
 
 import type { TopLevelInfo } from "~/top-level-context";
 
-import { EntityStack } from "./infra/entity-stack";
+import { EntityStack2 } from "./infra/entity-stack";
 import { StandardDivider } from "./standard-divider";
 import { TimePlanCard } from "./time-plan-card";
 
 interface TimePlanStackProps {
+  id?: string;
   label?: string;
   topLevelInfo: TopLevelInfo;
   timePlans: Array<TimePlan>;
@@ -18,7 +19,7 @@ interface TimePlanStackProps {
 
 export function TimePlanStack(props: TimePlanStackProps) {
   return (
-    <EntityStack>
+    <EntityStack2 id={props.id}>
       {props.label && <StandardDivider title={props.label} size="large" />}
 
       {props.timePlans.map((timePlan) => (
@@ -36,6 +37,6 @@ export function TimePlanStack(props: TimePlanStackProps) {
           relativeToTimePlan={props.relativeToTimePlan}
         />
       ))}
-    </EntityStack>
+    </EntityStack2>
   );
 }

@@ -20,6 +20,8 @@ function sourceToClass(source: InboxTaskSource): "info" | "warning" | "error" {
       return "info";
     case InboxTaskSource.WORKING_MEM_CLEANUP:
       return "warning";
+    case InboxTaskSource.TIME_PLAN:
+      return "info";
     case InboxTaskSource.HABIT:
       return "warning";
     case InboxTaskSource.CHORE:

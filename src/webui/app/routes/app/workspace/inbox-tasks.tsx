@@ -904,6 +904,8 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -931,6 +933,8 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -959,6 +963,8 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -987,6 +993,8 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
@@ -1015,6 +1023,8 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,

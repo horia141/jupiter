@@ -11,6 +11,7 @@ class InboxTaskSource(str, Enum):
     PERSON_BIRTHDAY = "person-birthday"
     PERSON_CATCH_UP = "person-catch-up"
     SLACK_TASK = "slack-task"
+    TIME_PLAN = "time-plan"
     USER = "user"
     WORKING_MEM_CLEANUP = "working-mem-cleanup"
 

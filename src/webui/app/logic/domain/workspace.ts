@@ -150,6 +150,11 @@ export function inferSourcesForEnabledFeatures(
     ) {
       inferredSources.push(source);
     } else if (
+      source === InboxTaskSource.TIME_PLAN &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.TIME_PLANS)
+    ) {
+      inferredSources.push(source);
+    } else if (
       source === InboxTaskSource.HABIT &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {

@@ -63,6 +63,7 @@ import {
 } from "~/logic/domain/project";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
+import { allowUserChanges } from "~/logic/domain/time-plan-source";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -241,6 +242,7 @@ export default function TimePlanView() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
+  const corePropertyEditable = allowUserChanges(loaderData.timePlan.source);
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.timePlan.archived;
 
@@ -345,7 +347,7 @@ export default function TimePlanView() {
                     id: "time-plan-change-time-config",
                     text: "Change Time Config",
                     value: "change-time-config",
-                    disabled: !inputsEnabled,
+                    disabled: !inputsEnabled || !corePropertyEditable,
                     highlight: true,
                   }),
                 ]}
@@ -366,7 +368,7 @@ export default function TimePlanView() {
                   notched
                   label="rightNow"
                   name="rightNow"
-                  readOnly={!inputsEnabled}
+                  readOnly={!inputsEnabled || !corePropertyEditable}
                   defaultValue={loaderData.timePlan.right_now}
                 />
 
@@ -378,7 +380,7 @@ export default function TimePlanView() {
                   labelId="period"
                   label="Period"
                   name="period"
-                  inputsEnabled={inputsEnabled}
+                  inputsEnabled={inputsEnabled && corePropertyEditable}
                   defaultValue={loaderData.timePlan.period}
                 />
                 <FieldError actionResult={actionData} fieldName="/period" />

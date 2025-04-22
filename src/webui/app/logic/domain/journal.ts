@@ -1,5 +1,4 @@
 import type { Journal } from "@jupiter/webapi-client";
-import { JournalSource } from "@jupiter/webapi-client";
 
 import { compareADate } from "./adate";
 import { comparePeriods } from "./period";
@@ -19,13 +18,4 @@ export function sortJournalsNaturally(journals: Array<Journal>): Journal[] {
       comparePeriods(j1.period, j2.period)
     );
   });
-}
-
-export function journalSourceName(source: JournalSource) {
-  switch (source) {
-    case JournalSource.USER:
-      return "User";
-    case JournalSource.RECURRING:
-      return "Recurring";
-  }
 }

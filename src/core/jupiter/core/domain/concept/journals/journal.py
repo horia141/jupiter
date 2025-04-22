@@ -87,7 +87,7 @@ class Journal(LeafEntity):
             ctx,
             name=Journal.build_name(right_now, period),
             journal_collection=ParentLink(journal_collection_ref_id),
-            source=JournalSource.RECURRING,
+            source=JournalSource.GENERATED,
             right_now=right_now,
             period=period,
             timeline=timeline,

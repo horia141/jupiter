@@ -31,6 +31,8 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task import Slack
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
@@ -88,6 +90,7 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     project: Project
     time_event_blocks: list[TimeEventInDayBlock] | None
     working_mem: WorkingMem | None
+    time_plan: TimePlan | None
     habit: Habit | None
     chore: Chore | None
     big_plan: BigPlan | None
@@ -157,6 +160,9 @@ class InboxTaskFindUseCase(
         working_mem_collection = await uow.get_for(WorkingMemCollection).load_by_parent(
             workspace.ref_id
         )
+        time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
+            workspace.ref_id,
+        )
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -211,6 +217,17 @@ class InboxTaskFindUseCase(
             ],
         )
         working_mems_by_ref_id = {wm.ref_id: wm for wm in working_mems}
+
+        time_plans = await uow.get_for(TimePlan).find_all(
+            parent_ref_id=time_plan_domain.ref_id,
+            allow_archived=True,
+            filter_ref_ids=[
+                it.source_entity_ref_id_for_sure
+                for it in inbox_tasks
+                if it.source == InboxTaskSource.TIME_PLAN
+            ],
+        )
+        time_plans_by_ref_id = {tp.ref_id: tp for tp in time_plans}
 
         habits = await uow.get_for(Habit).find_all(
             parent_ref_id=habit_collection.ref_id,
@@ -330,6 +347,11 @@ class InboxTaskFindUseCase(
                     working_mem=(
                         working_mems_by_ref_id[it.source_entity_ref_id_for_sure]
                         if it.source == InboxTaskSource.WORKING_MEM_CLEANUP
+                        else None
+                    ),
+                    time_plan=(
+                        time_plans_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.TIME_PLAN
                         else None
                     ),
                     habit=(

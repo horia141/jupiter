@@ -25,6 +25,21 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
       );
     }
 
+    case InboxTaskSource.TIME_PLAN: {
+      return (
+        <Button
+          startIcon={<LaunchIcon />}
+          variant="outlined"
+          size="small"
+          component={Link}
+          to={`/app/workspace/time-plans/${props.inboxTaskResult.time_plan?.ref_id}`}
+          sx={{ flexGrow: 1 }}
+        >
+          Time Plan
+        </Button>
+      );
+    }
+
     case InboxTaskSource.HABIT: {
       return (
         <Button

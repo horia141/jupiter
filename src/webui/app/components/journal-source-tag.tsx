@@ -1,6 +1,6 @@
 import { JournalSource } from "@jupiter/webapi-client";
 
-import { journalSourceName } from "~/logic/domain/journal";
+import { journalSourceName } from "~/logic/domain/journal-source";
 
 import { SlimChip } from "./infra/chips";
 
@@ -18,7 +18,7 @@ function sourceToClass(source: JournalSource): "info" | "warning" {
   switch (source) {
     case JournalSource.USER:
       return "info";
-    case JournalSource.RECURRING:
+    case JournalSource.GENERATED:
       return "warning";
   }
 }

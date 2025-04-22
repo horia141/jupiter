@@ -7,5 +7,5 @@
  */
 export enum JournalSource {
     USER = 'user',
-    RECURRING = 'recurring',
+    GENERATED = 'generated',
 }

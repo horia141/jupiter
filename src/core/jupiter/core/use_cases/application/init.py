@@ -42,6 +42,9 @@ from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
     SmartListCollection,
 )
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
+from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import (
+    TimePlanGenerationApproach,
+)
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.user.user_name import UserName
 from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
@@ -232,7 +235,15 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_time_plan_domain = TimePlanDomain.new_time_plan_domain(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                days_until_gc=7,
+                periods={RecurringTaskPeriod.QUARTERLY, RecurringTaskPeriod.WEEKLY},
+                generation_approach=TimePlanGenerationApproach.BOTH_PLAN_AND_TASK,
+                generation_in_advance_days={
+                    RecurringTaskPeriod.QUARTERLY: 14,
+                    RecurringTaskPeriod.WEEKLY: 3,
+                },
+                planning_task_project_ref_id=new_root_project.ref_id,
+                planning_task_eisen=Eisen.IMPORTANT,
+                planning_task_difficulty=Difficulty.MEDIUM,
             )
             new_time_plan_domain = await uow.get_for(TimePlanDomain).create(
                 new_time_plan_domain

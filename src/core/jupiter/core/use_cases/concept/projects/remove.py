@@ -1,5 +1,6 @@
 """Use case for removing a project."""
 
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import Project
@@ -20,6 +21,7 @@ from jupiter.core.domain.concept.push_integrations.group.push_integration_group 
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
@@ -68,6 +70,28 @@ class ProjectRemoveUseCase(
             raise InputValidationError("The root project cannot be archived")
 
         if args.backup_project_ref_id:
+            time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
+                workspace.ref_id
+            )
+            if time_plan_domain.planning_task_project_ref_id == args.ref_id:
+                time_plan_domain = (
+                    time_plan_domain.change_planning_task_project_if_required(
+                        context.domain_context,
+                        args.backup_project_ref_id,
+                    )
+                )
+                await uow.get_for(TimePlanDomain).save(time_plan_domain)
+
+            journal_collection = await uow.get_for(JournalCollection).load_by_parent(
+                workspace.ref_id
+            )
+            if journal_collection.writing_task_project_ref_id == args.ref_id:
+                journal_collection = journal_collection.change_writing_task_project(
+                    context.domain_context,
+                    args.backup_project_ref_id,
+                )
+                await uow.get_for(JournalCollection).save(journal_collection)
+
             metric_collection = await uow.get_for(MetricCollection).load_by_parent(
                 workspace.ref_id
             )

@@ -46,6 +46,6 @@ async def generic_crown_archiver(
             for linked_entity in linked_entities:
                 await _archiver(linked_entity)
 
-    entity = await uow.get_for(entity_type).load_by_id(ref_id)
+    entity = await uow.get_for(entity_type).load_by_id(ref_id, allow_archived=True)
 
     await _archiver(entity)

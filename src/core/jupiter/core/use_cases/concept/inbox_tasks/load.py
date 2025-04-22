@@ -10,6 +10,7 @@ from jupiter.core.domain.concept.persons.person import Person
 from jupiter.core.domain.concept.projects.project import Project
 from jupiter.core.domain.concept.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.concept.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -49,6 +50,7 @@ class InboxTaskLoadResult(UseCaseResultBase):
     inbox_task: InboxTask
     project: Project
     working_mem: WorkingMem | None
+    time_plan: TimePlan | None
     habit: Habit | None
     chore: Chore | None
     big_plan: BigPlan | None
@@ -88,6 +90,13 @@ class InboxTaskLoadUseCase(
             )
         else:
             working_mem = None
+
+        if inbox_task.source is InboxTaskSource.TIME_PLAN:
+            time_plan = await uow.get_for(TimePlan).load_by_id(
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
+            )
+        else:
+            time_plan = None
 
         if inbox_task.source is InboxTaskSource.HABIT:
             habit = await uow.get_for(Habit).load_by_id(
@@ -157,6 +166,7 @@ class InboxTaskLoadUseCase(
             inbox_task=inbox_task,
             project=project,
             working_mem=working_mem,
+            time_plan=time_plan,
             habit=habit,
             chore=chore,
             big_plan=big_plan,

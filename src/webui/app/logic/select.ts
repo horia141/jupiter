@@ -46,6 +46,24 @@ export function fixSelectOutputToEnum<T extends string>(
   return selectOutput as T[];
 }
 
+export function fixSelectOutputToEnumStrict<T extends string>(
+  selectOutput: undefined | string | string[] | T | T[],
+): T[] {
+  if (selectOutput === undefined) {
+    return [];
+  }
+
+  if (selectOutput === "") {
+    return [];
+  }
+
+  if (!Array.isArray(selectOutput)) {
+    return [selectOutput as T];
+  }
+
+  return selectOutput as T[];
+}
+
 export function fixSelectOutputEntityId(
   selectOutput: undefined | string | string[],
 ): EntityId[] | undefined {

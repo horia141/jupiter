@@ -1,5 +1,4 @@
 import type { TimePlan } from "@jupiter/webapi-client";
-import { TimePlanSource } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
 import { aDateToDate, compareADate } from "./adate";
@@ -31,13 +30,4 @@ export function sortTimePlansNaturally(timePlans: Array<TimePlan>): TimePlan[] {
       comparePeriods(j1.period, j2.period)
     );
   });
-}
-
-export function timePlanSourceName(source: TimePlanSource) {
-  switch (source) {
-    case TimePlanSource.USER:
-      return "User";
-    case TimePlanSource.RECURRING:
-      return "Recurring";
-  }
 }

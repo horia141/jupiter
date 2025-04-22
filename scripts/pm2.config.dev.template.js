@@ -4,7 +4,7 @@ module.exports = {
       cwd: "src/webapi",
       interpreter: "none",
       script: "python",
-      args: " -W always::DeprecationWarning -m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
+      args: "-m watchfiles jupiter.webapi.jupiter.sync_main . ../core",
       log_file: "$WEBAPI_LOG_FILE",
       env: {
         PY_COLORS: "1",

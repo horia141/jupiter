@@ -1,5 +1,6 @@
 """Tests about time plans."""
 
+import datetime
 import re
 import time
 from collections.abc import Iterator
@@ -1812,6 +1813,255 @@ def test_time_plan_activity_archive_big_plan_with_inbox_task(
 
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Inbox Task")
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Big Plan")
+
+
+def test_time_plan_periods_settings_standard(page: Page) -> None:
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("a", has_text="Create a quarterly time plan")).to_be_attached()
+    expect(page.locator("a", has_text="Create a weekly time plan")).to_be_attached()
+
+
+def test_time_plan_periods_settings_add_monthly(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Monthly").click()
+    page.locator("button", has_text="None").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("a", has_text="Create a monthly time plan")).to_be_attached()
+    expect(page.locator("a", has_text="Create a quarterly time plan")).to_be_attached()
+    expect(page.locator("a", has_text="Create a weekly time plan")).to_be_attached()
+
+
+def test_time_plan_generate_standard_config_via_gen(page: Page, new_user) -> None:
+    page.goto("/app/workspace/tools/gen")
+
+    page.locator("#generate").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_standard_config_via_save(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_different_config_add_monthly(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Monthly").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Monthly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make monthly plan for")
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_different_config_remove_quarterly(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Quarterly").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).not_to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_no_planning_tasks(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Only Plan").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).not_to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_no_nothing(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="None").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).not_to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_no_nothing_and_regenerate(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="None").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Both Plan And Task").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_does_not_override_existing_time_plans(
+    page: Page, create_time_plan
+) -> None:
+    right_now = datetime.datetime.now(tz=datetime.timezone.utc)
+    _ = create_time_plan(right_now.strftime("%Y-%m-%d"), RecurringTaskPeriod.WEEKLY)
+
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all", has_text="Weekly plan for")).to_contain_text(
+        "User"
+    )
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+    expect(
+        page.locator("#time-plans-all", has_text="Quarterly plan for")
+    ).to_contain_text("Recurring")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_does_not_override_existing_time_plans_with_no_periods(
+    page: Page, create_time_plan
+) -> None:
+    right_now = datetime.datetime.now(tz=datetime.timezone.utc)
+    _ = create_time_plan(right_now.strftime("%Y-%m-%d"), RecurringTaskPeriod.WEEKLY)
+
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Weekly").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all", has_text="Weekly plan for")).to_contain_text(
+        "User"
+    )
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+    expect(
+        page.locator("#time-plans-all", has_text="Quarterly plan for")
+    ).to_contain_text("Recurring")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_time_plan_is_not_editable(page: Page) -> None:
+    page.goto("/app/workspace/tools/gen")
+
+    page.locator("#generate").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    page.locator("#time-plans-all", has_text="Weekly plan for").click()
+
+    expect(page.locator("input[name='rightNow']")).to_have_attribute("readonly", "")
+    expect(page.locator('button[id="period-daily"]')).to_be_disabled()
+    expect(page.locator('button[id="period-weekly"]')).to_be_disabled()
+    expect(page.locator('button[id="period-monthly"]')).to_be_disabled()
+    expect(page.locator('button[id="period-quarterly"]')).to_be_disabled()
+    expect(page.locator('button[id="period-yearly"]')).to_be_disabled()
+    expect(page.locator("#time-plan-change-time-config")).to_be_disabled()
+
+
+def test_time_plan_generate_planning_task_links_to_time_plan(page: Page) -> None:
+    page.goto("/app/workspace/tools/gen")
+
+    page.locator("#generate").click()
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    page.locator("html", has_text="Make weekly plan for").click()
+
+    page.wait_for_url(re.compile(r"/app/workspace/inbox-tasks/\d+"))
+
+    page.locator("#leaf-panel").locator("a", has_text="Time Plan").click()
+
+    page.wait_for_url(re.compile(r"/app/workspace/time-plans/\d+"))
+
+    expect(page.locator('button[aria-pressed="true"]')).to_have_text("Weekly")
 
 
 def _mark_inbox_task_done(

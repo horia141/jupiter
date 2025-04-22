@@ -252,6 +252,14 @@ class Workspace(RootEntity):
                 and self.is_feature_available(WorkspaceFeature.WORKING_MEM)
             ):
                 inferred_sources.append(source)
+            elif source is InboxTaskSource.TIME_PLAN and self.is_feature_available(
+                WorkspaceFeature.TIME_PLANS
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.JOURNAL and self.is_feature_available(
+                WorkspaceFeature.JOURNALS
+            ):
+                inferred_sources.append(source)
             elif source is InboxTaskSource.HABIT and self.is_feature_available(
                 WorkspaceFeature.HABITS
             ):
