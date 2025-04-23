@@ -197,25 +197,38 @@ from .init_args import InitArgs
 from .init_result import InitResult
 from .journal import Journal
 from .journal_archive_args import JournalArchiveArgs
-from .journal_change_periods_args import JournalChangePeriodsArgs
 from .journal_change_time_config_args import JournalChangeTimeConfigArgs
 from .journal_change_time_config_args_period import JournalChangeTimeConfigArgsPeriod
 from .journal_change_time_config_args_right_now import JournalChangeTimeConfigArgsRightNow
 from .journal_collection import JournalCollection
+from .journal_collection_generation_in_advance_days import JournalCollectionGenerationInAdvanceDays
 from .journal_create_args import JournalCreateArgs
 from .journal_create_result import JournalCreateResult
 from .journal_find_args import JournalFindArgs
 from .journal_find_result import JournalFindResult
 from .journal_find_result_entry import JournalFindResultEntry
+from .journal_generation_approach import JournalGenerationApproach
 from .journal_load_args import JournalLoadArgs
 from .journal_load_for_date_and_period_args import JournalLoadForDateAndPeriodArgs
 from .journal_load_for_date_and_period_result import JournalLoadForDateAndPeriodResult
 from .journal_load_result import JournalLoadResult
 from .journal_load_settings_args import JournalLoadSettingsArgs
 from .journal_load_settings_result import JournalLoadSettingsResult
+from .journal_load_settings_result_generation_in_advance_days import JournalLoadSettingsResultGenerationInAdvanceDays
+from .journal_regen_args import JournalRegenArgs
 from .journal_remove_args import JournalRemoveArgs
 from .journal_source import JournalSource
 from .journal_update_report_args import JournalUpdateReportArgs
+from .journal_update_settings_args import JournalUpdateSettingsArgs
+from .journal_update_settings_args_generation_approach import JournalUpdateSettingsArgsGenerationApproach
+from .journal_update_settings_args_generation_in_advance_days import JournalUpdateSettingsArgsGenerationInAdvanceDays
+from .journal_update_settings_args_generation_in_advance_days_value import (
+    JournalUpdateSettingsArgsGenerationInAdvanceDaysValue,
+)
+from .journal_update_settings_args_periods import JournalUpdateSettingsArgsPeriods
+from .journal_update_settings_args_writing_task_difficulty import JournalUpdateSettingsArgsWritingTaskDifficulty
+from .journal_update_settings_args_writing_task_eisen import JournalUpdateSettingsArgsWritingTaskEisen
+from .journal_update_settings_args_writing_task_project_ref_id import JournalUpdateSettingsArgsWritingTaskProjectRefId
 from .link_block import LinkBlock
 from .link_block_kind import LinkBlockKind
 from .list_item import ListItem
@@ -810,25 +823,36 @@ __all__ = (
     "InitResult",
     "Journal",
     "JournalArchiveArgs",
-    "JournalChangePeriodsArgs",
     "JournalChangeTimeConfigArgs",
     "JournalChangeTimeConfigArgsPeriod",
     "JournalChangeTimeConfigArgsRightNow",
     "JournalCollection",
+    "JournalCollectionGenerationInAdvanceDays",
     "JournalCreateArgs",
     "JournalCreateResult",
     "JournalFindArgs",
     "JournalFindResult",
     "JournalFindResultEntry",
+    "JournalGenerationApproach",
     "JournalLoadArgs",
     "JournalLoadForDateAndPeriodArgs",
     "JournalLoadForDateAndPeriodResult",
     "JournalLoadResult",
     "JournalLoadSettingsArgs",
     "JournalLoadSettingsResult",
+    "JournalLoadSettingsResultGenerationInAdvanceDays",
+    "JournalRegenArgs",
     "JournalRemoveArgs",
     "JournalSource",
     "JournalUpdateReportArgs",
+    "JournalUpdateSettingsArgs",
+    "JournalUpdateSettingsArgsGenerationApproach",
+    "JournalUpdateSettingsArgsGenerationInAdvanceDays",
+    "JournalUpdateSettingsArgsGenerationInAdvanceDaysValue",
+    "JournalUpdateSettingsArgsPeriods",
+    "JournalUpdateSettingsArgsWritingTaskDifficulty",
+    "JournalUpdateSettingsArgsWritingTaskEisen",
+    "JournalUpdateSettingsArgsWritingTaskProjectRefId",
     "LinkBlock",
     "LinkBlockKind",
     "ListItem",

@@ -13,6 +13,7 @@ import type { Person } from './Person';
 import type { Project } from './Project';
 import type { SlackTask } from './SlackTask';
 import type { TimeEventInDayBlock } from './TimeEventInDayBlock';
+import type { TimePlan } from './TimePlan';
 import type { WorkingMem } from './WorkingMem';
 /**
  * A single entry in the load all inbox tasks response.
@@ -23,6 +24,7 @@ export type InboxTaskFindResultEntry = {
     project: Project;
     time_event_blocks?: (Array<TimeEventInDayBlock> | null);
     working_mem?: (WorkingMem | null);
+    time_plan?: (TimePlan | null);
     habit?: (Habit | null);
     chore?: (Chore | null);
     big_plan?: (BigPlan | null);

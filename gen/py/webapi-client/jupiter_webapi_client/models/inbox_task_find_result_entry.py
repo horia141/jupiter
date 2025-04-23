@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from ..models.project import Project
     from ..models.slack_task import SlackTask
     from ..models.time_event_in_day_block import TimeEventInDayBlock
+    from ..models.time_plan import TimePlan
     from ..models.working_mem import WorkingMem
 
 
@@ -34,6 +35,7 @@ class InboxTaskFindResultEntry:
         note (Union['Note', None, Unset]):
         time_event_blocks (Union[None, Unset, list['TimeEventInDayBlock']]):
         working_mem (Union['WorkingMem', None, Unset]):
+        time_plan (Union['TimePlan', None, Unset]):
         habit (Union['Habit', None, Unset]):
         chore (Union['Chore', None, Unset]):
         big_plan (Union['BigPlan', None, Unset]):
@@ -48,6 +50,7 @@ class InboxTaskFindResultEntry:
     note: Union["Note", None, Unset] = UNSET
     time_event_blocks: Union[None, Unset, list["TimeEventInDayBlock"]] = UNSET
     working_mem: Union["WorkingMem", None, Unset] = UNSET
+    time_plan: Union["TimePlan", None, Unset] = UNSET
     habit: Union["Habit", None, Unset] = UNSET
     chore: Union["Chore", None, Unset] = UNSET
     big_plan: Union["BigPlan", None, Unset] = UNSET
@@ -66,6 +69,7 @@ class InboxTaskFindResultEntry:
         from ..models.note import Note
         from ..models.person import Person
         from ..models.slack_task import SlackTask
+        from ..models.time_plan import TimePlan
         from ..models.working_mem import WorkingMem
 
         inbox_task = self.inbox_task.to_dict()
@@ -99,6 +103,14 @@ class InboxTaskFindResultEntry:
             working_mem = self.working_mem.to_dict()
         else:
             working_mem = self.working_mem
+
+        time_plan: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.time_plan, Unset):
+            time_plan = UNSET
+        elif isinstance(self.time_plan, TimePlan):
+            time_plan = self.time_plan.to_dict()
+        else:
+            time_plan = self.time_plan
 
         habit: Union[None, Unset, dict[str, Any]]
         if isinstance(self.habit, Unset):
@@ -170,6 +182,8 @@ class InboxTaskFindResultEntry:
             field_dict["time_event_blocks"] = time_event_blocks
         if working_mem is not UNSET:
             field_dict["working_mem"] = working_mem
+        if time_plan is not UNSET:
+            field_dict["time_plan"] = time_plan
         if habit is not UNSET:
             field_dict["habit"] = habit
         if chore is not UNSET:
@@ -200,6 +214,7 @@ class InboxTaskFindResultEntry:
         from ..models.project import Project
         from ..models.slack_task import SlackTask
         from ..models.time_event_in_day_block import TimeEventInDayBlock
+        from ..models.time_plan import TimePlan
         from ..models.working_mem import WorkingMem
 
         d = dict(src_dict)
@@ -262,6 +277,23 @@ class InboxTaskFindResultEntry:
             return cast(Union["WorkingMem", None, Unset], data)
 
         working_mem = _parse_working_mem(d.pop("working_mem", UNSET))
+
+        def _parse_time_plan(data: object) -> Union["TimePlan", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                time_plan_type_0 = TimePlan.from_dict(data)
+
+                return time_plan_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["TimePlan", None, Unset], data)
+
+        time_plan = _parse_time_plan(d.pop("time_plan", UNSET))
 
         def _parse_habit(data: object) -> Union["Habit", None, Unset]:
             if data is None:
@@ -388,6 +420,7 @@ class InboxTaskFindResultEntry:
             note=note,
             time_event_blocks=time_event_blocks,
             working_mem=working_mem,
+            time_plan=time_plan,
             habit=habit,
             chore=chore,
             big_plan=big_plan,

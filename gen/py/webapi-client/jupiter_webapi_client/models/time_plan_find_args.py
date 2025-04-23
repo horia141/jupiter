@@ -16,11 +16,13 @@ class TimePlanFindArgs:
     Attributes:
         allow_archived (bool):
         include_notes (bool):
+        include_planning_tasks (bool):
         filter_ref_ids (Union[None, Unset, list[str]]):
     """
 
     allow_archived: bool
     include_notes: bool
+    include_planning_tasks: bool
     filter_ref_ids: Union[None, Unset, list[str]] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -28,6 +30,8 @@ class TimePlanFindArgs:
         allow_archived = self.allow_archived
 
         include_notes = self.include_notes
+
+        include_planning_tasks = self.include_planning_tasks
 
         filter_ref_ids: Union[None, Unset, list[str]]
         if isinstance(self.filter_ref_ids, Unset):
@@ -44,6 +48,7 @@ class TimePlanFindArgs:
             {
                 "allow_archived": allow_archived,
                 "include_notes": include_notes,
+                "include_planning_tasks": include_planning_tasks,
             }
         )
         if filter_ref_ids is not UNSET:
@@ -57,6 +62,8 @@ class TimePlanFindArgs:
         allow_archived = d.pop("allow_archived")
 
         include_notes = d.pop("include_notes")
+
+        include_planning_tasks = d.pop("include_planning_tasks")
 
         def _parse_filter_ref_ids(data: object) -> Union[None, Unset, list[str]]:
             if data is None:
@@ -78,6 +85,7 @@ class TimePlanFindArgs:
         time_plan_find_args = cls(
             allow_archived=allow_archived,
             include_notes=include_notes,
+            include_planning_tasks=include_planning_tasks,
             filter_ref_ids=filter_ref_ids,
         )
 

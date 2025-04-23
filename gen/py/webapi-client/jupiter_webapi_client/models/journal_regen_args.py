@@ -4,54 +4,28 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.recurring_task_period import RecurringTaskPeriod
-
-T = TypeVar("T", bound="JournalChangePeriodsArgs")
+T = TypeVar("T", bound="JournalRegenArgs")
 
 
 @_attrs_define
-class JournalChangePeriodsArgs:
-    """Args.
+class JournalRegenArgs:
+    """The arguments for the journal regen use case."""
 
-    Attributes:
-        periods (list[RecurringTaskPeriod]):
-    """
-
-    periods: list[RecurringTaskPeriod]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        periods = []
-        for periods_item_data in self.periods:
-            periods_item = periods_item_data.value
-            periods.append(periods_item)
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "periods": periods,
-            }
-        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        periods = []
-        _periods = d.pop("periods")
-        for periods_item_data in _periods:
-            periods_item = RecurringTaskPeriod(periods_item_data)
+        journal_regen_args = cls()
 
-            periods.append(periods_item)
-
-        journal_change_periods_args = cls(
-            periods=periods,
-        )
-
-        journal_change_periods_args.additional_properties = d
-        return journal_change_periods_args
+        journal_regen_args.additional_properties = d
+        return journal_regen_args
 
     @property
     def additional_keys(self) -> list[str]:
