@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from ..models.email_task import EmailTask
     from ..models.habit import Habit
     from ..models.inbox_task import InboxTask
+    from ..models.journal import Journal
     from ..models.metric import Metric
     from ..models.note import Note
     from ..models.person import Person
@@ -38,6 +39,7 @@ class InboxTaskLoadResult:
         habit (Union['Habit', None, Unset]):
         chore (Union['Chore', None, Unset]):
         big_plan (Union['BigPlan', None, Unset]):
+        journal (Union['Journal', None, Unset]):
         metric (Union['Metric', None, Unset]):
         person (Union['Person', None, Unset]):
         slack_task (Union['SlackTask', None, Unset]):
@@ -53,6 +55,7 @@ class InboxTaskLoadResult:
     habit: Union["Habit", None, Unset] = UNSET
     chore: Union["Chore", None, Unset] = UNSET
     big_plan: Union["BigPlan", None, Unset] = UNSET
+    journal: Union["Journal", None, Unset] = UNSET
     metric: Union["Metric", None, Unset] = UNSET
     person: Union["Person", None, Unset] = UNSET
     slack_task: Union["SlackTask", None, Unset] = UNSET
@@ -65,6 +68,7 @@ class InboxTaskLoadResult:
         from ..models.chore import Chore
         from ..models.email_task import EmailTask
         from ..models.habit import Habit
+        from ..models.journal import Journal
         from ..models.metric import Metric
         from ..models.note import Note
         from ..models.person import Person
@@ -120,6 +124,14 @@ class InboxTaskLoadResult:
             big_plan = self.big_plan.to_dict()
         else:
             big_plan = self.big_plan
+
+        journal: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.journal, Unset):
+            journal = UNSET
+        elif isinstance(self.journal, Journal):
+            journal = self.journal.to_dict()
+        else:
+            journal = self.journal
 
         metric: Union[None, Unset, dict[str, Any]]
         if isinstance(self.metric, Unset):
@@ -180,6 +192,8 @@ class InboxTaskLoadResult:
             field_dict["chore"] = chore
         if big_plan is not UNSET:
             field_dict["big_plan"] = big_plan
+        if journal is not UNSET:
+            field_dict["journal"] = journal
         if metric is not UNSET:
             field_dict["metric"] = metric
         if person is not UNSET:
@@ -200,6 +214,7 @@ class InboxTaskLoadResult:
         from ..models.email_task import EmailTask
         from ..models.habit import Habit
         from ..models.inbox_task import InboxTask
+        from ..models.journal import Journal
         from ..models.metric import Metric
         from ..models.note import Note
         from ..models.person import Person
@@ -306,6 +321,23 @@ class InboxTaskLoadResult:
 
         big_plan = _parse_big_plan(d.pop("big_plan", UNSET))
 
+        def _parse_journal(data: object) -> Union["Journal", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                journal_type_0 = Journal.from_dict(data)
+
+                return journal_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["Journal", None, Unset], data)
+
+        journal = _parse_journal(d.pop("journal", UNSET))
+
         def _parse_metric(data: object) -> Union["Metric", None, Unset]:
             if data is None:
                 return data
@@ -400,6 +432,7 @@ class InboxTaskLoadResult:
             habit=habit,
             chore=chore,
             big_plan=big_plan,
+            journal=journal,
             metric=metric,
             person=person,
             slack_task=slack_task,

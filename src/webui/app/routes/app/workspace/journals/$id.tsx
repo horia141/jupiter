@@ -1,37 +1,27 @@
-import type { InboxTask, ProjectSummary } from "@jupiter/webapi-client";
 import {
   ApiError,
-  InboxTaskStatus,
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
 import { PeriodSelect } from "~/components/period-select";
@@ -42,11 +32,11 @@ import {
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
+import { allowUserChanges } from "~/logic/domain/journal-source";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -104,7 +94,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
 
     return json({
-      allProjects: summaryResponse.projects as Array<ProjectSummary>,
+      allProjects: summaryResponse.projects || undefined,
       journal: result.journal,
       note: result.note,
       writingTask: result.writing_task,
@@ -196,146 +186,93 @@ export default function Journal() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const isBigScreen = useBigScreen();
-
+  const corePropertyEditable = allowUserChanges(loaderData.journal.source);
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.journal.archived;
-
-  const cardActionFetcher = useFetcher();
-
-  function handleCardMarkDone(it: InboxTask) {
-    cardActionFetcher.submit(
-      {
-        id: it.ref_id,
-        status: InboxTaskStatus.DONE,
-      },
-      {
-        method: "post",
-        action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      },
-    );
-  }
-
-  function handleCardMarkNotDone(it: InboxTask) {
-    cardActionFetcher.submit(
-      {
-        id: it.ref_id,
-        status: InboxTaskStatus.NOT_DONE,
-      },
-      {
-        method: "post",
-        action: "/app/workspace/inbox-tasks/update-status-and-eisen",
-      },
-    );
-  }
 
   const sortedSubJournals = sortJournalsNaturally(loaderData.subPeriodJournals);
   const sortedTimePlans = sortTimePlansNaturally(loaderData.subTimePlans);
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`journal-${loaderData.journal.ref_id}`}
-      showArchiveAndRemoveButton
+      showArchiveAndRemoveButton={corePropertyEditable}
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.journal.archived}
       returnLocation="/app/workspace/journals"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
       <GlobalError actionResult={actionData} />
-      <Card
-        sx={{
-          marginBottom: "1rem",
-          display: "flex",
-          flexDirection: isBigScreen ? "row" : "column",
-        }}
-      >
-        <CardContent sx={{ flexGrow: "1" }}>
-          <Stack direction={"row"} spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="rightNow" shrink margin="dense">
-                The Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="rightNow"
-                name="rightNow"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.journal.right_now}
-              />
-
-              <FieldError actionResult={actionData} fieldName="/right_now" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <PeriodSelect
-                labelId="period"
-                label="Period"
-                name="period"
-                inputsEnabled={inputsEnabled}
-                defaultValue={loaderData.journal.period}
-              />
-              <FieldError actionResult={actionData} fieldName="/status" />
-            </FormControl>
-          </Stack>
-        </CardContent>
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="change-time-config"
-            >
-              Save
-            </Button>
-
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update-report"
-            >
-              Update Report
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-      <Card>
-        <CardContent>
-          <EntityNoteEditor
-            initialNote={loaderData.note}
+      <SectionCardNew
+        title="Properties"
+        actions={
+          <SectionActions
+            id="journal-properties"
+            topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "journal-change-time-config",
+                text: "Change Time Config",
+                value: "change-time-config",
+                disabled: !inputsEnabled || !corePropertyEditable,
+                highlight: true,
+              }),
+              ActionSingle({
+                id: "journal-change-update-report",
+                text: "Update Report",
+                value: "update-report",
+                disabled: !inputsEnabled,
+                highlight: true,
+              }),
+            ]}
           />
-        </CardContent>
-      </Card>
+        }
+      >
+        <Stack direction={"row"} spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="rightNow" shrink margin="dense">
+              The Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="rightNow"
+              name="rightNow"
+              readOnly={!inputsEnabled || !corePropertyEditable}
+              defaultValue={loaderData.journal.right_now}
+            />
 
-      <ShowReport
-        topLevelInfo={topLevelInfo}
-        allProjects={loaderData.allProjects}
-        report={loaderData.journal.report}
-      />
+            <FieldError actionResult={actionData} fieldName="/right_now" />
+          </FormControl>
 
-      {loaderData.writingTask && (
-        <InboxTaskStack
-          today={today}
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Writing Task"
-          inboxTasks={[loaderData.writingTask]}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
+          <FormControl fullWidth>
+            <PeriodSelect
+              labelId="period"
+              label="Period"
+              name="period"
+              inputsEnabled={inputsEnabled && corePropertyEditable}
+              defaultValue={loaderData.journal.period}
+            />
+            <FieldError actionResult={actionData} fieldName="/status" />
+          </FormControl>
+        </Stack>
+      </SectionCardNew>
+
+      <SectionCardNew id="journal-note" title="Note">
+        <EntityNoteEditor
+          initialNote={loaderData.note}
+          inputsEnabled={inputsEnabled}
         />
-      )}
+      </SectionCardNew>
+
+      <SectionCardNew id="journal-report" title="Report">
+        <ShowReport
+          topLevelInfo={topLevelInfo}
+          allProjects={loaderData.allProjects || []}
+          report={loaderData.journal.report}
+        />
+      </SectionCardNew>
 
       <SectionCardNew id="sub-journals" title="Other Journals in this Period">
         <JournalStack

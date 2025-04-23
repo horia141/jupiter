@@ -85,6 +85,21 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
       );
     }
 
+    case InboxTaskSource.JOURNAL: {
+      return (
+        <Button
+          startIcon={<LaunchIcon />}
+          variant="outlined"
+          size="small"
+          component={Link}
+          to={`/app/workspace/journals/${props.inboxTaskResult.journal?.ref_id}`}
+          sx={{ flexGrow: 1 }}
+        >
+          Journal
+        </Button>
+      );
+    }
+
     case InboxTaskSource.METRIC: {
       return (
         <Button

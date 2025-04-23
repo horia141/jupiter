@@ -4,7 +4,7 @@ import {
   Difficulty,
   Eisen,
   WorkspaceFeature,
-  TimePlanGenerationApproach,
+  JournalGenerationApproach,
 } from "@jupiter/webapi-client";
 import { z } from "zod";
 import {
@@ -30,6 +30,8 @@ import {
   OutlinedInput,
   Divider,
   Typography,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import { DateTime } from "luxon";
 
@@ -49,7 +51,6 @@ import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { DifficultySelect } from "~/components/difficulty-select";
 import { selectZod, fixSelectOutputToEnumStrict } from "~/logic/select";
 import { useBigScreen } from "~/rendering/use-big-screen";
-import { TimePlanGenerationApproachSelect } from "~/components/time-plan-generation-approach-select";
 import { periodName } from "~/logic/domain/period";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import {
@@ -64,15 +65,15 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
     periods: selectZod(z.nativeEnum(RecurringTaskPeriod)),
-    generationApproach: z.nativeEnum(TimePlanGenerationApproach),
+    generationApproach: z.nativeEnum(JournalGenerationApproach),
     generationInAdvanceDaysForDaily: z.coerce.number().optional(),
     generationInAdvanceDaysForWeekly: z.coerce.number().optional(),
     generationInAdvanceDaysForMonthly: z.coerce.number().optional(),
     generationInAdvanceDaysForQuarterly: z.coerce.number().optional(),
     generationInAdvanceDaysForYearly: z.coerce.number().optional(),
-    planningTaskProject: z.string().optional(),
-    planningTaskEisen: z.nativeEnum(Eisen).optional(),
-    planningTaskDifficulty: z.nativeEnum(Difficulty).optional(),
+    writingTaskProject: z.string().optional(),
+    writingTaskEisen: z.nativeEnum(Eisen).optional(),
+    writingTaskDifficulty: z.nativeEnum(Difficulty).optional(),
   }),
   z.object({
     intent: z.literal("regen"),
@@ -91,17 +92,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     include_projects: true,
   });
 
-  const timePlanSettingsResponse =
-    await apiClient.timePlans.timePlanLoadSettings({});
+  const journalSettingsResponse = await apiClient.journals.journalLoadSettings(
+    {},
+  );
 
   return json({
-    periods: timePlanSettingsResponse.periods,
-    generationApproach: timePlanSettingsResponse.generation_approach,
-    generationInAdvanceDays:
-      timePlanSettingsResponse.generation_in_advance_days,
-    planningTaskProject: timePlanSettingsResponse.planning_task_project,
-    planningTaskGenParams: timePlanSettingsResponse.planning_task_gen_params,
-    planningTasks: timePlanSettingsResponse.planning_tasks,
+    periods: journalSettingsResponse.periods,
+    generationApproach: journalSettingsResponse.generation_approach,
+    generationInAdvanceDays: journalSettingsResponse.generation_in_advance_days,
+    writingTaskProject: journalSettingsResponse.writing_task_project,
+    writingTaskGenParams: journalSettingsResponse.writing_task_gen_params,
+    writingTasks: journalSettingsResponse.writing_tasks,
     allProjects: summaryResponse.projects || undefined,
   });
 }
@@ -135,7 +136,7 @@ export async function action({ request }: ActionFunctionArgs) {
             form.generationInAdvanceDaysForYearly;
         }
 
-        await apiClient.timePlans.timePlanUpdateSettings({
+        await apiClient.journals.journalUpdateSettings({
           periods: {
             should_change: true,
             value: fixSelectOutputToEnumStrict<RecurringTaskPeriod>(
@@ -150,26 +151,26 @@ export async function action({ request }: ActionFunctionArgs) {
             should_change: true,
             value: generationInAdvanceDays,
           },
-          planning_task_project_ref_id: {
+          writing_task_project_ref_id: {
             should_change: true,
-            value: form.planningTaskProject,
+            value: form.writingTaskProject,
           },
-          planning_task_eisen: {
+          writing_task_eisen: {
             should_change: true,
-            value: form.planningTaskEisen,
+            value: form.writingTaskEisen,
           },
-          planning_task_difficulty: {
+          writing_task_difficulty: {
             should_change: true,
-            value: form.planningTaskDifficulty,
+            value: form.writingTaskDifficulty,
           },
         });
 
-        return redirect(`/app/workspace/time-plans/settings`);
+        return redirect(`/app/workspace/journals/settings`);
       }
 
       case "regen": {
-        await apiClient.timePlans.timePlanRegen({});
-        return redirect(`/app/workspace/time-plans/settings`);
+        await apiClient.journals.journalRegen({});
+        return redirect(`/app/workspace/journals/settings`);
       }
 
       default:
@@ -190,7 +191,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
-export default function TimePlansSettings() {
+export default function JournalsSettings() {
   const navigation = useNavigation();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -203,7 +204,7 @@ export default function TimePlansSettings() {
     loaderData.periods,
   );
 
-  const [approach, setApproach] = useState<TimePlanGenerationApproach>(
+  const [approach, setApproach] = useState<JournalGenerationApproach>(
     loaderData.generationApproach,
   );
 
@@ -218,32 +219,32 @@ export default function TimePlansSettings() {
 
   return (
     <BranchPanel
-      key={"time-plans/settings"}
-      returnLocation="/app/workspace/time-plans"
+      key={"journals/settings"}
+      returnLocation="/app/workspace/journals"
       inputsEnabled={inputsEnabled}
     >
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
-        WorkspaceFeature.TIME_PLANS,
+        WorkspaceFeature.JOURNALS,
       ) && (
         <Form method="post">
           <SectionCardNew
-            id="time-plans-settings"
+            id="journals-settings"
             title="Settings"
             actions={
               <SectionActions
-                id="time-plans-settings-actions"
+                id="journals-settings-actions"
                 topLevelInfo={topLevelInfo}
                 inputsEnabled={inputsEnabled}
                 actions={[
                   ActionSingle({
-                    id: "time-plans-settings-save",
+                    id: "journals-settings-save",
                     text: "Save",
                     value: "update",
                     highlight: true,
                   }),
                   ActionSingle({
-                    id: "time-plans-settings-regen",
+                    id: "journals-settings-regen",
                     text: "Regen",
                     value: "regen",
                   }),
@@ -255,7 +256,9 @@ export default function TimePlansSettings() {
             <Stack spacing={2} useFlexGap>
               <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
                 <FormControl fullWidth>
-                  <FormLabel id="periods">Periods You Want To Plan</FormLabel>
+                  <FormLabel id="periods">
+                    Periods You Want To Journal
+                  </FormLabel>
                   <PeriodSelect
                     labelId="periods"
                     label="Periods"
@@ -274,11 +277,43 @@ export default function TimePlansSettings() {
                   <FormLabel id="generationApproach">
                     Generation Approach
                   </FormLabel>
-                  <TimePlanGenerationApproachSelect
-                    name="generationApproach"
-                    inputsEnabled={inputsEnabled}
+                  <ToggleButtonGroup
                     value={approach}
-                    onChange={setApproach}
+                    exclusive
+                    fullWidth
+                    onChange={(_, newApproach) =>
+                      newApproach !== null && setApproach(newApproach)
+                    }
+                  >
+                    <ToggleButton
+                      size="small"
+                      id="approach-both"
+                      disabled={!inputsEnabled}
+                      value={JournalGenerationApproach.BOTH_JOURNAL_AND_TASK}
+                    >
+                      Both Journal and Task
+                    </ToggleButton>
+                    <ToggleButton
+                      size="small"
+                      id="approach-journal"
+                      disabled={!inputsEnabled}
+                      value={JournalGenerationApproach.ONLY_JOURNAL}
+                    >
+                      Only Journal
+                    </ToggleButton>
+                    <ToggleButton
+                      size="small"
+                      id="approach-none"
+                      disabled={!inputsEnabled}
+                      value={JournalGenerationApproach.NONE}
+                    >
+                      None
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                  <input
+                    name="generationApproach"
+                    type="hidden"
+                    value={approach}
                   />
                   <FieldError
                     actionResult={actionData}
@@ -287,11 +322,11 @@ export default function TimePlansSettings() {
                 </FormControl>
               </Stack>
 
-              {approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK && (
+              {approach === JournalGenerationApproach.BOTH_JOURNAL_AND_TASK && (
                 <>
                   <Divider>
                     <Typography variant="h6">
-                      Planning Inbox Task Properties
+                      Writing Task Properties
                     </Typography>
                   </Divider>
 
@@ -302,61 +337,61 @@ export default function TimePlansSettings() {
                     ) && (
                       <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
                         <ProjectSelect
-                          name="planningTaskProject"
-                          label="Planning Task Project"
+                          name="writingTaskProject"
+                          label="Writing Task Project"
                           inputsEnabled={inputsEnabled}
                           disabled={false}
                           allProjects={loaderData.allProjects!}
-                          defaultValue={loaderData.planningTaskProject?.ref_id}
+                          defaultValue={loaderData.writingTaskProject?.ref_id}
                         />
                         <FieldError
                           actionResult={actionData}
-                          fieldName="/planning_task_project_ref_id"
+                          fieldName="/writing_task_project_ref_id"
                         />
                       </FormControl>
                     )}
 
                     <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                      <FormLabel id="planningTaskEisen">
-                        Planning Task Eisen
+                      <FormLabel id="writingTaskEisen">
+                        Writing Task Eisen
                       </FormLabel>
                       <EisenhowerSelect
-                        name="planningTaskEisen"
+                        name="writingTaskEisen"
                         inputsEnabled={inputsEnabled}
                         defaultValue={
-                          loaderData.planningTaskGenParams?.eisen ??
+                          loaderData.writingTaskGenParams?.eisen ??
                           Eisen.IMPORTANT
                         }
                       />
                       <FieldError
                         actionResult={actionData}
-                        fieldName="/planning_task_eisen"
+                        fieldName="/writing_task_eisen"
                       />
                     </FormControl>
 
                     <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                      <FormLabel id="planningTaskDifficulty">
-                        Planning Task Difficulty
+                      <FormLabel id="writingTaskDifficulty">
+                        Writing Task Difficulty
                       </FormLabel>
                       <DifficultySelect
-                        name="planningTaskDifficulty"
+                        name="writingTaskDifficulty"
                         inputsEnabled={inputsEnabled}
                         defaultValue={
-                          loaderData.planningTaskGenParams?.difficulty ??
+                          loaderData.writingTaskGenParams?.difficulty ??
                           Difficulty.EASY
                         }
                       />
                       <FieldError
                         actionResult={actionData}
-                        fieldName="/planning_task_difficulty"
+                        fieldName="/writing_task_difficulty"
                       />
                     </FormControl>
                   </Stack>
                 </>
               )}
 
-              {(approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK ||
-                approach === TimePlanGenerationApproach.ONLY_PLAN) && (
+              {(approach === JournalGenerationApproach.BOTH_JOURNAL_AND_TASK ||
+                approach === JournalGenerationApproach.ONLY_JOURNAL) && (
                 <>
                   <Divider>
                     <Typography variant="h6">
@@ -399,8 +434,8 @@ export default function TimePlansSettings() {
           </SectionCardNew>
 
           <SectionCardNew
-            id="time-plans-generated-time-plans-and-planning-tasks"
-            title="Generated Planning Tasks"
+            id="journals-generated-journals-and-writing-tasks"
+            title="Generated Writing Tasks"
           >
             <InboxTaskStack
               today={today}
@@ -411,7 +446,7 @@ export default function TimePlansSettings() {
                 showDifficulty: true,
                 showDueDate: true,
               }}
-              inboxTasks={loaderData.planningTasks}
+              inboxTasks={loaderData.writingTasks}
             />
           </SectionCardNew>
         </Form>
@@ -421,11 +456,11 @@ export default function TimePlansSettings() {
 }
 
 export const ErrorBoundary = makeBranchErrorBoundary(
-  "/app/workspace/time-plans",
+  "/app/workspace/journals",
   ParamsSchema,
   {
-    notFound: () => `Could not find the time plans settings!`,
+    notFound: () => `Could not find the journals settings!`,
     error: () =>
-      `There was an error loading the time plans settings! Please try again!`,
+      `There was an error loading the journals settings! Please try again!`,
   },
 );

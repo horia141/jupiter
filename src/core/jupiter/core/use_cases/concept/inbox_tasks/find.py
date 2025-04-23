@@ -14,6 +14,8 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 )
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.concept.journals.journal import Journal
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person import Person
@@ -94,6 +96,7 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     habit: Habit | None
     chore: Chore | None
     big_plan: BigPlan | None
+    journal: Journal | None
     metric: Metric | None
     person: Person | None
     slack_task: SlackTask | None
@@ -170,6 +173,9 @@ class InboxTaskFindUseCase(
             workspace.ref_id,
         )
         big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
+            workspace.ref_id,
+        )
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
@@ -261,6 +267,17 @@ class InboxTaskFindUseCase(
             ],
         )
         big_plans_by_ref_id = {bp.ref_id: bp for bp in big_plans}
+
+        journals = await uow.get_for(Journal).find_all(
+            parent_ref_id=journal_collection.ref_id,
+            allow_archived=True,
+            filter_ref_ids=[
+                it.source_entity_ref_id_for_sure
+                for it in inbox_tasks
+                if it.source == InboxTaskSource.JOURNAL
+            ],
+        )
+        journals_by_ref_id = {j.ref_id: j for j in journals}
 
         metrics = await uow.get_for(Metric).find_all(
             parent_ref_id=metric_collection.ref_id,
@@ -367,6 +384,11 @@ class InboxTaskFindUseCase(
                     big_plan=(
                         big_plans_by_ref_id[it.source_entity_ref_id_for_sure]
                         if it.source == InboxTaskSource.BIG_PLAN
+                        else None
+                    ),
+                    journal=(
+                        journals_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.JOURNAL
                         else None
                     ),
                     metric=(

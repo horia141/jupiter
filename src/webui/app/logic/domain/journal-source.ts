@@ -8,3 +8,8 @@ export function journalSourceName(source: JournalSource) {
       return "Generated";
   }
 }
+
+export function allowUserChanges(source: JournalSource) {
+  // Keep synced with python:journal-source.py
+  return source === JournalSource.USER;
+}

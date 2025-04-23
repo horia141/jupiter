@@ -45,6 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const response = await apiClient.timePlans.timePlanFind({
     allow_archived: false,
     include_notes: false,
+    include_planning_tasks: true,
   });
   const timePlanSettingsResponse =
     await apiClient.timePlans.timePlanLoadSettings({});

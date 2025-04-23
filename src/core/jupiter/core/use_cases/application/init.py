@@ -15,6 +15,9 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.journals.journal_generation_approach import (
+    JournalGenerationApproach,
+)
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import Project
@@ -305,9 +308,13 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
                 periods={RecurringTaskPeriod.WEEKLY},
+                generation_approach=JournalGenerationApproach.BOTH_JOURNAL_AND_TASK,
+                generation_in_advance_days={
+                    RecurringTaskPeriod.WEEKLY: 3,
+                },
+                writing_task_project_ref_id=new_root_project.ref_id,
                 writing_task_eisen=Eisen.IMPORTANT,
                 writing_task_difficulty=Difficulty.MEDIUM,
-                writing_project_ref_id=new_root_project.ref_id,
             )
             journal_collection = await uow.get_for(JournalCollection).create(
                 journal_collection,

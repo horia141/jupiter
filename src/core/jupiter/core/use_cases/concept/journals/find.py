@@ -1,6 +1,9 @@
 """Use case for finding journals."""
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
@@ -68,6 +71,9 @@ class JournalFindUseCase(
         journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
+        )
         note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -91,7 +97,7 @@ class JournalFindUseCase(
         writing_tasks_by_journal_ref_id = {}
         if args.include_writing_tasks:
             writing_tasks = await uow.get_for(InboxTask).find_all_generic(
-                parent_ref_id=note_collection.ref_id,
+                parent_ref_id=inbox_task_collection.ref_id,
                 source=[InboxTaskSource.JOURNAL],
                 allow_archived=args.allow_archived,
                 source_entity_ref_id=[journal.ref_id for journal in journals],

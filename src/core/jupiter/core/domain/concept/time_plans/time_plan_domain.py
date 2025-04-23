@@ -39,7 +39,7 @@ class TimePlanDomain(TrunkEntity):
     planning_task_gen_params: RecurringTaskGenParams | None
 
     time_plans = ContainsMany(TimePlan, time_plan_domain_ref_id=IsRefId())
-    planning_task = OwnsMany(InboxTask, source=InboxTaskSource.TIME_PLAN)
+    planning_tasks = OwnsMany(InboxTask, source=InboxTaskSource.TIME_PLAN)
 
     @staticmethod
     @create_entity_action

@@ -5,19 +5,19 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.journal_change_periods_args import JournalChangePeriodsArgs
+from ...models.journal_update_settings_args import JournalUpdateSettingsArgs
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: JournalChangePeriodsArgs,
+    body: JournalUpdateSettingsArgs,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/journal-change-periods",
+        "url": "/journal-update-settings",
     }
 
     _body = body.to_dict()
@@ -56,14 +56,14 @@ def _build_response(*, client: Union[AuthenticatedClient, Client], response: htt
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: JournalChangePeriodsArgs,
+    body: JournalUpdateSettingsArgs,
 ) -> Response[Any]:
-    """THe use case for changing periods for journals.
+    """Command for updating the settings for journals in general.
 
-     THe use case for changing periods for journals.
+     Command for updating the settings for journals in general.
 
     Args:
-        body (JournalChangePeriodsArgs): Args.
+        body (JournalUpdateSettingsArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -87,14 +87,14 @@ def sync_detailed(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: JournalChangePeriodsArgs,
+    body: JournalUpdateSettingsArgs,
 ) -> Response[Any]:
-    """THe use case for changing periods for journals.
+    """Command for updating the settings for journals in general.
 
-     THe use case for changing periods for journals.
+     Command for updating the settings for journals in general.
 
     Args:
-        body (JournalChangePeriodsArgs): Args.
+        body (JournalUpdateSettingsArgs): Args.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

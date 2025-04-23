@@ -327,7 +327,7 @@ export default function TimePlanView() {
   return (
     <BranchPanel
       key={`time-plan-${loaderData.timePlan.ref_id}`}
-      showArchiveAndRemoveButton
+      showArchiveAndRemoveButton={corePropertyEditable}
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.timePlan.archived}
       returnLocation="/app/workspace/time-plans"

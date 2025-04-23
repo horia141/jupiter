@@ -86,9 +86,11 @@ class ProjectRemoveUseCase(
                 workspace.ref_id
             )
             if journal_collection.writing_task_project_ref_id == args.ref_id:
-                journal_collection = journal_collection.change_writing_task_project(
-                    context.domain_context,
-                    args.backup_project_ref_id,
+                journal_collection = (
+                    journal_collection.change_writing_task_project_if_required(
+                        context.domain_context,
+                        args.backup_project_ref_id,
+                    )
                 )
                 await uow.get_for(JournalCollection).save(journal_collection)
 

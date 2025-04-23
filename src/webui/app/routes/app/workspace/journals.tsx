@@ -5,6 +5,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+import TuneIcon from "@mui/icons-material/Tune";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DocsHelpSubject } from "~/components/docs-help";
@@ -18,9 +19,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
+  useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionActions, NavSingle } from "~/components/infra/section-actions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -44,6 +47,7 @@ export default function Journals() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
+  const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const sortedJournals = sortJournalsNaturally(entries.map((e) => e.journal));
@@ -57,8 +61,25 @@ export default function Journals() {
       key={"journals"}
       createLocation="/app/workspace/journals/new"
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="journals"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              link: `/app/workspace/journals/settings`,
+              icon: <TuneIcon />,
+            }),
+          ]}
+        />
+      }
     >
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+      <NestingAwareBlock
+        branchForceHide={shouldShowABranch}
+        shouldHide={shouldShowABranch || shouldShowALeaf}
+      >
         {sortedJournals.length === 0 && (
           <EntityNoNothingCard
             title="You Have To Start Somewhere"

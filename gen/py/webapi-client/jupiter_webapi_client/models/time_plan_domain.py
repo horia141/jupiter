@@ -30,9 +30,9 @@ class TimePlanDomain:
         periods (list[RecurringTaskPeriod]):
         generation_approach (TimePlanGenerationApproach): The approach to generate time plans.
         generation_in_advance_days (TimePlanDomainGenerationInAdvanceDays):
+        planning_task_project_ref_id (str): A generic entity id.
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
-        planning_task_project_ref_id (Union[None, Unset, str]):
         planning_task_gen_params (Union['RecurringTaskGenParams', None, Unset]):
     """
 
@@ -45,9 +45,9 @@ class TimePlanDomain:
     periods: list[RecurringTaskPeriod]
     generation_approach: TimePlanGenerationApproach
     generation_in_advance_days: "TimePlanDomainGenerationInAdvanceDays"
+    planning_task_project_ref_id: str
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
-    planning_task_project_ref_id: Union[None, Unset, str] = UNSET
     planning_task_gen_params: Union["RecurringTaskGenParams", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -75,6 +75,8 @@ class TimePlanDomain:
 
         generation_in_advance_days = self.generation_in_advance_days.to_dict()
 
+        planning_task_project_ref_id = self.planning_task_project_ref_id
+
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
             archival_reason = UNSET
@@ -86,12 +88,6 @@ class TimePlanDomain:
             archived_time = UNSET
         else:
             archived_time = self.archived_time
-
-        planning_task_project_ref_id: Union[None, Unset, str]
-        if isinstance(self.planning_task_project_ref_id, Unset):
-            planning_task_project_ref_id = UNSET
-        else:
-            planning_task_project_ref_id = self.planning_task_project_ref_id
 
         planning_task_gen_params: Union[None, Unset, dict[str, Any]]
         if isinstance(self.planning_task_gen_params, Unset):
@@ -114,14 +110,13 @@ class TimePlanDomain:
                 "periods": periods,
                 "generation_approach": generation_approach,
                 "generation_in_advance_days": generation_in_advance_days,
+                "planning_task_project_ref_id": planning_task_project_ref_id,
             }
         )
         if archival_reason is not UNSET:
             field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
-        if planning_task_project_ref_id is not UNSET:
-            field_dict["planning_task_project_ref_id"] = planning_task_project_ref_id
         if planning_task_gen_params is not UNSET:
             field_dict["planning_task_gen_params"] = planning_task_gen_params
 
@@ -158,6 +153,8 @@ class TimePlanDomain:
             d.pop("generation_in_advance_days")
         )
 
+        planning_task_project_ref_id = d.pop("planning_task_project_ref_id")
+
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -175,15 +172,6 @@ class TimePlanDomain:
             return cast(Union[None, Unset, str], data)
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
-
-        def _parse_planning_task_project_ref_id(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        planning_task_project_ref_id = _parse_planning_task_project_ref_id(d.pop("planning_task_project_ref_id", UNSET))
 
         def _parse_planning_task_gen_params(data: object) -> Union["RecurringTaskGenParams", None, Unset]:
             if data is None:
@@ -212,9 +200,9 @@ class TimePlanDomain:
             periods=periods,
             generation_approach=generation_approach,
             generation_in_advance_days=generation_in_advance_days,
+            planning_task_project_ref_id=planning_task_project_ref_id,
             archival_reason=archival_reason,
             archived_time=archived_time,
-            planning_task_project_ref_id=planning_task_project_ref_id,
             planning_task_gen_params=planning_task_gen_params,
         )
 

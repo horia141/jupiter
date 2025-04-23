@@ -37,6 +37,10 @@ class CannotModifyGeneratedTimePlanError(Exception):
     """Exception raised when you're trying to modify a generated time plan."""
 
 
+class TimePlanExistsForDatePeriodCombinationError(EntityAlreadyExistsError):
+    """An error raised when a time plan already exists for a date and period combination."""
+
+
 @entity
 class TimePlan(LeafEntity):
     """A plan for a particular period of time."""
@@ -156,10 +160,6 @@ class TimePlan(LeafEntity):
     def build_name(right_now: ADate, period: RecurringTaskPeriod) -> EntityName:
         """Build the name of the time plan."""
         return EntityName(f"{period.value.capitalize()} plan for {right_now}")
-
-
-class TimePlanExistsForDatePeriodCombinationError(EntityAlreadyExistsError):
-    """An error raised when a time plan already exists for a date and period combination."""
 
 
 class TimePlanRepository(LeafEntityRepository[TimePlan], abc.ABC):

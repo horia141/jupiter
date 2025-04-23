@@ -5,6 +5,7 @@ from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.persons.person import Person
 from jupiter.core.domain.concept.projects.project import Project
@@ -54,6 +55,7 @@ class InboxTaskLoadResult(UseCaseResultBase):
     habit: Habit | None
     chore: Chore | None
     big_plan: BigPlan | None
+    journal: Journal | None
     metric: Metric | None
     person: Person | None
     slack_task: SlackTask | None
@@ -119,6 +121,13 @@ class InboxTaskLoadUseCase(
         else:
             big_plan = None
 
+        if inbox_task.source is InboxTaskSource.JOURNAL:
+            journal = await uow.get_for(Journal).load_by_id(
+                inbox_task.source_entity_ref_id_for_sure, allow_archived=True
+            )
+        else:
+            journal = None
+
         if inbox_task.source is InboxTaskSource.METRIC:
             metric = await uow.get_for(Metric).load_by_id(
                 inbox_task.source_entity_ref_id_for_sure, allow_archived=True
@@ -171,6 +180,7 @@ class InboxTaskLoadUseCase(
             chore=chore,
             big_plan=big_plan,
             metric=metric,
+            journal=journal,
             person=person,
             slack_task=slack_task,
             email_task=email_task,

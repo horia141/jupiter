@@ -7,6 +7,7 @@ import type { Chore } from './Chore';
 import type { EmailTask } from './EmailTask';
 import type { Habit } from './Habit';
 import type { InboxTask } from './InboxTask';
+import type { Journal } from './Journal';
 import type { Metric } from './Metric';
 import type { Note } from './Note';
 import type { Person } from './Person';
@@ -26,6 +27,7 @@ export type InboxTaskLoadResult = {
     habit?: (Habit | null);
     chore?: (Chore | null);
     big_plan?: (BigPlan | null);
+    journal?: (Journal | null);
     metric?: (Metric | null);
     person?: (Person | null);
     slack_task?: (SlackTask | null);

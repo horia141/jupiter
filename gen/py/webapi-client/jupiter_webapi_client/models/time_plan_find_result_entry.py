@@ -7,6 +7,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.inbox_task import InboxTask
     from ..models.note import Note
     from ..models.time_plan import TimePlan
 
@@ -21,13 +22,16 @@ class TimePlanFindResultEntry:
     Attributes:
         time_plan (TimePlan): A plan for a particular period of time.
         note (Union['Note', None, Unset]):
+        planning_task (Union['InboxTask', None, Unset]):
     """
 
     time_plan: "TimePlan"
     note: Union["Note", None, Unset] = UNSET
+    planning_task: Union["InboxTask", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.inbox_task import InboxTask
         from ..models.note import Note
 
         time_plan = self.time_plan.to_dict()
@@ -40,6 +44,14 @@ class TimePlanFindResultEntry:
         else:
             note = self.note
 
+        planning_task: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.planning_task, Unset):
+            planning_task = UNSET
+        elif isinstance(self.planning_task, InboxTask):
+            planning_task = self.planning_task.to_dict()
+        else:
+            planning_task = self.planning_task
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -49,11 +61,14 @@ class TimePlanFindResultEntry:
         )
         if note is not UNSET:
             field_dict["note"] = note
+        if planning_task is not UNSET:
+            field_dict["planning_task"] = planning_task
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.time_plan import TimePlan
 
@@ -77,9 +92,27 @@ class TimePlanFindResultEntry:
 
         note = _parse_note(d.pop("note", UNSET))
 
+        def _parse_planning_task(data: object) -> Union["InboxTask", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                planning_task_type_0 = InboxTask.from_dict(data)
+
+                return planning_task_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["InboxTask", None, Unset], data)
+
+        planning_task = _parse_planning_task(d.pop("planning_task", UNSET))
+
         time_plan_find_result_entry = cls(
             time_plan=time_plan,
             note=note,
+            planning_task=planning_task,
         )
 
         time_plan_find_result_entry.additional_properties = d
