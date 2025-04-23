@@ -36,6 +36,9 @@ from jupiter.core.framework.update_action import UpdateAction
 class CannotModifyGeneratedTimePlanError(Exception):
     """Exception raised when you're trying to modify a generated time plan."""
 
+class TimePlanExistsForDatePeriodCombinationError(EntityAlreadyExistsError):
+    """An error raised when a time plan already exists for a date and period combination."""
+
 
 @entity
 class TimePlan(LeafEntity):
@@ -157,9 +160,6 @@ class TimePlan(LeafEntity):
         """Build the name of the time plan."""
         return EntityName(f"{period.value.capitalize()} plan for {right_now}")
 
-
-class TimePlanExistsForDatePeriodCombinationError(EntityAlreadyExistsError):
-    """An error raised when a time plan already exists for a date and period combination."""
 
 
 class TimePlanRepository(LeafEntityRepository[TimePlan], abc.ABC):

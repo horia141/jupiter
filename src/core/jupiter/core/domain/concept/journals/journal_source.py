@@ -9,3 +9,9 @@ class JournalSource(EnumValue):
 
     USER = "user"
     GENERATED = "generated"
+
+    @property
+    def allow_user_changes(self) -> bool:
+        """Whether the user can change the journal."""
+        # Keep synced with ts:journal-source.ts
+        return self == JournalSource.USER

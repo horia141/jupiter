@@ -1,5 +1,8 @@
 """Use case for finding time plans."""
 
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.core.notes.note import Note
@@ -28,6 +31,7 @@ class TimePlanFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
+    include_planning_tasks: bool
     filter_ref_ids: list[EntityId] | None
 
 
@@ -37,7 +41,7 @@ class TimePlanFindResultEntry(UseCaseResultBase):
 
     time_plan: TimePlan
     note: Note | None
-
+    planning_task: InboxTask | None
 
 @use_case_result
 class TimePlanFindResult(UseCaseResultBase):
@@ -64,6 +68,9 @@ class TimePlanFindUseCase(
         time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
             workspace.ref_id,
         )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
+        )
         note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -84,11 +91,22 @@ class TimePlanFindUseCase(
             for note in notes:
                 notes_by_time_plan_ref_id[note.source_entity_ref_id] = note
 
+        planning_tasks_by_time_plan_ref_id = {}
+        if args.include_planning_tasks:
+            planning_tasks = await uow.get_for(InboxTask).find_all_generic(
+                parent_ref_id=inbox_task_collection.ref_id,
+                source=[InboxTaskSource.TIME_PLAN],
+                allow_archived=args.allow_archived,
+                source_entity_ref_id=[time_plan.ref_id for time_plan in time_plans],
+            )
+            for planning_task in planning_tasks:
+                planning_tasks_by_time_plan_ref_id[planning_task.source_entity_ref_id] = planning_task
         return TimePlanFindResult(
             entries=[
                 TimePlanFindResultEntry(
                     time_plan=time_plan,
                     note=notes_by_time_plan_ref_id.get(time_plan.ref_id, None),
+                    planning_task=planning_tasks_by_time_plan_ref_id.get(time_plan.ref_id, None),
                 )
                 for time_plan in time_plans
             ]
