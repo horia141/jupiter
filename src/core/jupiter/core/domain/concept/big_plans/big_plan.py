@@ -9,6 +9,8 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.archival_reason import ArchivalReason
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,6 +39,8 @@ class BigPlan(LeafEntity):
     project_ref_id: EntityId
     name: BigPlanName
     status: BigPlanStatus
+    eisen: Eisen
+    difficulty: Difficulty
     actionable_date: ADate | None
     due_date: ADate | None
     working_time: Timestamp | None
@@ -57,6 +61,8 @@ class BigPlan(LeafEntity):
         project_ref_id: EntityId,
         name: BigPlanName,
         status: BigPlanStatus,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
     ) -> "BigPlan":
@@ -71,6 +77,8 @@ class BigPlan(LeafEntity):
             project_ref_id=project_ref_id,
             name=name,
             status=status,
+            eisen=eisen,
+            difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
             working_time=working_time,
@@ -84,6 +92,8 @@ class BigPlan(LeafEntity):
         name: UpdateAction[BigPlanName],
         status: UpdateAction[BigPlanStatus],
         project_ref_id: UpdateAction[EntityId],
+        eisen: UpdateAction[Eisen],
+        difficulty: UpdateAction[Difficulty],
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
     ) -> "BigPlan":
@@ -118,12 +128,16 @@ class BigPlan(LeafEntity):
 
         new_actionable_date = actionable_date.or_else(self.actionable_date)
         new_due_date = due_date.or_else(self.due_date)
+        new_eisen = eisen.or_else(self.eisen)
+        new_difficulty = difficulty.or_else(self.difficulty)
 
         return self._new_version(
             ctx,
             name=new_name,
             status=new_status,
             project_ref_id=project_ref_id.or_else(self.project_ref_id),
+            eisen=new_eisen,
+            difficulty=new_difficulty,
             working_time=new_working_time,
             completed_time=new_completed_time,
             actionable_date=new_actionable_date,

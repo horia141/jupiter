@@ -1,6 +1,8 @@
 import type { ADate, ProjectSummary, TimePlan } from "@jupiter/webapi-client";
 import {
   ApiError,
+  Difficulty,
+  Eisen,
   TimePlanActivityFeasability,
   TimePlanActivityKind,
   WorkspaceFeature,
@@ -27,6 +29,8 @@ import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -51,6 +55,8 @@ const QuerySchema = z.object({
 const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
+  eisen: z.nativeEnum(Eisen),
+  difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
   timePlanActivityKind: z.nativeEnum(TimePlanActivityKind).optional(),
@@ -115,6 +121,8 @@ export async function action({ request }: ActionFunctionArgs) {
       time_plan_activity_kind: form.timePlanActivityKind,
       time_plan_activity_feasability: form.timePlanActivityFeasability,
       project_ref_id: form.project !== undefined ? form.project : undefined,
+      eisen: form.eisen,
+      difficulty: form.difficulty,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
           ? form.actionableDate
@@ -198,6 +206,26 @@ export default function NewBigPlan() {
             )}
 
             <FormControl fullWidth>
+              <FormLabel id="eisen">Eisenhower</FormLabel>
+              <EisenhowerSelect
+                name="eisen"
+                defaultValue={Eisen.REGULAR}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/eisen" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <FormLabel id="difficulty">Difficulty</FormLabel>
+              <DifficultySelect
+                name="difficulty"
+                defaultValue={Difficulty.EASY}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/difficulty" />
+            </FormControl>
+
+            <FormControl fullWidth>
               <InputLabel id="actionableDate" shrink margin="dense">
                 Actionable From [Optional]
               </InputLabel>
@@ -216,7 +244,6 @@ export default function NewBigPlan() {
                     : undefined
                 }
               />
-
               <FieldError
                 actionResult={actionData}
                 fieldName="/actionable_date"
@@ -242,7 +269,6 @@ export default function NewBigPlan() {
                     : undefined
                 }
               />
-
               <FieldError actionResult={actionData} fieldName="/due_date" />
             </FormControl>
 

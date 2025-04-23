@@ -487,7 +487,7 @@ function BigPlanList(props: BigPlanListProps) {
       allowSelect
       showOptions={{
         showDueDate: true,
-        showParent: true,
+        showProject: true,
       }}
       onClick={(it) => {
         props.onSelected(it);

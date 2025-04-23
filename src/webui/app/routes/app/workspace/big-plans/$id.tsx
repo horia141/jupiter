@@ -6,6 +6,8 @@ import type {
 import {
   ApiError,
   BigPlanStatus,
+  Difficulty,
+  Eisen,
   InboxTaskStatus,
   NoteDomain,
   TimePlanActivityTarget,
@@ -19,6 +21,7 @@ import {
   CardActions,
   CardContent,
   FormControl,
+  FormLabel,
   InputLabel,
   OutlinedInput,
   Stack,
@@ -58,6 +61,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { EisenhowerSelect } from "~/components/eisenhower-select";
+import { DifficultySelect } from "~/components/difficulty-select";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -67,6 +72,8 @@ const CommonParamsSchema = {
   name: z.string(),
   status: z.nativeEnum(BigPlanStatus),
   project: z.string(),
+  eisen: z.nativeEnum(Eisen),
+  difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
 };
@@ -210,6 +217,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
           project_ref_id: {
             should_change: true,
             value: form.project,
+          },
+          eisen: {
+            should_change: true,
+            value: form.eisen,
+          },
+          difficulty: {
+            should_change: true,
+            value: form.difficulty,
           },
           actionable_date: {
             should_change: true,
@@ -407,6 +422,26 @@ export default function BigPlan() {
               topLevelInfo.workspace,
               WorkspaceFeature.PROJECTS,
             ) && <input type="hidden" name="project" value={selectedProject} />}
+
+            <FormControl fullWidth>
+              <FormLabel id="eisen">Eisenhower</FormLabel>
+              <EisenhowerSelect
+                name="eisen"
+                defaultValue={loaderData.bigPlan.eisen}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/eisen" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <FormLabel id="difficulty">Difficulty</FormLabel>
+              <DifficultySelect
+                name="difficulty"
+                defaultValue={loaderData.bigPlan.difficulty}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/difficulty" />
+            </FormControl>
 
             <FormControl fullWidth>
               <InputLabel id="actionableDate" shrink>

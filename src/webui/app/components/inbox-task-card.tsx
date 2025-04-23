@@ -208,10 +208,9 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                   eisen={props.optimisticState?.eisen ?? props.inboxTask.eisen}
                 />
               )}
-              {props.showOptions.showDifficulty &&
-                props.inboxTask.difficulty && (
-                  <DifficultyTag difficulty={props.inboxTask.difficulty} />
-                )}
+              {props.showOptions.showDifficulty && (
+                <DifficultyTag difficulty={props.inboxTask.difficulty} />
+              )}
               {props.showOptions.showActionableDate &&
                 props.inboxTask.actionable_date && (
                   <ADateTag

@@ -5,6 +5,8 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.big_plan_status import BigPlanStatus
+from ..models.difficulty import Difficulty
+from ..models.eisen import Eisen
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="BigPlan")
@@ -24,6 +26,8 @@ class BigPlan:
         big_plan_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
         status (BigPlanStatus): The status of a big plan.
+        eisen (Eisen): The Eisenhower status of a particular task.
+        difficulty (Difficulty): The difficulty of a particular task.
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         actionable_date (Union[None, Unset, str]):
@@ -41,6 +45,8 @@ class BigPlan:
     big_plan_collection_ref_id: str
     project_ref_id: str
     status: BigPlanStatus
+    eisen: Eisen
+    difficulty: Difficulty
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     actionable_date: Union[None, Unset, str] = UNSET
@@ -67,6 +73,10 @@ class BigPlan:
         project_ref_id = self.project_ref_id
 
         status = self.status.value
+
+        eisen = self.eisen.value
+
+        difficulty = self.difficulty.value
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -117,6 +127,8 @@ class BigPlan:
                 "big_plan_collection_ref_id": big_plan_collection_ref_id,
                 "project_ref_id": project_ref_id,
                 "status": status,
+                "eisen": eisen,
+                "difficulty": difficulty,
             }
         )
         if archival_reason is not UNSET:
@@ -154,6 +166,10 @@ class BigPlan:
         project_ref_id = d.pop("project_ref_id")
 
         status = BigPlanStatus(d.pop("status"))
+
+        eisen = Eisen(d.pop("eisen"))
+
+        difficulty = Difficulty(d.pop("difficulty"))
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -219,6 +235,8 @@ class BigPlan:
             big_plan_collection_ref_id=big_plan_collection_ref_id,
             project_ref_id=project_ref_id,
             status=status,
+            eisen=eisen,
+            difficulty=difficulty,
             archival_reason=archival_reason,
             archived_time=archived_time,
             actionable_date=actionable_date,

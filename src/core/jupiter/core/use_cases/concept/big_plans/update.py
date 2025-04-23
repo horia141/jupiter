@@ -16,6 +16,8 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 )
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -44,6 +46,8 @@ class BigPlanUpdateArgs(UseCaseArgsBase):
     name: UpdateAction[BigPlanName]
     status: UpdateAction[BigPlanStatus]
     project_ref_id: UpdateAction[EntityId]
+    eisen: UpdateAction[Eisen]
+    difficulty: UpdateAction[Difficulty]
     actionable_date: UpdateAction[ADate | None]
     due_date: UpdateAction[ADate | None]
 
@@ -77,6 +81,8 @@ class BigPlanUpdateUseCase(
             name=args.name,
             status=args.status,
             project_ref_id=args.project_ref_id,
+            eisen=args.eisen,
+            difficulty=args.difficulty,
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )

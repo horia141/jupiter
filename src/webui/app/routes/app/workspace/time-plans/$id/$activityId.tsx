@@ -503,7 +503,9 @@ export default function TimePlanActivity() {
               topLevelInfo={topLevelInfo}
               showOptions={{
                 showStatus: true,
-                showParent: true,
+                showProject: true,
+                showEisen: true,
+                showDifficulty: true,
                 showActionableDate: true,
                 showDueDate: true,
                 showHandleMarkDone: false,

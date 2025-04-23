@@ -1,6 +1,7 @@
 import type { ADate, BigPlan } from "@jupiter/webapi-client";
 import {
   Box,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -18,6 +19,8 @@ import { aDateToDate } from "~/logic/domain/adate";
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameOneLineComponent } from "./entity-name";
 import { EntityLink } from "./infra/entity-card";
+import { EisenTag } from "./eisen-tag";
+import { DifficultyTag } from "./difficulty-tag";
 
 interface DateMarker {
   date: ADate;
@@ -48,8 +51,8 @@ export function BigPlanTimelineBigScreen({
       <Table sx={{ tableLayout: "fixed" }}>
         <TableHead>
           <TableRow>
-            <TableCell width="33%">Name</TableCell>
-            <TableCell width="12%">Status</TableCell>
+            <TableCell width="23%">Name</TableCell>
+            <TableCell width="22%">Properties</TableCell>
             <TableCell width="55%">Range</TableCell>
           </TableRow>
           <TableRow>
@@ -98,7 +101,11 @@ export function BigPlanTimelineBigScreen({
                   </EntityLink>
                 </TableCell>
                 <TableCell>
-                  <BigPlanStatusTag status={entry.status} />
+                  <Stack direction="row" spacing={0.5}>
+                    <BigPlanStatusTag status={entry.status} />
+                    <EisenTag eisen={entry.eisen} />
+                    <DifficultyTag difficulty={entry.difficulty} />
+                  </Stack>
                 </TableCell>
                 <TableCell sx={{ position: "relative" }}>
                   <TimelineGnattBlob leftmargin={leftMargin} width={width}>

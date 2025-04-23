@@ -5,6 +5,8 @@
 import type { ADate } from './ADate';
 import type { BigPlanName } from './BigPlanName';
 import type { BigPlanStatus } from './BigPlanStatus';
+import type { Difficulty } from './Difficulty';
+import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
 /**
  * PersonFindArgs.
@@ -22,6 +24,14 @@ export type BigPlanUpdateArgs = {
     project_ref_id: {
         should_change: boolean;
         value?: EntityId;
+    };
+    eisen: {
+        should_change: boolean;
+        value?: Eisen;
+    };
+    difficulty: {
+        should_change: boolean;
+        value?: Difficulty;
     };
     actionable_date: {
         should_change: boolean;

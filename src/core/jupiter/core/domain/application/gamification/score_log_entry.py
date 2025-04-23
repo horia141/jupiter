@@ -112,9 +112,19 @@ class ScoreLogEntry(LeafEntity):
     @staticmethod
     def _compute_score_for_big_plan(big_plan: BigPlan) -> int:
         if big_plan.status == BigPlanStatus.DONE:
-            return 10
+            if big_plan.difficulty == Difficulty.EASY:
+                return 10
+            elif big_plan.difficulty == Difficulty.MEDIUM:
+                return 25
+            else:  # big_plan.difficulty == Difficulty.HARD:
+                return 50
         else:  # big_plan.status == BigPlanStatus.NOT_DONE:
-            return -10
+            if big_plan.difficulty == Difficulty.EASY:
+                return -10
+            elif big_plan.difficulty == Difficulty.MEDIUM:
+                return -25
+            else:  # big_plan.difficulty == Difficulty.HARD:
+                return -50
 
 
 class ScoreLogEntryRepository(LeafEntityRepository[ScoreLogEntry], abc.ABC):

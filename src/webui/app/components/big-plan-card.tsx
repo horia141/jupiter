@@ -11,10 +11,14 @@ import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameComponent } from "./entity-name";
 import { EntityCard, EntityLink } from "./infra/entity-card";
 import { ProjectTag } from "./project-tag";
+import { DifficultyTag } from "./difficulty-tag";
+import { EisenTag } from "./eisen-tag";
 
 export interface BigPlanShowOptions {
   showStatus?: boolean;
-  showParent?: boolean;
+  showProject?: boolean;
+  showEisen?: boolean;
+  showDifficulty?: boolean;
   showActionableDate?: boolean;
   showDueDate?: boolean;
   showHandleMarkDone?: boolean;
@@ -73,7 +77,7 @@ export function BigPlanCard(props: BigPlanCardProps) {
         {props.showOptions.showStatus && (
           <BigPlanStatusTag status={props.bigPlan.status} />
         )}
-        {props.showOptions.showParent &&
+        {props.showOptions.showProject &&
           isWorkspaceFeatureAvailable(
             props.topLevelInfo.workspace,
             WorkspaceFeature.PROJECTS,
@@ -81,6 +85,13 @@ export function BigPlanCard(props: BigPlanCardProps) {
           props.parent && (
             <ProjectTag project={props.parent.project as Project} />
           )}
+
+        {props.showOptions.showEisen && (
+          <EisenTag eisen={props.bigPlan.eisen} />
+        )}
+        {props.showOptions.showDifficulty && (
+          <DifficultyTag difficulty={props.bigPlan.difficulty} />
+        )}
 
         {props.showOptions.showActionableDate &&
           props.bigPlan.actionable_date && (

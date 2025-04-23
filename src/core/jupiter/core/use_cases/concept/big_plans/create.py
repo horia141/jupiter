@@ -15,6 +15,8 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
     TimePlanActivityKind,
 )
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -47,6 +49,8 @@ class BigPlanCreateArgs(UseCaseArgsBase):
     time_plan_ref_id: EntityId | None
     time_plan_activity_kind: TimePlanActivityKind | None
     time_plan_activity_feasability: TimePlanActivityFeasability | None
+    eisen: Eisen
+    difficulty: Difficulty
     project_ref_id: EntityId | None
     actionable_date: ADate | None
     due_date: ADate | None
@@ -113,6 +117,8 @@ class BigPlanCreateUseCase(
             project_ref_id=project_ref_id,
             name=args.name,
             status=BigPlanStatus.NOT_STARTED,
+            eisen=args.eisen,
+            difficulty=args.difficulty,
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )

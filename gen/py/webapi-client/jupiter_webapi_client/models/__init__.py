@@ -22,7 +22,9 @@ from .big_plan_status import BigPlanStatus
 from .big_plan_summary import BigPlanSummary
 from .big_plan_update_args import BigPlanUpdateArgs
 from .big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
+from .big_plan_update_args_difficulty import BigPlanUpdateArgsDifficulty
 from .big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
+from .big_plan_update_args_eisen import BigPlanUpdateArgsEisen
 from .big_plan_update_args_name import BigPlanUpdateArgsName
 from .big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
 from .big_plan_update_args_status import BigPlanUpdateArgsStatus
@@ -648,7 +650,9 @@ __all__ = (
     "BigPlanSummary",
     "BigPlanUpdateArgs",
     "BigPlanUpdateArgsActionableDate",
+    "BigPlanUpdateArgsDifficulty",
     "BigPlanUpdateArgsDueDate",
+    "BigPlanUpdateArgsEisen",
     "BigPlanUpdateArgsName",
     "BigPlanUpdateArgsProjectRefId",
     "BigPlanUpdateArgsStatus",
