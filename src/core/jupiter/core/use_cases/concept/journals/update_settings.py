@@ -81,9 +81,7 @@ class JournalUpdateSettingsUseCase(
                     project = await uow.get_for(Project).load_by_id(
                         cast(EntityId, args.writing_task_project_ref_id.just_the_value)
                     )
-                    writing_task_project_ref_id = UpdateAction.change_to(
-                        project.ref_id
-                    )
+                    writing_task_project_ref_id = UpdateAction.change_to(project.ref_id)
                 else:
                     writing_task_project_ref_id = UpdateAction.do_nothing()
             else:
@@ -132,7 +130,9 @@ class JournalUpdateSettingsUseCase(
                     right_now=self._time_provider.get_current_date().to_timestamp_at_end_of_day(),
                 )
 
-                journals_for_period = await uow.get(JournalRepository).find_all_in_range(
+                journals_for_period = await uow.get(
+                    JournalRepository
+                ).find_all_in_range(
                     parent_ref_id=journal_collection.ref_id,
                     allow_archived=False,
                     filter_periods=[period],
@@ -184,4 +184,4 @@ class JournalUpdateSettingsUseCase(
                             InboxTask,
                             writing_task.ref_id,
                             ArchivalReason.USER,
-                        ) 
+                        )

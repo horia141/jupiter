@@ -15,7 +15,9 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
-from jupiter.core.domain.concept.journals.journal_generation_approach import JournalGenerationApproach
+from jupiter.core.domain.concept.journals.journal_generation_approach import (
+    JournalGenerationApproach,
+)
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import Project

@@ -41,4 +41,4 @@ class JournalRegenUseCase(AppLoggedInMutationUseCase[JournalRegenArgs, None]):
             today=self._time_provider.get_current_date(),
             gen_targets=[SyncTarget.JOURNALS],
             period=None,
-        ) 
+        )

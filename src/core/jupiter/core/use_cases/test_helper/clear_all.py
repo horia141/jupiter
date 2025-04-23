@@ -4,7 +4,9 @@ from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
-from jupiter.core.domain.concept.journals.journal_generation_approach import JournalGenerationApproach
+from jupiter.core.domain.concept.journals.journal_generation_approach import (
+    JournalGenerationApproach,
+)
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
@@ -204,9 +206,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     ).load_by_parent(workspace.ref_id)
                     journal_collection = journal_collection.update(
                         context.domain_context,
-                        periods=UpdateAction.change_to(
-                            {RecurringTaskPeriod.WEEKLY}
-                        ),
+                        periods=UpdateAction.change_to({RecurringTaskPeriod.WEEKLY}),
                         generation_approach=UpdateAction.change_to(
                             JournalGenerationApproach.BOTH_JOURNAL_AND_TASK
                         ),
@@ -217,7 +217,9 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                             root_project.ref_id
                         ),
                         writing_task_eisen=UpdateAction.change_to(Eisen.IMPORTANT),
-                        writing_task_difficulty=UpdateAction.change_to(Difficulty.MEDIUM),
+                        writing_task_difficulty=UpdateAction.change_to(
+                            Difficulty.MEDIUM
+                        ),
                     )
                     await uow.get_for(JournalCollection).save(journal_collection)
 

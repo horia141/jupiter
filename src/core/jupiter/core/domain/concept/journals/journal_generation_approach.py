@@ -40,4 +40,4 @@ class JournalGenerationApproach(EnumValue):
         return (
             self == JournalGenerationApproach.NONE
             or self == JournalGenerationApproach.ONLY_JOURNAL
-        ) 
+        )

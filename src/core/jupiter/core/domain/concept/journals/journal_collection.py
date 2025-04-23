@@ -3,7 +3,9 @@
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.journals.journal import Journal
-from jupiter.core.domain.concept.journals.journal_generation_approach import JournalGenerationApproach
+from jupiter.core.domain.concept.journals.journal_generation_approach import (
+    JournalGenerationApproach,
+)
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.recurring_task_gen_params import RecurringTaskGenParams
@@ -180,7 +182,9 @@ class JournalCollection(TrunkEntity):
                     "Writing task difficulty cannot be set if generation approach is NONE"
                 )
             final_writing_task_gen_params = None
-        elif final_generation_approach == JournalGenerationApproach.BOTH_JOURNAL_AND_TASK:
+        elif (
+            final_generation_approach == JournalGenerationApproach.BOTH_JOURNAL_AND_TASK
+        ):
             if final_periods != final_generation_in_advance_days.keys():
                 raise InputValidationError(
                     "Periods must be set if generation approach is BOTH_JOURNAL_AND_TASK"

@@ -152,7 +152,6 @@ class Journal(LeafEntity):
         return EntityName(f"{period.value.capitalize()} journal for {right_now}")
 
 
-
 class JournalRepository(LeafEntityRepository[Journal], abc.ABC):
     """The repository for journals."""
 

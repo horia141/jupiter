@@ -281,24 +281,25 @@ class InboxTask(LeafEntity):
 
     @staticmethod
     @create_entity_action
-    def new_inbox_task_for_writing_journal(
+    def new_inbox_task_for_journal(
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
-        period: RecurringTaskPeriod,
-        right_now: ADate,
-        project_ref_id: EntityId,
-        journal_ref_id: EntityId,
+        name: InboxTaskName,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
+        project_ref_id: EntityId,
+        journal_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_gen_right_now: Timestamp,
     ) -> "InboxTask":
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
-            source=InboxTaskSource.JOURNAL,
-            name=InboxTask._build_name_for_writing_journal(period, right_now),
+            source=InboxTaskSource.TIME_PLAN,
+            name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=eisen,
             difficulty=difficulty,
@@ -307,9 +308,9 @@ class InboxTask(LeafEntity):
             project_ref_id=project_ref_id,
             source_entity_ref_id=journal_ref_id,
             notes=None,
-            recurring_timeline=None,
+            recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
-            recurring_gen_right_now=None,
+            recurring_gen_right_now=recurring_task_gen_right_now,
             working_time=None,
             completed_time=None,
         )
@@ -625,6 +626,28 @@ class InboxTask(LeafEntity):
             eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=timeline,
+        )
+
+    @update_entity_action
+    def update_link_to_journal(
+        self,
+        ctx: DomainContext,
+        project_ref_id: EntityId,
+        eisen: Eisen,
+        difficulty: Difficulty,
+        due_date: ADate,
+    ) -> "InboxTask":
+        """Update all the info associated with a journal."""
+        if self.source is not InboxTaskSource.JOURNAL:
+            raise Exception(
+                f"Cannot associate a task which is not a journal for '{self.name}'",
+            )
+        return self._new_version(
+            ctx,
+            project_ref_id=project_ref_id,
+            eisen=eisen,
+            difficulty=difficulty,
+            due_date=due_date,
         )
 
     @update_entity_action
@@ -958,12 +981,6 @@ class InboxTask(LeafEntity):
             return InboxTaskName(f"{name} [{repeat_index + 1}]")
         else:
             return name
-
-    @staticmethod
-    def _build_name_for_writing_journal(
-        period: RecurringTaskPeriod, right_now: ADate
-    ) -> InboxTaskName:
-        return InboxTaskName(f"Write {period} journal entry for for {right_now}")
 
     @staticmethod
     def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:
