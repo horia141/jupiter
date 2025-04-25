@@ -71,9 +71,7 @@ class TimePlanActivityFindForTargetUseCase(
             target=args.target,
             target_ref_id=args.target_ref_id,
         )
-        from rich import print
 
-        print(time_plan_activities)
         if len(time_plan_activities) > 0:
             time_plans = await uow.get_for(TimePlan).find_all_generic(
                 parent_ref_id=time_plan_domain.ref_id,
@@ -83,7 +81,6 @@ class TimePlanActivityFindForTargetUseCase(
         else:
             time_plans = []
 
-        print(time_plans)
         time_plans_by_ref_id = {time_plan.ref_id: time_plan for time_plan in time_plans}
 
         return TimePlanActivityFindForTargetResult(

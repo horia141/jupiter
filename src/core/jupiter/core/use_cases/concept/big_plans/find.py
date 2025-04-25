@@ -4,6 +4,10 @@ from collections import defaultdict
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.big_plans.big_plan_stats import (
+    BigPlanStats,
+    BigPlanStatsRepository,
+)
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
@@ -44,6 +48,7 @@ class BigPlanFindArgs(UseCaseArgsBase):
     include_project: bool
     include_inbox_tasks: bool
     include_notes: bool
+    include_stats: bool
     filter_just_workable: bool | None
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
@@ -55,6 +60,7 @@ class BigPlanFindResultEntry(UseCaseResultBase):
 
     big_plan: BigPlan
     note: Note | None
+    stats: BigPlanStats | None
     project: Project | None
     inbox_tasks: list[InboxTask] | None
 
@@ -121,6 +127,14 @@ class BigPlanFindUseCase(
             project_ref_id=args.filter_project_ref_ids or NoFilter(),
         )
 
+        if args.include_stats:
+            stats = await uow.get(BigPlanStatsRepository).find_all(
+                [bp.ref_id for bp in big_plans]
+            )
+            stats_by_ref_id = {s.big_plan.ref_id: s for s in stats}
+        else:
+            stats_by_ref_id = None
+
         if args.include_inbox_tasks:
             inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=inbox_task_collection.ref_id,
@@ -152,6 +166,11 @@ class BigPlanFindUseCase(
                     project=(
                         project_by_ref_id[bp.project_ref_id]
                         if project_by_ref_id is not None
+                        else None
+                    ),
+                    stats=(
+                        stats_by_ref_id[bp.ref_id]
+                        if stats_by_ref_id is not None
                         else None
                     ),
                     inbox_tasks=(

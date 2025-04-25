@@ -1,7 +1,9 @@
-import type {
-  BigPlan,
-  BigPlanFindResultEntry,
-  Project,
+import {
+  BigPlanStats,
+  BigPlanStatus,
+  type BigPlan,
+  type BigPlanFindResultEntry,
+  type Project,
 } from "@jupiter/webapi-client";
 
 import { compareADate } from "./adate";
@@ -33,4 +35,38 @@ export function sortBigPlansNaturally(
       compareBigPlanStatus(e1.status, e2.status)
     );
   });
+}
+
+export function bigPlanDonePct(
+  bigPlan: BigPlan,
+  bigPlanStats: BigPlanStats,
+): number {
+  if (bigPlan.status === BigPlanStatus.NOT_STARTED) {
+    return 0;
+  }
+
+  if (
+    bigPlan.status === BigPlanStatus.DONE ||
+    bigPlan.status === BigPlanStatus.NOT_DONE
+  ) {
+    return 100;
+  }
+
+  if (bigPlanStats.all_inbox_tasks_cnt === 0) {
+    return 10;
+  }
+
+  const pct = Math.floor(
+    (bigPlanStats.completed_inbox_tasks_cnt /
+      bigPlanStats.all_inbox_tasks_cnt) *
+      100,
+  );
+
+  if (pct < 10) {
+    return 10;
+  } else if (pct > 95) {
+    return 95;
+  }
+
+  return pct;
 }

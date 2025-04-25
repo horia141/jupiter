@@ -1,6 +1,10 @@
 """Use case for loading big plans."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_stats import (
+    BigPlanStats,
+    BigPlanStatsRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
@@ -44,6 +48,7 @@ class BigPlanLoadResult(UseCaseResultBase):
     project: Project
     inbox_tasks: list[InboxTask]
     note: Note | None
+    stats: BigPlanStats
 
 
 @readonly_use_case(WorkspaceFeature.BIG_PLANS)
@@ -82,7 +87,16 @@ class BigPlanLoadUseCase(
             big_plan.ref_id,
             allow_archived=args.allow_archived,
         )
+        stats = await uow.get(BigPlanStatsRepository).load_by_key_optional(
+            big_plan.ref_id
+        )
+        if stats is None:
+            raise Exception("Stats not found")
 
         return BigPlanLoadResult(
-            big_plan=big_plan, project=project, inbox_tasks=inbox_tasks, note=note
+            big_plan=big_plan,
+            project=project,
+            inbox_tasks=inbox_tasks,
+            note=note,
+            stats=stats,
         )

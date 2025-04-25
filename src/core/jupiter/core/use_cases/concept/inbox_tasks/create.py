@@ -1,6 +1,7 @@
 """The command for creating a inbox task."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_stats import BigPlanStatsRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
@@ -183,6 +184,11 @@ class InboxTaskCreateUseCase(
                 except TimePlanAlreadyAssociatedWithTargetError:
                     # We were already working on this plan, no need to panic
                     pass
+
+        if big_plan is not None:
+            await uow.get(BigPlanStatsRepository).mark_add_inbox_task(
+                big_plan.ref_id,
+            )
 
         return InboxTaskCreateResult(
             new_inbox_task=new_inbox_task, new_time_plan_activity=new_time_plan_activity

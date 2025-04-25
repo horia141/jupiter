@@ -8,6 +8,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.big_plan import BigPlan
+    from ..models.big_plan_stats import BigPlanStats
     from ..models.inbox_task import InboxTask
     from ..models.note import Note
     from ..models.project import Project
@@ -24,12 +25,14 @@ class BigPlanLoadResult:
         big_plan (BigPlan): A big plan.
         project (Project): The project.
         inbox_tasks (list['InboxTask']):
+        stats (BigPlanStats): Stats about a big plan.
         note (Union['Note', None, Unset]):
     """
 
     big_plan: "BigPlan"
     project: "Project"
     inbox_tasks: list["InboxTask"]
+    stats: "BigPlanStats"
     note: Union["Note", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -44,6 +47,8 @@ class BigPlanLoadResult:
         for inbox_tasks_item_data in self.inbox_tasks:
             inbox_tasks_item = inbox_tasks_item_data.to_dict()
             inbox_tasks.append(inbox_tasks_item)
+
+        stats = self.stats.to_dict()
 
         note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
@@ -60,6 +65,7 @@ class BigPlanLoadResult:
                 "big_plan": big_plan,
                 "project": project,
                 "inbox_tasks": inbox_tasks,
+                "stats": stats,
             }
         )
         if note is not UNSET:
@@ -70,6 +76,7 @@ class BigPlanLoadResult:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
+        from ..models.big_plan_stats import BigPlanStats
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.project import Project
@@ -85,6 +92,8 @@ class BigPlanLoadResult:
             inbox_tasks_item = InboxTask.from_dict(inbox_tasks_item_data)
 
             inbox_tasks.append(inbox_tasks_item)
+
+        stats = BigPlanStats.from_dict(d.pop("stats"))
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
@@ -107,6 +116,7 @@ class BigPlanLoadResult:
             big_plan=big_plan,
             project=project,
             inbox_tasks=inbox_tasks,
+            stats=stats,
             note=note,
         )
 

@@ -48,7 +48,7 @@ class RecordRepository(Generic[RecordT, RecordKeyT], Repository, abc.ABC):
         """Save a record."""
 
     @abc.abstractmethod
-    async def remove(self, record: RecordT) -> None:
+    async def remove(self, key: RecordKeyT) -> None:
         """Hard remove a record - an irreversible operation."""
 
     @abc.abstractmethod
@@ -56,7 +56,7 @@ class RecordRepository(Generic[RecordT, RecordKeyT], Repository, abc.ABC):
         """Load a record by it's unique key."""
 
     @abc.abstractmethod
-    async def find_all(self, parent_ref_id: EntityId) -> list[RecordT]:
+    async def find_all(self, parent_ref_id: EntityId | list[EntityId]) -> list[RecordT]:
         """Find all records matching some criteria."""
 
 

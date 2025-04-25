@@ -4,44 +4,28 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="JournalUpdateReportArgs")
+T = TypeVar("T", bound="StatsDoAllArgs")
 
 
 @_attrs_define
-class JournalUpdateReportArgs:
-    """Args.
+class StatsDoAllArgs:
+    """StatsDoAllArgs."""
 
-    Attributes:
-        ref_id (str): A generic entity id.
-    """
-
-    ref_id: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        ref_id = self.ref_id
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "ref_id": ref_id,
-            }
-        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        ref_id = d.pop("ref_id")
+        stats_do_all_args = cls()
 
-        journal_update_report_args = cls(
-            ref_id=ref_id,
-        )
-
-        journal_update_report_args.additional_properties = d
-        return journal_update_report_args
+        stats_do_all_args.additional_properties = d
+        return stats_do_all_args
 
     @property
     def additional_keys(self) -> list[str]:

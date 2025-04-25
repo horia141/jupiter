@@ -6,6 +6,7 @@ from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import ProjectRepository
@@ -22,6 +23,7 @@ from jupiter.core.domain.fast_info_repository import (
     FastInfoRepository,
     HabitSummary,
     InboxTaskSummary,
+    JournalSummary,
     MetricSummary,
     PersonSummary,
     ProjectSummary,
@@ -54,6 +56,7 @@ class GetSummariesArgs(UseCaseArgsBase):
     include_vacations: bool | None
     include_projects: bool | None
     include_inbox_tasks: bool | None
+    include_journals_last_year: bool | None
     include_habits: bool | None
     include_chores: bool | None
     include_big_plans: bool | None
@@ -72,6 +75,7 @@ class GetSummariesResult(UseCaseResultBase):
     root_project: ProjectSummary | None
     projects: list[ProjectSummary] | None
     inbox_tasks: list[InboxTaskSummary] | None
+    journals_last_year: list[JournalSummary] | None
     habits: list[HabitSummary] | None
     chores: list[ChoreSummary] | None
     big_plans: list[BigPlanSummary] | None
@@ -112,6 +116,9 @@ class GetSummariesUseCase(
             workspace.ref_id,
         )
         chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
+            workspace.ref_id,
+        )
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
         big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
@@ -178,6 +185,23 @@ class GetSummariesUseCase(
                 parent_ref_id=inbox_task_collection.workspace.ref_id,
                 allow_archived=allow_archived,
             )
+
+        journals_last_year = None
+        if (
+            workspace.is_feature_available(WorkspaceFeature.JOURNALS)
+            and args.include_journals_last_year
+        ):
+            journals_last_year = await uow.get(
+                FastInfoRepository
+            ).find_all_journal_summaries(
+                parent_ref_id=journal_collection.workspace.ref_id,
+                allow_archived=allow_archived,
+                filter_start_date=self._time_provider.get_current_date().subtract_days(
+                    400
+                ),
+                filter_end_date=self._time_provider.get_current_date().add_days(30),
+            )
+
         habits = None
         if (
             workspace.is_feature_available(WorkspaceFeature.HABITS)
@@ -242,6 +266,7 @@ class GetSummariesUseCase(
             root_project=root_project,
             projects=projects,
             inbox_tasks=inbox_tasks,
+            journals_last_year=journals_last_year,
             habits=habits,
             chores=chores,
             big_plans=big_plans,

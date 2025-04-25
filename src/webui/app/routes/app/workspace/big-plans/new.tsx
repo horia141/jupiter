@@ -8,11 +8,6 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormLabel,
   InputLabel,
@@ -34,6 +29,11 @@ import { EisenhowerSelect } from "~/components/eisenhower-select";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCardNew } from "~/components/infra/section-card-new";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { ProjectSelect } from "~/components/project-select";
 import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
@@ -174,155 +174,143 @@ export default function NewBigPlan() {
       returnLocation="/app/workspace/big-plans"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+      <GlobalError actionResult={actionData} />
+      <SectionCardNew
+        id="big-plan-properties"
+        title="Properties"
+        actions={
+          <SectionActions
+            id="big-plan-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS,
+          ) && (
+            <FormControl fullWidth>
+              <ProjectSelect
+                name="project"
+                label="Project"
+                inputsEnabled={inputsEnabled}
+                disabled={false}
+                allProjects={loaderData.allProjects}
+                defaultValue={loaderData.rootProject.ref_id}
+              />
+              <FieldError actionResult={actionData} fieldName="/project" />
+            </FormControl>
+          )}
+
+          <FormControl fullWidth>
+            <FormLabel id="eisen">Eisenhower</FormLabel>
+            <EisenhowerSelect
+              name="eisen"
+              defaultValue={Eisen.REGULAR}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/eisen" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <FormLabel id="difficulty">Difficulty</FormLabel>
+            <DifficultySelect
+              name="difficulty"
+              defaultValue={Difficulty.EASY}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/difficulty" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="actionableDate" shrink margin="dense">
+              Actionable From [Optional]
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              label="actionableDate"
+              notched
+              name="actionableDate"
+              readOnly={!inputsEnabled}
+              defaultValue={
+                loaderData.timePlanReason === "for-time-plan"
+                  ? aDateToDate(
+                      (loaderData.associatedTimePlan as TimePlan)
+                        .start_date as ADate,
+                    ).toFormat("yyyy-MM-dd")
+                  : undefined
+              }
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/actionable_date"
+            />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="dueDate" shrink margin="dense">
+              Due Date [Optional]
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              label="dueDate"
+              notched
+              name="dueDate"
+              readOnly={!inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/due_date" />
+          </FormControl>
+
+          {loaderData.timePlanReason === "for-time-plan" && (
+            <>
               <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
+                <FormLabel id="timePlanActivityKind">
+                  Time Plan Activity Kind
+                </FormLabel>
+                <TimePlanActivitKindSelect
+                  name="timePlanActivityKind"
+                  defaultValue={TimePlanActivityKind.FINISH}
                   inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.rootProject.ref_id}
                 />
-                <FieldError actionResult={actionData} fieldName="/project" />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/time_plan_activity_kind"
+                />
               </FormControl>
-            )}
 
-            <FormControl fullWidth>
-              <FormLabel id="eisen">Eisenhower</FormLabel>
-              <EisenhowerSelect
-                name="eisen"
-                defaultValue={Eisen.REGULAR}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/eisen" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <FormLabel id="difficulty">Difficulty</FormLabel>
-              <DifficultySelect
-                name="difficulty"
-                defaultValue={Difficulty.EASY}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/difficulty" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="actionableDate" shrink margin="dense">
-                Actionable From [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                label="actionableDate"
-                notched
-                name="actionableDate"
-                readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.timePlanReason === "for-time-plan"
-                    ? aDateToDate(
-                        (loaderData.associatedTimePlan as TimePlan)
-                          .start_date as ADate,
-                      ).toFormat("yyyy-MM-dd")
-                    : undefined
-                }
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/actionable_date"
-              />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="dueDate" shrink margin="dense">
-                Due At [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="dueDate"
-                name="dueDate"
-                readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.timePlanReason === "for-time-plan"
-                    ? aDateToDate(
-                        (loaderData.associatedTimePlan as TimePlan)
-                          .end_date as ADate,
-                      ).toFormat("yyyy-MM-dd")
-                    : undefined
-                }
-              />
-              <FieldError actionResult={actionData} fieldName="/due_date" />
-            </FormControl>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.TIME_PLANS,
-            ) &&
-              loaderData.timePlanReason === "for-time-plan" && (
-                <>
-                  <FormControl fullWidth>
-                    <FormLabel id="timePlanActivityKind">Kind</FormLabel>
-                    <TimePlanActivitKindSelect
-                      name="timePlanActivityKind"
-                      defaultValue={TimePlanActivityKind.FINISH}
-                      inputsEnabled={inputsEnabled}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/time_plan_activity_kind"
-                    />
-                  </FormControl>
-
-                  <FormControl fullWidth>
-                    <FormLabel id="timePlanActivityFeasability">
-                      Feasability
-                    </FormLabel>
-                    <TimePlanActivityFeasabilitySelect
-                      name="timePlanActivityFeasability"
-                      defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
-                      inputsEnabled={inputsEnabled}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/time_plan_activity_feasability"
-                    />
-                  </FormControl>
-                </>
-              )}
-          </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="big-plan-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+              <FormControl fullWidth>
+                <FormLabel id="timePlanActivityFeasability">
+                  Time Plan Activity Feasability
+                </FormLabel>
+                <TimePlanActivityFeasabilitySelect
+                  name="timePlanActivityFeasability"
+                  defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/time_plan_activity_feasability"
+                />
+              </FormControl>
+            </>
+          )}
+        </Stack>
+      </SectionCardNew>
     </LeafPanel>
   );
 }
@@ -331,7 +319,6 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   "/app/workspace/big-plans",
   ParamsSchema,
   {
-    notFound: () => `Could not find the big plan!`,
     error: () => `There was an error creating the big plan! Please try again!`,
   },
 );

@@ -1,8 +1,8 @@
-import type { BigPlan, Project } from "@jupiter/webapi-client";
+import type { BigPlan, BigPlanStats, Project } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import { Divider } from "@mui/material";
 
-import type { BigPlanParent } from "~/logic/domain/big-plan";
+import { bigPlanDonePct, type BigPlanParent } from "~/logic/domain/big-plan";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 
@@ -13,8 +13,10 @@ import { EntityCard, EntityLink } from "./infra/entity-card";
 import { ProjectTag } from "./project-tag";
 import { DifficultyTag } from "./difficulty-tag";
 import { EisenTag } from "./eisen-tag";
+import { BigPlanDonePctTag } from "./big-plan-done-pct-tag";
 
 export interface BigPlanShowOptions {
+  showDonePct?: boolean;
   showStatus?: boolean;
   showProject?: boolean;
   showEisen?: boolean;
@@ -33,6 +35,7 @@ export interface BigPlanCardProps {
   selected?: boolean;
   showOptions: BigPlanShowOptions;
   bigPlan: BigPlan;
+  bigPlanStats?: BigPlanStats;
   parent?: BigPlanParent;
   onClick?: (it: BigPlan) => void;
   onMarkDone?: (it: BigPlan) => void;
@@ -74,6 +77,11 @@ export function BigPlanCard(props: BigPlanCardProps) {
           name={props.bigPlan.name}
         />
         <Divider />
+        {props.showOptions.showDonePct && props.bigPlanStats && (
+          <BigPlanDonePctTag
+            donePct={bigPlanDonePct(props.bigPlan, props.bigPlanStats)}
+          />
+        )}
         {props.showOptions.showStatus && (
           <BigPlanStatusTag status={props.bigPlan.status} />
         )}

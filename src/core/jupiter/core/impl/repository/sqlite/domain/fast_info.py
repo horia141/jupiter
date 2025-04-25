@@ -16,6 +16,7 @@ from jupiter.core.domain.concept.schedule.schedule_stream_color import (
 from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
@@ -23,6 +24,7 @@ from jupiter.core.domain.fast_info_repository import (
     FastInfoRepository,
     HabitSummary,
     InboxTaskSummary,
+    JournalSummary,
     MetricSummary,
     PersonSummary,
     ProjectSummary,
@@ -165,6 +167,39 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         )
         return [
             InboxTaskSummary(
+                ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
+                name=_INBOX_TASK_NAME_DECODER.decode(row["name"]),
+            )
+            for row in result
+        ]
+
+    async def find_all_journal_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+        filter_start_date: ADate,
+        filter_end_date: ADate,
+    ) -> list[JournalSummary]:
+        """Find all summaries about journals."""
+        query = """select ref_id, name from journal where journal_collection_ref_id = :parent_ref_id and right_now >= :filter_start_date and right_now <= :filter_end_date"""
+        if not allow_archived:
+            query += " and archived=0"
+        result = (
+            (
+                await self._connection.execute(
+                    text(query),
+                    {
+                        "parent_ref_id": parent_ref_id.as_int(),
+                        "filter_start_date": filter_start_date.the_date.to_date_string(),
+                        "filter_end_date": filter_end_date.the_date.to_date_string(),
+                    },
+                )
+            )
+            .mappings()
+            .all()
+        )
+        return [
+            JournalSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
                 name=_INBOX_TASK_NAME_DECODER.decode(row["name"]),
             )

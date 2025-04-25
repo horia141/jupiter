@@ -9,6 +9,7 @@ import type { BigPlanFindArgs } from '../models/BigPlanFindArgs';
 import type { BigPlanFindResult } from '../models/BigPlanFindResult';
 import type { BigPlanLoadArgs } from '../models/BigPlanLoadArgs';
 import type { BigPlanLoadResult } from '../models/BigPlanLoadResult';
+import type { BigPlanRefreshStatsArgs } from '../models/BigPlanRefreshStatsArgs';
 import type { BigPlanRemoveArgs } from '../models/BigPlanRemoveArgs';
 import type { BigPlanUpdateArgs } from '../models/BigPlanUpdateArgs';
 import type { BigPlanUpdateResult } from '../models/BigPlanUpdateResult';
@@ -95,6 +96,28 @@ export class BigPlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan-load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * A use case for refreshing stats for a big plan.
+     * A use case for refreshing stats for a big plan.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public bigPlanRefreshStats(
+        requestBody?: BigPlanRefreshStatsArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/big-plan-refresh-stats',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

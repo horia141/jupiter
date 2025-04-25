@@ -1,4 +1,9 @@
-import type { BigPlan, TimePlan, Workspace } from "@jupiter/webapi-client";
+import type {
+  BigPlan,
+  BigPlanStats,
+  TimePlan,
+  Workspace,
+} from "@jupiter/webapi-client";
 import {
   ApiError,
   TimePlanActivityFeasability,
@@ -111,6 +116,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const bigPlansResult = await apiClient.bigPlans.bigPlanFind({
       allow_archived: false,
       include_notes: false,
+      include_stats: true,
       filter_just_workable: true,
       include_project: true,
       include_inbox_tasks: false,
@@ -215,6 +221,9 @@ export default function TimePlanAddFromCurrentBigPlans() {
   const sortedProjects = sortProjectsByTreeOrder(loaderData.allProjects || []);
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
+  );
+  const bigPlanStatsByRefId = new Map(
+    loaderData.bigPlans.map((b) => [b.big_plan.ref_id, b.stats!]),
   );
 
   const thisYear = aDateToDate(loaderData.timePlan.right_now).startOf("year");
@@ -388,6 +397,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
           <BigPlanTimeline
             thisYear={thisYear}
             timePlan={loaderData.timePlan}
+            bigPlanStatsByRefId={bigPlanStatsByRefId}
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
             alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
@@ -428,6 +438,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     timePlan={loaderData.timePlan}
                     topLevelInfo={topLevelInfo}
                     bigPlans={theBigPlans}
+                    bigPlanStatsByRefId={bigPlanStatsByRefId}
                     alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
                     targetBigPlanRefIds={targetBigPlanRefIds}
                     onSelected={(it) =>
@@ -486,6 +497,7 @@ function BigPlanList(props: BigPlanListProps) {
       compact
       allowSelect
       showOptions={{
+        showDonePct: true,
         showDueDate: true,
         showProject: true,
       }}
@@ -501,6 +513,7 @@ interface BigPlanTimelineProps {
   timePlan: TimePlan;
   topLevelInfo: TopLevelInfo;
   bigPlans: Array<BigPlan>;
+  bigPlanStatsByRefId: Map<string, BigPlanStats>;
   alreadyIncludedBigPlanRefIds: Set<string>;
   targetBigPlanRefIds: Set<string>;
   onSelected: (it: BigPlan) => void;
@@ -514,6 +527,7 @@ function BigPlanTimeline(props: BigPlanTimelineProps) {
       <BigPlanTimelineBigScreen
         thisYear={props.thisYear}
         bigPlans={props.bigPlans}
+        bigPlanStatsByRefId={props.bigPlanStatsByRefId}
         dateMarkers={[
           {
             date: props.timePlan.start_date,
@@ -541,6 +555,7 @@ function BigPlanTimeline(props: BigPlanTimelineProps) {
       <BigPlanTimelineSmallScreen
         thisYear={props.thisYear}
         bigPlans={props.bigPlans}
+        bigPlanStatsByRefId={props.bigPlanStatsByRefId}
         dateMarkers={[
           {
             date: props.timePlan.start_date,

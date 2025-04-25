@@ -5,6 +5,7 @@ from collections.abc import Iterable
 
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
+from jupiter.core.domain.application.stats.stats_log import StatsLog
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.docs.doc_collection import DocCollection
@@ -84,6 +85,7 @@ class Workspace(RootEntity):
 
     gc_log = ContainsOne(GCLog, workspace_ref_id=IsRefId())
     gen_log = ContainsOne(GenLog, workspace_ref_id=IsRefId())
+    stats_log = ContainsOne(StatsLog, workspace_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action

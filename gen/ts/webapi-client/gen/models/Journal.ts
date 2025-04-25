@@ -7,7 +7,6 @@ import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { JournalSource } from './JournalSource';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
-import type { ReportPeriodResult } from './ReportPeriodResult';
 import type { Timestamp } from './Timestamp';
 /**
  * A journal for a particular range.
@@ -26,6 +25,5 @@ export type Journal = {
     right_now: ADate;
     period: RecurringTaskPeriod;
     timeline: string;
-    report: ReportPeriodResult;
 };
 

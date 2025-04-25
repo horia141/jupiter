@@ -3,6 +3,7 @@
 from jupiter.core.domain.application.gamification.score_log import ScoreLog
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
+from jupiter.core.domain.application.stats.stats_log import StatsLog
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
@@ -409,6 +410,12 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_ref_id=new_workspace.ref_id,
             )
             new_gen_log = await uow.get_for(GenLog).create(new_gen_log)
+
+            new_stats_log = StatsLog.new_stats_log(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+            )
+            new_stats_log = await uow.get_for(StatsLog).create(new_stats_log)
 
             new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
                 ctx=context.domain_context,

@@ -35,6 +35,7 @@ import { ProjectsService } from './services/ProjectsService';
 import { ScheduleService } from './services/ScheduleService';
 import { SlackService } from './services/SlackService';
 import { SmartListsService } from './services/SmartListsService';
+import { StatsService } from './services/StatsService';
 import { StreamService } from './services/StreamService';
 import { TagService } from './services/TagService';
 import { TestHelperService } from './services/TestHelperService';
@@ -75,6 +76,7 @@ export class ApiClient {
     public readonly schedule: ScheduleService;
     public readonly slack: SlackService;
     public readonly smartLists: SmartListsService;
+    public readonly stats: StatsService;
     public readonly stream: StreamService;
     public readonly tag: TagService;
     public readonly testHelper: TestHelperService;
@@ -126,6 +128,7 @@ export class ApiClient {
         this.schedule = new ScheduleService(this.request);
         this.slack = new SlackService(this.request);
         this.smartLists = new SmartListsService(this.request);
+        this.stats = new StatsService(this.request);
         this.stream = new StreamService(this.request);
         this.tag = new TagService(this.request);
         this.testHelper = new TestHelperService(this.request);

@@ -10,7 +10,7 @@ from jupiter.core.framework.entity import (
     StubEntity,
     TrunkEntity,
 )
-from jupiter.core.framework.record import ContainsRecords, Record
+from jupiter.core.framework.record import ContainsRecordLink, Record
 
 
 async def generic_destroyer(
@@ -26,7 +26,7 @@ async def generic_destroyer(
     ) -> None:
         for field in entity.__class__.__dict__.values():
             if not isinstance(field, ContainsLink) and not isinstance(
-                field, ContainsRecords
+                field, ContainsRecordLink
             ):
                 continue
 
@@ -55,7 +55,9 @@ async def generic_destroyer(
                 )
 
                 for linked_record in linked_records:
-                    await uow.get_for_record(field.the_type).remove(linked_record)
+                    await uow.get_for_record(field.the_type).remove(
+                        linked_record.raw_key
+                    )
             else:
                 raise Exception(f"Unsupported field type {field.the_type}")
 

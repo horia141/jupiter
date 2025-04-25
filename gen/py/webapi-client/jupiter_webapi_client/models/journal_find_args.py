@@ -16,12 +16,14 @@ class JournalFindArgs:
     Attributes:
         allow_archived (bool):
         include_notes (bool):
+        include_journal_stats (bool):
         include_writing_tasks (bool):
         filter_ref_ids (Union[None, Unset, list[str]]):
     """
 
     allow_archived: bool
     include_notes: bool
+    include_journal_stats: bool
     include_writing_tasks: bool
     filter_ref_ids: Union[None, Unset, list[str]] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -30,6 +32,8 @@ class JournalFindArgs:
         allow_archived = self.allow_archived
 
         include_notes = self.include_notes
+
+        include_journal_stats = self.include_journal_stats
 
         include_writing_tasks = self.include_writing_tasks
 
@@ -48,6 +52,7 @@ class JournalFindArgs:
             {
                 "allow_archived": allow_archived,
                 "include_notes": include_notes,
+                "include_journal_stats": include_journal_stats,
                 "include_writing_tasks": include_writing_tasks,
             }
         )
@@ -62,6 +67,8 @@ class JournalFindArgs:
         allow_archived = d.pop("allow_archived")
 
         include_notes = d.pop("include_notes")
+
+        include_journal_stats = d.pop("include_journal_stats")
 
         include_writing_tasks = d.pop("include_writing_tasks")
 
@@ -85,6 +92,7 @@ class JournalFindArgs:
         journal_find_args = cls(
             allow_archived=allow_archived,
             include_notes=include_notes,
+            include_journal_stats=include_journal_stats,
             include_writing_tasks=include_writing_tasks,
             filter_ref_ids=filter_ref_ids,
         )

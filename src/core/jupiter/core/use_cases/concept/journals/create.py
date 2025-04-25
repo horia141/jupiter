@@ -2,6 +2,10 @@
 
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.journals.journal_stats import (
+    JournalStats,
+    JournalStatsRepository,
+)
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
@@ -70,9 +74,19 @@ class JournalCreateUseCase(
             journal_collection_ref_id=journal_collection.ref_id,
             right_now=args.right_now,
             period=args.period,
-            sources=workspace.infer_sources_for_enabled_features(None),
         )
         new_journal = await generic_creator(uow, progress_reporter, new_journal)
+
+        new_journal_stats = JournalStats.new_stats(
+            context.domain_context,
+            journal_ref_id=new_journal.ref_id,
+            today=args.right_now,
+            period=args.period,
+            sources=workspace.infer_sources_for_enabled_features(None),
+        )
+        new_journal_stats = await uow.get(JournalStatsRepository).create(
+            new_journal_stats
+        )
 
         new_note = Note.new_note(
             context.domain_context,

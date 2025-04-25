@@ -1,0 +1,37 @@
+"""SQLite implementation of stats infra classes."""
+
+from jupiter.core.domain.application.stats.stats_log_entry import (
+    StatsLogEntry,
+    StatsLogEntryRepository,
+)
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.impl.repository.sqlite.infra.repository import (
+    SqliteLeafEntityRepository,
+)
+from sqlalchemy import (
+    select,
+)
+
+
+class SqliteStatsLogEntryRepository(
+    SqliteLeafEntityRepository[StatsLogEntry], StatsLogEntryRepository
+):
+    """Sqlite implementation of the stats log entry repository."""
+
+    async def find_last(
+        self, parent_ref_id: EntityId, limit: int
+    ) -> list[StatsLogEntry]:
+        """Find the last N stats log entries."""
+        if limit < 0:
+            raise InputValidationError("Limit must be non-negative")
+        if limit > 1000:
+            raise InputValidationError("Limit must be less than or equal to 1000")
+        query_stmt = (
+            select(self._table)
+            .where(self._table.c.stats_log_ref_id == parent_ref_id.as_int())
+            .order_by(self._table.c.created_time.desc())
+            .limit(limit)
+        )
+        result = await self._connection.execute(query_stmt)
+        return [self._row_to_entity(row) for row in result]

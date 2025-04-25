@@ -7,6 +7,7 @@ class EventSource(str, Enum):
     GC_CRON = "gc-cron"
     GEN_CRON = "gen-cron"
     SCHEDULE_EXTERNAL_SYNC_CRON = "schedule-external-sync-cron"
+    STATS_CRON = "stats-cron"
     WEB = "web"
 
     def __str__(self) -> str:

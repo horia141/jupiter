@@ -4,6 +4,7 @@ import abc
 from typing import Iterable
 
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.big_plans.big_plan_stats import BigPlanStats
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -27,6 +28,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.record import ContainsOneRecord
 from jupiter.core.framework.repository import LeafEntityRepository
 from jupiter.core.framework.update_action import UpdateAction
 
@@ -52,6 +54,7 @@ class BigPlan(LeafEntity):
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.BIG_PLAN, source_entity_ref_id=IsRefId()
     )
+    stats = ContainsOneRecord(BigPlanStats, big_plan_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action

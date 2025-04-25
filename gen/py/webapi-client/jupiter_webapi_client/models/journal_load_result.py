@@ -9,6 +9,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.inbox_task import InboxTask
     from ..models.journal import Journal
+    from ..models.journal_stats import JournalStats
     from ..models.note import Note
 
 
@@ -22,12 +23,14 @@ class JournalLoadResult:
     Attributes:
         journal (Journal): A journal for a particular range.
         note (Note): A note in the notebook.
+        journal_stats (JournalStats): Stats about a journal.
         sub_period_journals (list['Journal']):
         writing_task (Union['InboxTask', None, Unset]):
     """
 
     journal: "Journal"
     note: "Note"
+    journal_stats: "JournalStats"
     sub_period_journals: list["Journal"]
     writing_task: Union["InboxTask", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -38,6 +41,8 @@ class JournalLoadResult:
         journal = self.journal.to_dict()
 
         note = self.note.to_dict()
+
+        journal_stats = self.journal_stats.to_dict()
 
         sub_period_journals = []
         for sub_period_journals_item_data in self.sub_period_journals:
@@ -58,6 +63,7 @@ class JournalLoadResult:
             {
                 "journal": journal,
                 "note": note,
+                "journal_stats": journal_stats,
                 "sub_period_journals": sub_period_journals,
             }
         )
@@ -70,12 +76,15 @@ class JournalLoadResult:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task import InboxTask
         from ..models.journal import Journal
+        from ..models.journal_stats import JournalStats
         from ..models.note import Note
 
         d = dict(src_dict)
         journal = Journal.from_dict(d.pop("journal"))
 
         note = Note.from_dict(d.pop("note"))
+
+        journal_stats = JournalStats.from_dict(d.pop("journal_stats"))
 
         sub_period_journals = []
         _sub_period_journals = d.pop("sub_period_journals")
@@ -104,6 +113,7 @@ class JournalLoadResult:
         journal_load_result = cls(
             journal=journal,
             note=note,
+            journal_stats=journal_stats,
             sub_period_journals=sub_period_journals,
             writing_task=writing_task,
         )

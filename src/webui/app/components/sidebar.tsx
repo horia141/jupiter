@@ -395,22 +395,33 @@ export default function Sidebar(props: SidebarProps) {
                 <ListItemText primary="Garbage Collect" />
               </ListItemButton>
             </ListItem>
+
+            <ListItem disablePadding>
+              <ListItemButton
+                to="/app/workspace/tools/stats"
+                component={Link}
+                onClick={onClickNavigation}
+              >
+                <ListItemIcon>📊</ListItemIcon>
+                <ListItemText primary="Compute Stats" />
+              </ListItemButton>
+            </ListItem>
+
+            <StandardDivider title="Explore" size="small" />
+
+            <ListItem disablePadding>
+              <ListItemButton
+                to="/app/workspace/settings"
+                component={Link}
+                onClick={onClickNavigation}
+              >
+                <ListItemIcon>
+                  <Settings />
+                </ListItemIcon>
+                <ListItemText primary="More Features" />
+              </ListItemButton>
+            </ListItem>
           </List>
-
-          <StandardDivider title="Explore" size="small" />
-
-          <ListItem disablePadding>
-            <ListItemButton
-              to="/app/workspace/settings"
-              component={Link}
-              onClick={onClickNavigation}
-            >
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-              <ListItemText primary="More Features" />
-            </ListItemButton>
-          </ListItem>
         </StyledMotionDrawer>
       )}
     </AnimatePresence>

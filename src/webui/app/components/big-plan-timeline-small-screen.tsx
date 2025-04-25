@@ -1,9 +1,10 @@
-import type { ADate, BigPlan } from "@jupiter/webapi-client";
+import type { ADate, BigPlan, BigPlanStats } from "@jupiter/webapi-client";
 import { Tooltip, styled } from "@mui/material";
 import { Link } from "@remix-run/react";
 import type { DateTime } from "luxon";
 
 import { aDateToDate } from "~/logic/domain/adate";
+import { bigPlanDonePct } from "~/logic/domain/big-plan";
 
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameOneLineComponent } from "./entity-name";
@@ -18,6 +19,7 @@ interface DateMarker {
 interface BigPlanTimelineSmallScreenProps {
   thisYear: DateTime;
   bigPlans: Array<BigPlan>;
+  bigPlanStatsByRefId: Map<string, BigPlanStats>;
   dateMarkers?: Array<DateMarker>;
   selectedPredicate?: (it: BigPlan) => boolean;
   allowSelect?: boolean;
@@ -27,6 +29,7 @@ interface BigPlanTimelineSmallScreenProps {
 export function BigPlanTimelineSmallScreen({
   thisYear,
   bigPlans,
+  bigPlanStatsByRefId,
   dateMarkers,
   selectedPredicate,
   allowSelect,
@@ -110,7 +113,12 @@ export function BigPlanTimelineSmallScreen({
                 to={`/app/workspace/big-plans/${bigPlan.ref_id}`}
               >
                 <BigPlanStatusTag status={bigPlan.status} format="icon" />
-                <EntityNameOneLineComponent name={bigPlan.name} />
+                <EntityNameOneLineComponent
+                  name={`[${bigPlanDonePct(
+                    bigPlan,
+                    bigPlanStatsByRefId.get(bigPlan.ref_id)!,
+                  )}%] ${bigPlan.name}`}
+                />
               </TimelineLink>
             </SmallScreenTimelineLine>
           );

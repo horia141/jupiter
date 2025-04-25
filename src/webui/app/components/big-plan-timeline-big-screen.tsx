@@ -1,4 +1,4 @@
-import type { ADate, BigPlan } from "@jupiter/webapi-client";
+import type { ADate, BigPlan, BigPlanStats } from "@jupiter/webapi-client";
 import {
   Box,
   Stack,
@@ -15,12 +15,14 @@ import {
 import type { DateTime } from "luxon";
 
 import { aDateToDate } from "~/logic/domain/adate";
+import { bigPlanDonePct } from "~/logic/domain/big-plan";
 
 import { BigPlanStatusTag } from "./big-plan-status-tag";
 import { EntityNameOneLineComponent } from "./entity-name";
 import { EntityLink } from "./infra/entity-card";
 import { EisenTag } from "./eisen-tag";
 import { DifficultyTag } from "./difficulty-tag";
+import { BigPlanDonePctTag } from "./big-plan-done-pct-tag";
 
 interface DateMarker {
   date: ADate;
@@ -31,6 +33,7 @@ interface DateMarker {
 interface BigPlanTimelineBigScreenProps {
   thisYear: DateTime;
   bigPlans: Array<BigPlan>;
+  bigPlanStatsByRefId: Map<string, BigPlanStats>;
   dateMarkers?: Array<DateMarker>;
   selectedPredicate?: (it: BigPlan) => boolean;
   allowSelect?: boolean;
@@ -40,6 +43,7 @@ interface BigPlanTimelineBigScreenProps {
 export function BigPlanTimelineBigScreen({
   thisYear,
   bigPlans,
+  bigPlanStatsByRefId,
   dateMarkers,
   selectedPredicate,
   allowSelect,
@@ -51,8 +55,8 @@ export function BigPlanTimelineBigScreen({
       <Table sx={{ tableLayout: "fixed" }}>
         <TableHead>
           <TableRow>
-            <TableCell width="23%">Name</TableCell>
-            <TableCell width="22%">Properties</TableCell>
+            <TableCell width="20%">Name</TableCell>
+            <TableCell width="25%">Properties</TableCell>
             <TableCell width="55%">Range</TableCell>
           </TableRow>
           <TableRow>
@@ -102,6 +106,12 @@ export function BigPlanTimelineBigScreen({
                 </TableCell>
                 <TableCell>
                   <Stack direction="row" spacing={0.5}>
+                    <BigPlanDonePctTag
+                      donePct={bigPlanDonePct(
+                        entry,
+                        bigPlanStatsByRefId.get(entry.ref_id)!,
+                      )}
+                    />
                     <BigPlanStatusTag status={entry.status} />
                     <EisenTag eisen={entry.eisen} />
                     <DifficultyTag difficulty={entry.difficulty} />

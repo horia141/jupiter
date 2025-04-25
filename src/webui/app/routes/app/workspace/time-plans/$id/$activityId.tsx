@@ -502,6 +502,7 @@ export default function TimePlanActivity() {
             <BigPlanStack
               topLevelInfo={topLevelInfo}
               showOptions={{
+                showDonePct: true,
                 showStatus: true,
                 showProject: true,
                 showEisen: true,

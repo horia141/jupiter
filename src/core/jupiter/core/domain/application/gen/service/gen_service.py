@@ -6,9 +6,6 @@ from typing import Final, Sequence, cast
 
 from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
-from jupiter.core.domain.application.report.report_period_result import (
-    ReportPeriodResult,
-)
 from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.habits.habit import Habit
@@ -24,6 +21,10 @@ from jupiter.core.domain.concept.inbox_tasks.service.remove_service import (
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.journals.journal_source import JournalSource
+from jupiter.core.domain.concept.journals.journal_stats import (
+    JournalStats,
+    JournalStatsRepository,
+)
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person import Person
@@ -1445,11 +1446,6 @@ class GenService:
                         right_now=real_today,
                         period=period,
                         timeline=schedule.timeline,
-                        report=ReportPeriodResult.empty(
-                            real_today,
-                            period,
-                            workspace.infer_sources_for_enabled_features(None),
-                        ),
                     )
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1468,8 +1464,19 @@ class GenService:
                         content=[],
                     )
 
+                    new_journal_stats = JournalStats.new_stats(
+                        ctx,
+                        journal_ref_id=journal.ref_id,
+                        today=real_today,
+                        period=period,
+                        sources=workspace.infer_sources_for_enabled_features(None),
+                    )
+
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
                         new_note = await uow.get_for(Note).create(new_note)
+                        new_journal_stats = await uow.get(
+                            JournalStatsRepository
+                        ).create(new_journal_stats)
 
                     found_journal = journal
 

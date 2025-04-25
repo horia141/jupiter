@@ -1,4 +1,9 @@
-import type { Journal, ReportPeriodResult } from "@jupiter/webapi-client";
+import type {
+  EntityId,
+  Journal,
+  JournalStats,
+  ReportPeriodResult,
+} from "@jupiter/webapi-client";
 import {
   RecurringTaskPeriod,
   UserFeature,
@@ -18,6 +23,7 @@ import { PeriodTag } from "./period-tag";
 interface JournalStackProps {
   topLevelInfo: TopLevelInfo;
   journals: Array<Journal>;
+  journalStatsByJournalRefId?: Map<EntityId, JournalStats>;
   allowSwipe?: boolean;
   allowMarkNotDone?: boolean;
   onMarkNotDone?: (journal: Journal) => void;
@@ -26,44 +32,56 @@ interface JournalStackProps {
 export function JournalStack(props: JournalStackProps) {
   return (
     <EntityStack>
-      {props.journals.map((journal) => (
-        <EntityCard
-          key={`journal-${journal.ref_id}`}
-          entityId={`journal-${journal.ref_id}`}
-          allowSwipe={props.allowSwipe}
-          allowMarkNotDone={props.allowMarkNotDone}
-          onMarkNotDone={() =>
-            props.onMarkNotDone && props.onMarkNotDone(journal)
-          }
-        >
-          <EntityLink to={`/app/workspace/journals/${journal.ref_id}`}>
-            <EntityNameComponent name={journal.name} />
-            <JournalSourceTag source={journal.source} />
-            <PeriodTag period={journal.period} />
-            {isUserFeatureAvailable(
-              props.topLevelInfo.user,
-              UserFeature.GAMIFICATION,
-            ) && (
-              <GamificationTag
-                period={journal.period}
-                report={journal.report}
-              />
-            )}
-            {journal.report.global_inbox_tasks_summary.done.total_cnt} tasks
-            done
-            {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
-              WorkspaceFeature.BIG_PLANS,
-            ) && (
-              <>
-                {" "}
-                and {journal.report.global_big_plans_summary.done_cnt} big plans
-                done
-              </>
-            )}
-          </EntityLink>
-        </EntityCard>
-      ))}
+      {props.journals.map((journal) => {
+        const journalStats = props.journalStatsByJournalRefId?.get(
+          journal.ref_id,
+        );
+
+        return (
+          <EntityCard
+            key={`journal-${journal.ref_id}`}
+            entityId={`journal-${journal.ref_id}`}
+            allowSwipe={props.allowSwipe}
+            allowMarkNotDone={props.allowMarkNotDone}
+            onMarkNotDone={() =>
+              props.onMarkNotDone && props.onMarkNotDone(journal)
+            }
+          >
+            <EntityLink to={`/app/workspace/journals/${journal.ref_id}`}>
+              <EntityNameComponent name={journal.name} />
+              <JournalSourceTag source={journal.source} />
+              <PeriodTag period={journal.period} />
+              {isUserFeatureAvailable(
+                props.topLevelInfo.user,
+                UserFeature.GAMIFICATION,
+              ) &&
+                journalStats && (
+                  <GamificationTag
+                    period={journal.period}
+                    report={journalStats.report}
+                  />
+                )}
+              {journalStats &&
+                journalStats.report.global_inbox_tasks_summary.done
+                  .total_cnt}{" "}
+              tasks done
+              {isWorkspaceFeatureAvailable(
+                props.topLevelInfo.workspace,
+                WorkspaceFeature.BIG_PLANS,
+              ) &&
+                journalStats && (
+                  <>
+                    {" "}
+                    and {
+                      journalStats.report.global_big_plans_summary.done_cnt
+                    }{" "}
+                    big plans done
+                  </>
+                )}
+            </EntityLink>
+          </EntityCard>
+        );
+      })}
     </EntityStack>
   );
 }

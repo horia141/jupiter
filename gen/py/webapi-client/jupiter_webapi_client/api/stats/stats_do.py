@@ -5,19 +5,19 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.journal_update_report_args import JournalUpdateReportArgs
+from ...models.stats_do_args import StatsDoArgs
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: JournalUpdateReportArgs,
+    body: StatsDoArgs,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/journal-update-report",
+        "url": "/stats-do",
     }
 
     _body = body.to_dict()
@@ -56,14 +56,14 @@ def _build_response(*, client: Union[AuthenticatedClient, Client], response: htt
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: JournalUpdateReportArgs,
+    body: StatsDoArgs,
 ) -> Response[Any]:
-    """Use case for updating a journal entry.
+    """The command for computing stats.
 
-     Use case for updating a journal entry.
+     The command for computing stats.
 
     Args:
-        body (JournalUpdateReportArgs): Args.
+        body (StatsDoArgs): StatsDoArgs.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -87,14 +87,14 @@ def sync_detailed(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: JournalUpdateReportArgs,
+    body: StatsDoArgs,
 ) -> Response[Any]:
-    """Use case for updating a journal entry.
+    """The command for computing stats.
 
-     Use case for updating a journal entry.
+     The command for computing stats.
 
     Args:
-        body (JournalUpdateReportArgs): Args.
+        body (StatsDoArgs): StatsDoArgs.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

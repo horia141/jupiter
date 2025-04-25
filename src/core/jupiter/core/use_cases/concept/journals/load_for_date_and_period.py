@@ -2,6 +2,10 @@
 
 from jupiter.core.domain.concept.journals.journal import Journal, JournalRepository
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.journals.journal_stats import (
+    JournalStats,
+    JournalStatsRepository,
+)
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
@@ -35,6 +39,7 @@ class JournalLoadForDateAndPeriodResult(UseCaseResultBase):
     """Result."""
 
     journal: Journal | None
+    journal_stats: JournalStats | None
     sub_period_journals: list[Journal]
 
 
@@ -71,7 +76,20 @@ class JournalLoadForDateAndPeriodUseCase(
             filter_end_date=schedule.end_day,
         )
 
+        journal = next((j for j in all_journals if j.period == args.period), None)
+
+        if journal is not None:
+            journal_stats = await uow.get(JournalStatsRepository).load_by_key_optional(
+                journal.ref_id
+            )
+
+            if journal_stats is None:
+                raise Exception("Journal stats not found")
+        else:
+            journal_stats = None
+
         return JournalLoadForDateAndPeriodResult(
-            journal=next((j for j in all_journals if j.period == args.period), None),
+            journal=journal,
+            journal_stats=journal_stats,
             sub_period_journals=[j for j in all_journals if j.period != args.period],
         )

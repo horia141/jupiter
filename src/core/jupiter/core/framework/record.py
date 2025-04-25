@@ -98,8 +98,16 @@ class RecordLink(Generic[_RecordT]):
         self.filters = kwargs
 
 
-class ContainsRecords(Generic[_RecordT], RecordLink[_RecordT]):
+class ContainsRecordLink(Generic[_RecordT], RecordLink[_RecordT]):
     """A record link descriptor that contains records."""
+
+
+class ContainsManyRecords(Generic[_RecordT], ContainsRecordLink[_RecordT]):
+    """A record link descriptor that contains many records."""
+
+
+class ContainsOneRecord(Generic[_RecordT], ContainsRecordLink[_RecordT]):
+    """A record link descriptor that contains one record."""
 
 
 _CreateEventT = TypeVar("_CreateEventT", bound=Callable[..., Record])  #  type: ignore

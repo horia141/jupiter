@@ -12,6 +12,7 @@ export type GetSummariesArgs = {
     include_vacations?: (boolean | null);
     include_projects?: (boolean | null);
     include_inbox_tasks?: (boolean | null);
+    include_journals_last_year?: (boolean | null);
     include_habits?: (boolean | null);
     include_chores?: (boolean | null);
     include_big_plans?: (boolean | null);

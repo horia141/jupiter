@@ -52,7 +52,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     period: z.nativeEnum(RecurringTaskPeriod),
   }),
   z.object({
-    intent: z.literal("update-report"),
+    intent: z.literal("refresh-stats"),
   }),
   z.object({
     intent: z.literal("archive"),
@@ -96,6 +96,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return json({
       allProjects: summaryResponse.projects || undefined,
       journal: result.journal,
+      journalStats: result.journal_stats,
       note: result.note,
       writingTask: result.writing_task,
       subPeriodJournals: result.sub_period_journals,
@@ -136,8 +137,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
         return redirect(`/app/workspace/journals/${id}`);
       }
 
-      case "update-report": {
-        await apiClient.journals.journalUpdateReport({
+      case "refresh-stats": {
+        await apiClient.journals.journalRefreshStats({
           ref_id: id,
         });
         return redirect(`/app/workspace/journals/${id}`);
@@ -219,11 +220,10 @@ export default function Journal() {
                 highlight: true,
               }),
               ActionSingle({
-                id: "journal-change-update-report",
-                text: "Update Report",
-                value: "update-report",
+                id: "journal-refresh-stats",
+                text: "Refresh Stats",
+                value: "refresh-stats",
                 disabled: !inputsEnabled,
-                highlight: true,
               }),
             ]}
           />
@@ -270,7 +270,7 @@ export default function Journal() {
         <ShowReport
           topLevelInfo={topLevelInfo}
           allProjects={loaderData.allProjects || []}
-          report={loaderData.journal.report}
+          report={loaderData.journalStats.report}
         />
       </SectionCardNew>
 

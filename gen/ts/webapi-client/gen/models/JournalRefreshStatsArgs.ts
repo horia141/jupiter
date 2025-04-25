@@ -6,7 +6,7 @@ import type { EntityId } from './EntityId';
 /**
  * Args.
  */
-export type JournalUpdateReportArgs = {
+export type JournalRefreshStatsArgs = {
     ref_id: EntityId;
 };
 

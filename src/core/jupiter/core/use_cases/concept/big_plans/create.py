@@ -3,6 +3,10 @@
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.big_plans.big_plan_stats import (
+    BigPlanStats,
+    BigPlanStatsRepository,
+)
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
 from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
@@ -123,6 +127,14 @@ class BigPlanCreateUseCase(
             due_date=args.due_date,
         )
         new_big_plan = await generic_creator(uow, progress_reporter, new_big_plan)
+
+        new_big_plan_stats = BigPlanStats.new_stats(
+            context.domain_context,
+            big_plan_ref_id=new_big_plan.ref_id,
+        )
+        new_big_plan_stats = await uow.get(BigPlanStatsRepository).create(
+            new_big_plan_stats
+        )
 
         new_time_plan_activity = None
         if time_plan:

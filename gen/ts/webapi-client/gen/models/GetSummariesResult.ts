@@ -6,6 +6,7 @@ import type { BigPlanSummary } from './BigPlanSummary';
 import type { ChoreSummary } from './ChoreSummary';
 import type { HabitSummary } from './HabitSummary';
 import type { InboxTaskSummary } from './InboxTaskSummary';
+import type { JournalSummary } from './JournalSummary';
 import type { MetricSummary } from './MetricSummary';
 import type { PersonSummary } from './PersonSummary';
 import type { ProjectSummary } from './ProjectSummary';
@@ -23,6 +24,7 @@ export type GetSummariesResult = {
     root_project?: (ProjectSummary | null);
     projects?: (Array<ProjectSummary> | null);
     inbox_tasks?: (Array<InboxTaskSummary> | null);
+    journals_last_year?: (Array<JournalSummary> | null);
     habits?: (Array<HabitSummary> | null);
     chores?: (Array<ChoreSummary> | null);
     big_plans?: (Array<BigPlanSummary> | null);

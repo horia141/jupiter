@@ -59,6 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const response = await apiClient.bigPlans.bigPlanFind({
     allow_archived: false,
     include_project: true,
+    include_stats: true,
     include_inbox_tasks: false,
     include_notes: false,
   });
@@ -162,6 +163,9 @@ export default function BigPlans() {
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
+  const bigPlanStatsByRefId = new Map(
+    loaderData.bigPlans.map((b) => [b.big_plan.ref_id, b.stats!]),
+  );
 
   return (
     <TrunkPanel
@@ -256,6 +260,7 @@ export default function BigPlans() {
                         <BigPlanTimelineBigScreen
                           thisYear={thisYear}
                           bigPlans={theBigPlans}
+                          bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
                               date: theRealToday,
@@ -269,6 +274,7 @@ export default function BigPlans() {
                         <BigPlanTimelineSmallScreen
                           thisYear={thisYear}
                           bigPlans={theBigPlans}
+                          bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
                               date: theRealToday,
@@ -291,6 +297,7 @@ export default function BigPlans() {
               <BigPlanTimelineBigScreen
                 thisYear={thisYear}
                 bigPlans={sortedBigPlans}
+                bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {
                     date: theRealToday,
@@ -304,6 +311,7 @@ export default function BigPlans() {
               <BigPlanTimelineSmallScreen
                 thisYear={thisYear}
                 bigPlans={sortedBigPlans}
+                bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {
                     date: theRealToday,
@@ -320,9 +328,10 @@ export default function BigPlans() {
           <BigPlanStack
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
+            bigPlanStatsByRefId={bigPlanStatsByRefId}
             entriesByRefId={entriesByRefId}
             showOptions={{
-              showStatus: true,
+              showDonePct: true,
               showProject: true,
               showEisen: true,
               showDifficulty: true,

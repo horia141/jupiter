@@ -14,9 +14,9 @@ import type { JournalLoadForDateAndPeriodResult } from '../models/JournalLoadFor
 import type { JournalLoadResult } from '../models/JournalLoadResult';
 import type { JournalLoadSettingsArgs } from '../models/JournalLoadSettingsArgs';
 import type { JournalLoadSettingsResult } from '../models/JournalLoadSettingsResult';
+import type { JournalRefreshStatsArgs } from '../models/JournalRefreshStatsArgs';
 import type { JournalRegenArgs } from '../models/JournalRegenArgs';
 import type { JournalRemoveArgs } from '../models/JournalRemoveArgs';
-import type { JournalUpdateReportArgs } from '../models/JournalUpdateReportArgs';
 import type { JournalUpdateSettingsArgs } from '../models/JournalUpdateSettingsArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -177,6 +177,28 @@ export class JournalsService {
         });
     }
     /**
+     * Use case for refreshing stats for a journal.
+     * Use case for refreshing stats for a journal.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public journalRefreshStats(
+        requestBody?: JournalRefreshStatsArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/journal-refresh-stats',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
      * A use case for regenerating journals.
      * A use case for regenerating journals.
      * @param requestBody The input data
@@ -211,28 +233,6 @@ export class JournalsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-remove',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-    /**
-     * Use case for updating a journal entry.
-     * Use case for updating a journal entry.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public journalUpdateReport(
-        requestBody?: JournalUpdateReportArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/journal-update-report',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

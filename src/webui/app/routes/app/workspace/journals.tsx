@@ -1,4 +1,7 @@
-import type { JournalFindResultEntry } from "@jupiter/webapi-client";
+import type {
+  JournalFindResultEntry,
+  JournalStats,
+} from "@jupiter/webapi-client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -35,6 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     allow_archived: false,
     include_notes: false,
     include_writing_tasks: false,
+    include_journal_stats: true,
   });
   return json(response.entries);
 }
@@ -54,6 +58,10 @@ export default function Journals() {
   const entriesByRefId = new Map<string, JournalFindResultEntry>();
   for (const entry of entries) {
     entriesByRefId.set(entry.journal.ref_id, entry);
+  }
+  const journalStatsByJournalRefId = new Map<string, JournalStats>();
+  for (const entry of entries) {
+    journalStatsByJournalRefId.set(entry.journal.ref_id, entry.journal_stats!);
   }
 
   return (
@@ -89,7 +97,11 @@ export default function Journals() {
           />
         )}
 
-        <JournalStack topLevelInfo={topLevelInfo} journals={sortedJournals} />
+        <JournalStack
+          topLevelInfo={topLevelInfo}
+          journals={sortedJournals}
+          journalStatsByJournalRefId={journalStatsByJournalRefId}
+        />
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>

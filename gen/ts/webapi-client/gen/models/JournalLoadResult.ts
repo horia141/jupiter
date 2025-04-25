@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { InboxTask } from './InboxTask';
 import type { Journal } from './Journal';
+import type { JournalStats } from './JournalStats';
 import type { Note } from './Note';
 /**
  * Result.
@@ -11,6 +12,7 @@ import type { Note } from './Note';
 export type JournalLoadResult = {
     journal: Journal;
     note: Note;
+    journal_stats: JournalStats;
     writing_task?: (InboxTask | null);
     sub_period_journals: Array<Journal>;
 };
