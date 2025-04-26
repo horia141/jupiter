@@ -96,7 +96,7 @@ class StatsService:
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                         parent_ref_id=inbox_task_collection.ref_id,
-                        allow_archived=False,
+                        allow_archived=True,
                         source=InboxTaskSource.BIG_PLAN,
                         source_entity_ref_id=(
                             [big_plan.ref_id for big_plan in all_big_plans]
