@@ -177,7 +177,7 @@ class InboxTaskUpdateUseCase(
         record_score_result = None
         if context.user.is_feature_available(UserFeature.GAMIFICATION):
             record_score_result = await RecordScoreService().record_task(
-                context.domain_context, uow, context.user, inbox_task
+                context.domain_context, uow, context.user, new_inbox_task
             )
 
         return InboxTaskUpdateResult(record_score_result=record_score_result)

@@ -48,7 +48,7 @@ class RecordScoreService:
         """Record a task score."""
         if not task.status.is_completed:
             return None
-
+        
         # Record the accomplishment of the task in the score log.
 
         score_log = await uow.get_for(ScoreLog).load_by_parent(user.ref_id)
