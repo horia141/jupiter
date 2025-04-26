@@ -35,6 +35,7 @@ all of the others and give an extra boost of usefulness to Thrive.
 | Gamification | ✅ | ✅ | ✅ |
 | Search | ✅ | ✅ | ✅ |
 | Reporting | ✅ | ✅ | ✅ |
+| Stats | ✅ | ✅ | ✅ |
 | Pomodor Timer | ✅ | ✅ | ✅ |
 | Auto Tasks Generation | ✅ | ✅ | ❌ |
 | Auto Garbage Collection | ✅ | ✅ | ❌ |

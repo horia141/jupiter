@@ -49,6 +49,7 @@ nav:
           - 'Personal Relationship Manager': 'concepts/persons.md'
           - 'Gamification': 'concepts/gamification.md'
           - 'Reporting': 'concepts/reporting.md'
+          - 'Stats': 'concepts/stats.md'
           - 'Tasks Generation': 'concepts/tasks-generation.md'
           - 'Garbage Collection': 'concepts/garbage-collection.md'
           - 'Removal': 'concepts/archival-and-removal.md'
