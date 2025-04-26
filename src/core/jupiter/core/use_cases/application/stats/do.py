@@ -2,7 +2,12 @@
 
 from jupiter.core.domain.application.stats.service.stats_service import StatsService
 from jupiter.core.domain.core.adate import ADate
-from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
+from jupiter.core.domain.sync_target import (
+    SyncTarget,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -37,13 +42,14 @@ class StatsDoUseCase(AppLoggedInMutationUseCase[StatsDoArgs, None]):
         args: StatsDoArgs,
     ) -> None:
         """Execute the command's action."""
+        user = context.user
         workspace = context.workspace
         today = args.today or self._time_provider.get_current_date()
 
         stats_targets = (
             args.stats_targets
             if args.stats_targets is not None
-            else workspace.infer_sync_targets_for_enabled_features(None)
+            else infer_sync_targets_for_enabled_features(user, workspace, None)
         )
 
         stats_service = StatsService(
@@ -53,7 +59,7 @@ class StatsDoUseCase(AppLoggedInMutationUseCase[StatsDoArgs, None]):
         await stats_service.do_it(
             ctx=context.domain_context,
             progress_reporter=progress_reporter,
-            user=context.user,
+            user=user,
             workspace=workspace,
             today=today,
             stats_targets=stats_targets,

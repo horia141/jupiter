@@ -2,7 +2,7 @@ import { SyncTarget } from "@jupiter/webapi-client";
 import { Box, Chip, MenuItem, Select } from "@mui/material";
 
 import { syncTargetName } from "~/logic/domain/sync-target";
-import { inferSyncTargetsForEnabledFeatures } from "~/logic/domain/workspace";
+import { inferSyncTargetsForEnabledFeatures } from "~/logic/domain/infer-sync-target";
 import type { TopLevelInfo } from "~/top-level-context";
 
 interface SyncTargetSelectProps {
@@ -15,6 +15,7 @@ interface SyncTargetSelectProps {
 
 export function SyncTargetSelect(props: SyncTargetSelectProps) {
   const allowedSyncTargets = inferSyncTargetsForEnabledFeatures(
+    props.topLevelInfo.user,
     props.topLevelInfo.workspace,
     Object.values(SyncTarget),
   );

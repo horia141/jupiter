@@ -2,16 +2,22 @@
 
 from typing import Final
 
+from jupiter.core.domain.application.gamification.service.record_score_service import (
+    RecordScoreService,
+)
 from jupiter.core.domain.application.report.service.report_service import ReportService
 from jupiter.core.domain.application.stats.stats_log import StatsLog
 from jupiter.core.domain.application.stats.stats_log_entry import StatsLogEntry
-from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan import BigPlan, BigPlanRepository
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.big_plans.big_plan_stats import (
     BigPlanStats,
     BigPlanStatsRepository,
 )
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
@@ -26,7 +32,7 @@ from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
@@ -149,6 +155,41 @@ class StatsService:
                     stats_log_entry=stats_log_entry,
                 )
 
+        if (
+            user.is_feature_available(UserFeature.GAMIFICATION)
+            and SyncTarget.GAMIFICATION in stats_targets
+        ):
+            async with progress_reporter.section("Computing stats for gamification"):
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_inbox_tasks_last_year = await uow.get(
+                        InboxTaskRepository
+                    ).find_completed_in_range(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        allow_archived=True,
+                        filter_include_sources=[s for s in InboxTaskSource],
+                        filter_start_completed_date=today.subtract_days(365),
+                        filter_end_completed_date=today,
+                    )
+
+                    all_big_plans_last_year = await uow.get(
+                        BigPlanRepository
+                    ).find_completed_in_range(
+                        parent_ref_id=big_plan_collection.ref_id,
+                        allow_archived=True,
+                        filter_start_completed_date=today.subtract_days(365),
+                        filter_end_completed_date=today,
+                    )
+
+                stats_log_entry = await self._compute_stats_for_gamification(
+                    ctx,
+                    user=user,
+                    workspace=workspace,
+                    progress_reporter=progress_reporter,
+                    all_inbox_tasks_last_year=all_inbox_tasks_last_year,
+                    all_big_plans_last_year=all_big_plans_last_year,
+                    stats_log_entry=stats_log_entry,
+                )
+
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             stats_log_entry = stats_log_entry.close(ctx)
             await uow.get_for(StatsLogEntry).save(stats_log_entry)
@@ -193,6 +234,7 @@ class StatsService:
                 new_big_plan_stats = await uow.get(BigPlanStatsRepository).save(
                     new_big_plan_stats
                 )
+            await progress_reporter.mark_updated(big_plan)
             stats_log_entry = stats_log_entry.add_entity_updated(ctx, big_plan)
 
         return stats_log_entry
@@ -226,6 +268,46 @@ class StatsService:
                 new_journal_stats = await uow.get(JournalStatsRepository).save(
                     new_journal_stats
                 )
+            await progress_reporter.mark_updated(journal)
             stats_log_entry = stats_log_entry.add_entity_updated(ctx, journal)
+
+        return stats_log_entry
+
+    async def _compute_stats_for_gamification(
+        self,
+        ctx: DomainContext,
+        user: User,
+        workspace: Workspace,
+        progress_reporter: ProgressReporter,
+        all_inbox_tasks_last_year: list[InboxTask],
+        all_big_plans_last_year: list[BigPlan],
+        stats_log_entry: StatsLogEntry,
+    ) -> StatsLogEntry:
+        record_score_service = RecordScoreService()
+        for inbox_task in all_inbox_tasks_last_year:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                record_score_result = await record_score_service.record_task(
+                    ctx,
+                    uow,
+                    user,
+                    inbox_task,
+                )
+                if record_score_result is not None:
+                    await progress_reporter.mark_updated(inbox_task)
+                    stats_log_entry = stats_log_entry.add_entity_updated(
+                        ctx, inbox_task
+                    )
+
+        for big_plan in all_big_plans_last_year:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                record_score_result = await record_score_service.record_task(
+                    ctx,
+                    uow,
+                    user,
+                    big_plan,
+                )
+                if record_score_result is not None:
+                    await progress_reporter.mark_updated(big_plan)
+                    stats_log_entry = stats_log_entry.add_entity_updated(ctx, big_plan)
 
         return stats_log_entry

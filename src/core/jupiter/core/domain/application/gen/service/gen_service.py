@@ -69,8 +69,13 @@ from jupiter.core.domain.core.time_events.time_event_full_days_block import (
 )
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
 from jupiter.core.domain.storage_engine import DomainStorageEngine
-from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.sync_target import (
+    SyncTarget,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
@@ -111,7 +116,7 @@ class GenService:
         """Execute the service's action."""
         big_diff = list(
             set(gen_targets).difference(
-                workspace.infer_sync_targets_for_enabled_features(gen_targets)
+                infer_sync_targets_for_enabled_features(user, workspace, gen_targets)
             )
         )
         if len(big_diff) > 0:
