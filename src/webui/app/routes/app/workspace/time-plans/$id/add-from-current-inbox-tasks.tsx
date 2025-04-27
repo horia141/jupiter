@@ -132,6 +132,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       include_notes: false,
       include_time_event_blocks: false,
       filter_just_workable: true,
+      filter_just_user: true,
       filter_sources: query.bigPlanRefId
         ? [InboxTaskSource.BIG_PLAN]
         : undefined,

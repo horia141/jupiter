@@ -54,6 +54,7 @@ from jupiter.core.domain.features import (
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import NoFilter
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -76,6 +77,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
     include_notes: bool
     include_time_event_blocks: bool
     filter_just_workable: bool | None
+    filter_just_user: bool | None
     filter_just_generated: bool | None
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
@@ -125,6 +127,9 @@ class InboxTaskFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
+        if args.filter_just_user and args.filter_just_generated:
+            raise InputValidationError("Cannot filter for both user tasks and generated tasks at the same time")
+
         if (
             not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.filter_project_ref_ids is not None
@@ -136,7 +141,9 @@ class InboxTaskFindUseCase(
             if args.filter_sources is not None
             else workspace.infer_sources_for_enabled_features(None)
         )
-        if args.filter_just_generated:
+        if args.filter_just_user:
+            filter_sources = self._filter_sources_for_user_tasks(filter_sources)
+        elif args.filter_just_generated:
             filter_sources = self._filter_sources_for_generated_tasks(filter_sources)
 
         big_diff = list(
@@ -425,3 +432,8 @@ class InboxTaskFindUseCase(
         self, sources: list[InboxTaskSource]
     ) -> list[InboxTaskSource]:
         return [s for s in sources if not s.allow_user_changes]
+
+    def _filter_sources_for_user_tasks(
+        self, sources: list[InboxTaskSource]
+    ) -> list[InboxTaskSource]:
+        return [s for s in sources if s.allow_user_changes]
