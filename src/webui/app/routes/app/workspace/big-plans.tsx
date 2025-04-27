@@ -38,7 +38,7 @@ import {
   sortProjectsByTreeOrder,
 } from "~/logic/domain/project";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -75,8 +75,7 @@ enum View {
   LIST = "list",
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function BigPlans() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

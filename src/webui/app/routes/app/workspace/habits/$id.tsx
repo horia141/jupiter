@@ -23,7 +23,12 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
+import {
+  useActionData,
+  useFetcher,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
@@ -33,6 +38,7 @@ import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { HabitRepeatStrategySelect } from "~/components/habit-repeat-strategy-select";
+import { HabitStreakCalendar } from "~/components/habit-streak-calendar";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -41,8 +47,10 @@ import { ProjectSelect } from "~/components/project-select";
 import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
+import { newURLParams } from "~/logic/domain/navigation";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -53,6 +61,10 @@ const ParamsSchema = z.object({
 
 const QuerySchema = z.object({
   inboxTasksRetrieveOffset: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
+  includeStreakMarksForYear: z
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
@@ -109,11 +121,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ref_id: id,
       allow_archived: true,
       inbox_task_retrieve_offset: query.inboxTasksRetrieveOffset, // Pass the offset to the API call
+      include_streak_marks_for_year: query.includeStreakMarksForYear,
     });
 
     return json({
       habit: result.habit,
       note: result.note,
+      streakMarks: result.streak_marks,
+      streakMarkYear: result.streak_mark_year,
       project: result.project,
       inboxTasks: result.inbox_tasks,
       inboxTasksTotalCnt: result.inbox_tasks_total_cnt,
@@ -266,13 +281,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Habit() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const [query] = useSearchParams();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -341,6 +356,7 @@ export default function Habit() {
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.habit.archived}
       returnLocation="/app/workspace/habits"
+      initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
       <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
@@ -459,6 +475,25 @@ export default function Habit() {
             </Button>
           </ButtonGroup>
         </CardActions>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <HabitStreakCalendar
+            year={loaderData.streakMarkYear}
+            currentYear={today.year}
+            habit={loaderData.habit}
+            streakMarks={loaderData.streakMarks}
+            inboxTasks={sortedInboxTasks}
+            getYearUrl={(year) =>
+              `/app/workspace/habits/${loaderData.habit.ref_id}?${newURLParams(
+                query,
+                "includeStreakMarksForYear",
+                year.toString(),
+              )}`
+            }
+          />
+        </CardContent>
       </Card>
 
       <Card>

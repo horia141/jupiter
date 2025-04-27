@@ -1,6 +1,10 @@
 """Use case for loading a particular habit."""
 
 from jupiter.core.domain.concept.habits.habit import Habit
+from jupiter.core.domain.concept.habits.habit_streak_mark import (
+    HabitStreakMark,
+    HabitStreakMarkRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
@@ -36,6 +40,7 @@ class HabitLoadArgs(UseCaseArgsBase):
     ref_id: EntityId
     allow_archived: bool
     inbox_task_retrieve_offset: int | None
+    include_streak_marks_for_year: int | None
 
 
 @use_case_result
@@ -47,6 +52,8 @@ class HabitLoadResult(UseCaseResultBase):
     inbox_tasks: list[InboxTask]
     inbox_tasks_total_cnt: int
     inbox_tasks_page_size: int
+    streak_marks: list[HabitStreakMark]
+    streak_mark_year: int
     note: Note | None
 
 
@@ -68,6 +75,12 @@ class HabitLoadUseCase(
             and args.inbox_task_retrieve_offset < 0
         ):
             raise InputValidationError("Invalid inbox_task_retrieve_offset")
+        if (
+            args.include_streak_marks_for_year is not None
+            and args.include_streak_marks_for_year < 0
+        ):
+            raise InputValidationError("Invalid include_streak_marks_for_year")
+
         workspace = context.workspace
         habit = await uow.get_for(Habit).load_by_id(
             args.ref_id, allow_archived=args.allow_archived
@@ -94,6 +107,15 @@ class HabitLoadUseCase(
             retrieve_limit=InboxTaskRepository.PAGE_SIZE,
         )
 
+        year_to_retrieve_streak_marks = (
+            args.include_streak_marks_for_year
+            or self._time_provider.get_current_date().year
+        )
+        streak_marks = await uow.get(HabitStreakMarkRepository).find_all_for_year(
+            habit.ref_id,
+            year_to_retrieve_streak_marks,
+        )
+
         note = await uow.get(NoteRepository).load_optional_for_source(
             NoteDomain.HABIT,
             habit.ref_id,
@@ -106,5 +128,7 @@ class HabitLoadUseCase(
             inbox_tasks=inbox_tasks,
             inbox_tasks_total_cnt=inbox_tasks_total_cnt,
             inbox_tasks_page_size=InboxTaskRepository.PAGE_SIZE,
+            streak_marks=streak_marks,
+            streak_mark_year=year_to_retrieve_streak_marks,
             note=note,
         )

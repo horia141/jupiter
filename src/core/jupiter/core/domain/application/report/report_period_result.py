@@ -88,6 +88,7 @@ class RecurringTaskWorkSummary(CompositeValue):
     not_done_ratio: float
     done_cnt: int
     done_ratio: float
+    # This is not used anymore, but we keep it here to avoid breaking the API
     streak_plot: str = field(hash=False, compare=False, repr=False, default="")
 
 

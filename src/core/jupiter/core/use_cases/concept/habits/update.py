@@ -2,10 +2,14 @@
 
 from typing import Sequence, cast
 
+from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_name import HabitName
 from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
     HabitRepeatsStrategy,
+)
+from jupiter.core.domain.concept.habits.service.streak_recorder_service import (
+    HabitStreakRecorderService,
 )
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
@@ -27,6 +31,7 @@ from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.update_action import UpdateAction
@@ -77,6 +82,7 @@ class HabitUpdateUseCase(
         workspace = context.workspace
 
         habit = await uow.get_for(Habit).load_by_id(args.ref_id)
+        initial_period = habit.gen_params.period
 
         if (
             not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
@@ -143,6 +149,16 @@ class HabitUpdateUseCase(
 
         project = await uow.get_for(Project).load_by_id(habit.project_ref_id)
 
+        if habit.gen_params.period != initial_period:
+            habit_streak_recorder_service = HabitStreakRecorderService()
+            await habit_streak_recorder_service.remove_all(
+                ctx=context.domain_context,
+                uow=uow,
+                habit=habit,
+                today=self._time_provider.get_current_date(),
+                alternative_period=initial_period,
+            )
+
         if need_to_change_inbox_tasks:
             inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
@@ -182,19 +198,43 @@ class HabitUpdateUseCase(
                 else:
                     task_ranges = [(schedule.actionable_date, schedule.due_date)]
 
+                recurring_repeat_index = cast(int, inbox_task.recurring_repeat_index)
+                repeat_index = cast(
+                    int, min(len(task_ranges) - 1, recurring_repeat_index)
+                )
+
                 inbox_task = inbox_task.update_link_to_habit(
                     ctx=context.domain_context,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
-                    repeat_index=inbox_task.recurring_repeat_index,
-                    actionable_date=task_ranges[inbox_task.recurring_repeat_index or 0][
-                        0
-                    ],
-                    due_date=task_ranges[inbox_task.recurring_repeat_index or 0][1],
+                    repeat_index=recurring_repeat_index,
+                    actionable_date=task_ranges[repeat_index][0],
+                    repeats_in_period_count=habit.repeats_in_period_count,
+                    due_date=task_ranges[repeat_index][1],
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                 )
 
                 await uow.get_for(InboxTask).save(inbox_task)
                 await progress_reporter.mark_updated(inbox_task)
+
+    async def _perform_post_mutation_work(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        args: HabitUpdateArgs,
+        result: None,
+    ) -> None:
+        """Execute the command's post-mutation work."""
+        await GenService(self._domain_storage_engine).do_it(
+            context.domain_context,
+            progress_reporter=progress_reporter,
+            user=context.user,
+            workspace=context.workspace,
+            gen_even_if_not_modified=False,
+            today=self._time_provider.get_current_date(),
+            gen_targets=[SyncTarget.HABITS],
+            period=None,
+            filter_habit_ref_ids=[args.ref_id],
+        )

@@ -219,15 +219,18 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         habit_ref_id: EntityId,
         recurring_task_timeline: str,
-        recurring_task_repeat_index: int | None,
+        recurring_task_repeat_index: int,
         recurring_task_gen_right_now: Timestamp,
+        repeats_in_period_count: int | None,
     ) -> "InboxTask":
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.HABIT,
-            name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
+            name=InboxTask._build_name_for_habit(
+                name, recurring_task_repeat_index, repeats_in_period_count
+            ),
             status=InboxTaskStatus.NOT_STARTED_GEN,
             eisen=eisen,
             difficulty=difficulty,
@@ -577,7 +580,8 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         timeline: str,
-        repeat_index: int | None,
+        repeat_index: int,
+        repeats_in_period_count: int | None,
         actionable_date: ADate | None,
         due_date: ADate,
         eisen: Eisen,
@@ -591,7 +595,9 @@ class InboxTask(LeafEntity):
         return self._new_version(
             ctx,
             project_ref_id=project_ref_id,
-            name=InboxTask._build_name_for_habit(name, repeat_index),
+            name=InboxTask._build_name_for_habit(
+                name, repeat_index, repeats_in_period_count
+            ),
             actionable_date=actionable_date,
             due_date=due_date,
             eisen=eisen,
@@ -975,9 +981,10 @@ class InboxTask(LeafEntity):
     @staticmethod
     def _build_name_for_habit(
         name: InboxTaskName,
-        repeat_index: int | None,
+        repeat_index: int,
+        repeats_in_period_count: int | None,
     ) -> InboxTaskName:
-        if repeat_index is not None:
+        if repeats_in_period_count is not None and repeats_in_period_count > 1:
             return InboxTaskName(f"{name} [{repeat_index + 1}]")
         else:
             return name

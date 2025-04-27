@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Habit } from './Habit';
+import type { HabitStreakMark } from './HabitStreakMark';
 import type { InboxTask } from './InboxTask';
 import type { Note } from './Note';
 import type { Project } from './Project';
@@ -15,6 +16,8 @@ export type HabitLoadResult = {
     inbox_tasks: Array<InboxTask>;
     inbox_tasks_total_cnt: number;
     inbox_tasks_page_size: number;
+    streak_marks: Array<HabitStreakMark>;
+    streak_mark_year: number;
     note?: (Note | null);
 };
 

@@ -10,6 +10,9 @@ from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.habits.service.streak_recorder_service import (
+    HabitStreakRecorderService,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
@@ -1177,14 +1180,14 @@ class GenService:
         if not schedule.should_keep:
             return gen_log_entry
 
-        all_found_tasks_by_repeat_index: dict[int | None, InboxTask] = {
-            ft.recurring_repeat_index: ft
+        all_found_tasks_by_repeat_index: dict[int, InboxTask] = {
+            cast(int, ft.recurring_repeat_index): ft
             for ft in all_inbox_tasks_by_habit_ref_id_and_timeline.get(
                 (habit.ref_id, schedule.timeline),
                 [],
             )
         }
-        repeat_idx_to_keep: set[int | None] = set()
+        repeat_idx_to_keep: set[int] = set()
 
         task_ranges: Sequence[tuple[ADate | None, ADate]]
         if habit.repeats_in_period_count is not None:
@@ -1198,27 +1201,27 @@ class GenService:
         else:
             task_ranges = [(schedule.actionable_date, schedule.due_date)]
 
+        remaining_tasks: set[InboxTask] = set()
+
         for task_idx in range(habit.repeats_in_period_count or 1):
-            real_task_idx = (
-                task_idx if habit.repeats_in_period_count is not None else None
-            )
-            found_task = all_found_tasks_by_repeat_index.get(real_task_idx, None)
+            found_task = all_found_tasks_by_repeat_index.get(task_idx, None)
 
             if found_task:
                 repeat_idx_to_keep.add(task_idx)
-
                 if (
                     not gen_even_if_not_modified
                     and found_task.last_modified_time >= habit.last_modified_time
                 ):
-                    return gen_log_entry
+                    remaining_tasks.add(found_task)
+                    continue
 
                 found_task = found_task.update_link_to_habit(
                     ctx,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
-                    repeat_index=real_task_idx,
+                    repeat_index=task_idx,
+                    repeats_in_period_count=habit.repeats_in_period_count,
                     actionable_date=task_ranges[task_idx][0],
                     due_date=task_ranges[task_idx][1],
                     eisen=habit.gen_params.eisen,
@@ -1226,8 +1229,10 @@ class GenService:
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    await uow.get_for(InboxTask).save(found_task)
+                    found_task = await uow.get_for(InboxTask).save(found_task)
                     await progress_reporter.mark_updated(found_task)
+
+                remaining_tasks.add(found_task)
                 gen_log_entry = gen_log_entry.add_entity_updated(
                     ctx,
                     found_task,
@@ -1240,12 +1245,13 @@ class GenService:
                     project_ref_id=project.ref_id,
                     habit_ref_id=habit.ref_id,
                     recurring_task_timeline=schedule.timeline,
-                    recurring_task_repeat_index=real_task_idx,
+                    recurring_task_repeat_index=task_idx,
                     recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                     actionable_date=task_ranges[task_idx][0],
                     due_date=task_ranges[task_idx][1],
+                    repeats_in_period_count=habit.repeats_in_period_count,
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1253,6 +1259,8 @@ class GenService:
                         inbox_task,
                     )
                     await progress_reporter.mark_created(inbox_task)
+
+                remaining_tasks.add(inbox_task)
                 gen_log_entry = gen_log_entry.add_entity_created(
                     ctx,
                     inbox_task,
@@ -1270,6 +1278,18 @@ class GenService:
                     ctx,
                     task,
                 )
+
+        print(remaining_tasks)
+
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            streak_recorder_service = HabitStreakRecorderService()
+            await streak_recorder_service.upsert(
+                ctx=ctx,
+                uow=uow,
+                today=today,
+                habit=habit,
+                inbox_tasks=remaining_tasks,
+            )
 
         return gen_log_entry
 

@@ -2,6 +2,9 @@
 
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.habits.habit_streak_mark import (
+    HabitStreakMarkRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
@@ -56,6 +59,14 @@ class HabitRemoveService:
         await note_remove_service.remove_for_source(
             ctx, uow, NoteDomain.HABIT, habit.ref_id
         )
+
+        all_streak_marks = await uow.get(HabitStreakMarkRepository).find_all(
+            habit.ref_id
+        )
+        for streak_mark in all_streak_marks:
+            await uow.get(HabitStreakMarkRepository).remove(
+                (streak_mark.habit.ref_id, streak_mark.year, streak_mark.date)
+            )
 
         await uow.get_for(Habit).remove(ref_id)
         await progress_reporter.mark_removed(habit)

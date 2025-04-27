@@ -43,7 +43,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -270,8 +270,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Chore() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

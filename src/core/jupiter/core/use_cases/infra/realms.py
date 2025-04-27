@@ -474,11 +474,12 @@ class _DictEncoder(
         result = {}
         for k, v in value.items():
             encoded_key = key_encoder.encode(k)
-            if not isinstance(encoded_key, str):
+            if not isinstance(encoded_key, (str, int)):
                 raise RealmDecodingError(
                     f"Expected encoded key for {k} to be a string, got {encoded_key}"
                 )
-            result[encoded_key] = value_encoder.encode(v)
+            encoded_key_final = str(encoded_key)
+            result[encoded_key_final] = value_encoder.encode(v)
         return result
 
 

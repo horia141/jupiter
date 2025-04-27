@@ -139,6 +139,7 @@ export type { HabitName } from './models/HabitName';
 export type { HabitRegenArgs } from './models/HabitRegenArgs';
 export type { HabitRemoveArgs } from './models/HabitRemoveArgs';
 export { HabitRepeatsStrategy } from './models/HabitRepeatsStrategy';
+export type { HabitStreakMark } from './models/HabitStreakMark';
 export type { HabitSummary } from './models/HabitSummary';
 export type { HabitSuspendArgs } from './models/HabitSuspendArgs';
 export type { HabitUnsuspendArgs } from './models/HabitUnsuspendArgs';

@@ -23,7 +23,7 @@ import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortChoresNaturally } from "~/logic/domain/chore";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -46,8 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json(response.entries);
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Chores() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();

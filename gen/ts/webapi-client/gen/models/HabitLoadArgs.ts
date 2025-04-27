@@ -10,5 +10,6 @@ export type HabitLoadArgs = {
     ref_id: EntityId;
     allow_archived: boolean;
     inbox_task_retrieve_offset?: (number | null);
+    include_streak_marks_for_year?: (number | null);
 };
 

@@ -17,11 +17,13 @@ class HabitLoadArgs:
         ref_id (str): A generic entity id.
         allow_archived (bool):
         inbox_task_retrieve_offset (Union[None, Unset, int]):
+        include_streak_marks_for_year (Union[None, Unset, int]):
     """
 
     ref_id: str
     allow_archived: bool
     inbox_task_retrieve_offset: Union[None, Unset, int] = UNSET
+    include_streak_marks_for_year: Union[None, Unset, int] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -35,6 +37,12 @@ class HabitLoadArgs:
         else:
             inbox_task_retrieve_offset = self.inbox_task_retrieve_offset
 
+        include_streak_marks_for_year: Union[None, Unset, int]
+        if isinstance(self.include_streak_marks_for_year, Unset):
+            include_streak_marks_for_year = UNSET
+        else:
+            include_streak_marks_for_year = self.include_streak_marks_for_year
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -45,6 +53,8 @@ class HabitLoadArgs:
         )
         if inbox_task_retrieve_offset is not UNSET:
             field_dict["inbox_task_retrieve_offset"] = inbox_task_retrieve_offset
+        if include_streak_marks_for_year is not UNSET:
+            field_dict["include_streak_marks_for_year"] = include_streak_marks_for_year
 
         return field_dict
 
@@ -64,10 +74,22 @@ class HabitLoadArgs:
 
         inbox_task_retrieve_offset = _parse_inbox_task_retrieve_offset(d.pop("inbox_task_retrieve_offset", UNSET))
 
+        def _parse_include_streak_marks_for_year(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        include_streak_marks_for_year = _parse_include_streak_marks_for_year(
+            d.pop("include_streak_marks_for_year", UNSET)
+        )
+
         habit_load_args = cls(
             ref_id=ref_id,
             allow_archived=allow_archived,
             inbox_task_retrieve_offset=inbox_task_retrieve_offset,
+            include_streak_marks_for_year=include_streak_marks_for_year,
         )
 
         habit_load_args.additional_properties = d

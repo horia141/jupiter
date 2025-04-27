@@ -44,6 +44,20 @@ plan, if it has any.
 Between them, the actionable and due dates allow you to schedule the big plans in time in
 a more organized manner. There is a special view which allows for this.
 
+## Stats
+
+Big plans have a notion of progress associated with them, which is quantified by a number
+ranging from `0` to `100`. 
+
+* Big plans that are not started are at `0`.
+* Big plans that are in progress or blocked are at `10` at a mimum and `95` at a maximum.
+  If there are any inbox tasks associated with the plan, the progress is proportional to the
+  number of completed tasks (done or not done) relative to the total number of tasks.
+* Big plans that are in a completed state (done or not done) are at `100` progress.
+
+This is a simple indicator of the progress done and yet do be done on a particular
+piece of work.
+
 ## Big Plans Page
 
 The big plan page is a representation of your current and longer term work. It's a

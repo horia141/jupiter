@@ -253,11 +253,6 @@ export function ShowReport({
                           <SmallTableCell width={isBigScreen ? "20%" : "50%"}>
                             Name
                           </SmallTableCell>
-                          {isBigScreen && (
-                            <SmallTableCell className="streak-column">
-                              Streak
-                            </SmallTableCell>
-                          )}
                           <SmallTableCell width="10%">
                             📥 {isBigScreen && "Created"}
                           </SmallTableCell>
@@ -286,14 +281,6 @@ export function ShowReport({
                                 <EntityNameOneLineComponent name={phb.name} />
                               </EntityLink>
                             </SmallTableCell>
-                            {isBigScreen && (
-                              <SmallTableCell>
-                                {phb.summary.streak_plot
-                                  ?.split("")
-                                  .reverse()
-                                  .join("")}
-                              </SmallTableCell>
-                            )}
                             <SmallTableCell>
                               {phb.summary.created_cnt}
                             </SmallTableCell>

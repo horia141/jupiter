@@ -14,6 +14,11 @@ from jupiter.core.domain.concept.big_plans.big_plan_stats import (
     BigPlanStats,
     BigPlanStatsRepository,
 )
+from jupiter.core.domain.concept.habits.habit import Habit
+from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.habits.service.streak_recorder_service import (
+    HabitStreakRecorderService,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
@@ -76,12 +81,51 @@ class StatsService:
             inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).load_by_parent(workspace.ref_id)
+            habit_collection = await uow.get_for(HabitCollection).load_by_parent(
+                workspace.ref_id
+            )
             big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
                 workspace.ref_id
             )
             journal_collection = await uow.get_for(JournalCollection).load_by_parent(
                 workspace.ref_id
             )
+
+        if (
+            workspace.is_feature_available(WorkspaceFeature.HABITS)
+            and SyncTarget.HABITS in stats_targets
+        ):
+            async with progress_reporter.section("Computing stats for habits"):
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_habits = await uow.get_for(Habit).find_all_generic(
+                        parent_ref_id=habit_collection.ref_id,
+                        allow_archived=False,
+                        ref_id=(
+                            filter_habit_ref_ids if filter_habit_ref_ids else NoFilter()
+                        ),
+                    )
+
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        allow_archived=True,
+                        source=InboxTaskSource.HABIT,
+                        source_entity_ref_id=(
+                            [habit.ref_id for habit in all_habits]
+                            if all_habits
+                            else None  # This will find no inbox tasks if there are no habits
+                        ),
+                    )
+
+                stats_log_entry = await self._compute_stats_for_habits(
+                    ctx,
+                    user=user,
+                    workspace=workspace,
+                    progress_reporter=progress_reporter,
+                    all_habits=all_habits,
+                    all_inbox_tasks=all_inbox_tasks,
+                    stats_log_entry=stats_log_entry,
+                )
 
         if (
             workspace.is_feature_available(WorkspaceFeature.BIG_PLANS)
@@ -193,6 +237,47 @@ class StatsService:
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             stats_log_entry = stats_log_entry.close(ctx)
             await uow.get_for(StatsLogEntry).save(stats_log_entry)
+
+    async def _compute_stats_for_habits(
+        self,
+        ctx: DomainContext,
+        user: User,
+        workspace: Workspace,
+        progress_reporter: ProgressReporter,
+        all_habits: list[Habit],
+        all_inbox_tasks: list[InboxTask],
+        stats_log_entry: StatsLogEntry,
+    ) -> StatsLogEntry:
+        # Group inbox tasks by habit ref id
+        inbox_tasks_by_habit_ref_id: dict[EntityId, list[InboxTask]] = {}
+        for inbox_task in all_inbox_tasks:
+            if inbox_task.source_entity_ref_id is None:
+                continue
+            if inbox_task.source_entity_ref_id not in inbox_tasks_by_habit_ref_id:
+                inbox_tasks_by_habit_ref_id[inbox_task.source_entity_ref_id] = []
+            inbox_tasks_by_habit_ref_id[inbox_task.source_entity_ref_id].append(
+                inbox_task
+            )
+
+        # Compute stats for each habit
+        streak_recorder_service = HabitStreakRecorderService()
+
+        for habit in all_habits:
+            habit_inbox_tasks = inbox_tasks_by_habit_ref_id.get(habit.ref_id, [])
+
+            for inbox_task in habit_inbox_tasks:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    await streak_recorder_service.update_with_status(
+                        ctx=ctx,
+                        uow=uow,
+                        habit=habit,
+                        inbox_task=inbox_task,
+                    )
+
+            await progress_reporter.mark_updated(habit)
+            stats_log_entry = stats_log_entry.add_entity_updated(ctx, habit)
+
+        return stats_log_entry
 
     async def _compute_stats_for_big_plans(
         self,

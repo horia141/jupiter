@@ -3,9 +3,14 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 export const basicShouldRevalidate: ShouldRevalidateFunction = ({
   currentUrl,
   defaultShouldRevalidate,
+  formAction,
   formMethod,
   nextUrl,
 }) => {
+  if (formAction === "/app/workspace/core/notes/update") {
+    return false;
+  }
+
   if (
     currentUrl.pathname === nextUrl.pathname &&
     onlyDifferenceIsInTimeEventParamsSource(

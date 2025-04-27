@@ -703,58 +703,6 @@ class ReportService:
             else:
                 not_started_cnt += 1
 
-        # The streak computations here.
-        sorted_inbox_tasks = sorted(
-            (it for it in inbox_tasks if schedule.contains_timestamp(it.created_time)),
-            key=lambda it: (it.created_time, it.recurring_repeat_index),
-        )
-        used_skip_once = False
-        streak_plot = []
-
-        for inbox_task_idx, inbox_task in enumerate(sorted_inbox_tasks):
-            if inbox_task.status == InboxTaskStatus.DONE:
-                if inbox_task.recurring_repeat_index is None:
-                    streak_plot.append("X")
-                elif inbox_task.recurring_repeat_index == 0:
-                    streak_plot.append("1")
-                else:
-                    streak_plot[-1] = str(int(streak_plot[-1], base=10) + 1)
-            else:
-                if (
-                    inbox_task_idx != 0
-                    and inbox_task_idx != len(sorted_inbox_tasks) - 1
-                    and sorted_inbox_tasks[inbox_task_idx - 1].status
-                    == InboxTaskStatus.DONE
-                    and sorted_inbox_tasks[inbox_task_idx + 1].status
-                    == InboxTaskStatus.DONE
-                    and not used_skip_once
-                ):
-                    used_skip_once = True
-                    if inbox_task.recurring_repeat_index is None:
-                        streak_plot.append("x")
-                    elif inbox_task.recurring_repeat_index == 0:
-                        streak_plot.append("1")
-                    else:
-                        streak_plot[-1] = str(int(streak_plot[-1], base=10) + 1)
-                else:
-                    used_skip_once = False
-                    if inbox_task.recurring_repeat_index is None:
-                        streak_plot.append(
-                            (
-                                "."
-                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                                else "?"
-                            ),
-                        )
-                    elif inbox_task.recurring_repeat_index == 0:
-                        streak_plot.append(
-                            (
-                                "0"
-                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                                else "?"
-                            ),
-                        )
-
         return RecurringTaskWorkSummary(
             created_cnt=created_cnt,
             not_started_cnt=not_started_cnt,
@@ -765,7 +713,7 @@ class ReportService:
             ),
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
-            streak_plot="".join(streak_plot),
+            streak_plot="",
         )
 
     @staticmethod

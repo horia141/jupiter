@@ -152,6 +152,8 @@ from .habit_load_result import HabitLoadResult
 from .habit_regen_args import HabitRegenArgs
 from .habit_remove_args import HabitRemoveArgs
 from .habit_repeats_strategy import HabitRepeatsStrategy
+from .habit_streak_mark import HabitStreakMark
+from .habit_streak_mark_statuses import HabitStreakMarkStatuses
 from .habit_summary import HabitSummary
 from .habit_suspend_args import HabitSuspendArgs
 from .habit_unsuspend_args import HabitUnsuspendArgs
@@ -790,6 +792,8 @@ __all__ = (
     "HabitRegenArgs",
     "HabitRemoveArgs",
     "HabitRepeatsStrategy",
+    "HabitStreakMark",
+    "HabitStreakMarkStatuses",
     "HabitSummary",
     "HabitSuspendArgs",
     "HabitUnsuspendArgs",

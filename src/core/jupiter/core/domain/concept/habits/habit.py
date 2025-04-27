@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.habits.habit_name import HabitName
 from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
     HabitRepeatsStrategy,
 )
+from jupiter.core.domain.concept.habits.habit_streak_mark import HabitStreakMark
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.notes.note import Note
@@ -23,6 +24,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.record import ContainsManyRecords
 from jupiter.core.framework.update_action import UpdateAction
 
 
@@ -42,6 +44,10 @@ class Habit(LeafEntity):
         InboxTask, source=InboxTaskSource.HABIT, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(Note, domain=NoteDomain.HABIT, source_entity_ref_id=IsRefId())
+    streak_marks = ContainsManyRecords(
+        HabitStreakMark,
+        habit_ref_id=IsRefId(),
+    )
 
     @staticmethod
     @create_entity_action

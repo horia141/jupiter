@@ -6,6 +6,10 @@ from jupiter.core.domain.application.gamification.service.record_score_service i
 )
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_stats import BigPlanStatsRepository
+from jupiter.core.domain.concept.habits.habit import Habit
+from jupiter.core.domain.concept.habits.service.streak_recorder_service import (
+    HabitStreakRecorderService,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     CannotModifyGeneratedTaskError,
     InboxTask,
@@ -156,6 +160,9 @@ class InboxTaskUpdateUseCase(
                 due_date=args.due_date,
             )
 
+            await uow.get_for(InboxTask).save(new_inbox_task)
+            await progress_reporter.mark_updated(new_inbox_task)
+
             await self._process_big_plan_stats(
                 uow,
                 progress_reporter,
@@ -165,14 +172,18 @@ class InboxTaskUpdateUseCase(
                 previous_big_plan,
                 new_big_plan,
             )
+
+            await self._process_streak_marks(
+                uow,
+                progress_reporter,
+                context,
+                new_inbox_task,
+            )
         except CannotModifyGeneratedTaskError as err:
             raise err
             # raise InputValidationError(
             #     f"Modifing a generated task's field {err.field} is not possible",
             # ) from err
-
-        await uow.get_for(InboxTask).save(new_inbox_task)
-        await progress_reporter.mark_updated(new_inbox_task)
 
         record_score_result = None
         if context.user.is_feature_available(UserFeature.GAMIFICATION):
@@ -280,3 +291,24 @@ class InboxTaskUpdateUseCase(
                     await uow.get(BigPlanStatsRepository).mark_inbox_task_done(
                         new_big_plan.ref_id,
                     )
+
+    async def _process_streak_marks(
+        self,
+        uow: DomainUnitOfWork,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInMutationUseCaseContext,
+        inbox_task: InboxTask,
+    ) -> None:
+        if inbox_task.source != InboxTaskSource.HABIT:
+            return
+
+        habit = await uow.get_for(Habit).load_by_id(
+            inbox_task.source_entity_ref_id_for_sure
+        )
+        await HabitStreakRecorderService().update_with_status(
+            ctx=context.domain_context,
+            uow=uow,
+            habit=habit,
+            inbox_task=inbox_task,
+        )
+        await progress_reporter.mark_updated(habit)
