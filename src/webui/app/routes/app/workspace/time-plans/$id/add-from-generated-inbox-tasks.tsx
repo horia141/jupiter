@@ -19,12 +19,17 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams } from "@remix-run/react";
+import {
+  useActionData,
+  useNavigation,
+  useParams,
+  useSearchParams,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskCard } from "~/components/inbox-task-card";
@@ -49,6 +54,7 @@ import {
   inboxTaskFindEntryToParent,
   sortInboxTasksByEisenAndDifficulty,
 } from "~/logic/domain/inbox-task";
+import { allHigherPeriods } from "~/logic/domain/period";
 import {
   computeProjectHierarchicalNameFromRoot,
   sortProjectsByTreeOrder,
@@ -74,6 +80,10 @@ enum View {
 
 const ParamsSchema = z.object({
   id: z.string(),
+});
+
+const QuerySchema = z.object({
+  showFromPeriod: z.nativeEnum(RecurringTaskPeriod).optional(),
 });
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -146,6 +156,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
+  const query = await parseQuery(request, QuerySchema);
 
   try {
     switch (form.intent) {
@@ -156,7 +167,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         });
 
         return redirect(
-          `/app/workspace/time-plans/${id}/add-from-generated-inbox-tasks`,
+          `/app/workspace/time-plans/${id}/add-from-generated-inbox-tasks?${new URLSearchParams(query).toString()}`,
         );
       }
 
@@ -194,6 +205,8 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
+  const [searchParams] = useSearchParams();
+  const query = parseQuery(searchParams, QuerySchema);
 
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.timePlan.archived;
@@ -206,6 +219,10 @@ export default function TimePlanAddFromCurrentInboxTasks() {
 
   const [targetInboxTaskRefIds, setTargetInboxTaskRefIds] = useState(
     new Set<string>(),
+  );
+
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    query.showFromPeriod ? query.showFromPeriod : RecurringTaskPeriod.DAILY,
   );
 
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
@@ -235,6 +252,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
         topLevelInfo.user.timezone,
       ),
       includeIfNoDueDate: true,
+      allowPeriodsForRecurringTasks: allHigherPeriods(selectedPeriod),
     },
   );
 
@@ -321,6 +339,33 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                 ],
                 (selected) => setSelectedActionableTime(selected),
               ),
+              FilterFewOptionsCompact(
+                "From Period",
+                selectedPeriod,
+                [
+                  {
+                    value: RecurringTaskPeriod.DAILY,
+                    text: "From Daily",
+                  },
+                  {
+                    value: RecurringTaskPeriod.WEEKLY,
+                    text: "From Weekly",
+                  },
+                  {
+                    value: RecurringTaskPeriod.MONTHLY,
+                    text: "From Monthly",
+                  },
+                  {
+                    value: RecurringTaskPeriod.QUARTERLY,
+                    text: "From Quarterly",
+                  },
+                  {
+                    value: RecurringTaskPeriod.YEARLY,
+                    text: "From Yearly",
+                  },
+                ],
+                (selected) => setSelectedPeriod(selected),
+              ),
             ]}
           />
         }
@@ -388,19 +433,22 @@ export default function TimePlanAddFromCurrentInboxTasks() {
         </Stack>
 
         {selectedView === View.MERGED && (
-          <InboxTaskList
-            today={today}
-            topLevelInfo={topLevelInfo}
-            inboxTasks={filteredInboxTasks}
-            alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
-            targetInboxTaskRefIds={targetInboxTaskRefIds}
-            inboxTasksByRefId={entriesByRefId}
-            onSelected={(it) =>
-              setTargetInboxTaskRefIds((itri) =>
-                toggleInboxTaskRefIds(itri, it.ref_id),
-              )
-            }
-          />
+          <>
+            <StandardDivider title="All Inbox Tasks" size="large" />
+            <InboxTaskList
+              today={today}
+              topLevelInfo={topLevelInfo}
+              inboxTasks={filteredInboxTasks}
+              alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
+              targetInboxTaskRefIds={targetInboxTaskRefIds}
+              inboxTasksByRefId={entriesByRefId}
+              onSelected={(it) =>
+                setTargetInboxTaskRefIds((itri) =>
+                  toggleInboxTaskRefIds(itri, it.ref_id),
+                )
+              }
+            />
+          </>
         )}
 
         {selectedView === View.BY_PROJECT && (

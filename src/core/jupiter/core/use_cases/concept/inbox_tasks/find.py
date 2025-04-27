@@ -128,7 +128,9 @@ class InboxTaskFindUseCase(
         workspace = context.workspace
 
         if args.filter_just_user and args.filter_just_generated:
-            raise InputValidationError("Cannot filter for both user tasks and generated tasks at the same time")
+            raise InputValidationError(
+                "Cannot filter for both user tasks and generated tasks at the same time"
+            )
 
         if (
             not workspace.is_feature_available(WorkspaceFeature.PROJECTS)

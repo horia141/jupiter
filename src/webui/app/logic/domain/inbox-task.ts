@@ -1,4 +1,4 @@
-import type {
+import {
   BigPlan,
   Chore,
   Eisen,
@@ -12,12 +12,10 @@ import type {
   Project,
   RecurringTaskPeriod,
   SlackTask,
-} from "@jupiter/webapi-client";
-import {
+
   Difficulty,
   InboxTaskSource,
-  InboxTaskStatus,
-} from "@jupiter/webapi-client";
+  InboxTaskStatus} from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 
 import { aDateToDate, compareADate } from "./adate";
@@ -70,6 +68,7 @@ interface InboxTaskFilterOptions {
   dueDateEnd?: DateTime;
   allowPeriodsIfHabit?: RecurringTaskPeriod[];
   allowPeriodsIfChore?: RecurringTaskPeriod[];
+  allowPeriodsForRecurringTasks?: RecurringTaskPeriod[];
 }
 
 export function filterInboxTasksForDisplay(
@@ -194,6 +193,13 @@ export function filterInboxTasksForDisplay(
       }
     }
 
+    if (options.allowPeriodsForRecurringTasks) {
+      const inferredPeriod = inferPeriodForRecurringTask(inboxTask);
+      if (!options.allowPeriodsForRecurringTasks.includes(inferredPeriod)) {
+        return false;
+      }
+    }
+
     return true;
   });
 }
@@ -304,4 +310,24 @@ export function doesInboxTaskAllowChangingBigPlan(
   source: InboxTaskSource,
 ): boolean {
   return source === InboxTaskSource.USER || source === InboxTaskSource.BIG_PLAN;
+}
+
+function inferPeriodForRecurringTask(
+  inboxTask: InboxTask,
+): RecurringTaskPeriod {
+  const timeline = inboxTask.recurring_timeline!;
+  const parts = timeline.split(",");
+  if (parts.length === 5) {
+    return RecurringTaskPeriod.DAILY;
+  } else if (parts.length === 4) {
+    return RecurringTaskPeriod.WEEKLY;
+  } else if (parts.length === 3) {
+    return RecurringTaskPeriod.MONTHLY;
+  } else if (parts.length === 2) {
+    return RecurringTaskPeriod.QUARTERLY;
+  } else if (parts.length === 1) {
+    return RecurringTaskPeriod.YEARLY;
+  } else {
+    throw new Error(`Invalid timeline: ${timeline}`);
+  }
 }

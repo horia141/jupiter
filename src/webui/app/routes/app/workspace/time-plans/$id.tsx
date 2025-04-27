@@ -421,7 +421,7 @@ export default function TimePlanView() {
                       }),
                       NavSingle({
                         text: "From Generated Inbox Tasks",
-                        link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-generated-inbox-tasks`,
+                        link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-generated-inbox-tasks?showFromPeriod=${loaderData.timePlan.period}`,
                       }),
                       NavSingle({
                         text: "From Current Big Plans",
