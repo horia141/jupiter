@@ -42,7 +42,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
+import { TimeEventInDayBlockStack } from "~/components/calendar/time-event-in-day-block-stack";
 import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";

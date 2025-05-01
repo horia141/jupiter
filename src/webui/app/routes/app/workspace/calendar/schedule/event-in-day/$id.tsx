@@ -35,7 +35,7 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
-import { TimeEventParamsSource } from "~/components/time-event-params-source";
+import { TimeEventParamsSource } from "~/components/calendar/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isCorePropertyEditable } from "~/logic/domain/schedule-event-in-day";
 import {

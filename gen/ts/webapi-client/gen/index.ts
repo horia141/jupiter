@@ -225,6 +225,9 @@ export type { MetricRemoveArgs } from './models/MetricRemoveArgs';
 export type { MetricSummary } from './models/MetricSummary';
 export { MetricUnit } from './models/MetricUnit';
 export type { MetricUpdateArgs } from './models/MetricUpdateArgs';
+export type { MOTD } from './models/MOTD';
+export type { MOTDGetForTodayArgs } from './models/MOTDGetForTodayArgs';
+export type { MOTDGetForTodayResult } from './models/MOTDGetForTodayResult';
 export { NamedEntityTag } from './models/NamedEntityTag';
 export type { NestedResult } from './models/NestedResult';
 export type { NestedResultPerSource } from './models/NestedResultPerSource';
@@ -555,6 +558,7 @@ export { LoadProgressReporterTokenService } from './services/LoadProgressReporte
 export { LoadTopLevelInfoService } from './services/LoadTopLevelInfoService';
 export { LoginService } from './services/LoginService';
 export { MetricsService } from './services/MetricsService';
+export { MotdService } from './services/MotdService';
 export { NotesService } from './services/NotesService';
 export { PersonsService } from './services/PersonsService';
 export { ProjectsService } from './services/ProjectsService';

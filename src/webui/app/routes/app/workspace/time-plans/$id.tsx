@@ -24,7 +24,7 @@ import { Form, Outlet, useActionData, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
-import { Fragment, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
@@ -49,18 +49,12 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { JournalStack } from "~/components/journal-stack";
 import { PeriodSelect } from "~/components/period-select";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityList } from "~/components/time-plan-activity-list";
-import { TimePlanStack } from "~/components/time-plan-stack";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
-import {
-  computeProjectHierarchicalNameFromRoot,
-  sortProjectsByTreeOrder,
-} from "~/logic/domain/project";
+import { sortProjectsByTreeOrder } from "~/logic/domain/project";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
 import { allowUserChanges } from "~/logic/domain/time-plan-source";
@@ -73,6 +67,9 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { TimePlanMergedActivities } from "~/components/time-plan-merged-activities";
+import { TimePlanByProjectActivities } from "~/components/time-plan-by-project-activities";
+import { TimePlanStack } from "~/components/time-plan-stack";
 
 enum View {
   MERGED = "merged",
@@ -506,139 +503,34 @@ export default function TimePlanView() {
 
             <Stack useFlexGap gap={2}>
               {selectedView === View.MERGED && (
-                <>
-                  {mustDoActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Must Do" size="large" />
-
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={mustDoActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
-
-                  {niceToHaveActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Nice To Have" size="large" />
-
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={niceToHaveActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
-
-                  {stretchActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Stretch" size="large" />
-
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={stretchActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
-                </>
+                <TimePlanMergedActivities
+                  mustDoActivities={mustDoActivities}
+                  niceToHaveActivities={niceToHaveActivities}
+                  stretchActivities={stretchActivities}
+                  targetInboxTasksByRefId={targetInboxTasksByRefId}
+                  targetBigPlansByRefId={targetBigPlansByRefId}
+                  activityDoneness={loaderData.activityDoneness}
+                  timeEventsByRefId={timeEventsByRefId}
+                  selectedKinds={selectedKinds}
+                  selectedFeasabilities={selectedFeasabilities}
+                  selectedDoneness={selectedDoneness}
+                />
               )}
 
               {selectedView === View.BY_PROJECT && (
-                <>
-                  {mustDoActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Must Do" size="large" />
-
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={mustDoActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
-
-                  {sortedProjects.map((p) => {
-                    const theActivities = otherActivities.filter((ac) => {
-                      switch (ac.target) {
-                        case TimePlanActivityTarget.INBOX_TASK:
-                          return (
-                            targetInboxTasksByRefId.get(ac.target_ref_id)
-                              ?.project_ref_id === p.ref_id
-                          );
-                        case TimePlanActivityTarget.BIG_PLAN:
-                          return (
-                            targetBigPlansByRefId.get(ac.target_ref_id)
-                              ?.project_ref_id === p.ref_id
-                          );
-                      }
-                      throw new Error("Should not get here");
-                    });
-
-                    if (theActivities.length === 0) {
-                      return null;
-                    }
-
-                    const fullProjectName =
-                      computeProjectHierarchicalNameFromRoot(
-                        p,
-                        allProjectsByRefId,
-                      );
-
-                    return (
-                      <Fragment key={`project-${p.ref_id}`}>
-                        <StandardDivider title={fullProjectName} size="large" />
-
-                        <TimePlanActivityList
-                          topLevelInfo={topLevelInfo}
-                          activities={theActivities}
-                          inboxTasksByRefId={targetInboxTasksByRefId}
-                          timePlansByRefId={new Map()}
-                          bigPlansByRefId={targetBigPlansByRefId}
-                          activityDoneness={loaderData.activityDoneness}
-                          fullInfo
-                          filterKind={selectedKinds}
-                          filterFeasability={selectedFeasabilities}
-                          filterDoneness={selectedDoneness}
-                          timeEventsByRefId={timeEventsByRefId}
-                        />
-                      </Fragment>
-                    );
-                  })}
-                </>
+                <TimePlanByProjectActivities
+                  mustDoActivities={mustDoActivities}
+                  otherActivities={otherActivities}
+                  targetInboxTasksByRefId={targetInboxTasksByRefId}
+                  targetBigPlansByRefId={targetBigPlansByRefId}
+                  activityDoneness={loaderData.activityDoneness}
+                  timeEventsByRefId={timeEventsByRefId}
+                  selectedKinds={selectedKinds}
+                  selectedFeasabilities={selectedFeasabilities}
+                  selectedDoneness={selectedDoneness}
+                  projects={sortedProjects}
+                  projectsByRefId={allProjectsByRefId}
+                />
               )}
             </Stack>
           </SectionCardNew>

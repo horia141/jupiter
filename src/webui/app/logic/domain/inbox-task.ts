@@ -12,10 +12,10 @@ import {
   Project,
   RecurringTaskPeriod,
   SlackTask,
-
   Difficulty,
   InboxTaskSource,
-  InboxTaskStatus} from "@jupiter/webapi-client";
+  InboxTaskStatus,
+} from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 
 import { aDateToDate, compareADate } from "./adate";

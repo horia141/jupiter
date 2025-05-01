@@ -34,7 +34,7 @@ import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
+import { TimeEventInDayBlockStack } from "~/components/calendar/time-event-in-day-block-stack";
 import { TimePlanActivityList } from "~/components/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";

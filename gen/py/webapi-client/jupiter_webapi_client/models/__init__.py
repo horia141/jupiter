@@ -287,6 +287,9 @@ from .metric_update_args_collection_eisen import MetricUpdateArgsCollectionEisen
 from .metric_update_args_collection_period import MetricUpdateArgsCollectionPeriod
 from .metric_update_args_icon import MetricUpdateArgsIcon
 from .metric_update_args_name import MetricUpdateArgsName
+from .motd import MOTD
+from .motd_get_for_today_args import MOTDGetForTodayArgs
+from .motd_get_for_today_result import MOTDGetForTodayResult
 from .named_entity_tag import NamedEntityTag
 from .nested_result import NestedResult
 from .nested_result_per_source import NestedResultPerSource
@@ -923,6 +926,9 @@ __all__ = (
     "MetricUpdateArgsCollectionPeriod",
     "MetricUpdateArgsIcon",
     "MetricUpdateArgsName",
+    "MOTD",
+    "MOTDGetForTodayArgs",
+    "MOTDGetForTodayResult",
     "NamedEntityTag",
     "NestedResult",
     "NestedResultPerSource",

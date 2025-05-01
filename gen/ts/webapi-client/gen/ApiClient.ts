@@ -29,6 +29,7 @@ import { LoadProgressReporterTokenService } from './services/LoadProgressReporte
 import { LoadTopLevelInfoService } from './services/LoadTopLevelInfoService';
 import { LoginService } from './services/LoginService';
 import { MetricsService } from './services/MetricsService';
+import { MotdService } from './services/MotdService';
 import { NotesService } from './services/NotesService';
 import { PersonsService } from './services/PersonsService';
 import { ProjectsService } from './services/ProjectsService';
@@ -70,6 +71,7 @@ export class ApiClient {
     public readonly loadTopLevelInfo: LoadTopLevelInfoService;
     public readonly login: LoginService;
     public readonly metrics: MetricsService;
+    public readonly motd: MotdService;
     public readonly notes: NotesService;
     public readonly persons: PersonsService;
     public readonly projects: ProjectsService;
@@ -122,6 +124,7 @@ export class ApiClient {
         this.loadTopLevelInfo = new LoadTopLevelInfoService(this.request);
         this.login = new LoginService(this.request);
         this.metrics = new MetricsService(this.request);
+        this.motd = new MotdService(this.request);
         this.notes = new NotesService(this.request);
         this.persons = new PersonsService(this.request);
         this.projects = new ProjectsService(this.request);

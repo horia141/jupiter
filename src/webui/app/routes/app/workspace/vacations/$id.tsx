@@ -24,7 +24,7 @@ import { EntityNoteEditor } from "~/components/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
+import { TimeEventFullDaysBlockStack } from "~/components/calendar/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";

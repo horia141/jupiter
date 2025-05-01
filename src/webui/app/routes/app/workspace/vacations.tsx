@@ -148,7 +148,7 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
     }
 
     const data = [];
-    let currDate = earliestDate;
+    let currDate = earliestDate!;
 
     while (currDate.toISODate() <= latestDate.toISODate()) {
       data.push({

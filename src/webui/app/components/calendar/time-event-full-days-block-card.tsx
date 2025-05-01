@@ -8,8 +8,8 @@ import { TimeEventNamespace } from "@jupiter/webapi-client";
 import type { CombinedTimeEventFullDaysEntry } from "~/logic/domain/time-event";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
 
-import { EntityNameComponent } from "./entity-name";
-import { EntityCard, EntityLink } from "./infra/entity-card";
+import { EntityNameComponent } from "../entity-name";
+import { EntityCard, EntityLink } from "../infra/entity-card";
 
 interface TimeEventFullDaysBlockCardProps {
   entry: CombinedTimeEventFullDaysEntry;

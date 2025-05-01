@@ -31,7 +31,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventParamsSource } from "~/components/time-event-params-source";
+import { TimeEventParamsSource } from "~/components/calendar/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

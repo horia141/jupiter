@@ -7,6 +7,7 @@ from pendulum import DateTime
 
 def infer_timeline(period: RecurringTaskPeriod | None, right_now: Timestamp) -> str:
     """Infer the timeline for a recurring task."""
+    # Keep sync with the ts:webui:inferPeriodForRecurringTask function
     if period is None:
         return "Lifetime"
 

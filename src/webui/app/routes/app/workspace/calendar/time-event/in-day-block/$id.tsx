@@ -40,8 +40,8 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventParamsSource } from "~/components/time-event-params-source";
-import { TimeEventSourceLink } from "~/components/time-event-source-link";
+import { TimeEventParamsSource } from "~/components/calendar/time-event-params-source";
+import { TimeEventSourceLink } from "~/components/calendar/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";

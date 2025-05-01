@@ -1,8 +1,10 @@
-import type {
+import {
   ADate,
+  EntityId,
   InboxTaskEntry,
   Person,
   PersonEntry,
+  RecurringTaskPeriod,
   ScheduleFullDaysEventEntry,
   ScheduleInDayEventEntry,
   TimeEventFullDaysBlock,
@@ -10,14 +12,12 @@ import type {
   TimeInDay,
   Timezone,
   VacationEntry,
-} from "@jupiter/webapi-client";
-import {
   ScheduleStreamColor,
   TimeEventNamespace,
 } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
-import { computeTimeEventInDayDurationInQuarters } from "~/routes/app/workspace/calendar";
+import { measureText } from "~/utils";
 
 import { aDateToDate, compareADate } from "./adate";
 
@@ -239,4 +239,395 @@ export function scheduleTimeEventInDayDurationToRems(
 ): string {
   const durationInHalfs = 0.5 + Math.floor(durationMins / 30);
   return `${durationInHalfs}rem`;
+}
+
+export function computeTimeEventInDayDurationInQuarters(
+  minutesSinceStartOfDay: number,
+  durationMins: number,
+): number {
+  // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
+  // If the event goes beyond the day, we cap it at 24 hours.
+  const finalOffsetInMinutes = minutesSinceStartOfDay + durationMins;
+  let finalDurationInMins = durationMins;
+  if (finalOffsetInMinutes > 24 * 60) {
+    finalDurationInMins = Math.max(15, 24 * 60 - minutesSinceStartOfDay);
+  }
+  return Math.max(1, finalDurationInMins / 15);
+}
+
+export function clipTimeEventFullDaysNameToWhatFits(
+  name: string,
+  fontSize: number,
+  containerWidth: number,
+): string {
+  const textWidthInPx = measureText(name, fontSize);
+
+  if (textWidthInPx <= containerWidth) {
+    return name;
+  } else {
+    // Do some rough approximation here.
+    const maxChars = Math.floor((name.length * containerWidth) / textWidthInPx);
+    return `${name.substring(0, maxChars)} ...`;
+  }
+}
+
+export function clipTimeEventInDayNameToWhatFits(
+  startTime: DateTime,
+  endTime: DateTime,
+  name: string,
+  fontSize: number,
+  containerWidth: number,
+  minutesSinceStartOfDay: number,
+  durationInMins: number,
+): string {
+  const durationInQuarters = computeTimeEventInDayDurationInQuarters(
+    0,
+    durationInMins,
+  );
+  const durationInHalfs = Math.max(1, Math.floor(durationInQuarters / 2));
+
+  const bigName = `[${startTime.toFormat("HH:mm")} - ${endTime.toFormat(
+    "HH:mm",
+  )}] ${name}`;
+  const textWidthInPx = measureText(bigName, fontSize);
+  const totalWidthInPx = containerWidth * durationInHalfs;
+
+  if (textWidthInPx <= totalWidthInPx) {
+    return bigName;
+  } else {
+    // Do some rough approximation here.
+    const maxChars = Math.max(
+      3,
+      Math.floor((name.length * totalWidthInPx) / textWidthInPx),
+    );
+    return `[${startTime.toFormat("HH:mm")}] ${name.substring(
+      0,
+      maxChars,
+    )} ...`;
+  }
+}
+
+export function combinedTimeEventFullDayEntryPartionByDay(
+  entries: Array<CombinedTimeEventFullDaysEntry>,
+): Record<string, Array<CombinedTimeEventFullDaysEntry>> {
+  const partition: Record<string, Array<CombinedTimeEventFullDaysEntry>> = {};
+
+  for (const entry of entries) {
+    const firstDate = aDateToDate(entry.time_event.start_date);
+    for (let idx = 0; idx < entry.time_event.duration_days; idx++) {
+      const date = firstDate.plus({ days: idx });
+
+      const dateStr = date.toISODate();
+      if (partition[dateStr] === undefined) {
+        partition[dateStr] = [];
+      }
+      partition[dateStr].push(entry);
+    }
+  }
+
+  for (const dateStr in partition) {
+    partition[dateStr] = sortTimeEventFullDaysByType(partition[dateStr]);
+  }
+
+  return partition;
+}
+
+export function sortTimeEventFullDaysByType(
+  entries: Array<CombinedTimeEventFullDaysEntry>,
+) {
+  return entries.sort((a, b) => {
+    if (a.time_event.namespace === b.time_event.namespace) {
+      return compareADate(a.time_event.start_date, b.time_event.start_date);
+    }
+
+    return compareNamespaceForSortingFullDaysTimeEvents(
+      a.time_event.namespace,
+      b.time_event.namespace,
+    );
+  });
+}
+
+export function splitTimeEventInDayEntryIntoPerDayEntries(
+  entry: CombinedTimeEventInDayEntry,
+): {
+  day1: CombinedTimeEventInDayEntry;
+  day2?: CombinedTimeEventInDayEntry;
+  day3?: CombinedTimeEventInDayEntry;
+} {
+  const startTime = calculateStartTimeForTimeEvent(entry.time_event_in_tz);
+  const endTime = calculateEndTimeForTimeEvent(entry.time_event_in_tz);
+  const diffInDays = endTime
+    .startOf("day")
+    .diff(startTime.startOf("day"), "days").days;
+
+  if (diffInDays === 0) {
+    // Here we have only one day.
+    return {
+      day1: entry,
+    };
+  } else if (diffInDays === 1) {
+    // Here we have two days.
+    const day1TimeEvent = {
+      ...entry.time_event_in_tz,
+      duration_mins:
+        -1 *
+        startTime.diff(startTime.set({ hour: 23, minute: 59 })).as("minutes"),
+    };
+    const day2TimeEvent = {
+      ...entry.time_event_in_tz,
+      start_date: endTime.toISODate(),
+      start_time_in_day: "00:00",
+      duration_mins: endTime
+        .diff(endTime.set({ hour: 0, minute: 0 }))
+        .as("minutes"),
+    };
+
+    return {
+      day1: {
+        time_event_in_tz: day1TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day1TimeEvent,
+        },
+      },
+      day2: {
+        time_event_in_tz: day2TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day2TimeEvent,
+        },
+      },
+    };
+  } else if (diffInDays === 2) {
+    // Here we have three days.
+    const day1TimeEvent = {
+      ...entry.time_event_in_tz,
+      duration_mins:
+        -1 *
+        startTime.diff(startTime.set({ hour: 23, minute: 59 })).as("minutes"),
+    };
+    const day2TimeEvent = {
+      ...entry.time_event_in_tz,
+      start_date: startTime.plus({ days: 1 }).toISODate(),
+      start_time_in_day: "00:00",
+      duration_mins: 24 * 60,
+    };
+    const day3TimeEvent = {
+      ...entry.time_event_in_tz,
+      start_date: endTime.toISODate(),
+      start_time_in_day: "00:00",
+      duration_mins: endTime
+        .diff(endTime.set({ hour: 0, minute: 0 }))
+        .as("minutes"),
+    };
+
+    return {
+      day1: {
+        time_event_in_tz: day1TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day1TimeEvent,
+        },
+      },
+      day2: {
+        time_event_in_tz: day2TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day2TimeEvent,
+        },
+      },
+      day3: {
+        time_event_in_tz: day3TimeEvent,
+        entry: {
+          ...entry.entry,
+          time_event: day3TimeEvent,
+        },
+      },
+    };
+  } else {
+    throw new Error("Unexpected time event duration");
+  }
+}
+
+export function combinedTimeEventInDayEntryPartionByDay(
+  entries: Array<CombinedTimeEventInDayEntry>,
+): Record<string, Array<CombinedTimeEventInDayEntry>> {
+  const partition: Record<string, Array<CombinedTimeEventInDayEntry>> = {};
+
+  for (const entry of entries) {
+    const splitEntries = splitTimeEventInDayEntryIntoPerDayEntries(entry);
+
+    const dateStr = splitEntries.day1.time_event_in_tz.start_date;
+    if (partition[dateStr] === undefined) {
+      partition[dateStr] = [];
+    }
+    partition[dateStr].push(splitEntries.day1);
+
+    if (splitEntries.day2) {
+      const dateStr = splitEntries.day2.time_event_in_tz.start_date;
+      if (partition[dateStr] === undefined) {
+        partition[dateStr] = [];
+      }
+      partition[dateStr].push(splitEntries.day2);
+    }
+
+    if (splitEntries.day3) {
+      const dateStr = splitEntries.day3.time_event_in_tz.start_date;
+      if (partition[dateStr] === undefined) {
+        partition[dateStr] = [];
+      }
+      partition[dateStr].push(splitEntries.day3);
+    }
+  }
+
+  // Now sort all partitions.
+  for (const dateStr in partition) {
+    partition[dateStr] = sortTimeEventInDayByStartTimeAndEndTime(
+      partition[dateStr],
+    );
+  }
+
+  return partition;
+}
+
+export function sortTimeEventInDayByStartTimeAndEndTime(
+  entries: Array<CombinedTimeEventInDayEntry>,
+) {
+  return entries.sort((a, b) => {
+    const aStartTime = calculateStartTimeForTimeEvent(a.time_event_in_tz);
+    const bStartTime = calculateStartTimeForTimeEvent(b.time_event_in_tz);
+
+    if (aStartTime === bStartTime) {
+      const aEndTime = calculateEndTimeForTimeEvent(a.time_event_in_tz);
+      const bEndTime = calculateEndTimeForTimeEvent(b.time_event_in_tz);
+      return aEndTime < bEndTime ? -1 : 1;
+    }
+    return aStartTime < bStartTime ? -1 : 1;
+  });
+}
+
+export function buildTimeBlockOffsetsMap(
+  entries: Array<CombinedTimeEventInDayEntry>,
+  startOfDay: DateTime,
+): Map<EntityId, number> {
+  const offsets = new Map<EntityId, number>();
+
+  const freeOffsetsMap = [];
+  for (let idx = 0; idx < 24 * 4; idx++) {
+    freeOffsetsMap.push({
+      time: startOfDay.plus({ minutes: idx * 15 }),
+      offset0: false,
+      offset1: false,
+      offset2: false,
+      offset3: false,
+      offset4: false,
+    });
+  }
+
+  for (const entry of entries) {
+    const startTime = calculateStartTimeForTimeEvent(entry.time_event_in_tz);
+    const minutesSinceStartOfDay = startTime.diff(startOfDay).as("minutes");
+
+    const firstCellIdx = Math.floor(minutesSinceStartOfDay / 15);
+    const offsetCell = freeOffsetsMap[firstCellIdx];
+
+    if (offsetCell.offset0 === false) {
+      offsets.set(entry.time_event_in_tz.ref_id, 0);
+      offsetCell.offset0 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset0 = true;
+      }
+      continue;
+    } else if (offsetCell.offset1 === false) {
+      offsets.set(entry.time_event_in_tz.ref_id, 1);
+      offsetCell.offset1 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset1 = true;
+      }
+      continue;
+    } else if (offsetCell.offset2 === false) {
+      offsets.set(entry.time_event_in_tz.ref_id, 2);
+      offsetCell.offset2 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset2 = true;
+      }
+      continue;
+    } else if (offsetCell.offset3 === false) {
+      offsets.set(entry.time_event_in_tz.ref_id, 3);
+      offsetCell.offset3 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset3 = true;
+      }
+      continue;
+    } else {
+      offsets.set(entry.time_event_in_tz.ref_id, 4);
+      offsetCell.offset4 = true;
+      for (
+        let idx = minutesSinceStartOfDay;
+        idx < minutesSinceStartOfDay + entry.time_event_in_tz.duration_mins;
+        idx += 15
+      ) {
+        freeOffsetsMap[Math.floor(idx / 15)].offset4 = true;
+      }
+      continue;
+    }
+  }
+
+  return offsets;
+}
+
+export function statsSubperiodForPeriod(
+  period: RecurringTaskPeriod,
+): RecurringTaskPeriod | null {
+  switch (period) {
+    case RecurringTaskPeriod.DAILY:
+      return null;
+    case RecurringTaskPeriod.WEEKLY:
+      return RecurringTaskPeriod.DAILY;
+    case RecurringTaskPeriod.MONTHLY:
+      return RecurringTaskPeriod.DAILY;
+    case RecurringTaskPeriod.QUARTERLY:
+      return RecurringTaskPeriod.WEEKLY;
+    case RecurringTaskPeriod.YEARLY:
+      return RecurringTaskPeriod.MONTHLY;
+  }
+}
+
+export function monthToQuarter(month: number): string {
+  switch (month) {
+    case 1:
+    case 2:
+    case 3:
+      return "Q1";
+    case 4:
+    case 5:
+    case 6:
+      return "Q2";
+    case 7:
+    case 8:
+    case 9:
+      return "Q3";
+    case 10:
+    case 11:
+    case 12:
+      return "Q4";
+    default:
+      throw new Error("Unexpected month");
+  }
 }
