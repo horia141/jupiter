@@ -29,11 +29,11 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStack } from "~/components/big-plan-stack";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
@@ -47,8 +47,8 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { JournalStack } from "~/components/journal-stack";
-import { PeriodSelect } from "~/components/period-select";
+import { JournalStack } from "~/components/domain/concept/journal/journal-stack";
+import { PeriodSelect } from "~/components/domain/core/period-select";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
@@ -67,9 +67,9 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { TimePlanMergedActivities } from "~/components/time-plan-merged-activities";
-import { TimePlanByProjectActivities } from "~/components/time-plan-by-project-activities";
-import { TimePlanStack } from "~/components/time-plan-stack";
+import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/time-plan-merged-activities";
+import { TimePlanByProjectActivities } from "~/components/domain/concept/time-plan/time-plan-by-project-activities";
+import { TimePlanStack } from "~/components/domain/concept/time-plan/time-plan-stack";
 
 enum View {
   MERGED = "merged",

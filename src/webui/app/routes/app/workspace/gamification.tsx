@@ -4,8 +4,8 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { ScoreHistory } from "~/components/gamification/score-history";
-import { ScoreOverview } from "~/components/gamification/score-overview";
+import { ScoreHistory } from "~/components/domain/application/gamification/score-history";
+import { ScoreOverview } from "~/components/domain/application/gamification/score-overview";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";

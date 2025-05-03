@@ -13,13 +13,13 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { Logo } from "~/components/logo";
-import { Title } from "~/components/title";
+import { Logo } from "~/components/infra/logo";
+import { Title } from "~/components/infra/title";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
 const QuerySchema = z.object({

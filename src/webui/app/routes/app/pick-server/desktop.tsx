@@ -18,14 +18,14 @@ import { json, redirect } from "@remix-run/node";
 import { Link, useNavigation } from "@remix-run/react";
 import { useContext, useState } from "react";
 
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import { FieldError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { Logo } from "~/components/logo";
-import { Title } from "~/components/title";
+import { Logo } from "~/components/infra/logo";
+import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { aFieldError } from "~/logic/action-result";

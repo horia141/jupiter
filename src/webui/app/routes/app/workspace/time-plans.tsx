@@ -14,14 +14,14 @@ import { DateTime } from "luxon";
 import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { NavSingle, SectionActions } from "~/components/infra/section-actions";
-import { TimePlanCard } from "~/components/time-plan-card";
-import { TimePlanStack } from "~/components/time-plan-stack";
+import { TimePlanCard } from "~/components/domain/concept/time-plan/time-plan-card";
+import { TimePlanStack } from "~/components/domain/concept/time-plan/time-plan-stack";
 import {
   findTimePlansThatAreActive,
   sortTimePlansNaturally,

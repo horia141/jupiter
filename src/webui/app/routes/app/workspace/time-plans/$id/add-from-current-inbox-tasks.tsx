@@ -21,7 +21,7 @@ import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { InboxTaskCard } from "~/components/inbox-task-card";
+import { InboxTaskCard } from "~/components/domain/concept/inbox-task/inbox-task-card";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -32,9 +32,9 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { InboxTaskParent } from "~/logic/domain/inbox-task";
 import {

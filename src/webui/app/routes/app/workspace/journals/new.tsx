@@ -25,7 +25,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { PeriodSelect } from "~/components/period-select";
+import { PeriodSelect } from "~/components/domain/core/period-select";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,

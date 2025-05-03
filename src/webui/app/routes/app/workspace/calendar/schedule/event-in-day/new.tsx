@@ -31,8 +31,8 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
-import { TimeEventParamsSource } from "~/components/calendar/time-event-params-source";
+import { ScheduleStreamSelect } from "~/components/domain/concept/schedule/schedule-stream-select";
+import { TimeEventParamsSource } from "~/components/domain/application/calendar/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

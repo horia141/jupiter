@@ -1,5 +1,11 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
-import { useFetcher, type ShouldRevalidateFunction } from "@remix-run/react";
+import {
+  Outlet,
+  useFetcher,
+  useNavigation,
+  useSearchParams,
+  type ShouldRevalidateFunction,
+} from "@remix-run/react";
 import Grid from "@mui/material/Grid2";
 import {
   InboxTask,
@@ -17,6 +23,7 @@ import { useContext, useState } from "react";
 import { DateTime } from "luxon";
 import { Stack } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
+import TuneIcon from "@mui/icons-material/Tune";
 
 import {
   useTrunkNeedsToShowLeaf,
@@ -28,7 +35,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
-import { MOTDCard } from "~/components/motd-card";
+import { MOTDCard } from "~/components/domain/concept/motd/motd-card";
 import {
   filterInboxTasksForDisplay,
   inboxTaskFindEntryToParent,
@@ -38,25 +45,41 @@ import {
   sortInboxTasksNaturally,
 } from "~/logic/domain/inbox-task";
 import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import {
   ActionableTime,
   actionableTimeToDateTime,
 } from "~/rendering/actionable-time";
-import { InboxTasksNoTasksCard } from "~/components/inbox-tasks-no-tasks-card";
-import { ViewAsCalendarDaily } from "~/components/calendar/view-as-calendar-daily";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
+import { ViewAsCalendarDaily } from "~/components/domain/application/calendar/view-as-calendar-daily";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
-import { TimePlanMergedActivities } from "~/components/time-plan-merged-activities";
+import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/time-plan-merged-activities";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
+import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
+import { newURLParams } from "~/logic/domain/navigation";
+import { z } from "zod";
+import { parseQuery } from "zodix";
+import { StandardDivider } from "~/components/infra/standard-divider";
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
+const QuerySchema = z.object({
+  includeStreakMarksForYear: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
+});
+
 export async function loader({ request }: LoaderFunctionArgs) {
+  const query = parseQuery(request, QuerySchema);
   const rightNow = DateTime.now().toISODate();
 
   const apiClient = await getLoggedInApiClient(request);
+
+  const homeConfigResponse = await apiClient.home.homeConfigLoad({});
 
   const motdResponse = await apiClient.motd.motdGetForToday({});
   const habitInboxTasksResponse = await apiClient.inboxTasks.inboxTaskFind({
@@ -65,6 +88,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
     include_time_event_blocks: false,
     filter_sources: [InboxTaskSource.HABIT],
   });
+
+  let keyHabit1Response = undefined;
+  if (homeConfigResponse.home_config.key_habits.length > 0) {
+    keyHabit1Response = await apiClient.habits.habitLoad({
+      ref_id: homeConfigResponse.home_config.key_habits[0],
+      allow_archived: false,
+      include_streak_marks_for_year: query.includeStreakMarksForYear,
+    });
+  }
+
+  let keyHabit2Response = undefined;
+  if (homeConfigResponse.home_config.key_habits.length > 1) {
+    keyHabit2Response = await apiClient.habits.habitLoad({
+      ref_id: homeConfigResponse.home_config.key_habits[1],
+      allow_archived: false,
+      include_streak_marks_for_year: query.includeStreakMarksForYear,
+    });
+  }
+
+  let keyHabit3Response = undefined;
+  if (homeConfigResponse.home_config.key_habits.length > 2) {
+    keyHabit3Response = await apiClient.habits.habitLoad({
+      ref_id: homeConfigResponse.home_config.key_habits[2],
+      allow_archived: false,
+      include_streak_marks_for_year: query.includeStreakMarksForYear,
+    });
+  }
+
   const calendarForTodayResponse =
     await apiClient.calendar.calendarLoadForDateAndPeriod({
       right_now: rightNow,
@@ -109,6 +160,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     motd: motdResponse.motd,
     habitInboxTasks: habitInboxTasksResponse.entries,
+    keyHabit1: keyHabit1Response,
+    keyHabit2: keyHabit2Response,
+    keyHabit3: keyHabit3Response,
     calendarEntriesForToday: calendarForTodayResponse.entries,
     timePlanForToday: fullTimePlanForToday
       ? {
@@ -137,7 +191,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Workspace() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const topLevelInfo = useContext(TopLevelInfoContext);
-
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "loading" ? false : true;
+  const [query] = useSearchParams();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   const sortedHabitInboxTasks = sortInboxTasksNaturally(
@@ -212,10 +268,86 @@ export default function Workspace() {
   }
 
   return (
-    <TrunkPanel key={"workspace"} returnLocation="/app/workspace">
+    <TrunkPanel
+      key={"workspace"}
+      returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="home-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              icon: <TuneIcon />,
+              link: "/app/workspace/home/settings",
+            }),
+          ]}
+        />
+      }
+    >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <MOTDCard motd={loaderData.motd} />
 
+        <Grid container spacing={2}>
+        {loaderData.keyHabit1 && (
+            <Grid size={{ md: 4 }}>
+              <StandardDivider title={loaderData.keyHabit1.habit.name} size="small" />
+              <HabitStreakCalendar
+                year={loaderData.keyHabit1.streak_mark_year}
+                currentYear={rightNow.year}
+                habit={loaderData.keyHabit1.habit}
+                streakMarks={loaderData.keyHabit1.streak_marks}
+                inboxTasks={loaderData.keyHabit1.inbox_tasks}
+                getYearUrl={(year) =>
+                  `/app/workspace?${newURLParams(
+                    query,
+                    "includeStreakMarksForYear",
+                    year.toString(),
+                  )}`
+                }
+              />
+            </Grid>
+          )}
+          {loaderData.keyHabit2 && (
+            <Grid size={{ md: 4 }}>
+              <StandardDivider title={loaderData.keyHabit2.habit.name} size="small" />
+              <HabitStreakCalendar
+                year={loaderData.keyHabit2.streak_mark_year}
+                currentYear={rightNow.year}
+                habit={loaderData.keyHabit2.habit}
+                streakMarks={loaderData.keyHabit2.streak_marks}
+                inboxTasks={loaderData.keyHabit2.inbox_tasks}
+                getYearUrl={(year) =>
+                  `/app/workspace?${newURLParams(
+                    query,
+                    "includeStreakMarksForYear",
+                    year.toString(),
+                  )}`
+                }
+              />
+            </Grid>
+          )}
+          {loaderData.keyHabit3 && (
+            <Grid size={{ md: 4 }}>
+              <StandardDivider title={loaderData.keyHabit3.habit.name} size="small" />
+              <HabitStreakCalendar
+                year={loaderData.keyHabit3.streak_mark_year}
+                currentYear={rightNow.year}
+                habit={loaderData.keyHabit3.habit}
+                streakMarks={loaderData.keyHabit3.streak_marks}
+                inboxTasks={loaderData.keyHabit3.inbox_tasks}
+                getYearUrl={(year) =>
+                  `/app/workspace?${newURLParams(
+                    query,
+                    "includeStreakMarksForYear",
+                    year.toString(),
+                  )}`
+                }
+              />
+            </Grid>
+          )}
+        </Grid>
         <Grid container spacing={2}>
           <Grid size={{ md: 4 }}>
             <HabitInboxTasks
@@ -252,6 +384,10 @@ export default function Workspace() {
           </Grid>
         </Grid>
       </NestingAwareBlock>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
     </TrunkPanel>
   );
 }

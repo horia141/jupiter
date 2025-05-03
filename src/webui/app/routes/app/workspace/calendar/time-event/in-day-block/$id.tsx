@@ -30,7 +30,7 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
+import { InboxTaskPropertiesEditor } from "~/components/domain/concept/inbox-task/inbox-task-properties-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -40,8 +40,8 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventParamsSource } from "~/components/calendar/time-event-params-source";
-import { TimeEventSourceLink } from "~/components/calendar/time-event-source-link";
+import { TimeEventParamsSource } from "~/components/domain/application/calendar/time-event-params-source";
+import { TimeEventSourceLink } from "~/components/domain/application/calendar/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";

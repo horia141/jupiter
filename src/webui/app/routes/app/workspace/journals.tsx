@@ -11,12 +11,12 @@ import { useContext } from "react";
 import TuneIcon from "@mui/icons-material/Tune";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { JournalStack } from "~/components/journal-stack";
+import { JournalStack } from "~/components/domain/concept/journal/journal-stack";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";

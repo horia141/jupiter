@@ -1,8 +1,8 @@
 import { Difficulty, Eisen, type Habit } from "@jupiter/webapi-client";
 
-import { compareDifficulty } from "./difficulty";
-import { compareEisen } from "./eisen";
-import { comparePeriods } from "./period";
+import { compareDifficulty } from "~/logic/domain/difficulty";
+import { compareEisen } from "~/logic/domain/eisen";
+import { comparePeriods } from "~/logic/domain/period";
 
 export function sortHabitsNaturally(habits: Habit[]): Habit[] {
   return [...habits].sort((c1, c2) => {

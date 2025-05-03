@@ -27,12 +27,12 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { UserFeatureFlagsEditor } from "~/components/feature-flags-editor";
+import { UserFeatureFlagsEditor } from "~/components/domain/application/workspace/feature-flags-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { TimezoneSelect } from "~/components/timezone-select";
+import { TimezoneSelect } from "~/components/domain/core/timezone-select";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

@@ -24,19 +24,19 @@ import { AnimatePresence, useAnimate } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import {
   ScoreSnackbarManager,
   useScoreActionSingleton,
-} from "~/components/gamification/score-snackbar-manager";
+} from "~/components/domain/application/gamification/score-snackbar-manager";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { ReleaseUpdateWidget } from "~/components/release-update-widget";
-import SearchBox from "~/components/search-box";
-import Sidebar from "~/components/sidebar";
-import { Title } from "~/components/title";
+import { ReleaseUpdateWidget } from "~/components/infra/release-update-widget";
+import SearchBox from "~/components/infra/search-box";
+import Sidebar from "~/components/infra/sidebar";
+import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

@@ -29,7 +29,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { PeriodSelect } from "~/components/period-select";
+import { PeriodSelect } from "~/components/domain/core/period-select";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,

@@ -18,9 +18,9 @@ import {
 } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 
-import { aDateToDate, compareADate } from "./adate";
-import { compareDifficulty } from "./difficulty";
-import { compareEisen } from "./eisen";
+import { aDateToDate, compareADate } from "~/logic/domain/adate";
+import { compareDifficulty } from "~/logic/domain/difficulty";
+import { compareEisen } from "~/logic/domain/eisen";
 
 export interface InboxTaskOptimisticState {
   status: InboxTaskStatus;

@@ -12,7 +12,7 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";

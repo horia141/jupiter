@@ -23,7 +23,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
-import { ProjectSelect } from "~/components/project-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

@@ -1,8 +1,8 @@
 import type { TimePlan } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
-import { aDateToDate, compareADate } from "./adate";
-import { comparePeriods } from "./period";
+import { aDateToDate, compareADate } from "~/logic/domain/adate";
+import { comparePeriods } from "~/logic/domain/period";
 
 export function findTimePlansThatAreActive(
   timePlans: Array<TimePlan>,

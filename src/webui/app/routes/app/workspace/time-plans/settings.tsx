@@ -43,20 +43,20 @@ import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
-import { PeriodSelect } from "~/components/period-select";
-import { ProjectSelect } from "~/components/project-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
-import { DifficultySelect } from "~/components/difficulty-select";
+import { PeriodSelect } from "~/components/domain/core/period-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
+import { DifficultySelect } from "~/components/domain/core/difficulty-select";
 import { selectZod, fixSelectOutputToEnumStrict } from "~/logic/select";
 import { useBigScreen } from "~/rendering/use-big-screen";
-import { TimePlanGenerationApproachSelect } from "~/components/time-plan-generation-approach-select";
+import { TimePlanGenerationApproachSelect } from "~/components/domain/concept/time-plan/time-plan-generation-approach-select";
 import { periodName } from "~/logic/domain/period";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 
 const ParamsSchema = z.object({});
 

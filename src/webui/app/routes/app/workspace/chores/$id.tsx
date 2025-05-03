@@ -32,13 +32,13 @@ import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";

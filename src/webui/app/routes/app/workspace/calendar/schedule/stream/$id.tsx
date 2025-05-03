@@ -28,7 +28,7 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -37,7 +37,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-input";
+import { ScheduleStreamColorInput } from "~/components/domain/concept/schedule/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isCorePropertyEditable } from "~/logic/domain/schedule-stream";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";

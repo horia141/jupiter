@@ -26,9 +26,9 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStack } from "~/components/big-plan-stack";
-import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
-import { BigPlanTimelineSmallScreen } from "~/components/big-plan-timeline-small-screen";
+import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
+import { BigPlanTimelineBigScreen } from "~/components/domain/concept/big-plan/big-plan-timeline-big-screen";
+import { BigPlanTimelineSmallScreen } from "~/components/domain/concept/big-plan/big-plan-timeline-small-screen";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -39,9 +39,9 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import type { BigPlanParent } from "~/logic/domain/big-plan";

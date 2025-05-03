@@ -23,7 +23,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

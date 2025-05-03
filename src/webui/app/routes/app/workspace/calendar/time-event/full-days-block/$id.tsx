@@ -31,7 +31,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventSourceLink } from "~/components/calendar/time-event-source-link";
+import { TimeEventSourceLink } from "~/components/domain/application/calendar/time-event-source-link";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";

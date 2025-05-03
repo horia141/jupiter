@@ -33,12 +33,12 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
-import { TimePlanCard } from "~/components/time-plan-card";
-import { TimePlanStack } from "~/components/time-plan-stack";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimePlanActivityCard } from "~/components/domain/concept/time-plan/time-plan-activity-card";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
+import { TimePlanCard } from "~/components/domain/concept/time-plan/time-plan-card";
+import { TimePlanStack } from "~/components/domain/concept/time-plan/time-plan-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import {
   filterActivitiesByTargetStatus,

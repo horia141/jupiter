@@ -37,14 +37,14 @@ import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimeEventFullDaysBlockStack } from "~/components/calendar/time-event-full-days-block-stack";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimeEventFullDaysBlockStack } from "~/components/domain/application/calendar/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import {

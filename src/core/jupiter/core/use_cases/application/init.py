@@ -3,6 +3,7 @@
 from jupiter.core.domain.application.gamification.score_log import ScoreLog
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
+from jupiter.core.domain.application.home.home_config import HomeConfig
 from jupiter.core.domain.application.stats.stats_log import StatsLog
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
@@ -190,6 +191,14 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 feature_flags=workspace_feature_flags,
             )
             new_workspace = await uow.get_for(Workspace).create(new_workspace)
+
+            new_home_config = HomeConfig.new_home_config(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+                key_habits=[],
+                key_metrics=[],
+            )
+            new_home_config = await uow.get_for(HomeConfig).create(new_home_config)
 
             new_vacation_collection = VacationCollection.new_vacation_collection(
                 ctx=context.domain_context,

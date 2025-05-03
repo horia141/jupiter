@@ -26,8 +26,8 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
-import { PeriodSelect } from "~/components/period-select";
-import { ShowReport } from "~/components/show-report";
+import { PeriodSelect } from "~/components/domain/core/period-select";
+import { ShowReport } from "~/components/domain/application/search/show-report";
 import type { ActionResult } from "~/logic/action-result";
 import {
   isNoErrorSomeData,

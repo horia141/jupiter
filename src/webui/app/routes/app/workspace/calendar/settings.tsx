@@ -32,15 +32,15 @@ import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntitySummaryLink } from "~/components/entity-summary-link";
-import { EventSourceTag } from "~/components/event-source-tag";
+import { EntitySummaryLink } from "~/components/infra/entity-summary-link";
+import { EventSourceTag } from "~/components/infra/event-source-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
-import { ScheduleStreamMultiSelect } from "~/components/schedule-stream-multi-select";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimeDiffTag } from "~/components/time-diff-tag";
+import { ScheduleStreamMultiSelect } from "~/components/domain/concept/schedule/schedule-stream-multi-select";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 import {
   noErrorNoData,
   validationErrorToUIErrorInfo,

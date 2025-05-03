@@ -14,7 +14,7 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -23,10 +23,10 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { JournalStack } from "~/components/journal-stack";
-import { PeriodSelect } from "~/components/period-select";
-import { ShowReport } from "~/components/show-report";
-import { TimePlanStack } from "~/components/time-plan-stack";
+import { JournalStack } from "~/components/domain/concept/journal/journal-stack";
+import { PeriodSelect } from "~/components/domain/core/period-select";
+import { ShowReport } from "~/components/domain/application/search/show-report";
+import { TimePlanStack } from "~/components/domain/concept/time-plan/time-plan-stack";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,

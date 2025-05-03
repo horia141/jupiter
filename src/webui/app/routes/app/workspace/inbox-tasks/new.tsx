@@ -37,8 +37,8 @@ import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
+import { DifficultySelect } from "~/components/domain/core/difficulty-select";
+import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import {
   BetterFieldError,
@@ -46,9 +46,9 @@ import {
   GlobalError,
 } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";

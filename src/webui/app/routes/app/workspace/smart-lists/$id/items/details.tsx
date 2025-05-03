@@ -19,8 +19,8 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { IconSelector } from "~/components/icon-selector";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { IconSelector } from "~/components/infra/icon-selector";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";

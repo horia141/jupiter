@@ -21,11 +21,11 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isRootProject } from "~/logic/domain/project";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

@@ -30,9 +30,9 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { DifficultySelect } from "~/components/domain/core/difficulty-select";
+import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";

@@ -8,10 +8,10 @@ import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { ADateTag } from "~/components/adate-tag";
-import { DifficultyTag } from "~/components/difficulty-tag";
-import { EisenTag } from "~/components/eisen-tag";
-import { EntityNameComponent } from "~/components/entity-name";
+import { ADateTag } from "~/components/domain/core/adate-tag";
+import { DifficultyTag } from "~/components/domain/core/difficulty-tag";
+import { EisenTag } from "~/components/domain/core/eisen-tag";
+import { EntityNameComponent } from "~/components/infra/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";

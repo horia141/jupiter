@@ -16,14 +16,14 @@ import { z } from "zod";
 import { parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { Logo } from "~/components/logo";
-import { Title } from "~/components/title";
+import { Logo } from "~/components/infra/logo";
+import { Title } from "~/components/infra/title";
 
 const QuerySchema = z.object({
   recoveryToken: z.string(),

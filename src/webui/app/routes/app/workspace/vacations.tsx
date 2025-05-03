@@ -13,10 +13,10 @@ import { DateTime } from "luxon";
 import { useContext, useEffect, useMemo, useState } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { ADateTag } from "~/components/adate-tag";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNameComponent } from "~/components/entity-name";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { ADateTag } from "~/components/domain/core/adate-tag";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNameComponent } from "~/components/infra/entity-name";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";

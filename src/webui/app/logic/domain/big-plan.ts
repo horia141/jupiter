@@ -6,10 +6,10 @@ import {
   type Project,
 } from "@jupiter/webapi-client";
 
-import { compareADate } from "./adate";
-import { compareBigPlanStatus } from "./big-plan-status";
-import { compareDifficulty } from "./difficulty";
-import { compareEisen } from "./eisen";
+import { compareADate } from "~/logic/domain/adate";
+import { compareBigPlanStatus } from "~/logic/domain/big-plan-status";
+import { compareDifficulty } from "~/logic/domain/difficulty";
+import { compareEisen } from "~/logic/domain/eisen";
 
 export interface BigPlanParent {
   project?: Project;

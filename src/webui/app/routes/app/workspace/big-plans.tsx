@@ -19,15 +19,15 @@ import { DateTime } from "luxon";
 import { Fragment, useContext, useState } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStack } from "~/components/big-plan-stack";
-import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
-import { BigPlanTimelineSmallScreen } from "~/components/big-plan-timeline-small-screen";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
+import { BigPlanTimelineBigScreen } from "~/components/domain/concept/big-plan/big-plan-timeline-big-screen";
+import { BigPlanTimelineSmallScreen } from "~/components/domain/concept/big-plan/big-plan-timeline-small-screen";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { StandardDivider } from "~/components/standard-divider";
+import { StandardDivider } from "~/components/infra/standard-divider";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import {
   bigPlanFindEntryToParent,

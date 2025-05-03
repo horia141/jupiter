@@ -40,14 +40,14 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { View } from "~/components/calendar/shared";
-import { ViewAsCalendarDaily } from "~/components/calendar/view-as-calendar-daily";
-import { ViewAsCalendarWeekly } from "~/components/calendar/view-as-calendar-weekly";
-import { ViewAsCalendarMonthly } from "~/components/calendar/view-as-calendar-monthly";
-import { ViewAsCalendarQuarterly } from "~/components/calendar/view-as-calendar-quarterly";
-import { ViewAsCalendarYearly } from "~/components/calendar/view-as-calendar-yearly";
-import { ViewAsScheduleMonthlyQuarterlyAndYearly } from "~/components/calendar/view-as-schedule-monthly-quarterly-and-yearly";
-import { ViewAsScheduleDailyAndWeekly } from "~/components/calendar/view-as-schedule-daily-and-weekly";
+import { View } from "~/components/domain/application/calendar/shared";
+import { ViewAsCalendarDaily } from "~/components/domain/application/calendar/view-as-calendar-daily";
+import { ViewAsCalendarWeekly } from "~/components/domain/application/calendar/view-as-calendar-weekly";
+import { ViewAsCalendarMonthly } from "~/components/domain/application/calendar/view-as-calendar-monthly";
+import { ViewAsCalendarQuarterly } from "~/components/domain/application/calendar/view-as-calendar-quarterly";
+import { ViewAsCalendarYearly } from "~/components/domain/application/calendar/view-as-calendar-yearly";
+import { ViewAsScheduleMonthlyQuarterlyAndYearly } from "~/components/domain/application/calendar/view-as-schedule-monthly-quarterly-and-yearly";
+import { ViewAsScheduleDailyAndWeekly } from "~/components/domain/application/calendar/view-as-schedule-daily-and-weekly";
 
 export const handle = {
   displayType: DisplayType.TRUNK,

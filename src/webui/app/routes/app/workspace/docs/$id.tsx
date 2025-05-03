@@ -9,7 +9,7 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocEditor } from "~/components/doc-editor";
+import { DocEditor } from "~/components/domain/concept/doc/doc-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";

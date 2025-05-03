@@ -30,8 +30,8 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStack } from "~/components/big-plan-stack";
-import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
+import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
+import { InboxTaskPropertiesEditor } from "~/components/domain/concept/inbox-task/inbox-task-properties-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -42,9 +42,9 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventInDayBlockStack } from "~/components/calendar/time-event-in-day-block-stack";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
+import { TimeEventInDayBlockStack } from "~/components/domain/application/calendar/time-event-in-day-block-stack";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";

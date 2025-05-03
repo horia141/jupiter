@@ -28,12 +28,12 @@ import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { HabitRepeatStrategySelect } from "~/components/habit-repeat-strategy-select";
+import { HabitRepeatStrategySelect } from "~/components/domain/concept/habit/habit-repeat-strategy-select";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

@@ -25,8 +25,8 @@ import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {

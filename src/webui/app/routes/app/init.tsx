@@ -36,22 +36,22 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getGuestApiClient } from "~/api-clients.server";
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import {
   UserFeatureFlagsEditor,
   WorkspaceFeatureFlagsEditor,
-} from "~/components/feature-flags-editor";
+} from "~/components/domain/application/workspace/feature-flags-editor";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { Logo } from "~/components/logo";
-import { Password } from "~/components/password";
-import { TimezoneSelect } from "~/components/timezone-select";
-import { Title } from "~/components/title";
+import { Logo } from "~/components/infra/logo";
+import { Password } from "~/components/domain/application/auth/password";
+import { TimezoneSelect } from "~/components/domain/core/timezone-select";
+import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";

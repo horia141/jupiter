@@ -42,16 +42,16 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStatusBigTag } from "~/components/big-plan-status-big-tag";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { BigPlanStatusBigTag } from "~/components/domain/concept/big-plan/big-plan-status-big-tag";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ProjectSelect } from "~/components/project-select";
-import { TimePlanActivityList } from "~/components/time-plan-activity-list";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { TimePlanActivityList } from "~/components/domain/concept/time-plan/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
@@ -61,8 +61,8 @@ import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
-import { DifficultySelect } from "~/components/difficulty-select";
+import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
+import { DifficultySelect } from "~/components/domain/core/difficulty-select";
 import {
   SectionActions,
   ActionSingle,

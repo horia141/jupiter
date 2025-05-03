@@ -21,6 +21,7 @@ import { GcService } from './services/GcService';
 import { GenService } from './services/GenService';
 import { GetSummariesService } from './services/GetSummariesService';
 import { HabitsService } from './services/HabitsService';
+import { HomeService } from './services/HomeService';
 import { InboxTasksService } from './services/InboxTasksService';
 import { InDayBlockService } from './services/InDayBlockService';
 import { ItemService } from './services/ItemService';
@@ -63,6 +64,7 @@ export class ApiClient {
     public readonly gen: GenService;
     public readonly getSummaries: GetSummariesService;
     public readonly habits: HabitsService;
+    public readonly home: HomeService;
     public readonly inboxTasks: InboxTasksService;
     public readonly inDayBlock: InDayBlockService;
     public readonly item: ItemService;
@@ -116,6 +118,7 @@ export class ApiClient {
         this.gen = new GenService(this.request);
         this.getSummaries = new GetSummariesService(this.request);
         this.habits = new HabitsService(this.request);
+        this.home = new HomeService(this.request);
         this.inboxTasks = new InboxTasksService(this.request);
         this.inDayBlock = new InDayBlockService(this.request);
         this.item = new ItemService(this.request);

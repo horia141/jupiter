@@ -1,11 +1,11 @@
 import { ApiClient, Hosting } from "@jupiter/webapi-client";
 import { redirect } from "@remix-run/node";
 
-import { GLOBAL_PROPERTIES } from "./global-properties-server";
-import type { FrontDoorInfo } from "./logic/frontdoor";
-import { loadFrontDoorInfo } from "./logic/frontdoor.server";
-import { AUTH_TOKEN_NAME, FRONTDOOR_HEADER } from "./names";
-import { getSession } from "./sessions";
+import { GLOBAL_PROPERTIES } from "~/global-properties-server";
+import type { FrontDoorInfo } from "~/logic/frontdoor";
+import { loadFrontDoorInfo } from "~/logic/frontdoor.server";
+import { AUTH_TOKEN_NAME, FRONTDOOR_HEADER } from "~/names";
+import { getSession } from "~/sessions";
 
 const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();
 

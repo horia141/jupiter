@@ -21,7 +21,7 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { WorkspaceFeatureFlagsEditor } from "~/components/feature-flags-editor";
+import { WorkspaceFeatureFlagsEditor } from "~/components/domain/application/workspace/feature-flags-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";

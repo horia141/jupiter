@@ -28,13 +28,13 @@ import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntitySummaryLink } from "~/components/entity-summary-link";
+import { EntitySummaryLink } from "~/components/infra/entity-summary-link";
 import { EntityCard } from "~/components/infra/entity-card";
 import { EntityStack2 } from "~/components/infra/entity-stack";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
-import { EntityTagSelect } from "~/components/named-entity-tag-select";
+import { EntityTagSelect } from "~/components/infra/named-entity-tag-select";
 import {
   isNoErrorSomeData,
   noErrorSomeData,

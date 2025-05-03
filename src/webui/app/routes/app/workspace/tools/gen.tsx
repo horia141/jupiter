@@ -36,20 +36,20 @@ import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { ADateTag } from "~/components/adate-tag";
-import { EntitySummaryLink } from "~/components/entity-summary-link";
-import { EventSourceTag } from "~/components/event-source-tag";
+import { ADateTag } from "~/components/domain/core/adate-tag";
+import { EntitySummaryLink } from "~/components/infra/entity-summary-link";
+import { EventSourceTag } from "~/components/infra/event-source-tag";
 import { SlimChip } from "~/components/infra/chips";
 import { EntityCard } from "~/components/infra/entity-card";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
-import { PeriodSelect } from "~/components/period-select";
-import { PeriodTag } from "~/components/period-tag";
-import { StandardDivider } from "~/components/standard-divider";
-import { SyncTargetSelect } from "~/components/sync-target-select";
-import { SyncTargetTag } from "~/components/sync-target-tag";
-import { TimeDiffTag } from "~/components/time-diff-tag";
+import { PeriodSelect } from "~/components/domain/core/period-select";
+import { PeriodTag } from "~/components/domain/core/period-tag";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { SyncTargetSelect } from "~/components/domain/core/sync-target-select";
+import { SyncTargetTag } from "~/components/domain/core/sync-target-tag";
+import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 import {
   noErrorNoData,
   validationErrorToUIErrorInfo,

@@ -30,7 +30,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ScheduleStreamSelect } from "~/components/schedule-stream-select";
+import { ScheduleStreamSelect } from "~/components/domain/concept/schedule/schedule-stream-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";

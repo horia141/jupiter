@@ -9,10 +9,10 @@ import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocsHelpSubject } from "~/components/docs-help";
-import EntityIconComponent from "~/components/entity-icon";
-import { EntityNameComponent } from "~/components/entity-name";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import EntityIconComponent from "~/components/infra/entity-icon";
+import { EntityNameComponent } from "~/components/infra/entity-name";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";

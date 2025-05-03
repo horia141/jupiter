@@ -29,13 +29,13 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
-import { IconSelector } from "~/components/icon-selector";
+import { DifficultySelect } from "~/components/domain/core/difficulty-select";
+import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
+import { IconSelector } from "~/components/infra/icon-selector";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { StandardDivider } from "~/components/standard-divider";
+import { StandardDivider } from "~/components/infra/standard-divider";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";

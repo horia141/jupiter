@@ -29,7 +29,7 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-input";
+import { ScheduleStreamColorInput } from "~/components/domain/concept/schedule/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";

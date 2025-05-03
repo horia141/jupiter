@@ -172,6 +172,12 @@ from .habit_update_args_repeats_strategy import HabitUpdateArgsRepeatsStrategy
 from .habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 from .heading_block import HeadingBlock
 from .heading_block_kind import HeadingBlockKind
+from .home_config import HomeConfig
+from .home_config_load_args import HomeConfigLoadArgs
+from .home_config_load_result import HomeConfigLoadResult
+from .home_config_update_args import HomeConfigUpdateArgs
+from .home_config_update_args_key_habits import HomeConfigUpdateArgsKeyHabits
+from .home_config_update_args_key_metrics import HomeConfigUpdateArgsKeyMetrics
 from .hosting import Hosting
 from .inbox_task import InboxTask
 from .inbox_task_archive_args import InboxTaskArchiveArgs
@@ -815,6 +821,12 @@ __all__ = (
     "HabitUpdateArgsSkipRule",
     "HeadingBlock",
     "HeadingBlockKind",
+    "HomeConfig",
+    "HomeConfigLoadArgs",
+    "HomeConfigLoadResult",
+    "HomeConfigUpdateArgs",
+    "HomeConfigUpdateArgsKeyHabits",
+    "HomeConfigUpdateArgsKeyMetrics",
     "Hosting",
     "InboxTask",
     "InboxTaskArchiveArgs",
