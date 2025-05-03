@@ -1,11 +1,11 @@
 import { Card, CardContent, Typography } from "@mui/material";
 import type { MOTD } from "@jupiter/webapi-client";
 
-interface MOTDCardProps {
+interface MOTDWidgetProps {
   motd: MOTD;
 }
 
-export function MOTDCard(props: MOTDCardProps) {
+export function MOTDWidget(props: MOTDWidgetProps) {
   return (
     <Card sx={{ marginBottom: 2 }}>
       <CardContent>

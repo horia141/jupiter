@@ -76,7 +76,7 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
 
   function renderCalendar(from: string, to: string) {
     return (
-      <Box sx={{ height: "200px" }}>
+      <Box sx={{ height: "140px" }}>
         <ResponsiveTimeRange
           data={data}
           from={from}

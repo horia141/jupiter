@@ -12,20 +12,14 @@ import {
   InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
-  TimePlan,
-  TimePlanActivityDoneness,
-  TimePlanActivity,
-  BigPlan,
-  TimePlanActivityFeasability,
-  TimePlanActivityKind,
 } from "@jupiter/webapi-client";
 import { useContext, useState } from "react";
 import { DateTime } from "luxon";
-import { Stack } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import TuneIcon from "@mui/icons-material/Tune";
 import { z } from "zod";
 import { parseQuery } from "zodix";
+import { Tabs, Tab , Stack } from "@mui/material";
 
 import {
   useTrunkNeedsToShowLeaf,
@@ -37,31 +31,29 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
-import { MOTDCard } from "~/components/domain/concept/motd/motd-card";
+import { MOTDWidget } from "~/components/domain/concept/motd/motd-widget";
 import {
-  filterInboxTasksForDisplay,
   inboxTaskFindEntryToParent,
   InboxTaskOptimisticState,
   InboxTaskParent,
-  sortInboxTasksByEisenAndDifficulty,
   sortInboxTasksNaturally,
 } from "~/logic/domain/inbox-task";
-import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
-import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
-import {
-  ActionableTime,
-  actionableTimeToDateTime,
-} from "~/rendering/actionable-time";
-import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
-import { ViewAsCalendarDaily } from "~/components/domain/application/calendar/view-as-calendar-daily";
-import { DocsHelpSubject } from "~/components/infra/docs-help";
-import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
-import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
-import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/time-plan-merged-activities";
+import { TopLevelInfoContext } from "~/top-level-context";
 import { NavSingle, SectionActions } from "~/components/infra/section-actions";
-import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
 import { newURLParams } from "~/logic/domain/navigation";
-import { StandardDivider } from "~/components/infra/standard-divider";
+import { HabitInboxTasksWidget } from "~/components/domain/concept/habit/habit-inbox-tasks-widget";
+import { TimePlanViewWidget } from "~/components/domain/concept/time-plan/time-plan-view-widget";
+import { CalendarDailyWidget } from "~/components/domain/application/calendar/calendar-daily-widget";
+import { HabitKeyHabitStreakWidget } from "~/components/domain/concept/habit/habit-key-habit-streak-widget";
+import { useBigScreen } from "~/rendering/use-big-screen";
+
+enum MobileTab {
+  FIRST = "First",
+  HABIT_INBOX_TASKS = "Habit Tasks",
+  CALENDAR = "Calendar",
+  TIME_PLAN = "Time Plan",
+}
+
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
@@ -195,6 +187,7 @@ export default function Workspace() {
   const inputsEnabled = navigation.state === "loading" ? false : true;
   const [query] = useSearchParams();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const isBigScreen = useBigScreen();
 
   const sortedHabitInboxTasks = sortInboxTasksNaturally(
     loaderData.habitInboxTasks.map((e) => e.inbox_task),
@@ -216,6 +209,8 @@ export default function Workspace() {
 
   const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
   const today = rightNow.toISODate();
+
+  const [mobileTab, setMobileTab] = useState<MobileTab>(MobileTab.FIRST);
 
   function handleCardMarkDone(it: InboxTask) {
     setOptimisticUpdates((oldOptimisticUpdates) => {
@@ -267,6 +262,29 @@ export default function Workspace() {
     }, 0);
   }
 
+  const keyHabitEntries = [];
+  if (loaderData.keyHabit1) {
+    keyHabitEntries.push({
+      habit: loaderData.keyHabit1?.habit,
+      streakMarks: loaderData.keyHabit1?.streak_marks,
+      inboxTasks: loaderData.keyHabit1?.inbox_tasks,
+    });
+  }
+  if (loaderData.keyHabit2) {
+    keyHabitEntries.push({
+      habit: loaderData.keyHabit2?.habit,
+      streakMarks: loaderData.keyHabit2?.streak_marks,
+      inboxTasks: loaderData.keyHabit2?.inbox_tasks,
+    });
+  }
+  if (loaderData.keyHabit3) {
+    keyHabitEntries.push({
+      habit: loaderData.keyHabit3?.habit,
+      streakMarks: loaderData.keyHabit3?.streak_marks,
+      inboxTasks: loaderData.keyHabit3?.inbox_tasks,
+    });
+  }
+
   return (
     <TrunkPanel
       key={"workspace"}
@@ -287,111 +305,150 @@ export default function Workspace() {
       }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <MOTDCard motd={loaderData.motd} />
+        {isBigScreen && (
+          <>
+            <Grid container spacing={2}>
+              <Grid size={{ md: 4 }}>
+                <MOTDWidget motd={loaderData.motd} />
+              </Grid>
+              <Grid size={{ md: 4 }}>
+                <HabitKeyHabitStreakWidget
+                  year={loaderData.keyHabit1?.streak_mark_year ?? rightNow.year}
+                  currentYear={rightNow.year}
+                  entries={keyHabitEntries}
+                  getYearUrl={(year) =>
+                    `/app/workspace?${newURLParams(
+                      query,
+                      "includeStreakMarksForYear",
+                      year.toString(),
+                    )}`
+                  }
+                />
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid size={{ md: 4 }}>
+                <HabitInboxTasksWidget
+                  today={rightNow}
+                  topLevelInfo={topLevelInfo}
+                  habitInboxTasks={sortedHabitInboxTasks}
+                  optimisticUpdates={optimisticUpdates}
+                  habitEntriesByRefId={habitEntriesByRefId}
+                  onCardMarkDone={handleCardMarkDone}
+                  onCardMarkNotDone={handleCardMarkNotDone}
+                />
+              </Grid>
+              <Grid size={{ md: 4 }}>
+                <CalendarDailyWidget
+                  rightNow={rightNow}
+                  today={today}
+                  timezone={topLevelInfo.user.timezone}
+                  period={RecurringTaskPeriod.DAILY}
+                  periodStartDate={today}
+                  periodEndDate={today}
+                  entries={loaderData.calendarEntriesForToday!}
+                />
+              </Grid>
 
-        <Grid container spacing={2}>
-          {loaderData.keyHabit1 && (
-            <Grid size={{ md: 4 }}>
-              <StandardDivider
-                title={loaderData.keyHabit1.habit.name}
-                size="small"
-              />
-              <HabitStreakCalendar
-                year={loaderData.keyHabit1.streak_mark_year}
-                currentYear={rightNow.year}
-                habit={loaderData.keyHabit1.habit}
-                streakMarks={loaderData.keyHabit1.streak_marks}
-                inboxTasks={loaderData.keyHabit1.inbox_tasks}
-                getYearUrl={(year) =>
-                  `/app/workspace?${newURLParams(
-                    query,
-                    "includeStreakMarksForYear",
-                    year.toString(),
-                  )}`
-                }
-              />
+              <Grid size={{ md: 4 }}>
+                <TimePlanViewWidget
+                  today={rightNow}
+                  topLevelInfo={topLevelInfo}
+                  timePlanForToday={loaderData.timePlanForToday}
+                  timePlanForWeek={loaderData.timePlanForWeek}
+                />
+              </Grid>
             </Grid>
-          )}
-          {loaderData.keyHabit2 && (
-            <Grid size={{ md: 4 }}>
-              <StandardDivider
-                title={loaderData.keyHabit2.habit.name}
-                size="small"
-              />
-              <HabitStreakCalendar
-                year={loaderData.keyHabit2.streak_mark_year}
-                currentYear={rightNow.year}
-                habit={loaderData.keyHabit2.habit}
-                streakMarks={loaderData.keyHabit2.streak_marks}
-                inboxTasks={loaderData.keyHabit2.inbox_tasks}
-                getYearUrl={(year) =>
-                  `/app/workspace?${newURLParams(
-                    query,
-                    "includeStreakMarksForYear",
-                    year.toString(),
-                  )}`
-                }
-              />
-            </Grid>
-          )}
-          {loaderData.keyHabit3 && (
-            <Grid size={{ md: 4 }}>
-              <StandardDivider
-                title={loaderData.keyHabit3.habit.name}
-                size="small"
-              />
-              <HabitStreakCalendar
-                year={loaderData.keyHabit3.streak_mark_year}
-                currentYear={rightNow.year}
-                habit={loaderData.keyHabit3.habit}
-                streakMarks={loaderData.keyHabit3.streak_marks}
-                inboxTasks={loaderData.keyHabit3.inbox_tasks}
-                getYearUrl={(year) =>
-                  `/app/workspace?${newURLParams(
-                    query,
-                    "includeStreakMarksForYear",
-                    year.toString(),
-                  )}`
-                }
-              />
-            </Grid>
-          )}
-        </Grid>
-        <Grid container spacing={2}>
-          <Grid size={{ md: 4 }}>
-            <HabitInboxTasks
-              today={rightNow}
-              topLevelInfo={topLevelInfo}
-              habitInboxTasks={sortedHabitInboxTasks}
-              optimisticUpdates={optimisticUpdates}
-              habitEntriesByRefId={habitEntriesByRefId}
-              onCardMarkDone={handleCardMarkDone}
-              onCardMarkNotDone={handleCardMarkNotDone}
-            />
-          </Grid>
-          <Grid size={{ md: 4 }}>
-            <ViewAsCalendarDaily
-              rightNow={rightNow}
-              today={today}
-              timezone={topLevelInfo.user.timezone}
-              period={RecurringTaskPeriod.DAILY}
-              periodStartDate={today}
-              periodEndDate={today}
-              entries={loaderData.calendarEntriesForToday!}
-              calendarLocation={""}
-              isAdding={false}
-            />
-          </Grid>
+          </>
+        )}
 
-          <Grid size={{ md: 4 }}>
-            <TimePlans
-              today={rightNow}
-              topLevelInfo={topLevelInfo}
-              timePlanForToday={loaderData.timePlanForToday}
-              timePlanForWeek={loaderData.timePlanForWeek}
-            />
-          </Grid>
-        </Grid>
+        {!isBigScreen && (
+          <Stack>
+            <Tabs
+              value={mobileTab}
+              onChange={(_, value) => setMobileTab(value)}
+              variant="scrollable"
+              scrollButtons="auto"
+            >
+              <Tab
+                icon={<p>🏠</p>}
+                iconPosition="top"
+                label={MobileTab.FIRST}
+                value={MobileTab.FIRST}
+              />
+              <Tab
+                icon={<p>💪</p>}
+                iconPosition="top"
+                label={MobileTab.HABIT_INBOX_TASKS}
+                value={MobileTab.HABIT_INBOX_TASKS}
+              />
+              <Tab
+                icon={<p>📅</p>}
+                iconPosition="top"
+                label={MobileTab.CALENDAR}
+                value={MobileTab.CALENDAR}
+              />
+              <Tab
+                icon={<p>🏭</p>}
+                iconPosition="top"
+                label={MobileTab.TIME_PLAN}
+                value={MobileTab.TIME_PLAN}
+              />
+            </Tabs>
+
+            {mobileTab === MobileTab.FIRST && (
+              <>
+                <MOTDWidget motd={loaderData.motd} />
+
+                <HabitKeyHabitStreakWidget
+                  year={loaderData.keyHabit1?.streak_mark_year ?? rightNow.year}
+                  currentYear={rightNow.year}
+                  entries={keyHabitEntries}
+                  getYearUrl={(year) =>
+                    `/app/workspace?${newURLParams(
+                      query,
+                      "includeStreakMarksForYear",
+                      year.toString(),
+                    )}`
+                  }
+                />
+              </>
+            )}
+
+            {mobileTab === MobileTab.HABIT_INBOX_TASKS && (
+              <HabitInboxTasksWidget
+                today={rightNow}
+                topLevelInfo={topLevelInfo}
+                habitInboxTasks={sortedHabitInboxTasks}
+                optimisticUpdates={optimisticUpdates}
+                habitEntriesByRefId={habitEntriesByRefId}
+                onCardMarkDone={handleCardMarkDone}
+                onCardMarkNotDone={handleCardMarkNotDone}
+              />
+            )}
+
+            {mobileTab === MobileTab.CALENDAR && (
+              <CalendarDailyWidget
+                rightNow={rightNow}
+                today={today}
+                timezone={topLevelInfo.user.timezone}
+                period={RecurringTaskPeriod.DAILY}
+                periodStartDate={today}
+                periodEndDate={today}
+                entries={loaderData.calendarEntriesForToday!}
+              />
+            )}
+
+            {mobileTab === MobileTab.TIME_PLAN && (
+              <TimePlanViewWidget
+                today={rightNow}
+                topLevelInfo={topLevelInfo}
+                timePlanForToday={loaderData.timePlanForToday}
+                timePlanForWeek={loaderData.timePlanForWeek}
+              />
+            )}
+          </Stack>
+        )}
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
@@ -404,248 +461,3 @@ export default function Workspace() {
 export const ErrorBoundary = makeRootErrorBoundary({
   error: () => `There was an error loading the workspace! Please try again!`,
 });
-
-interface HabitInboxTasksProps {
-  today: DateTime;
-  topLevelInfo: TopLevelInfo;
-  habitInboxTasks: Array<InboxTask>;
-  optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
-  habitEntriesByRefId: { [key: string]: InboxTaskParent };
-  onCardMarkDone: (it: InboxTask) => void;
-  onCardMarkNotDone: (it: InboxTask) => void;
-}
-
-function HabitInboxTasks(props: HabitInboxTasksProps) {
-  const endOfTheWeek = props.today.endOf("week").endOf("day");
-  const actionableTime = actionableTimeToDateTime(
-    ActionableTime.ONE_WEEK,
-    props.topLevelInfo.user.timezone,
-  );
-
-  const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(
-    props.habitInboxTasks,
-  );
-
-  const inboxTasksForHabitsDueToday = filterInboxTasksForDisplay(
-    sortedInboxTasks,
-    props.habitEntriesByRefId,
-    props.optimisticUpdates,
-    {
-      allowSources: [InboxTaskSource.HABIT],
-      allowStatuses: [
-        InboxTaskStatus.NOT_STARTED,
-        InboxTaskStatus.NOT_STARTED_GEN,
-        InboxTaskStatus.IN_PROGRESS,
-        InboxTaskStatus.BLOCKED,
-      ],
-      includeIfNoActionableDate: true,
-      actionableDateEnd: actionableTime,
-      dueDateEnd: props.today,
-      allowPeriodsIfHabit: [RecurringTaskPeriod.DAILY],
-    },
-  );
-
-  const inboxTasksForHabitsDueThisWeek = filterInboxTasksForDisplay(
-    sortedInboxTasks,
-    props.habitEntriesByRefId,
-    props.optimisticUpdates,
-    {
-      allowSources: [InboxTaskSource.HABIT],
-      allowStatuses: [
-        InboxTaskStatus.NOT_STARTED,
-        InboxTaskStatus.NOT_STARTED_GEN,
-        InboxTaskStatus.IN_PROGRESS,
-        InboxTaskStatus.BLOCKED,
-      ],
-      includeIfNoActionableDate: true,
-      actionableDateEnd: actionableTime,
-      dueDateEnd: endOfTheWeek,
-      allowPeriodsIfHabit: [RecurringTaskPeriod.WEEKLY],
-    },
-  );
-
-  const habitsStack = (
-    <Stack>
-      <AnimatePresence>
-        <InboxTaskStack
-          key="habit-due-today"
-          today={props.today}
-          topLevelInfo={props.topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showProject: true,
-            showEisen: true,
-            showDifficulty: true,
-            showParent: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Due Today"
-          inboxTasks={inboxTasksForHabitsDueToday}
-          optimisticUpdates={props.optimisticUpdates}
-          moreInfoByRefId={props.habitEntriesByRefId}
-          onCardMarkDone={props.onCardMarkDone}
-          onCardMarkNotDone={props.onCardMarkNotDone}
-        />
-
-        <InboxTaskStack
-          today={props.today}
-          topLevelInfo={props.topLevelInfo}
-          key="habit-due-this-week"
-          showOptions={{
-            showStatus: true,
-            showProject: true,
-            showEisen: true,
-            showDifficulty: true,
-            showParent: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Due This Week"
-          inboxTasks={inboxTasksForHabitsDueThisWeek}
-          optimisticUpdates={props.optimisticUpdates}
-          moreInfoByRefId={props.habitEntriesByRefId}
-          onCardMarkDone={props.onCardMarkDone}
-          onCardMarkNotDone={props.onCardMarkNotDone}
-        />
-      </AnimatePresence>
-    </Stack>
-  );
-
-  if (
-    inboxTasksForHabitsDueToday.length === 0 &&
-    inboxTasksForHabitsDueThisWeek.length === 0
-  ) {
-    return (
-      <InboxTasksNoTasksCard
-        parent="habit"
-        parentLabel="New Habit"
-        parentNewLocations="/app/workspace/habits/new"
-      />
-    );
-  }
-
-  return habitsStack;
-}
-
-interface TimePlansProps {
-  today: DateTime;
-  topLevelInfo: TopLevelInfo;
-  timePlanForToday?: {
-    timePlan: TimePlan;
-    activities: TimePlanActivity[];
-    targetInboxTasks: InboxTask[];
-    targetBigPlans: BigPlan[];
-    activityDoneness: Record<string, TimePlanActivityDoneness>;
-  };
-  timePlanForWeek?: {
-    timePlan: TimePlan;
-    activities: TimePlanActivity[];
-    targetInboxTasks: InboxTask[];
-    targetBigPlans: BigPlan[];
-    activityDoneness: Record<string, TimePlanActivityDoneness>;
-  };
-}
-
-function TimePlans(props: TimePlansProps) {
-  if (!props.timePlanForToday && !props.timePlanForWeek) {
-    return (
-      <EntityNoNothingCard
-        title="You Have To Start Somewhere"
-        message="There are no time plans to show. You can create a new time plan."
-        newEntityLocations={`/app/workspace/time-plans/new`}
-        helpSubject={DocsHelpSubject.TIME_PLANS}
-      />
-    );
-  }
-
-  return (
-    <Stack>
-      {props.timePlanForToday && (
-        <SingleTimePlan
-          timePlan={props.timePlanForToday.timePlan}
-          activities={props.timePlanForToday.activities}
-          targetInboxTasks={props.timePlanForToday.targetInboxTasks}
-          targetBigPlans={props.timePlanForToday.targetBigPlans}
-          activityDoneness={props.timePlanForToday.activityDoneness}
-        />
-      )}
-      {props.timePlanForWeek && (
-        <SingleTimePlan
-          timePlan={props.timePlanForWeek.timePlan}
-          activities={props.timePlanForWeek.activities}
-          targetInboxTasks={props.timePlanForWeek.targetInboxTasks}
-          targetBigPlans={props.timePlanForWeek.targetBigPlans}
-          activityDoneness={props.timePlanForWeek.activityDoneness}
-        />
-      )}
-    </Stack>
-  );
-}
-
-interface SingleTimePlanProps {
-  timePlan: TimePlan;
-  activities: TimePlanActivity[];
-  targetInboxTasks: InboxTask[];
-  targetBigPlans: BigPlan[];
-  activityDoneness: Record<string, TimePlanActivityDoneness>;
-}
-
-function SingleTimePlan(props: SingleTimePlanProps) {
-  const actitiviesByBigPlanRefId = new Map<string, TimePlanActivity>(
-    props.activities.map((a) => [a.target_ref_id, a]),
-  );
-  const targetInboxTasksByRefId = new Map<string, InboxTask>(
-    props.targetInboxTasks.map((it) => [it.ref_id, it]),
-  );
-  const targetBigPlansByRefId = new Map<string, BigPlan>(
-    props.targetBigPlans.map((bp) => [bp.ref_id, bp]),
-  );
-  const mustDoActivities = filterActivityByFeasabilityWithParents(
-    props.activities,
-    actitiviesByBigPlanRefId,
-    targetInboxTasksByRefId,
-    targetBigPlansByRefId,
-    TimePlanActivityFeasability.MUST_DO,
-  );
-  const niceToHaveActivities = filterActivityByFeasabilityWithParents(
-    props.activities,
-    actitiviesByBigPlanRefId,
-    targetInboxTasksByRefId,
-    targetBigPlansByRefId,
-    TimePlanActivityFeasability.NICE_TO_HAVE,
-  );
-  const stretchActivities = filterActivityByFeasabilityWithParents(
-    props.activities,
-    actitiviesByBigPlanRefId,
-    targetInboxTasksByRefId,
-    targetBigPlansByRefId,
-    TimePlanActivityFeasability.STRETCH,
-  );
-
-  if (props.activities.length === 0) {
-    return (
-      <EntityNoNothingCard
-        title="You Have To Start Somewhere"
-        message="There are no activities to show. You can create a new activity."
-        newEntityLocations={`/app/workspace/time-plans/${props.timePlan.ref_id}/add-from-current-inbox-tasks`}
-        helpSubject={DocsHelpSubject.TIME_PLANS}
-      />
-    );
-  }
-
-  return (
-    <TimePlanMergedActivities
-      mustDoActivities={mustDoActivities}
-      niceToHaveActivities={niceToHaveActivities}
-      stretchActivities={stretchActivities}
-      targetInboxTasksByRefId={targetInboxTasksByRefId}
-      targetBigPlansByRefId={targetBigPlansByRefId}
-      activityDoneness={props.activityDoneness}
-      timeEventsByRefId={new Map()}
-      selectedKinds={Object.values(TimePlanActivityKind)}
-      selectedFeasabilities={Object.values(TimePlanActivityFeasability)}
-      selectedDoneness={[true, false]}
-    />
-  );
-}
