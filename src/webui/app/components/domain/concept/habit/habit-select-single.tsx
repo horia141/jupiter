@@ -1,12 +1,28 @@
-import type { EntityId, HabitSummary } from "@jupiter/webapi-client";
+import type {
+  EntityId,
+  HabitSummary,
+  ProjectSummary,
+} from "@jupiter/webapi-client";
 import { Autocomplete, TextField } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
+
+import { PeriodTag } from "~/components/domain/core/period-tag";
+import {
+  sortHabitSummariesByPeriod,
+  sortHabitSummariesByProjectAndPeriod,
+} from "~/logic/domain/habit";
+import {
+  computeProjectHierarchicalNameFromRoot,
+  sortProjectsByTreeOrder,
+} from "~/logic/domain/project";
 
 interface HabitSelectSingleProps {
   name: string;
   label: string;
   allowNone?: boolean;
   allHabits: HabitSummary[];
+  groupByProjects?: boolean;
+  allProjects?: ProjectSummary[];
   defaultValue?: EntityId;
   value?: EntityId;
   onChange?: (value: EntityId | undefined) => void;
@@ -18,10 +34,19 @@ export function HabitSelectSingle(props: HabitSelectSingleProps) {
     [props.allHabits],
   );
 
-  const allHabitsAsOptions = props.allHabits.map((habit) => ({
-    habit_ref_id: habit.ref_id,
-    label: habit.name,
-  }));
+  const sortedProjects =
+    props.groupByProjects && props.allProjects
+      ? sortProjectsByTreeOrder(props.allProjects)
+      : undefined;
+  const allProjectsByRefId =
+    props.groupByProjects && props.allProjects
+      ? new Map(props.allProjects.map((p) => [p.ref_id, p]))
+      : undefined;
+  const sortedHabits = props.groupByProjects
+    ? sortHabitSummariesByProjectAndPeriod(props.allHabits, sortedProjects!)
+    : sortHabitSummariesByPeriod(props.allHabits);
+
+  const allHabitsAsOptions = sortedHabits.map(habitToOption);
 
   const [selectedHabit, setSelectedHabit] = useState(
     selectedHabitToOption(props.value, props.defaultValue, allHabitsByRefId),
@@ -43,6 +68,15 @@ export function HabitSelectSingle(props: HabitSelectSingleProps) {
       <Autocomplete
         autoHighlight
         disableClearable={!props.allowNone}
+        groupBy={
+          props.groupByProjects && allProjectsByRefId
+            ? (option) =>
+                computeProjectHierarchicalNameFromRoot(
+                  allProjectsByRefId.get(option.project_ref_id)!,
+                  allProjectsByRefId,
+                )
+            : undefined
+        }
         id={props.name}
         options={allHabitsAsOptions}
         value={selectedHabit}
@@ -62,8 +96,12 @@ export function HabitSelectSingle(props: HabitSelectSingleProps) {
         }
         getOptionLabel={(option) => option?.label || ""}
         renderOption={(optionProps, option) => (
-          <li {...optionProps} key={option.habit_ref_id || "none"}>
-            {option.label}
+          <li
+            {...optionProps}
+            key={option.habit_ref_id || "none"}
+            style={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            {option.label} <PeriodTag period={option.period} />
           </li>
         )}
         renderInput={(params) => <TextField {...params} label={props.label} />}
@@ -88,8 +126,14 @@ function selectedHabitToOption(
   if (habitRefId === undefined || habit === undefined) {
     return undefined;
   }
+  return habitToOption(habit);
+}
+
+function habitToOption(habit: HabitSummary) {
   return {
-    habit_ref_id: habitRefId,
+    habit_ref_id: habit.ref_id,
     label: habit.name,
+    period: habit.period,
+    project_ref_id: habit.project_ref_id,
   };
 }

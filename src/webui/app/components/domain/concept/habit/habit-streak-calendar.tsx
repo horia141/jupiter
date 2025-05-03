@@ -4,17 +4,15 @@ import {
   InboxTask,
   InboxTaskStatus,
 } from "@jupiter/webapi-client";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Box, IconButton, Typography, Stack, Button } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { CalendarTooltipProps, ResponsiveTimeRange } from "@nivo/calendar";
-import { Link } from "@remix-run/react";
 
 import { aDateToDate } from "~/logic/domain/adate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { EntityNameComponent } from "~/components/infra/entity-name";
 import { InboxTaskStatusTag } from "~/components/domain/concept/inbox-task/inbox-task-status-tag";
+import { StandardLink } from "~/components/infra/standard-link";
 
 interface HabitStreakCalendarProps {
   year: number;
@@ -106,29 +104,39 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
     <StyledDiv>
       <Stack
         direction="row"
-        sx={{ justifyContent: "center", alignItems: "center", gap: 2 }}
+        sx={{ justifyContent: "center", alignItems: "center", gap: 1 }}
       >
-        <IconButton
-          component={Link}
-          to={props.getYearUrl(props.year - 1)}
-          aria-label="previous-year"
-          size="large"
+        <StandardLink to={props.getYearUrl(props.year - 3)} inline="true">
+          {props.year - 3}
+        </StandardLink>
+        <StandardLink to={props.getYearUrl(props.year - 2)} inline="true">
+          {props.year - 2}
+        </StandardLink>
+        <StandardLink to={props.getYearUrl(props.year - 1)} inline="true">
+          {props.year - 1}
+        </StandardLink>
+        <StandardLink
+          to={props.getYearUrl(props.year)}
+          inline="true"
+          sx={{ fontWeight: "bold" }}
         >
-          <ArrowBackIosNewIcon fontSize="inherit" />
-        </IconButton>
-        <Typography sx={{ textAlign: "center" }}>Year {props.year}</Typography>
-        <Button component={Link} to={props.getYearUrl(props.currentYear)}>
-          Go To Current Year ({props.currentYear})
-        </Button>
-        <IconButton
-          component={Link}
-          to={props.getYearUrl(props.year + 1)}
-          aria-label="next-year"
-          size="large"
-          disabled={props.year === props.currentYear}
-        >
-          <ArrowForwardIosIcon fontSize="inherit" />
-        </IconButton>
+          {props.year}
+        </StandardLink>
+        {props.year + 1 <= props.currentYear && (
+          <StandardLink to={props.getYearUrl(props.year + 1)} inline="true">
+            {props.year + 1}
+          </StandardLink>
+        )}
+        {props.year + 2 <= props.currentYear && (
+          <StandardLink to={props.getYearUrl(props.year + 2)} inline="true">
+            {props.year + 2}
+          </StandardLink>
+        )}
+        {props.year + 3 <= props.currentYear && (
+          <StandardLink to={props.getYearUrl(props.year + 3)} inline="true">
+            {props.year + 3}
+          </StandardLink>
+        )}
       </Stack>
       {isBigScreen ? (
         renderCalendar(earliestDate.toISODate(), latestDate.toISODate())

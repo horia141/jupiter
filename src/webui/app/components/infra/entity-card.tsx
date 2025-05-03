@@ -5,15 +5,14 @@ import {
   CardActions,
   CardContent,
   IconButton,
-  styled,
   useTheme,
 } from "@mui/material";
-import { Link } from "@remix-run/react";
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { PropsWithChildren } from "react";
 
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { FakeLink, StandardLink } from "~/components/infra/standard-link";
 
 const SWIPE_THRESHOLD = 200;
 const SWIPE_COMPLETE_THRESHOLD = 150;
@@ -165,14 +164,14 @@ interface EntityLinkProps {
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   if (!(props.block === true)) {
     return (
-      <StyledLink
+      <StandardLink
         onMouseDown={(e) => e.preventDefault()}
         to={props.to}
         inline={props.inline === true ? "true" : "false"}
         light={props.light === true ? "true" : "false"}
       >
         {props.children}
-      </StyledLink>
+      </StandardLink>
     );
   } else {
     return (
@@ -183,35 +182,6 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   }
 }
 
-interface StyledLinkProps {
-  light: string;
-  inline: string;
-}
-
-const StyledLink = styled(Link)<StyledLinkProps>(
-  ({ theme, light, inline }) => ({
-    textDecoration: "none",
-    width: inline === "true" ? undefined : "100%",
-    color:
-      light === "true"
-        ? theme.palette.info.contrastText
-        : theme.palette.info.dark,
-    ":visited": {
-      color:
-        light === "true"
-          ? theme.palette.info.contrastText
-          : theme.palette.info.dark,
-    },
-    display: "flex",
-    gap: "0.5rem",
-    flexGrow: "1",
-    flexWrap: "wrap",
-    padding: inline === "true" ? undefined : "16px",
-    alignItems: "center",
-    WebkitTapHighlightColor: "transparent",
-  }),
-);
-
 interface EntityFakeLinkProps {
   inline?: boolean;
   light?: boolean;
@@ -219,34 +189,11 @@ interface EntityFakeLinkProps {
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
   return (
-    <StyledFakeLink
+    <FakeLink
       inline={props.inline ? "true" : "false"}
       light={props.light ? "true" : "false"}
     >
       {props.children}
-    </StyledFakeLink>
+    </FakeLink>
   );
 }
-
-const StyledFakeLink = styled("span")<StyledLinkProps>(
-  ({ theme, inline, light }) => ({
-    textDecoration: "none",
-    width: "100%",
-    color:
-      light === "true"
-        ? theme.palette.info.contrastText
-        : theme.palette.info.dark,
-    ":visited": {
-      color:
-        light === "true"
-          ? theme.palette.info.contrastText
-          : theme.palette.info.dark,
-    },
-    display: "flex",
-    gap: "0.5rem",
-    flexWrap: "wrap",
-    padding: inline === "true" ? undefined : "16px",
-    alignItems: "center",
-    WebkitTapHighlightColor: "transparent",
-  }),
-);

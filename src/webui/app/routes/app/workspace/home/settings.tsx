@@ -34,6 +34,7 @@ import {
 } from "~/components/infra/section-actions";
 import { HabitSelectSingle } from "~/components/domain/concept/habit/habit-select-single";
 import { StandardDivider } from "~/components/infra/standard-divider";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 const ParamsSchema = z.object({});
 
@@ -54,6 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
 
   const summaryResponse = await apiClient.getSummaries.getSummaries({
+    include_projects: true,
     include_habits: true,
     include_metrics: true,
   });
@@ -62,6 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     homeConfig: homeConfigResponse.home_config,
     allHabits: summaryResponse.habits || [],
+    allProjects: summaryResponse.projects || [],
     allMetrics: summaryResponse.metrics || [],
   });
 }
@@ -115,6 +118,7 @@ export default function HomeSettings() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
+  const isBigScreen = useBigScreen();
 
   return (
     <BranchPanel
@@ -150,12 +154,17 @@ export default function HomeSettings() {
             ) && (
               <>
                 <StandardDivider title="Key Habits" size="large" />
-                <Stack direction="row" spacing={2}>
+                <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
                   <FormControl fullWidth>
                     <HabitSelectSingle
                       allowNone
                       name="keyHabit1"
                       label="Key Habit"
+                      groupByProjects={isWorkspaceFeatureAvailable(
+                        topLevelInfo.workspace,
+                        WorkspaceFeature.PROJECTS,
+                      )}
+                      allProjects={loaderData.allProjects}
                       allHabits={loaderData.allHabits}
                       defaultValue={
                         loaderData.homeConfig.key_habits[0] ?? undefined
@@ -172,6 +181,11 @@ export default function HomeSettings() {
                       allowNone
                       name="keyHabit2"
                       label="Key Habit"
+                      groupByProjects={isWorkspaceFeatureAvailable(
+                        topLevelInfo.workspace,
+                        WorkspaceFeature.PROJECTS,
+                      )}
+                      allProjects={loaderData.allProjects}
                       allHabits={loaderData.allHabits}
                       defaultValue={
                         loaderData.homeConfig.key_habits[1] ?? undefined
@@ -188,6 +202,11 @@ export default function HomeSettings() {
                       allowNone
                       name="keyHabit3"
                       label="Key Habit"
+                      groupByProjects={isWorkspaceFeatureAvailable(
+                        topLevelInfo.workspace,
+                        WorkspaceFeature.PROJECTS,
+                      )}
+                      allProjects={loaderData.allProjects}
                       allHabits={loaderData.allHabits}
                       defaultValue={
                         loaderData.homeConfig.key_habits[2] ?? undefined

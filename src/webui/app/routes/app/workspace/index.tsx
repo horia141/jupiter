@@ -24,6 +24,8 @@ import { DateTime } from "luxon";
 import { Stack } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import TuneIcon from "@mui/icons-material/Tune";
+import { z } from "zod";
+import { parseQuery } from "zodix";
 
 import {
   useTrunkNeedsToShowLeaf,
@@ -59,8 +61,6 @@ import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/
 import { NavSingle, SectionActions } from "~/components/infra/section-actions";
 import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
 import { newURLParams } from "~/logic/domain/navigation";
-import { z } from "zod";
-import { parseQuery } from "zodix";
 import { StandardDivider } from "~/components/infra/standard-divider";
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -290,9 +290,12 @@ export default function Workspace() {
         <MOTDCard motd={loaderData.motd} />
 
         <Grid container spacing={2}>
-        {loaderData.keyHabit1 && (
+          {loaderData.keyHabit1 && (
             <Grid size={{ md: 4 }}>
-              <StandardDivider title={loaderData.keyHabit1.habit.name} size="small" />
+              <StandardDivider
+                title={loaderData.keyHabit1.habit.name}
+                size="small"
+              />
               <HabitStreakCalendar
                 year={loaderData.keyHabit1.streak_mark_year}
                 currentYear={rightNow.year}
@@ -311,7 +314,10 @@ export default function Workspace() {
           )}
           {loaderData.keyHabit2 && (
             <Grid size={{ md: 4 }}>
-              <StandardDivider title={loaderData.keyHabit2.habit.name} size="small" />
+              <StandardDivider
+                title={loaderData.keyHabit2.habit.name}
+                size="small"
+              />
               <HabitStreakCalendar
                 year={loaderData.keyHabit2.streak_mark_year}
                 currentYear={rightNow.year}
@@ -330,7 +336,10 @@ export default function Workspace() {
           )}
           {loaderData.keyHabit3 && (
             <Grid size={{ md: 4 }}>
-              <StandardDivider title={loaderData.keyHabit3.habit.name} size="small" />
+              <StandardDivider
+                title={loaderData.keyHabit3.habit.name}
+                size="small"
+              />
               <HabitStreakCalendar
                 year={loaderData.keyHabit3.streak_mark_year}
                 currentYear={rightNow.year}

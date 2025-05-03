@@ -18,6 +18,7 @@ from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListNam
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.entity_icon import EntityIconDatabaseDecoder
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     ChoreSummary,
@@ -212,7 +213,15 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         allow_archived: bool,
     ) -> list[HabitSummary]:
         """Find all summaries about habits."""
-        query = """select ref_id, name from habit where habit_collection_ref_id = :parent_ref_id"""
+        query = """
+            select
+                ref_id,
+                name,
+                json_extract(gen_params, '$.period') as period,
+                project_ref_id
+            from habit
+            where habit_collection_ref_id = :parent_ref_id
+        """
         if not allow_archived:
             query += " and archived=0"
         result = (
@@ -228,6 +237,10 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             HabitSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
                 name=_HABIT_NAME_DECODER.decode(row["name"]),
+                period=self._realm_codec_registry.db_decode(
+                    RecurringTaskPeriod, row["period"]
+                ),
+                project_ref_id=_ENTITY_ID_DECODER.decode(str(row["project_ref_id"])),
             )
             for row in result
         ]

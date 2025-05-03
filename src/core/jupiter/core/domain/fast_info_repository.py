@@ -18,6 +18,7 @@ from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListNam
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.repository import Repository
@@ -74,6 +75,8 @@ class HabitSummary(CompositeValue):
 
     ref_id: EntityId
     name: HabitName
+    period: RecurringTaskPeriod
+    project_ref_id: EntityId
 
 
 @value
