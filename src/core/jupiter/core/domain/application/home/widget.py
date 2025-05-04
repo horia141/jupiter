@@ -1,0 +1,74 @@
+"""A type of widget."""
+
+from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
+from jupiter.core.framework.entity import LeafEntity, ParentLink, StubEntity, entity
+from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
+
+
+@enum_value
+class WidgetDimension(EnumValue):
+    """A dimension of a widget."""
+
+    DIM_1x1 = "1x1"
+    DIM_1x2 = "1x2"
+    DIM_1x3 = "1x3"
+    DIM_2x1 = "2x1"
+    DIM_2x2 = "2x2"
+    DIM_2x3 = "2x3"
+    DIM_3x1 = "3x1"
+    DIM_3x2 = "3x2"
+    DIM_3x3 = "3x3"
+    DIM_kx1 = "kx1"
+    DIM_kx2 = "kx2"
+    DIM_kx3 = "kx3"
+
+
+@enum_value
+class WidgetType(EnumValue):
+    """A type of widget."""
+
+    MOTD = "motd"
+    WORKING_MEMORY = "working-mem"
+    KEY_HABITS_STREAKS = "key-habits-streaks"
+    HABIT_INBOX_TASKS = "habit-inbox-tasks"
+    CALENDAR_DAY = "calendar-day"
+
+
+@value
+class WidgetTypeConstraints(CompositeValue):
+    """A constraints for a widget type."""
+
+    allowed_dimensions: list[WidgetDimension]
+    for_desktop: bool
+    for_mobile: bool
+
+
+WIDGET_CONSTRAINTS = {
+    WidgetType.MOTD: WidgetTypeConstraints(
+        allowed_dimensions=[WidgetDimension.DIM_1x1, WidgetDimension.DIM_1x2, WidgetDimension.DIM_1x3],
+        for_desktop=True,
+        for_mobile=True,
+    ),
+    WidgetType.WORKING_MEMORY: WidgetTypeConstraints(
+        allowed_dimensions=[WidgetDimension.DIM_1x1],
+        for_desktop=True,
+        for_mobile=True,
+    ),
+    WidgetType.KEY_HABITS_STREAKS: WidgetTypeConstraints(
+        allowed_dimensions=[WidgetDimension.DIM_1x1, WidgetDimension.DIM_1x2],
+        for_desktop=True,
+        for_mobile=True,
+    ),
+    WidgetType.HABIT_INBOX_TASKS: WidgetTypeConstraints(
+        allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
+        for_desktop=True,
+        for_mobile=True,
+    ),
+    WidgetType.CALENDAR_DAY: WidgetTypeConstraints(
+        allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
+        for_desktop=True,
+        for_mobile=True,
+    ),
+}
