@@ -20,6 +20,7 @@ class HabitCreateArgs:
     Attributes:
         name (str): The habit name.
         period (RecurringTaskPeriod): A period for a particular task.
+        is_key (bool):
         eisen (Eisen): The Eisenhower status of a particular task.
         difficulty (Difficulty): The difficulty of a particular task.
         project_ref_id (Union[None, Unset, str]):
@@ -34,6 +35,7 @@ class HabitCreateArgs:
 
     name: str
     period: RecurringTaskPeriod
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     project_ref_id: Union[None, Unset, str] = UNSET
@@ -50,6 +52,8 @@ class HabitCreateArgs:
         name = self.name
 
         period = self.period.value
+
+        is_key = self.is_key
 
         eisen = self.eisen.value
 
@@ -111,6 +115,7 @@ class HabitCreateArgs:
             {
                 "name": name,
                 "period": period,
+                "is_key": is_key,
                 "eisen": eisen,
                 "difficulty": difficulty,
             }
@@ -140,6 +145,8 @@ class HabitCreateArgs:
         name = d.pop("name")
 
         period = RecurringTaskPeriod(d.pop("period"))
+
+        is_key = d.pop("is_key")
 
         eisen = Eisen(d.pop("eisen"))
 
@@ -228,6 +235,7 @@ class HabitCreateArgs:
         habit_create_args = cls(
             name=name,
             period=period,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             project_ref_id=project_ref_id,

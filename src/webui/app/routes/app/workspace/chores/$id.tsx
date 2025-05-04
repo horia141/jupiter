@@ -48,6 +48,7 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -65,6 +66,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     intent: z.literal("update"),
     name: z.string(),
     project: z.string().optional(),
+    isKey: CheckboxAsString,
     period: z.nativeEnum(RecurringTaskPeriod),
     eisen: z.nativeEnum(Eisen),
     difficulty: z.nativeEnum(Difficulty),
@@ -144,6 +146,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           name: {
             should_change: true,
             value: form.name,
+          },
+          is_key: {
+            should_change: true,
+            value: form.isKey,
           },
           project_ref_id: {
             should_change: form.project ? true : false,
@@ -340,16 +346,26 @@ export default function Chore() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+            <Stack direction="row" useFlexGap spacing={1}>
+              <FormControl fullWidth sx={{ flexGrow: 3 }}>
+                <InputLabel id="name">Name</InputLabel>
+                <OutlinedInput
+                  label="Name"
+                  name="name"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.chore.name}
+                />
+                <FieldError actionResult={actionData} fieldName="/name" />
+              </FormControl>
+
+              <FormControl sx={{ flexGrow: 1 }}>
+                <IsKeySelect
+                  name="isKey"
+                  defaultValue={loaderData.chore.is_key}
+                />
+                <FieldError actionResult={actionData} fieldName="/is_key" />
+              </FormControl>
+            </Stack>
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,

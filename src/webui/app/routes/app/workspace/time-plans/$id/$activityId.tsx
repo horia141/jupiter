@@ -27,7 +27,7 @@ import {
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { CheckboxAsString, parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
@@ -72,6 +72,7 @@ const UpdateFormTargetInboxTaskSchema = {
   targetInboxTaskName: z.string(),
   targetInboxTaskProject: z.string().optional(),
   targetInboxTaskBigPlan: z.string().optional(),
+  targetInboxTaskIsKey: CheckboxAsString,
   targetInboxTaskStatus: z.nativeEnum(InboxTaskStatus),
   targetInboxTaskEisen: z.nativeEnum(Eisen),
   targetInboxTaskDifficulty: z.nativeEnum(Difficulty),
@@ -274,6 +275,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
               form.targetInboxTaskBigPlan !== "none"
                 ? form.targetInboxTaskBigPlan
                 : undefined,
+          },
+          is_key: {
+            should_change: true,
+            value: form.targetInboxTaskIsKey,
           },
           eisen: corePropertyEditable
             ? {

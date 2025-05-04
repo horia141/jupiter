@@ -21,6 +21,7 @@ export type Metric = {
     archived_time?: (Timestamp | null);
     name: MetricName;
     metric_collection_ref_id: string;
+    is_key: boolean;
     icon?: (EntityIcon | null);
     collection_params?: (RecurringTaskGenParams | null);
     metric_unit?: (MetricUnit | null);

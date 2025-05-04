@@ -41,6 +41,7 @@ class BigPlan(LeafEntity):
     project_ref_id: EntityId
     name: BigPlanName
     status: BigPlanStatus
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     actionable_date: ADate | None
@@ -64,6 +65,7 @@ class BigPlan(LeafEntity):
         project_ref_id: EntityId,
         name: BigPlanName,
         status: BigPlanStatus,
+        is_key: bool,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
@@ -80,6 +82,7 @@ class BigPlan(LeafEntity):
             project_ref_id=project_ref_id,
             name=name,
             status=status,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -95,6 +98,7 @@ class BigPlan(LeafEntity):
         name: UpdateAction[BigPlanName],
         status: UpdateAction[BigPlanStatus],
         project_ref_id: UpdateAction[EntityId],
+        is_key: UpdateAction[bool],
         eisen: UpdateAction[Eisen],
         difficulty: UpdateAction[Difficulty],
         actionable_date: UpdateAction[ADate | None],
@@ -139,6 +143,7 @@ class BigPlan(LeafEntity):
             name=new_name,
             status=new_status,
             project_ref_id=project_ref_id.or_else(self.project_ref_id),
+            is_key=is_key.or_else(self.is_key),
             eisen=new_eisen,
             difficulty=new_difficulty,
             working_time=new_working_time,

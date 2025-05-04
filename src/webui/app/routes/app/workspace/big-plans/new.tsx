@@ -21,7 +21,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseQuery } from "zodix";
+import { CheckboxAsString, parseForm, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/domain/core/difficulty-select";
@@ -37,6 +37,7 @@ import {
 import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -55,6 +56,7 @@ const QuerySchema = z.object({
 const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
+  isKey: CheckboxAsString,
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
@@ -121,6 +123,7 @@ export async function action({ request }: ActionFunctionArgs) {
       time_plan_activity_kind: form.timePlanActivityKind,
       time_plan_activity_feasability: form.timePlanActivityFeasability,
       project_ref_id: form.project !== undefined ? form.project : undefined,
+      is_key: form.isKey,
       eisen: form.eisen,
       difficulty: form.difficulty,
       actionable_date:
@@ -194,11 +197,22 @@ export default function NewBigPlan() {
         }
       >
         <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+          <Stack direction="row" useFlexGap spacing={1}>
+            <FormControl fullWidth sx={{ flexGrow: 3 }}>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="Name"
+                name="name"
+                readOnly={!inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+
+            <FormControl sx={{ flexGrow: 1 }}>
+              <IsKeySelect name="isKey" defaultValue={false} />
+              <FieldError actionResult={actionData} fieldName="/is_key" />
+            </FormControl>
+          </Stack>
 
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,

@@ -21,6 +21,7 @@ export type Habit = {
     name: HabitName;
     habit_collection_ref_id: string;
     project_ref_id: EntityId;
+    is_key: boolean;
     gen_params: RecurringTaskGenParams;
     suspended: boolean;
     repeats_strategy?: (HabitRepeatsStrategy | null);

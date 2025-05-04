@@ -217,6 +217,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             select
                 ref_id,
                 name,
+                is_key,
                 json_extract(gen_params, '$.period') as period,
                 project_ref_id
             from habit
@@ -237,6 +238,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             HabitSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
                 name=_HABIT_NAME_DECODER.decode(row["name"]),
+                is_key=row["is_key"],
                 period=self._realm_codec_registry.db_decode(
                     RecurringTaskPeriod, row["period"]
                 ),
@@ -331,7 +333,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
         allow_archived: bool,
     ) -> list[MetricSummary]:
         """Find all summaries about metrics."""
-        query = """select ref_id, name, icon from metric where metric_collection_ref_id = :parent_ref_id"""
+        query = """select ref_id, name, is_key, icon from metric where metric_collection_ref_id = :parent_ref_id"""
         if not allow_archived:
             query += " and archived=0"
         result = (
@@ -347,6 +349,7 @@ class SqliteFastInfoRepository(SqliteRepository, FastInfoRepository):
             MetricSummary(
                 ref_id=_ENTITY_ID_DECODER.decode(str(row["ref_id"])),
                 name=_METRIC_NAME_DECODER.decode(row["name"]),
+                is_key=row["is_key"],
                 icon=_ENTITY_ICON_DECODER.decode(row["icon"]) if row["icon"] else None,
             )
             for row in result

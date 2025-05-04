@@ -58,6 +58,7 @@ class InboxTaskCreateArgs(UseCaseArgsBase):
     time_plan_activity_feasability: TimePlanActivityFeasability | None
     project_ref_id: EntityId | None
     big_plan_ref_id: EntityId | None
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     actionable_date: ADate | None
@@ -135,6 +136,7 @@ class InboxTaskCreateUseCase(
             inbox_task_collection_ref_id=inbox_task_collection.ref_id,
             name=args.name,
             status=InboxTaskStatus.NOT_STARTED,
+            is_key=args.is_key,
             project_ref_id=project_ref_id,
             eisen=args.eisen,
             difficulty=args.difficulty,

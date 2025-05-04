@@ -30,6 +30,7 @@ class Metric(BranchEntity):
 
     metric_collection: ParentLink
     name: MetricName
+    is_key: bool
     icon: EntityIcon | None
     collection_params: RecurringTaskGenParams | None
     metric_unit: MetricUnit | None
@@ -46,6 +47,7 @@ class Metric(BranchEntity):
         ctx: DomainContext,
         metric_collection_ref_id: EntityId,
         name: MetricName,
+        is_key: bool,
         icon: EntityIcon | None,
         collection_params: RecurringTaskGenParams | None,
         metric_unit: MetricUnit | None,
@@ -55,6 +57,7 @@ class Metric(BranchEntity):
             ctx,
             metric_collection=ParentLink(metric_collection_ref_id),
             name=name,
+            is_key=is_key,
             icon=icon,
             collection_params=collection_params,
             metric_unit=metric_unit,
@@ -65,6 +68,7 @@ class Metric(BranchEntity):
         self,
         ctx: DomainContext,
         name: UpdateAction[MetricName],
+        is_key: UpdateAction[bool],
         icon: UpdateAction[EntityIcon | None],
         collection_params: UpdateAction[RecurringTaskGenParams | None],
     ) -> "Metric":
@@ -72,6 +76,7 @@ class Metric(BranchEntity):
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
+            is_key=is_key.or_else(self.is_key),
             icon=icon.or_else(self.icon),
             collection_params=collection_params.or_else(self.collection_params),
         )

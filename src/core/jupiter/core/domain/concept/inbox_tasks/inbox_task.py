@@ -65,6 +65,7 @@ class InboxTask(LeafEntity):
     project_ref_id: EntityId
     name: InboxTaskName
     status: InboxTaskStatus
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     actionable_date: ADate | None
@@ -97,6 +98,7 @@ class InboxTask(LeafEntity):
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
         status: InboxTaskStatus,
+        is_key: bool,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
@@ -120,6 +122,7 @@ class InboxTask(LeafEntity):
             ),
             name=name,
             status=status,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date
@@ -156,6 +159,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.WORKING_MEM_CLEANUP,
             name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=Eisen.IMPORTANT,
             difficulty=Difficulty.EASY,
             actionable_date=None,
@@ -192,6 +196,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.TIME_PLAN,
             name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -212,6 +217,7 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
+        is_key: bool,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
@@ -232,6 +238,7 @@ class InboxTask(LeafEntity):
                 name, recurring_task_repeat_index, repeats_in_period_count
             ),
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -252,6 +259,7 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
+        is_key: bool,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
@@ -268,6 +276,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.CHORE,
             name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -304,6 +313,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.JOURNAL,
             name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -340,6 +350,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.METRIC,
             name=InboxTask._build_name_for_collection_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -376,6 +387,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.PERSON_CATCH_UP,
             name=InboxTask._build_name_for_catch_up_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -410,6 +422,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.PERSON_BIRTHDAY,
             name=InboxTask._build_name_for_birthday_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=Eisen.IMPORTANT,
             difficulty=Difficulty.EASY,
             actionable_date=due_date.subtract_days(preparation_days_cnt),
@@ -447,6 +460,7 @@ class InboxTask(LeafEntity):
                 generation_extra_info,
             ),
             status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
+            is_key=False,
             eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
@@ -487,6 +501,7 @@ class InboxTask(LeafEntity):
                 generation_extra_info,
             ),
             status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
+            is_key=False,
             eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
@@ -582,6 +597,7 @@ class InboxTask(LeafEntity):
         timeline: str,
         repeat_index: int,
         repeats_in_period_count: int | None,
+        is_key: bool,
         actionable_date: ADate | None,
         due_date: ADate,
         eisen: Eisen,
@@ -598,6 +614,7 @@ class InboxTask(LeafEntity):
             name=InboxTask._build_name_for_habit(
                 name, repeat_index, repeats_in_period_count
             ),
+            is_key=is_key,
             actionable_date=actionable_date,
             due_date=due_date,
             eisen=eisen,
@@ -613,6 +630,7 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         timeline: str,
+        is_key: bool,
         actionable_date: ADate | None,
         due_date: ADate,
         eisen: Eisen,
@@ -627,6 +645,7 @@ class InboxTask(LeafEntity):
             ctx,
             project_ref_id=project_ref_id,
             name=name,
+            is_key=is_key,
             actionable_date=actionable_date,
             due_date=due_date,
             eisen=eisen,
@@ -809,6 +828,7 @@ class InboxTask(LeafEntity):
         status: UpdateAction[InboxTaskStatus],
         project_ref_id: UpdateAction[EntityId],
         big_plan_ref_id: UpdateAction[EntityId | None],
+        is_key: UpdateAction[bool],
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
         eisen: UpdateAction[Eisen],
@@ -876,6 +896,13 @@ class InboxTask(LeafEntity):
         else:
             the_source_entity_ref_id = self.source_entity_ref_id
 
+        if is_key.should_change:
+            if not self.source.allow_user_changes:
+                raise CannotModifyGeneratedTaskError("is key")
+            the_is_key = is_key.just_the_value
+        else:
+            the_is_key = self.is_key
+
         if actionable_date.should_change or due_date.should_change:
             the_actionable_date = actionable_date.or_else(self.actionable_date)
             the_due_date = due_date.or_else(self.due_date)
@@ -915,6 +942,7 @@ class InboxTask(LeafEntity):
             status=the_status,
             project_ref_id=the_project,
             source_entity_ref_id=the_source_entity_ref_id,
+            is_key=the_is_key,
             actionable_date=the_actionable_date,
             due_date=the_due_date,
             working_time=the_working_time,

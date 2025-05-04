@@ -42,6 +42,7 @@ import {
 } from "~/components/infra/section-actions";
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
 
 interface InboxTaskPropertiesEditorProps {
   title: string;
@@ -220,6 +221,12 @@ export function InboxTaskPropertiesEditor(
               type="hidden"
               name={constructFieldName(props.namePrefix, "source")}
               value={props.inboxTask.source}
+            />
+          </FormControl>
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name={constructFieldName(props.namePrefix, "isKey")}
+              defaultValue={props.inboxTask.is_key}
             />
           </FormControl>
           <FormControl sx={{ flexGrow: 1 }}>

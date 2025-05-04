@@ -52,6 +52,7 @@ export function HabitKeyHabitStreakWidget(
                   streakMarks={entry.streakMarks}
                   inboxTasks={entry.inboxTasks}
                   getYearUrl={props.getYearUrl}
+                  alwaysWide
                 />
               </Box>
             )}

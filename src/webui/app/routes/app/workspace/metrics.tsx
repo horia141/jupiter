@@ -28,6 +28,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -113,6 +114,7 @@ export default function Metrics() {
                 {entry.metric.icon && (
                   <EntityIconComponent icon={entry.metric.icon} />
                 )}
+                <IsKeyTag isKey={entry.metric.is_key} />
                 <EntityNameComponent name={entry.metric.name} />
               </EntityLink>
             </EntityCard>

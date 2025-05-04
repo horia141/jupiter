@@ -39,7 +39,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { CheckboxAsString, parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStatusBigTag } from "~/components/domain/concept/big-plan/big-plan-status-big-tag";
@@ -67,6 +67,7 @@ import {
   SectionActions,
   ActionSingle,
 } from "~/components/infra/section-actions";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -76,6 +77,7 @@ const CommonParamsSchema = {
   name: z.string(),
   status: z.nativeEnum(BigPlanStatus),
   project: z.string(),
+  isKey: CheckboxAsString,
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
@@ -224,6 +226,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           project_ref_id: {
             should_change: true,
             value: form.project,
+          },
+          is_key: {
+            should_change: true,
+            value: form.isKey,
           },
           eisen: {
             should_change: true,
@@ -425,6 +431,12 @@ export default function BigPlan() {
                 defaultValue={loaderData.bigPlan.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+            <FormControl sx={{ flexGrow: 1 }}>
+              <IsKeySelect
+                name="isKey"
+                defaultValue={loaderData.bigPlan.is_key}
+              />
             </FormControl>
             <FormControl sx={{ flexGrow: 1 }}>
               <BigPlanStatusBigTag status={loaderData.bigPlan.status} />

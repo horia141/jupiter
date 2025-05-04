@@ -29,6 +29,10 @@ export type InboxTaskUpdateArgs = {
         should_change: boolean;
         value?: (EntityId | null);
     };
+    is_key: {
+        should_change: boolean;
+        value?: boolean;
+    };
     eisen: {
         should_change: boolean;
         value?: Eisen;

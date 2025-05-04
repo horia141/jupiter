@@ -27,6 +27,7 @@ from .big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDat
 from .big_plan_update_args_difficulty import BigPlanUpdateArgsDifficulty
 from .big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
 from .big_plan_update_args_eisen import BigPlanUpdateArgsEisen
+from .big_plan_update_args_is_key import BigPlanUpdateArgsIsKey
 from .big_plan_update_args_name import BigPlanUpdateArgsName
 from .big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
 from .big_plan_update_args_status import BigPlanUpdateArgsStatus
@@ -66,6 +67,7 @@ from .chore_update_args_due_at_day import ChoreUpdateArgsDueAtDay
 from .chore_update_args_due_at_month import ChoreUpdateArgsDueAtMonth
 from .chore_update_args_eisen import ChoreUpdateArgsEisen
 from .chore_update_args_end_at_date import ChoreUpdateArgsEndAtDate
+from .chore_update_args_is_key import ChoreUpdateArgsIsKey
 from .chore_update_args_must_do import ChoreUpdateArgsMustDo
 from .chore_update_args_name import ChoreUpdateArgsName
 from .chore_update_args_period import ChoreUpdateArgsPeriod
@@ -164,6 +166,7 @@ from .habit_update_args_difficulty import HabitUpdateArgsDifficulty
 from .habit_update_args_due_at_day import HabitUpdateArgsDueAtDay
 from .habit_update_args_due_at_month import HabitUpdateArgsDueAtMonth
 from .habit_update_args_eisen import HabitUpdateArgsEisen
+from .habit_update_args_is_key import HabitUpdateArgsIsKey
 from .habit_update_args_name import HabitUpdateArgsName
 from .habit_update_args_period import HabitUpdateArgsPeriod
 from .habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
@@ -176,8 +179,6 @@ from .home_config import HomeConfig
 from .home_config_load_args import HomeConfigLoadArgs
 from .home_config_load_result import HomeConfigLoadResult
 from .home_config_update_args import HomeConfigUpdateArgs
-from .home_config_update_args_key_habits import HomeConfigUpdateArgsKeyHabits
-from .home_config_update_args_key_metrics import HomeConfigUpdateArgsKeyMetrics
 from .hosting import Hosting
 from .inbox_task import InboxTask
 from .inbox_task_archive_args import InboxTaskArchiveArgs
@@ -200,6 +201,7 @@ from .inbox_task_update_args_big_plan_ref_id import InboxTaskUpdateArgsBigPlanRe
 from .inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
 from .inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
 from .inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
+from .inbox_task_update_args_is_key import InboxTaskUpdateArgsIsKey
 from .inbox_task_update_args_name import InboxTaskUpdateArgsName
 from .inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
 from .inbox_task_update_args_status import InboxTaskUpdateArgsStatus
@@ -292,6 +294,7 @@ from .metric_update_args_collection_due_at_month import MetricUpdateArgsCollecti
 from .metric_update_args_collection_eisen import MetricUpdateArgsCollectionEisen
 from .metric_update_args_collection_period import MetricUpdateArgsCollectionPeriod
 from .metric_update_args_icon import MetricUpdateArgsIcon
+from .metric_update_args_is_key import MetricUpdateArgsIsKey
 from .metric_update_args_name import MetricUpdateArgsName
 from .motd import MOTD
 from .motd_get_for_today_args import MOTDGetForTodayArgs
@@ -676,6 +679,7 @@ __all__ = (
     "BigPlanUpdateArgsDifficulty",
     "BigPlanUpdateArgsDueDate",
     "BigPlanUpdateArgsEisen",
+    "BigPlanUpdateArgsIsKey",
     "BigPlanUpdateArgsName",
     "BigPlanUpdateArgsProjectRefId",
     "BigPlanUpdateArgsStatus",
@@ -715,6 +719,7 @@ __all__ = (
     "ChoreUpdateArgsDueAtMonth",
     "ChoreUpdateArgsEisen",
     "ChoreUpdateArgsEndAtDate",
+    "ChoreUpdateArgsIsKey",
     "ChoreUpdateArgsMustDo",
     "ChoreUpdateArgsName",
     "ChoreUpdateArgsPeriod",
@@ -813,6 +818,7 @@ __all__ = (
     "HabitUpdateArgsDueAtDay",
     "HabitUpdateArgsDueAtMonth",
     "HabitUpdateArgsEisen",
+    "HabitUpdateArgsIsKey",
     "HabitUpdateArgsName",
     "HabitUpdateArgsPeriod",
     "HabitUpdateArgsProjectRefId",
@@ -825,8 +831,6 @@ __all__ = (
     "HomeConfigLoadArgs",
     "HomeConfigLoadResult",
     "HomeConfigUpdateArgs",
-    "HomeConfigUpdateArgsKeyHabits",
-    "HomeConfigUpdateArgsKeyMetrics",
     "Hosting",
     "InboxTask",
     "InboxTaskArchiveArgs",
@@ -850,6 +854,7 @@ __all__ = (
     "InboxTaskUpdateArgsDifficulty",
     "InboxTaskUpdateArgsDueDate",
     "InboxTaskUpdateArgsEisen",
+    "InboxTaskUpdateArgsIsKey",
     "InboxTaskUpdateArgsName",
     "InboxTaskUpdateArgsProjectRefId",
     "InboxTaskUpdateArgsStatus",
@@ -937,6 +942,7 @@ __all__ = (
     "MetricUpdateArgsCollectionEisen",
     "MetricUpdateArgsCollectionPeriod",
     "MetricUpdateArgsIcon",
+    "MetricUpdateArgsIsKey",
     "MetricUpdateArgsName",
     "MOTD",
     "MOTDGetForTodayArgs",

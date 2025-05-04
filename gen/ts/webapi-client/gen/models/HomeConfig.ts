@@ -16,7 +16,5 @@ export type HomeConfig = {
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
     workspace_ref_id: string;
-    key_habits: Array<EntityId>;
-    key_metrics: Array<EntityId>;
 };
 

@@ -28,6 +28,7 @@ class InboxTask:
         source (InboxTaskSource): The origin of an inbox task.
         project_ref_id (str): A generic entity id.
         status (InboxTaskStatus): The status of an inbox task.
+        is_key (bool):
         eisen (Eisen): The Eisenhower status of a particular task.
         difficulty (Difficulty): The difficulty of a particular task.
         archival_reason (Union[None, Unset, str]):
@@ -53,6 +54,7 @@ class InboxTask:
     source: InboxTaskSource
     project_ref_id: str
     status: InboxTaskStatus
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     archival_reason: Union[None, Unset, str] = UNSET
@@ -88,6 +90,8 @@ class InboxTask:
         project_ref_id = self.project_ref_id
 
         status = self.status.value
+
+        is_key = self.is_key
 
         eisen = self.eisen.value
 
@@ -173,6 +177,7 @@ class InboxTask:
                 "source": source,
                 "project_ref_id": project_ref_id,
                 "status": status,
+                "is_key": is_key,
                 "eisen": eisen,
                 "difficulty": difficulty,
             }
@@ -224,6 +229,8 @@ class InboxTask:
         project_ref_id = d.pop("project_ref_id")
 
         status = InboxTaskStatus(d.pop("status"))
+
+        is_key = d.pop("is_key")
 
         eisen = Eisen(d.pop("eisen"))
 
@@ -339,6 +346,7 @@ class InboxTask:
             source=source,
             project_ref_id=project_ref_id,
             status=status,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             archival_reason=archival_reason,

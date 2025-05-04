@@ -1,31 +1,57 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="HomeConfigUpdateArgs")
+from ..types import UNSET, Unset
+
+T = TypeVar("T", bound="BigPlanUpdateArgsIsKey")
 
 
 @_attrs_define
-class HomeConfigUpdateArgs:
-    """The arguments for updating the home config."""
+class BigPlanUpdateArgsIsKey:
+    """
+    Attributes:
+        should_change (bool):
+        value (Union[Unset, bool]):
+    """
 
+    should_change: bool
+    value: Union[Unset, bool] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        should_change = self.should_change
+
+        value = self.value
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "should_change": should_change,
+            }
+        )
+        if value is not UNSET:
+            field_dict["value"] = value
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        home_config_update_args = cls()
+        should_change = d.pop("should_change")
 
-        home_config_update_args.additional_properties = d
-        return home_config_update_args
+        value = d.pop("value", UNSET)
+
+        big_plan_update_args_is_key = cls(
+            should_change=should_change,
+            value=value,
+        )
+
+        big_plan_update_args_is_key.additional_properties = d
+        return big_plan_update_args_is_key
 
     @property
     def additional_keys(self) -> list[str]:

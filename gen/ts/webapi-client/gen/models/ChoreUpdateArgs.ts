@@ -24,6 +24,10 @@ export type ChoreUpdateArgs = {
         should_change: boolean;
         value?: EntityId;
     };
+    is_key: {
+        should_change: boolean;
+        value?: boolean;
+    };
     period: {
         should_change: boolean;
         value?: RecurringTaskPeriod;

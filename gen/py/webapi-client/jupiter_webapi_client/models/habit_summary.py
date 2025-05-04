@@ -16,12 +16,14 @@ class HabitSummary:
     Attributes:
         ref_id (str): A generic entity id.
         name (str): The habit name.
+        is_key (bool):
         period (RecurringTaskPeriod): A period for a particular task.
         project_ref_id (str): A generic entity id.
     """
 
     ref_id: str
     name: str
+    is_key: bool
     period: RecurringTaskPeriod
     project_ref_id: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -30,6 +32,8 @@ class HabitSummary:
         ref_id = self.ref_id
 
         name = self.name
+
+        is_key = self.is_key
 
         period = self.period.value
 
@@ -41,6 +45,7 @@ class HabitSummary:
             {
                 "ref_id": ref_id,
                 "name": name,
+                "is_key": is_key,
                 "period": period,
                 "project_ref_id": project_ref_id,
             }
@@ -55,6 +60,8 @@ class HabitSummary:
 
         name = d.pop("name")
 
+        is_key = d.pop("is_key")
+
         period = RecurringTaskPeriod(d.pop("period"))
 
         project_ref_id = d.pop("project_ref_id")
@@ -62,6 +69,7 @@ class HabitSummary:
         habit_summary = cls(
             ref_id=ref_id,
             name=name,
+            is_key=is_key,
             period=period,
             project_ref_id=project_ref_id,
         )

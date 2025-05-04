@@ -25,6 +25,10 @@ export type BigPlanUpdateArgs = {
         should_change: boolean;
         value?: EntityId;
     };
+    is_key: {
+        should_change: boolean;
+        value?: boolean;
+    };
     eisen: {
         should_change: boolean;
         value?: Eisen;

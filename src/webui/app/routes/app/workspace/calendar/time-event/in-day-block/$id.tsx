@@ -27,7 +27,7 @@ import {
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { CheckboxAsString, parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskPropertiesEditor } from "~/components/domain/concept/inbox-task/inbox-task-properties-editor";
@@ -67,6 +67,7 @@ const UpdateFormInboxTaskSchema = {
   inboxTaskProject: z.string().optional(),
   inboxTaskBigPlan: z.string().optional(),
   inboxTaskStatus: z.nativeEnum(InboxTaskStatus),
+  inboxTaskIsKey: CheckboxAsString,
   inboxTaskEisen: z.nativeEnum(Eisen),
   inboxTaskDifficulty: z.nativeEnum(Difficulty),
   inboxTaskActionableDate: z.string().optional(),
@@ -272,6 +273,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
               form.inboxTaskBigPlan !== "none"
                 ? form.inboxTaskBigPlan
                 : undefined,
+          },
+          is_key: {
+            should_change: true,
+            value: form.inboxTaskIsKey,
           },
           eisen: corePropertyEditable
             ? {

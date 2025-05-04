@@ -25,7 +25,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { CheckboxAsString, parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { InboxTaskPropertiesEditor } from "~/components/domain/concept/inbox-task/inbox-task-properties-editor";
@@ -58,6 +58,7 @@ const CommonParamsSchema = {
   source: z.nativeEnum(InboxTaskSource),
   name: z.string(),
   status: z.nativeEnum(InboxTaskStatus),
+  isKey: CheckboxAsString,
   project: z.string().optional(),
   bigPlan: z.string().optional(),
   eisen: z.nativeEnum(Eisen),
@@ -222,6 +223,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
               form.bigPlan !== undefined && form.bigPlan !== "none"
                 ? form.bigPlan
                 : undefined,
+          },
+          is_key: {
+            should_change: true,
+            value: form.isKey,
           },
           eisen: corePropertyEditable
             ? {

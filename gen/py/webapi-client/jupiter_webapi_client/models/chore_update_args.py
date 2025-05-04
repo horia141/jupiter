@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from ..models.chore_update_args_due_at_month import ChoreUpdateArgsDueAtMonth
     from ..models.chore_update_args_eisen import ChoreUpdateArgsEisen
     from ..models.chore_update_args_end_at_date import ChoreUpdateArgsEndAtDate
+    from ..models.chore_update_args_is_key import ChoreUpdateArgsIsKey
     from ..models.chore_update_args_must_do import ChoreUpdateArgsMustDo
     from ..models.chore_update_args_name import ChoreUpdateArgsName
     from ..models.chore_update_args_period import ChoreUpdateArgsPeriod
@@ -31,6 +32,7 @@ class ChoreUpdateArgs:
         ref_id (str): A generic entity id.
         name (ChoreUpdateArgsName):
         project_ref_id (ChoreUpdateArgsProjectRefId):
+        is_key (ChoreUpdateArgsIsKey):
         period (ChoreUpdateArgsPeriod):
         eisen (ChoreUpdateArgsEisen):
         difficulty (ChoreUpdateArgsDifficulty):
@@ -47,6 +49,7 @@ class ChoreUpdateArgs:
     ref_id: str
     name: "ChoreUpdateArgsName"
     project_ref_id: "ChoreUpdateArgsProjectRefId"
+    is_key: "ChoreUpdateArgsIsKey"
     period: "ChoreUpdateArgsPeriod"
     eisen: "ChoreUpdateArgsEisen"
     difficulty: "ChoreUpdateArgsDifficulty"
@@ -66,6 +69,8 @@ class ChoreUpdateArgs:
         name = self.name.to_dict()
 
         project_ref_id = self.project_ref_id.to_dict()
+
+        is_key = self.is_key.to_dict()
 
         period = self.period.to_dict()
 
@@ -96,6 +101,7 @@ class ChoreUpdateArgs:
                 "ref_id": ref_id,
                 "name": name,
                 "project_ref_id": project_ref_id,
+                "is_key": is_key,
                 "period": period,
                 "eisen": eisen,
                 "difficulty": difficulty,
@@ -121,6 +127,7 @@ class ChoreUpdateArgs:
         from ..models.chore_update_args_due_at_month import ChoreUpdateArgsDueAtMonth
         from ..models.chore_update_args_eisen import ChoreUpdateArgsEisen
         from ..models.chore_update_args_end_at_date import ChoreUpdateArgsEndAtDate
+        from ..models.chore_update_args_is_key import ChoreUpdateArgsIsKey
         from ..models.chore_update_args_must_do import ChoreUpdateArgsMustDo
         from ..models.chore_update_args_name import ChoreUpdateArgsName
         from ..models.chore_update_args_period import ChoreUpdateArgsPeriod
@@ -134,6 +141,8 @@ class ChoreUpdateArgs:
         name = ChoreUpdateArgsName.from_dict(d.pop("name"))
 
         project_ref_id = ChoreUpdateArgsProjectRefId.from_dict(d.pop("project_ref_id"))
+
+        is_key = ChoreUpdateArgsIsKey.from_dict(d.pop("is_key"))
 
         period = ChoreUpdateArgsPeriod.from_dict(d.pop("period"))
 
@@ -161,6 +170,7 @@ class ChoreUpdateArgs:
             ref_id=ref_id,
             name=name,
             project_ref_id=project_ref_id,
+            is_key=is_key,
             period=period,
             eisen=eisen,
             difficulty=difficulty,

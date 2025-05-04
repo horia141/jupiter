@@ -26,6 +26,7 @@ class BigPlan:
         big_plan_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
         status (BigPlanStatus): The status of a big plan.
+        is_key (bool):
         eisen (Eisen): The Eisenhower status of a particular task.
         difficulty (Difficulty): The difficulty of a particular task.
         archival_reason (Union[None, Unset, str]):
@@ -45,6 +46,7 @@ class BigPlan:
     big_plan_collection_ref_id: str
     project_ref_id: str
     status: BigPlanStatus
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     archival_reason: Union[None, Unset, str] = UNSET
@@ -73,6 +75,8 @@ class BigPlan:
         project_ref_id = self.project_ref_id
 
         status = self.status.value
+
+        is_key = self.is_key
 
         eisen = self.eisen.value
 
@@ -127,6 +131,7 @@ class BigPlan:
                 "big_plan_collection_ref_id": big_plan_collection_ref_id,
                 "project_ref_id": project_ref_id,
                 "status": status,
+                "is_key": is_key,
                 "eisen": eisen,
                 "difficulty": difficulty,
             }
@@ -166,6 +171,8 @@ class BigPlan:
         project_ref_id = d.pop("project_ref_id")
 
         status = BigPlanStatus(d.pop("status"))
+
+        is_key = d.pop("is_key")
 
         eisen = Eisen(d.pop("eisen"))
 
@@ -235,6 +242,7 @@ class BigPlan:
             big_plan_collection_ref_id=big_plan_collection_ref_id,
             project_ref_id=project_ref_id,
             status=status,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             archival_reason=archival_reason,

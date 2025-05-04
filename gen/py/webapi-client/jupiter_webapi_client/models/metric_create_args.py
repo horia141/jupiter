@@ -19,6 +19,7 @@ class MetricCreateArgs:
 
     Attributes:
         name (str): THe metric name.
+        is_key (bool):
         icon (Union[None, Unset, str]):
         collection_period (Union[None, RecurringTaskPeriod, Unset]):
         collection_eisen (Union[Eisen, None, Unset]):
@@ -31,6 +32,7 @@ class MetricCreateArgs:
     """
 
     name: str
+    is_key: bool
     icon: Union[None, Unset, str] = UNSET
     collection_period: Union[None, RecurringTaskPeriod, Unset] = UNSET
     collection_eisen: Union[Eisen, None, Unset] = UNSET
@@ -44,6 +46,8 @@ class MetricCreateArgs:
 
     def to_dict(self) -> dict[str, Any]:
         name = self.name
+
+        is_key = self.is_key
 
         icon: Union[None, Unset, str]
         if isinstance(self.icon, Unset):
@@ -112,6 +116,7 @@ class MetricCreateArgs:
         field_dict.update(
             {
                 "name": name,
+                "is_key": is_key,
             }
         )
         if icon is not UNSET:
@@ -139,6 +144,8 @@ class MetricCreateArgs:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
         name = d.pop("name")
+
+        is_key = d.pop("is_key")
 
         def _parse_icon(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -259,6 +266,7 @@ class MetricCreateArgs:
 
         metric_create_args = cls(
             name=name,
+            is_key=is_key,
             icon=icon,
             collection_period=collection_period,
             collection_eisen=collection_eisen,

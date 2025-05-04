@@ -53,6 +53,7 @@ class BigPlanCreateArgs(UseCaseArgsBase):
     time_plan_ref_id: EntityId | None
     time_plan_activity_kind: TimePlanActivityKind | None
     time_plan_activity_feasability: TimePlanActivityFeasability | None
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     project_ref_id: EntityId | None
@@ -121,6 +122,7 @@ class BigPlanCreateUseCase(
             project_ref_id=project_ref_id,
             name=args.name,
             status=BigPlanStatus.NOT_STARTED,
+            is_key=args.is_key,
             eisen=args.eisen,
             difficulty=args.difficulty,
             actionable_date=args.actionable_date,

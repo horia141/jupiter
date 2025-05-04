@@ -8,6 +8,7 @@ import { bigPlanDonePct } from "~/logic/domain/big-plan";
 import { BigPlanStatusTag } from "~/components/domain/concept/big-plan/big-plan-status-tag";
 import { EntityNameOneLineComponent } from "~/components/infra/entity-name";
 import { EntityStack } from "~/components/infra/entity-stack";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 
 interface DateMarker {
   date: ADate;
@@ -112,6 +113,7 @@ export function BigPlanTimelineSmallScreen({
                 to={`/app/workspace/big-plans/${bigPlan.ref_id}`}
               >
                 <BigPlanStatusTag status={bigPlan.status} format="icon" />
+                <IsKeyTag isKey={bigPlan.is_key} />
                 <EntityNameOneLineComponent
                   name={`[${bigPlanDonePct(
                     bigPlan,
