@@ -341,6 +341,7 @@ export default function MetricDetails() {
                 <IsKeySelect
                   name="isKey"
                   defaultValue={loaderData.metric.is_key}
+                  inputsEnabled={inputsEnabled}
                 />
                 <FieldError actionResult={actionData} fieldName="/is_key" />
               </FormControl>

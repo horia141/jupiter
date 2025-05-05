@@ -224,10 +224,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
                 ? form.bigPlan
                 : undefined,
           },
-          is_key: {
-            should_change: true,
-            value: form.isKey,
-          },
+          is_key: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.isKey,
+              }
+            : { should_change: false },
           eisen: corePropertyEditable
             ? {
                 should_change: true,

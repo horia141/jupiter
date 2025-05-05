@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 interface IsKeySelectProps {
   name: string;
   value?: boolean;
+  inputsEnabled?: boolean;
   defaultValue?: boolean;
   onChange?: (value: boolean) => void;
 }
@@ -22,6 +23,7 @@ export function IsKeySelect(props: IsKeySelectProps) {
       <ToggleButton
         value={props.name}
         selected={value}
+        disabled={!props.inputsEnabled}
         onChange={() => setValue((prevSelected) => !prevSelected)}
         sx={{ height: "100%" }}
       >

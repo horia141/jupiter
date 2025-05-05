@@ -227,6 +227,7 @@ export function InboxTaskPropertiesEditor(
             <IsKeySelect
               name={constructFieldName(props.namePrefix, "isKey")}
               defaultValue={props.inboxTask.is_key}
+              inputsEnabled={props.inputsEnabled && corePropertyEditable}
             />
           </FormControl>
           <FormControl sx={{ flexGrow: 1 }}>

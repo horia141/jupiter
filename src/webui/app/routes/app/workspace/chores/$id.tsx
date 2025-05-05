@@ -362,6 +362,7 @@ export default function Chore() {
                 <IsKeySelect
                   name="isKey"
                   defaultValue={loaderData.chore.is_key}
+                  inputsEnabled={inputsEnabled}
                 />
                 <FieldError actionResult={actionData} fieldName="/is_key" />
               </FormControl>

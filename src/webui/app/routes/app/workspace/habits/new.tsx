@@ -168,7 +168,11 @@ export default function NewHabit() {
               </FormControl>
 
               <FormControl sx={{ flexGrow: 1 }}>
-                <IsKeySelect name="isKey" defaultValue={false} />
+                <IsKeySelect
+                  name="isKey"
+                  defaultValue={false}
+                  inputsEnabled={inputsEnabled}
+                />
                 <FieldError actionResult={actionData} fieldName="/is_key" />
               </FormControl>
             </Stack>
