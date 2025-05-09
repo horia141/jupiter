@@ -3,13 +3,14 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { HomeDesktopConfig } from './HomeDesktopConfig';
-import type { HomeMobileConfig } from './HomeMobileConfig';
+import type { EntityName } from './EntityName';
 import type { Timestamp } from './Timestamp';
+import type { WidgetDimension } from './WidgetDimension';
+import type { WidgetType } from './WidgetType';
 /**
- * The home config entity.
+ * A widget on the home page.
  */
-export type HomeConfig = {
+export type HomeWidget = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
@@ -17,8 +18,9 @@ export type HomeConfig = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
-    workspace_ref_id: string;
-    desktop_config: HomeDesktopConfig;
-    mobile_config: HomeMobileConfig;
+    name: EntityName;
+    home_config_ref_id: string;
+    the_type: WidgetType;
+    dimension: WidgetDimension;
 };
 

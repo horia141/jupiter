@@ -19,6 +19,7 @@ from jupiter.core.framework.value import CompositeValue, value
 MAX_KEY_HABITS = 3
 MAX_KEY_METRICS = 3
 
+
 @value
 class HomeDesktopTabConfig(CompositeValue):
     """A tab on the home page."""

@@ -1,22 +1,19 @@
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.widget_dimension import WidgetDimension
+from ..models.widget_type import WidgetType
 from ..types import UNSET, Unset
 
-if TYPE_CHECKING:
-    from ..models.home_desktop_config import HomeDesktopConfig
-    from ..models.home_mobile_config import HomeMobileConfig
-
-
-T = TypeVar("T", bound="HomeConfig")
+T = TypeVar("T", bound="HomeWidget")
 
 
 @_attrs_define
-class HomeConfig:
-    """The home config entity.
+class HomeWidget:
+    """A widget on the home page.
 
     Attributes:
         ref_id (str): A generic entity id.
@@ -24,9 +21,10 @@ class HomeConfig:
         archived (bool):
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
-        workspace_ref_id (str):
-        desktop_config (HomeDesktopConfig): A desktop config for the home page.
-        mobile_config (HomeMobileConfig): A mobile config for the home page.
+        name (str): The name for an entity which acts as both name and unique identifier.
+        home_config_ref_id (str):
+        the_type (WidgetType): A type of widget.
+        dimension (WidgetDimension): A dimension of a widget.
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
@@ -36,9 +34,10 @@ class HomeConfig:
     archived: bool
     created_time: str
     last_modified_time: str
-    workspace_ref_id: str
-    desktop_config: "HomeDesktopConfig"
-    mobile_config: "HomeMobileConfig"
+    name: str
+    home_config_ref_id: str
+    the_type: WidgetType
+    dimension: WidgetDimension
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -54,11 +53,13 @@ class HomeConfig:
 
         last_modified_time = self.last_modified_time
 
-        workspace_ref_id = self.workspace_ref_id
+        name = self.name
 
-        desktop_config = self.desktop_config.to_dict()
+        home_config_ref_id = self.home_config_ref_id
 
-        mobile_config = self.mobile_config.to_dict()
+        the_type = self.the_type.value
+
+        dimension = self.dimension.value
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -81,9 +82,10 @@ class HomeConfig:
                 "archived": archived,
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
-                "workspace_ref_id": workspace_ref_id,
-                "desktop_config": desktop_config,
-                "mobile_config": mobile_config,
+                "name": name,
+                "home_config_ref_id": home_config_ref_id,
+                "the_type": the_type,
+                "dimension": dimension,
             }
         )
         if archival_reason is not UNSET:
@@ -95,9 +97,6 @@ class HomeConfig:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.home_desktop_config import HomeDesktopConfig
-        from ..models.home_mobile_config import HomeMobileConfig
-
         d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
@@ -109,11 +108,13 @@ class HomeConfig:
 
         last_modified_time = d.pop("last_modified_time")
 
-        workspace_ref_id = d.pop("workspace_ref_id")
+        name = d.pop("name")
 
-        desktop_config = HomeDesktopConfig.from_dict(d.pop("desktop_config"))
+        home_config_ref_id = d.pop("home_config_ref_id")
 
-        mobile_config = HomeMobileConfig.from_dict(d.pop("mobile_config"))
+        the_type = WidgetType(d.pop("the_type"))
+
+        dimension = WidgetDimension(d.pop("dimension"))
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -133,21 +134,22 @@ class HomeConfig:
 
         archived_time = _parse_archived_time(d.pop("archived_time", UNSET))
 
-        home_config = cls(
+        home_widget = cls(
             ref_id=ref_id,
             version=version,
             archived=archived,
             created_time=created_time,
             last_modified_time=last_modified_time,
-            workspace_ref_id=workspace_ref_id,
-            desktop_config=desktop_config,
-            mobile_config=mobile_config,
+            name=name,
+            home_config_ref_id=home_config_ref_id,
+            the_type=the_type,
+            dimension=dimension,
             archival_reason=archival_reason,
             archived_time=archived_time,
         )
 
-        home_config.additional_properties = d
-        return home_config
+        home_widget.additional_properties = d
+        return home_widget
 
     @property
     def additional_keys(self) -> list[str]:

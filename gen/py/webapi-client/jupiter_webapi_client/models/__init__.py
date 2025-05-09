@@ -179,6 +179,11 @@ from .home_config import HomeConfig
 from .home_config_load_args import HomeConfigLoadArgs
 from .home_config_load_result import HomeConfigLoadResult
 from .home_config_update_args import HomeConfigUpdateArgs
+from .home_desktop_config import HomeDesktopConfig
+from .home_desktop_tab_config import HomeDesktopTabConfig
+from .home_mobile_config import HomeMobileConfig
+from .home_mobile_tab_config import HomeMobileTabConfig
+from .home_widget import HomeWidget
 from .hosting import Hosting
 from .inbox_task import InboxTask
 from .inbox_task_archive_args import InboxTaskArchiveArgs
@@ -622,6 +627,9 @@ from .vacation_update_args import VacationUpdateArgs
 from .vacation_update_args_end_date import VacationUpdateArgsEndDate
 from .vacation_update_args_name import VacationUpdateArgsName
 from .vacation_update_args_start_date import VacationUpdateArgsStartDate
+from .widget_dimension import WidgetDimension
+from .widget_type import WidgetType
+from .widget_type_constraints import WidgetTypeConstraints
 from .workable_big_plan import WorkableBigPlan
 from .workable_summary import WorkableSummary
 from .working_mem import WorkingMem
@@ -831,6 +839,11 @@ __all__ = (
     "HomeConfigLoadArgs",
     "HomeConfigLoadResult",
     "HomeConfigUpdateArgs",
+    "HomeDesktopConfig",
+    "HomeDesktopTabConfig",
+    "HomeMobileConfig",
+    "HomeMobileTabConfig",
+    "HomeWidget",
     "Hosting",
     "InboxTask",
     "InboxTaskArchiveArgs",
@@ -1266,6 +1279,9 @@ __all__ = (
     "VacationUpdateArgsEndDate",
     "VacationUpdateArgsName",
     "VacationUpdateArgsStartDate",
+    "WidgetDimension",
+    "WidgetType",
+    "WidgetTypeConstraints",
     "WorkableBigPlan",
     "WorkableSummary",
     "WorkingMem",

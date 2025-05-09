@@ -11,4 +11,3 @@ class HomeWidget(LeafEntity):
     home_config: ParentLink
     the_type: WidgetType
     dimension: WidgetDimension
-    config: any

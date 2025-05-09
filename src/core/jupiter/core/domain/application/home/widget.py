@@ -1,9 +1,5 @@
 """A type of widget."""
 
-from jupiter.core.domain.core.entity_icon import EntityIcon
-from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.entity_name import EntityName
-from jupiter.core.framework.entity import LeafEntity, ParentLink, StubEntity, entity
 from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
 
 
@@ -47,7 +43,11 @@ class WidgetTypeConstraints(CompositeValue):
 
 WIDGET_CONSTRAINTS = {
     WidgetType.MOTD: WidgetTypeConstraints(
-        allowed_dimensions=[WidgetDimension.DIM_1x1, WidgetDimension.DIM_1x2, WidgetDimension.DIM_1x3],
+        allowed_dimensions=[
+            WidgetDimension.DIM_1x1,
+            WidgetDimension.DIM_1x2,
+            WidgetDimension.DIM_1x3,
+        ],
         for_desktop=True,
         for_mobile=True,
     ),
