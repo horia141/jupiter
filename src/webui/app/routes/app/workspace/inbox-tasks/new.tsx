@@ -34,7 +34,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseQuery } from "zodix";
+import { CheckboxAsString, parseForm, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { DifficultySelect } from "~/components/domain/core/difficulty-select";
@@ -56,6 +56,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
 
 const ParamsSchema = z.object({});
 
@@ -71,6 +72,7 @@ const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   bigPlan: z.string().optional(),
+  isKey: CheckboxAsString,
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
   actionableDate: z.string().optional(),
@@ -191,6 +193,7 @@ export async function action({ request }: ActionFunctionArgs) {
             ? form.bigPlan
             : undefined
           : (query.bigPlanRefId as string),
+      is_key: form.isKey,
       eisen: form.eisen,
       difficulty: form.difficulty,
       actionable_date:
@@ -336,19 +339,30 @@ export default function NewInboxTask() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                {...BetterFieldError({
-                  actionResult: actionData,
-                  fieldName: "/name",
-                })}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+            <Stack direction="row" spacing={2}>
+              <FormControl fullWidth>
+                <InputLabel id="name">Name</InputLabel>
+                <OutlinedInput
+                  label="Name"
+                  name="name"
+                  readOnly={!inputsEnabled}
+                  {...BetterFieldError({
+                    actionResult: actionData,
+                    fieldName: "/name",
+                  })}
+                />
+                <FieldError actionResult={actionData} fieldName="/name" />
+              </FormControl>
+
+              <FormControl sx={{ flexGrow: 1 }}>
+                <IsKeySelect
+                  name="isKey"
+                  defaultValue={false}
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError actionResult={actionData} fieldName="/is_key" />
+              </FormControl>
+            </Stack>
 
             {isWorkspaceFeatureAvailable(
               topLevelInfo.workspace,

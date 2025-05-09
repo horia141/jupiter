@@ -75,6 +75,7 @@ class HabitSummary(CompositeValue):
 
     ref_id: EntityId
     name: HabitName
+    is_key: bool
     period: RecurringTaskPeriod
     project_ref_id: EntityId
 
@@ -111,6 +112,7 @@ class MetricSummary(CompositeValue):
 
     ref_id: EntityId
     name: MetricName
+    is_key: bool
     icon: EntityIcon | None
 
 

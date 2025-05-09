@@ -8,6 +8,7 @@ import {
 } from "@remix-run/react";
 import Grid from "@mui/material/Grid2";
 import {
+  HabitLoadResult,
   InboxTask,
   InboxTaskSource,
   InboxTaskStatus,
@@ -19,7 +20,7 @@ import { AnimatePresence } from "framer-motion";
 import TuneIcon from "@mui/icons-material/Tune";
 import { z } from "zod";
 import { parseQuery } from "zodix";
-import { Tabs, Tab , Stack } from "@mui/material";
+import { Tabs, Tab, Stack } from "@mui/material";
 
 import {
   useTrunkNeedsToShowLeaf,
@@ -71,42 +72,35 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const apiClient = await getLoggedInApiClient(request);
 
+  const summaryResponse = await apiClient.getSummaries.getSummaries({
+    include_habits: true,
+  });
+
   const homeConfigResponse = await apiClient.home.homeConfigLoad({});
 
+  const keyHabits = summaryResponse.habits?.filter((h) => h.is_key) || [];
+
+  let keyHabitResults: HabitLoadResult[] = [];
+  if (keyHabits.length > 0) {
+    keyHabitResults = await Promise.all(
+      keyHabits.map((habit) =>
+        apiClient.habits.habitLoad({
+          ref_id: habit.ref_id,
+          allow_archived: false,
+          include_streak_marks_for_year: query.includeStreakMarksForYear,
+        }),
+      ),
+    );
+  }
+
   const motdResponse = await apiClient.motd.motdGetForToday({});
+
   const habitInboxTasksResponse = await apiClient.inboxTasks.inboxTaskFind({
     allow_archived: false,
     include_notes: false,
     include_time_event_blocks: false,
     filter_sources: [InboxTaskSource.HABIT],
   });
-
-  let keyHabit1Response = undefined;
-  if (homeConfigResponse.home_config.key_habits.length > 0) {
-    keyHabit1Response = await apiClient.habits.habitLoad({
-      ref_id: homeConfigResponse.home_config.key_habits[0],
-      allow_archived: false,
-      include_streak_marks_for_year: query.includeStreakMarksForYear,
-    });
-  }
-
-  let keyHabit2Response = undefined;
-  if (homeConfigResponse.home_config.key_habits.length > 1) {
-    keyHabit2Response = await apiClient.habits.habitLoad({
-      ref_id: homeConfigResponse.home_config.key_habits[1],
-      allow_archived: false,
-      include_streak_marks_for_year: query.includeStreakMarksForYear,
-    });
-  }
-
-  let keyHabit3Response = undefined;
-  if (homeConfigResponse.home_config.key_habits.length > 2) {
-    keyHabit3Response = await apiClient.habits.habitLoad({
-      ref_id: homeConfigResponse.home_config.key_habits[2],
-      allow_archived: false,
-      include_streak_marks_for_year: query.includeStreakMarksForYear,
-    });
-  }
 
   const calendarForTodayResponse =
     await apiClient.calendar.calendarLoadForDateAndPeriod({
@@ -152,9 +146,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     motd: motdResponse.motd,
     habitInboxTasks: habitInboxTasksResponse.entries,
-    keyHabit1: keyHabit1Response,
-    keyHabit2: keyHabit2Response,
-    keyHabit3: keyHabit3Response,
+    keyHabitResults: keyHabitResults.map((h) => ({
+      habit: h.habit,
+      streakMarkYear: h.streak_mark_year,
+      streakMarks: h.streak_marks,
+      inboxTasks: h.inbox_tasks,
+    })),
     calendarEntriesForToday: calendarForTodayResponse.entries,
     timePlanForToday: fullTimePlanForToday
       ? {
@@ -262,29 +259,6 @@ export default function Workspace() {
     }, 0);
   }
 
-  const keyHabitEntries = [];
-  if (loaderData.keyHabit1) {
-    keyHabitEntries.push({
-      habit: loaderData.keyHabit1?.habit,
-      streakMarks: loaderData.keyHabit1?.streak_marks,
-      inboxTasks: loaderData.keyHabit1?.inbox_tasks,
-    });
-  }
-  if (loaderData.keyHabit2) {
-    keyHabitEntries.push({
-      habit: loaderData.keyHabit2?.habit,
-      streakMarks: loaderData.keyHabit2?.streak_marks,
-      inboxTasks: loaderData.keyHabit2?.inbox_tasks,
-    });
-  }
-  if (loaderData.keyHabit3) {
-    keyHabitEntries.push({
-      habit: loaderData.keyHabit3?.habit,
-      streakMarks: loaderData.keyHabit3?.streak_marks,
-      inboxTasks: loaderData.keyHabit3?.inbox_tasks,
-    });
-  }
-
   return (
     <TrunkPanel
       key={"workspace"}
@@ -313,9 +287,12 @@ export default function Workspace() {
               </Grid>
               <Grid size={{ md: 4 }}>
                 <HabitKeyHabitStreakWidget
-                  year={loaderData.keyHabit1?.streak_mark_year ?? rightNow.year}
+                  year={
+                    loaderData.keyHabitResults[0]?.streakMarkYear ??
+                    rightNow.year
+                  }
                   currentYear={rightNow.year}
-                  entries={keyHabitEntries}
+                  entries={loaderData.keyHabitResults}
                   getYearUrl={(year) =>
                     `/app/workspace?${newURLParams(
                       query,
@@ -401,9 +378,12 @@ export default function Workspace() {
                 <MOTDWidget motd={loaderData.motd} />
 
                 <HabitKeyHabitStreakWidget
-                  year={loaderData.keyHabit1?.streak_mark_year ?? rightNow.year}
+                  year={
+                    loaderData.keyHabitResults[0]?.streakMarkYear ??
+                    rightNow.year
+                  }
                   currentYear={rightNow.year}
-                  entries={keyHabitEntries}
+                  entries={loaderData.keyHabitResults}
                   getYearUrl={(year) =>
                     `/app/workspace?${newURLParams(
                       query,

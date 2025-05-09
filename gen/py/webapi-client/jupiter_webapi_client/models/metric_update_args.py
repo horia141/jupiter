@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from ..models.metric_update_args_collection_eisen import MetricUpdateArgsCollectionEisen
     from ..models.metric_update_args_collection_period import MetricUpdateArgsCollectionPeriod
     from ..models.metric_update_args_icon import MetricUpdateArgsIcon
+    from ..models.metric_update_args_is_key import MetricUpdateArgsIsKey
     from ..models.metric_update_args_name import MetricUpdateArgsName
 
 
@@ -28,6 +29,7 @@ class MetricUpdateArgs:
     Attributes:
         ref_id (str): A generic entity id.
         name (MetricUpdateArgsName):
+        is_key (MetricUpdateArgsIsKey):
         icon (MetricUpdateArgsIcon):
         collection_period (MetricUpdateArgsCollectionPeriod):
         collection_eisen (MetricUpdateArgsCollectionEisen):
@@ -40,6 +42,7 @@ class MetricUpdateArgs:
 
     ref_id: str
     name: "MetricUpdateArgsName"
+    is_key: "MetricUpdateArgsIsKey"
     icon: "MetricUpdateArgsIcon"
     collection_period: "MetricUpdateArgsCollectionPeriod"
     collection_eisen: "MetricUpdateArgsCollectionEisen"
@@ -54,6 +57,8 @@ class MetricUpdateArgs:
         ref_id = self.ref_id
 
         name = self.name.to_dict()
+
+        is_key = self.is_key.to_dict()
 
         icon = self.icon.to_dict()
 
@@ -77,6 +82,7 @@ class MetricUpdateArgs:
             {
                 "ref_id": ref_id,
                 "name": name,
+                "is_key": is_key,
                 "icon": icon,
                 "collection_period": collection_period,
                 "collection_eisen": collection_eisen,
@@ -104,12 +110,15 @@ class MetricUpdateArgs:
         from ..models.metric_update_args_collection_eisen import MetricUpdateArgsCollectionEisen
         from ..models.metric_update_args_collection_period import MetricUpdateArgsCollectionPeriod
         from ..models.metric_update_args_icon import MetricUpdateArgsIcon
+        from ..models.metric_update_args_is_key import MetricUpdateArgsIsKey
         from ..models.metric_update_args_name import MetricUpdateArgsName
 
         d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
         name = MetricUpdateArgsName.from_dict(d.pop("name"))
+
+        is_key = MetricUpdateArgsIsKey.from_dict(d.pop("is_key"))
 
         icon = MetricUpdateArgsIcon.from_dict(d.pop("icon"))
 
@@ -134,6 +143,7 @@ class MetricUpdateArgs:
         metric_update_args = cls(
             ref_id=ref_id,
             name=name,
+            is_key=is_key,
             icon=icon,
             collection_period=collection_period,
             collection_eisen=collection_eisen,

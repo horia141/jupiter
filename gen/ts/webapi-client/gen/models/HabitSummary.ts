@@ -11,6 +11,7 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 export type HabitSummary = {
     ref_id: EntityId;
     name: HabitName;
+    is_key: boolean;
     period: RecurringTaskPeriod;
     project_ref_id: EntityId;
 };

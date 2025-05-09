@@ -57,6 +57,8 @@ class ChoreShow(LoggedInReadonlyCommand[ChoreFindUseCase, ChoreFindResult]):
 
             chore_text = Text("")
             chore_text.append(entity_id_to_rich_text(chore.ref_id))
+            if chore.is_key:
+                chore_text.append(" 🔑")
             chore_text.append(f" {chore.name}")
 
             chore_info_text = Text("")

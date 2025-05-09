@@ -15,6 +15,7 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
  */
 export type MetricCreateArgs = {
     name: MetricName;
+    is_key: boolean;
     icon?: (EntityIcon | null);
     collection_period?: (RecurringTaskPeriod | null);
     collection_eisen?: (Eisen | null);

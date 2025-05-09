@@ -94,13 +94,14 @@ class ScoreLogEntry(LeafEntity):
         inbox_task: InboxTask, has_lucky_puppy_bonus: bool | None
     ) -> int:
         lucky_puppy_modifier = 1 if has_lucky_puppy_bonus else 0
+        is_key_modifier = 1 if inbox_task.is_key else 0
         if inbox_task.status == InboxTaskStatus.DONE:
             if inbox_task.difficulty == Difficulty.EASY:
-                return 1 + lucky_puppy_modifier
+                return 1 + lucky_puppy_modifier + is_key_modifier
             elif inbox_task.difficulty == Difficulty.MEDIUM:
-                return 2 + lucky_puppy_modifier
+                return 2 + lucky_puppy_modifier + is_key_modifier
             else:  # inbox_task.difficulty == Difficulty.HARD:
-                return 5 + lucky_puppy_modifier
+                return 5 + lucky_puppy_modifier + is_key_modifier
         else:  # inbox_task.status == InboxTaskStatus.NOT_DONE:
             if inbox_task.difficulty == Difficulty.EASY:
                 return -1
@@ -113,11 +114,11 @@ class ScoreLogEntry(LeafEntity):
     def _compute_score_for_big_plan(big_plan: BigPlan) -> int:
         if big_plan.status == BigPlanStatus.DONE:
             if big_plan.difficulty == Difficulty.EASY:
-                return 10
+                return 10 + (5 if big_plan.is_key else 0)
             elif big_plan.difficulty == Difficulty.MEDIUM:
-                return 25
+                return 25 + (10 if big_plan.is_key else 0)
             else:  # big_plan.difficulty == Difficulty.HARD:
-                return 50
+                return 50 + (25 if big_plan.is_key else 0)
         else:  # big_plan.status == BigPlanStatus.NOT_DONE:
             if big_plan.difficulty == Difficulty.EASY:
                 return -10

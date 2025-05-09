@@ -17,6 +17,7 @@ export type BigPlanCreateArgs = {
     time_plan_ref_id?: (EntityId | null);
     time_plan_activity_kind?: (TimePlanActivityKind | null);
     time_plan_activity_feasability?: (TimePlanActivityFeasability | null);
+    is_key: boolean;
     eisen: Eisen;
     difficulty: Difficulty;
     project_ref_id?: (EntityId | null);

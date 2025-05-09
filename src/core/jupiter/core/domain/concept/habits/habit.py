@@ -35,6 +35,7 @@ class Habit(LeafEntity):
     habit_collection: ParentLink
     project_ref_id: EntityId
     name: HabitName
+    is_key: bool
     gen_params: RecurringTaskGenParams
     suspended: bool
     repeats_strategy: HabitRepeatsStrategy | None
@@ -56,10 +57,11 @@ class Habit(LeafEntity):
         habit_collection_ref_id: EntityId,
         project_ref_id: EntityId,
         name: HabitName,
+        is_key: bool,
         gen_params: RecurringTaskGenParams,
+        suspended: bool,
         repeats_strategy: HabitRepeatsStrategy | None,
         repeats_in_period_count: int | None,
-        suspended: bool,
     ) -> "Habit":
         """Create a habit."""
         if repeats_in_period_count is not None:
@@ -83,10 +85,11 @@ class Habit(LeafEntity):
             habit_collection=ParentLink(habit_collection_ref_id),
             project_ref_id=project_ref_id,
             name=name,
+            is_key=is_key,
             gen_params=gen_params,
+            suspended=suspended,
             repeats_strategy=repeats_strategy,
             repeats_in_period_count=repeats_in_period_count,
-            suspended=suspended,
         )
 
     @update_entity_action
@@ -95,6 +98,7 @@ class Habit(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[HabitName],
         project_ref_id: UpdateAction[EntityId],
+        is_key: UpdateAction[bool],
         gen_params: UpdateAction[RecurringTaskGenParams],
         repeats_in_period_count: UpdateAction[int | None],
         repeats_strategy: UpdateAction[HabitRepeatsStrategy | None],
@@ -143,6 +147,7 @@ class Habit(LeafEntity):
             ctx,
             name=name.or_else(self.name),
             project_ref_id=project_ref_id.or_else(self.project_ref_id),
+            is_key=is_key.or_else(self.is_key),
             gen_params=the_gen_params,
             repeats_strategy=repeats_strategy.or_else(self.repeats_strategy),
             repeats_in_period_count=repeats_in_period_count.or_else(

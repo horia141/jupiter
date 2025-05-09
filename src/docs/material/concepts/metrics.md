@@ -18,6 +18,10 @@ Each metric contains many entries or records, for example:
 
 Metrics have a name. It's the nicely looking counterpart to the key.
 
+Metrics can be marked as _key metrics_. This is first a user-level concept - it marks
+the metric as an important one for you, that is absolutely necessary to get right. In
+various other contexts it applies, helping with sorting, prioritization, etc.
+
 Metrics can also have an icon. It's a nice unicode glyph like 💰 or ⚖️ and it serves to
 visually distinguish the metric.
 

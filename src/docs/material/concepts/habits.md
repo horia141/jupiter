@@ -50,6 +50,10 @@ it also changes in the following way:
 * There is a link back to the owning habit.
 * Most fields are not editable.
 
+Habits can be marked as _key habits_. This is first a user-level concept - it marks
+the habit as an important one for you, that is absolutely necessary to get right. In
+various other contexts it applies, helping with sorting, prioritization, etc.
+
 Habits can also have an actionable date. By default there is none, and the generated
 inbox task won't have an actionable date. If you specify an `actionable_from_day` and/or
 `actionable_from_month` properties, they will determine the inbox tasks to have one. They work like

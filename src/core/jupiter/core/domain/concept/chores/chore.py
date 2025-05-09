@@ -30,6 +30,7 @@ class Chore(LeafEntity):
     chore_collection: ParentLink
     project_ref_id: EntityId
     name: ChoreName
+    is_key: bool
     gen_params: RecurringTaskGenParams
     suspended: bool
     must_do: bool
@@ -48,6 +49,7 @@ class Chore(LeafEntity):
         chore_collection_ref_id: EntityId,
         project_ref_id: EntityId,
         name: ChoreName,
+        is_key: bool,
         gen_params: RecurringTaskGenParams,
         start_at_date: ADate | None,
         end_at_date: ADate | None,
@@ -73,6 +75,7 @@ class Chore(LeafEntity):
             chore_collection=ParentLink(chore_collection_ref_id),
             project_ref_id=project_ref_id,
             name=name,
+            is_key=is_key,
             gen_params=gen_params,
             suspended=suspended,
             must_do=must_do,
@@ -86,6 +89,7 @@ class Chore(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[ChoreName],
         project_ref_id: UpdateAction[EntityId],
+        is_key: UpdateAction[bool],
         gen_params: UpdateAction[RecurringTaskGenParams],
         must_do: UpdateAction[bool],
         start_at_date: UpdateAction[ADate],
@@ -112,6 +116,7 @@ class Chore(LeafEntity):
             ctx,
             name=name.or_else(self.name),
             project_ref_id=project_ref_id.or_else(self.project_ref_id),
+            is_key=is_key.or_else(self.is_key),
             gen_params=the_gen_params,
             must_do=must_do.or_else(self.must_do),
             start_at_date=the_start_at_date,

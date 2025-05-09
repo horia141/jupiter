@@ -21,6 +21,7 @@ export type Chore = {
     name: ChoreName;
     chore_collection_ref_id: string;
     project_ref_id: EntityId;
+    is_key: boolean;
     gen_params: RecurringTaskGenParams;
     suspended: boolean;
     must_do: boolean;

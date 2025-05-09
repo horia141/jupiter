@@ -32,6 +32,10 @@ The state evolution diagram is:
 
 ![Big plan states](../assets/concepts-big-plan-states.png)
 
+Big plans can be marked as _key big plans_. This is first a user-level concept - it
+marks the big plan as an important one for you, that is absolutely necessary to get
+right. In various other contexts it applies, helping with sorting, prioritization, etc.
+
 Big plans have an actionable date, much like _inbox tasks_. Conceptually, this is the the
 time from which you can start working on a particular big plan.
 

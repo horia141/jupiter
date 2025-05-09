@@ -56,6 +56,7 @@ import { MetricTag } from "~/components/domain/concept/metric/metric-tag";
 import { PersonTag } from "~/components/domain/concept/person/person-tag";
 import { ProjectTag } from "~/components/domain/concept/project/project-tag";
 import { SlackTaskTag } from "~/components/domain/concept/slack-task/slack-task-tag";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 
 export interface InboxTaskShowOptions {
   showStatus?: boolean;
@@ -178,6 +179,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
             to={`/app/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
             block={props.onClick !== undefined}
           >
+            <IsKeyTag isKey={props.inboxTask.is_key} />
             <EntityNameComponent
               compact={props.compact}
               name={props.inboxTask.name}

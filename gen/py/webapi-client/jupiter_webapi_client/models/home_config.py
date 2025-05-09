@@ -20,8 +20,6 @@ class HomeConfig:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         workspace_ref_id (str):
-        key_habits (list[str]):
-        key_metrics (list[str]):
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
@@ -32,8 +30,6 @@ class HomeConfig:
     created_time: str
     last_modified_time: str
     workspace_ref_id: str
-    key_habits: list[str]
-    key_metrics: list[str]
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -50,10 +46,6 @@ class HomeConfig:
         last_modified_time = self.last_modified_time
 
         workspace_ref_id = self.workspace_ref_id
-
-        key_habits = self.key_habits
-
-        key_metrics = self.key_metrics
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -77,8 +69,6 @@ class HomeConfig:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "workspace_ref_id": workspace_ref_id,
-                "key_habits": key_habits,
-                "key_metrics": key_metrics,
             }
         )
         if archival_reason is not UNSET:
@@ -102,10 +92,6 @@ class HomeConfig:
         last_modified_time = d.pop("last_modified_time")
 
         workspace_ref_id = d.pop("workspace_ref_id")
-
-        key_habits = cast(list[str], d.pop("key_habits"))
-
-        key_metrics = cast(list[str], d.pop("key_metrics"))
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -132,8 +118,6 @@ class HomeConfig:
             created_time=created_time,
             last_modified_time=last_modified_time,
             workspace_ref_id=workspace_ref_id,
-            key_habits=key_habits,
-            key_metrics=key_metrics,
             archival_reason=archival_reason,
             archived_time=archived_time,
         )

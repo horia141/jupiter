@@ -45,6 +45,7 @@ class ChoreUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[ChoreName]
     project_ref_id: UpdateAction[EntityId]
+    is_key: UpdateAction[bool]
     period: UpdateAction[RecurringTaskPeriod]
     eisen: UpdateAction[Eisen]
     difficulty: UpdateAction[Difficulty]
@@ -132,6 +133,7 @@ class ChoreUpdateUseCase(
             ctx=context.domain_context,
             project_ref_id=args.project_ref_id,
             name=args.name,
+            is_key=args.is_key,
             gen_params=chore_gen_params,
             must_do=args.must_do,
             start_at_date=args.start_at_date,
@@ -175,6 +177,7 @@ class ChoreUpdateUseCase(
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
+                    is_key=chore.is_key,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_date,
                     eisen=chore.gen_params.eisen,

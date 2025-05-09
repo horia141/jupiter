@@ -24,6 +24,7 @@ export type BigPlan = {
     big_plan_collection_ref_id: string;
     project_ref_id: EntityId;
     status: BigPlanStatus;
+    is_key: boolean;
     eisen: Eisen;
     difficulty: Difficulty;
     actionable_date?: (ADate | null);

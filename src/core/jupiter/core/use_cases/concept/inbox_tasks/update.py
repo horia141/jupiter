@@ -71,6 +71,7 @@ class InboxTaskUpdateArgs(UseCaseArgsBase):
     status: UpdateAction[InboxTaskStatus]
     project_ref_id: UpdateAction[EntityId]
     big_plan_ref_id: UpdateAction[EntityId | None]
+    is_key: UpdateAction[bool]
     eisen: UpdateAction[Eisen]
     difficulty: UpdateAction[Difficulty]
     actionable_date: UpdateAction[ADate | None]
@@ -153,6 +154,7 @@ class InboxTaskUpdateUseCase(
                 name=args.name,
                 project_ref_id=the_project,
                 big_plan_ref_id=args.big_plan_ref_id,
+                is_key=args.is_key,
                 status=args.status,
                 eisen=args.eisen,
                 difficulty=args.difficulty,

@@ -50,6 +50,7 @@ class MetricUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     name: UpdateAction[MetricName]
+    is_key: UpdateAction[bool]
     icon: UpdateAction[EntityIcon | None]
     collection_period: UpdateAction[RecurringTaskPeriod | None]
     collection_eisen: UpdateAction[Eisen | None]
@@ -186,6 +187,7 @@ class MetricUpdateUseCase(
         metric = metric.update(
             context.domain_context,
             name=args.name,
+            is_key=args.is_key,
             icon=args.icon,
             collection_params=collection_params,
         )

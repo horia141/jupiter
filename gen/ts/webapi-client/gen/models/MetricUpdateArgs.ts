@@ -19,6 +19,10 @@ export type MetricUpdateArgs = {
         should_change: boolean;
         value?: MetricName;
     };
+    is_key: {
+        should_change: boolean;
+        value?: boolean;
+    };
     icon: {
         should_change: boolean;
         value?: (EntityIcon | null);

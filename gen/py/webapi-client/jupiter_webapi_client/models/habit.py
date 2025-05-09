@@ -27,6 +27,7 @@ class Habit:
         name (str): The habit name.
         habit_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
+        is_key (bool):
         gen_params (RecurringTaskGenParams): Parameters for metric collection.
         suspended (bool):
         archival_reason (Union[None, Unset, str]):
@@ -43,6 +44,7 @@ class Habit:
     name: str
     habit_collection_ref_id: str
     project_ref_id: str
+    is_key: bool
     gen_params: "RecurringTaskGenParams"
     suspended: bool
     archival_reason: Union[None, Unset, str] = UNSET
@@ -67,6 +69,8 @@ class Habit:
         habit_collection_ref_id = self.habit_collection_ref_id
 
         project_ref_id = self.project_ref_id
+
+        is_key = self.is_key
 
         gen_params = self.gen_params.to_dict()
 
@@ -110,6 +114,7 @@ class Habit:
                 "name": name,
                 "habit_collection_ref_id": habit_collection_ref_id,
                 "project_ref_id": project_ref_id,
+                "is_key": is_key,
                 "gen_params": gen_params,
                 "suspended": suspended,
             }
@@ -145,6 +150,8 @@ class Habit:
         habit_collection_ref_id = d.pop("habit_collection_ref_id")
 
         project_ref_id = d.pop("project_ref_id")
+
+        is_key = d.pop("is_key")
 
         gen_params = RecurringTaskGenParams.from_dict(d.pop("gen_params"))
 
@@ -203,6 +210,7 @@ class Habit:
             name=name,
             habit_collection_ref_id=habit_collection_ref_id,
             project_ref_id=project_ref_id,
+            is_key=is_key,
             gen_params=gen_params,
             suspended=suspended,
             archival_reason=archival_reason,

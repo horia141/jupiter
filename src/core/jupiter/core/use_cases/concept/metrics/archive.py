@@ -1,6 +1,5 @@
 """The command for archiving a metric."""
 
-from jupiter.core.domain.application.home.home_config import HomeConfig
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
@@ -19,7 +18,6 @@ from jupiter.core.domain.core.notes.service.note_archive_service import (
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -105,23 +103,6 @@ class MetricArchiveUseCase(
             metric.ref_id,
             ArchivalReason.USER,
         )
-
-        home_config = await uow.get_for(HomeConfig).load_by_parent(
-            workspace.ref_id,
-        )
-        if metric.ref_id in home_config.key_metrics:
-            home_config = home_config.update(
-                ctx=context.domain_context,
-                key_habits=UpdateAction.change_to([]),
-                key_metrics=UpdateAction.change_to(
-                    [
-                        metric_ref_id
-                        for metric_ref_id in home_config.key_metrics
-                        if metric_ref_id != metric.ref_id
-                    ]
-                ),
-            )
-            await uow.get_for(HomeConfig).save(home_config)
 
         metric = metric.mark_archived(context.domain_context, ArchivalReason.USER)
         await uow.get_for(Metric).save(metric)

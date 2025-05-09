@@ -30,6 +30,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -88,6 +89,7 @@ export default function Chores() {
                 entityId={`chore-${chore.ref_id}`}
               >
                 <EntityLink to={`/app/workspace/chores/${chore.ref_id}`}>
+                  <IsKeyTag isKey={chore.is_key} />
                   <EntityNameComponent name={chore.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,

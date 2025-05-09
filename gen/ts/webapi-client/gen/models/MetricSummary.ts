@@ -11,6 +11,7 @@ import type { MetricName } from './MetricName';
 export type MetricSummary = {
     ref_id: EntityId;
     name: MetricName;
+    is_key: boolean;
     icon?: (EntityIcon | null);
 };
 

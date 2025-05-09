@@ -195,8 +195,6 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_home_config = HomeConfig.new_home_config(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                key_habits=[],
-                key_metrics=[],
             )
             new_home_config = await uow.get_for(HomeConfig).create(new_home_config)
 

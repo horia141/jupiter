@@ -29,6 +29,7 @@ export async function action({ request }: ActionFunctionArgs) {
       status: { should_change: true, value: form.status },
       project_ref_id: { should_change: false },
       big_plan_ref_id: { should_change: false },
+      is_key: { should_change: false },
       eisen:
         form.eisen !== "no-go" && form.eisen !== undefined
           ? { should_change: true, value: form.eisen }

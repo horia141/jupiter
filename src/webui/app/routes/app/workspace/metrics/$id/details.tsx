@@ -31,7 +31,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams, parseQuery } from "zodix";
+import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
@@ -48,6 +48,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -64,6 +65,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
     name: z.string(),
+    isKey: CheckboxAsString,
     icon: z.string().optional(),
     collectionPeriod: z
       .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
@@ -138,6 +140,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           name: {
             should_change: true,
             value: form.name,
+          },
+          is_key: {
+            should_change: true,
+            value: form.isKey,
           },
           icon: {
             should_change: true,
@@ -319,16 +325,27 @@ export default function MetricDetails() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.metric.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+            <Stack direction="row" spacing={2}>
+              <FormControl fullWidth sx={{ flexGrow: 3 }}>
+                <InputLabel id="name">Name</InputLabel>
+                <OutlinedInput
+                  label="Name"
+                  name="name"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.metric.name}
+                />
+                <FieldError actionResult={actionData} fieldName="/name" />
+              </FormControl>
+
+              <FormControl sx={{ flexGrow: 1 }}>
+                <IsKeySelect
+                  name="isKey"
+                  defaultValue={loaderData.metric.is_key}
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError actionResult={actionData} fieldName="/is_key" />
+              </FormControl>
+            </Stack>
 
             <FormControl fullWidth>
               <InputLabel id="icon">Icon</InputLabel>

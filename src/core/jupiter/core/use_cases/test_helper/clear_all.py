@@ -157,8 +157,6 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
 
                     home_config = home_config.update(
                         ctx=context.domain_context,
-                        key_habits=UpdateAction.change_to([]),
-                        key_metrics=UpdateAction.change_to([]),
                     )
                     await uow.get_for(HomeConfig).save(home_config)
 

@@ -36,6 +36,7 @@ class MetricCreateArgs(UseCaseArgsBase):
     """PersonFindArgs."""
 
     name: MetricName
+    is_key: bool
     icon: EntityIcon | None
     collection_period: RecurringTaskPeriod | None
     collection_eisen: Eisen | None
@@ -93,6 +94,7 @@ class MetricCreateUseCase(
             context.domain_context,
             metric_collection_ref_id=metric_collection.ref_id,
             name=args.name,
+            is_key=args.is_key,
             icon=args.icon,
             collection_params=collection_params,
             metric_unit=args.metric_unit,

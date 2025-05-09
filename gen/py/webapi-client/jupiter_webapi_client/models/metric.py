@@ -26,6 +26,7 @@ class Metric:
         last_modified_time (str): A timestamp in the application.
         name (str): THe metric name.
         metric_collection_ref_id (str):
+        is_key (bool):
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         icon (Union[None, Unset, str]):
@@ -40,6 +41,7 @@ class Metric:
     last_modified_time: str
     name: str
     metric_collection_ref_id: str
+    is_key: bool
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     icon: Union[None, Unset, str] = UNSET
@@ -63,6 +65,8 @@ class Metric:
         name = self.name
 
         metric_collection_ref_id = self.metric_collection_ref_id
+
+        is_key = self.is_key
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -109,6 +113,7 @@ class Metric:
                 "last_modified_time": last_modified_time,
                 "name": name,
                 "metric_collection_ref_id": metric_collection_ref_id,
+                "is_key": is_key,
             }
         )
         if archival_reason is not UNSET:
@@ -142,6 +147,8 @@ class Metric:
         name = d.pop("name")
 
         metric_collection_ref_id = d.pop("metric_collection_ref_id")
+
+        is_key = d.pop("is_key")
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -212,6 +219,7 @@ class Metric:
             last_modified_time=last_modified_time,
             name=name,
             metric_collection_ref_id=metric_collection_ref_id,
+            is_key=is_key,
             archival_reason=archival_reason,
             archived_time=archived_time,
             icon=icon,

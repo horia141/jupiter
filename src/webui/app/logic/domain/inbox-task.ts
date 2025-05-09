@@ -21,6 +21,7 @@ import type { DateTime } from "luxon";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { compareDifficulty } from "~/logic/domain/difficulty";
 import { compareEisen } from "~/logic/domain/eisen";
+import { compareIsKey } from "~/logic/domain/is-key";
 
 export interface InboxTaskOptimisticState {
   status: InboxTaskStatus;
@@ -231,12 +232,9 @@ export function sortInboxTasksNaturally(
     return (
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date) ||
+      compareIsKey(i1.is_key, i2.is_key) ||
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 *
-        compareDifficulty(
-          i1.difficulty ?? Difficulty.EASY,
-          i2.difficulty ?? Difficulty.EASY,
-        )
+      -1 * compareDifficulty(i1.difficulty, i2.difficulty)
     );
   });
 }
@@ -254,12 +252,9 @@ export function sortInboxTasksByEisenAndDifficulty(
 
   return [...inboxTasks].sort((i1, i2) => {
     return (
+      compareIsKey(i1.is_key, i2.is_key) ||
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 *
-        compareDifficulty(
-          i1.difficulty ?? Difficulty.EASY,
-          i2.difficulty ?? Difficulty.EASY,
-        ) ||
+      -1 * compareDifficulty(i1.difficulty, i2.difficulty) ||
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date)
     );

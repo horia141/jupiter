@@ -16,11 +16,13 @@ class MetricSummary:
     Attributes:
         ref_id (str): A generic entity id.
         name (str): THe metric name.
+        is_key (bool):
         icon (Union[None, Unset, str]):
     """
 
     ref_id: str
     name: str
+    is_key: bool
     icon: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -28,6 +30,8 @@ class MetricSummary:
         ref_id = self.ref_id
 
         name = self.name
+
+        is_key = self.is_key
 
         icon: Union[None, Unset, str]
         if isinstance(self.icon, Unset):
@@ -41,6 +45,7 @@ class MetricSummary:
             {
                 "ref_id": ref_id,
                 "name": name,
+                "is_key": is_key,
             }
         )
         if icon is not UNSET:
@@ -55,6 +60,8 @@ class MetricSummary:
 
         name = d.pop("name")
 
+        is_key = d.pop("is_key")
+
         def _parse_icon(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -67,6 +74,7 @@ class MetricSummary:
         metric_summary = cls(
             ref_id=ref_id,
             name=name,
+            is_key=is_key,
             icon=icon,
         )
 

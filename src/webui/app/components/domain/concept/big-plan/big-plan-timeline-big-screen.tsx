@@ -22,6 +22,7 @@ import { EntityLink } from "~/components/infra/entity-card";
 import { EisenTag } from "~/components/domain/core/eisen-tag";
 import { DifficultyTag } from "~/components/domain/core/difficulty-tag";
 import { BigPlanDonePctTag } from "~/components/domain/concept/big-plan/big-plan-done-pct-tag";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 
 interface DateMarker {
   date: ADate;
@@ -100,6 +101,7 @@ export function BigPlanTimelineBigScreen({
                     block={allowSelect}
                     to={`/app/workspace/big-plans/${entry.ref_id}`}
                   >
+                    <IsKeyTag isKey={entry.is_key} />
                     <EntityNameOneLineComponent name={entry.name} />
                   </EntityLink>
                 </TableCell>

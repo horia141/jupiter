@@ -20,6 +20,7 @@ interface HabitStreakCalendarProps {
   habit: Habit;
   streakMarks: HabitStreakMark[];
   inboxTasks: InboxTask[];
+  alwaysWide?: boolean;
   getYearUrl: (year: number) => string;
 }
 
@@ -138,7 +139,7 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
           </StandardLink>
         )}
       </Stack>
-      {isBigScreen ? (
+      {isBigScreen || props.alwaysWide ? (
         renderCalendar(earliestDate.toISODate(), latestDate.toISODate())
       ) : (
         <Stack spacing={2}>

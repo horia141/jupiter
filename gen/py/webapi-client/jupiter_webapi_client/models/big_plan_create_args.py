@@ -19,6 +19,7 @@ class BigPlanCreateArgs:
 
     Attributes:
         name (str): The big plan name.
+        is_key (bool):
         eisen (Eisen): The Eisenhower status of a particular task.
         difficulty (Difficulty): The difficulty of a particular task.
         time_plan_ref_id (Union[None, Unset, str]):
@@ -30,6 +31,7 @@ class BigPlanCreateArgs:
     """
 
     name: str
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     time_plan_ref_id: Union[None, Unset, str] = UNSET
@@ -42,6 +44,8 @@ class BigPlanCreateArgs:
 
     def to_dict(self) -> dict[str, Any]:
         name = self.name
+
+        is_key = self.is_key
 
         eisen = self.eisen.value
 
@@ -92,6 +96,7 @@ class BigPlanCreateArgs:
         field_dict.update(
             {
                 "name": name,
+                "is_key": is_key,
                 "eisen": eisen,
                 "difficulty": difficulty,
             }
@@ -115,6 +120,8 @@ class BigPlanCreateArgs:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
         name = d.pop("name")
+
+        is_key = d.pop("is_key")
 
         eisen = Eisen(d.pop("eisen"))
 
@@ -194,6 +201,7 @@ class BigPlanCreateArgs:
 
         big_plan_create_args = cls(
             name=name,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             time_plan_ref_id=time_plan_ref_id,

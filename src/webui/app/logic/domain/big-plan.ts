@@ -10,7 +10,7 @@ import { compareADate } from "~/logic/domain/adate";
 import { compareBigPlanStatus } from "~/logic/domain/big-plan-status";
 import { compareDifficulty } from "~/logic/domain/difficulty";
 import { compareEisen } from "~/logic/domain/eisen";
-
+import { compareIsKey } from "~/logic/domain/is-key";
 export interface BigPlanParent {
   project?: Project;
 }
@@ -29,6 +29,7 @@ export function sortBigPlansNaturally(
   return [...bigPlans].sort((e1, e2) => {
     return (
       compareADate(e1.actionable_date, e2.actionable_date) ||
+      compareIsKey(e1.is_key, e2.is_key) ||
       compareADate(e1.due_date, e2.due_date) ||
       -1 * compareEisen(e1.eisen, e2.eisen) ||
       -1 * compareDifficulty(e1.difficulty, e2.difficulty) ||

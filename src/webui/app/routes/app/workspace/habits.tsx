@@ -1,11 +1,18 @@
-import type { HabitFindResultEntry, Project } from "@jupiter/webapi-client";
+import type {
+  HabitFindResultEntry,
+  HabitLoadResult,
+  Project,
+} from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet } from "@remix-run/react";
+import { Outlet, useSearchParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+import { z } from "zod";
+import { parseQuery } from "zodix";
+import { DateTime } from "luxon";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -29,36 +36,79 @@ import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
+import { HabitKeyHabitStreakWidget } from "~/components/domain/concept/habit/habit-key-habit-streak-widget";
+import { newURLParams } from "~/logic/domain/navigation";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
+const QuerySchema = z.object({
+  includeStreakMarksForYear: z
+    .string()
+    .transform((s) => parseInt(s, 10))
+    .optional(),
+});
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
+  const query = parseQuery(request, QuerySchema);
+
   const response = await apiClient.habits.habitFind({
     allow_archived: false,
     include_notes: false,
     include_project: true,
     include_inbox_tasks: false,
   });
-  return json(response.entries);
+
+  const keyHabitRefIds = response.entries
+    .filter((e) => e.habit.is_key)
+    .map((e) => e.habit.ref_id);
+
+  let keyHabitResults: HabitLoadResult[] = [];
+  if (keyHabitRefIds.length > 0) {
+    keyHabitResults = await Promise.all(
+      keyHabitRefIds.map((refId) =>
+        apiClient.habits.habitLoad({
+          ref_id: refId,
+          allow_archived: false,
+          include_streak_marks_for_year: query.includeStreakMarksForYear,
+        }),
+      ),
+    );
+  }
+
+  return json({
+    habits: response.entries,
+    keyHabitResults: keyHabitResults.map((h) => ({
+      habit: h.habit,
+      streakMarkYear: h.streak_mark_year,
+      streakMarks: h.streak_marks,
+      inboxTasks: h.inbox_tasks,
+    })),
+  });
 }
 
 export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Habits() {
-  const entries = useLoaderDataSafeForAnimation<typeof loader>();
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const [query] = useSearchParams();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const sortedHabits = sortHabitsNaturally(entries.map((e) => e.habit));
+  const sortedHabits = sortHabitsNaturally(
+    loaderData.habits.map((e) => e.habit),
+  );
   const entriesByRefId = new Map<string, HabitFindResultEntry>();
-  for (const entry of entries) {
+  for (const entry of loaderData.habits) {
     entriesByRefId.set(entry.habit.ref_id, entry);
   }
+
+  const rightNow = DateTime.now();
 
   return (
     <TrunkPanel
@@ -76,6 +126,23 @@ export default function Habits() {
           />
         )}
 
+        {loaderData.keyHabitResults.length > 0 && (
+          <HabitKeyHabitStreakWidget
+            year={
+              loaderData.keyHabitResults[0]?.streakMarkYear ?? rightNow.year
+            }
+            currentYear={rightNow.year}
+            entries={loaderData.keyHabitResults}
+            getYearUrl={(year) =>
+              `/app/workspace/habits?${newURLParams(
+                query,
+                "includeStreakMarksForYear",
+                year.toString(),
+              )}`
+            }
+          />
+        )}
+
         <EntityStack>
           {sortedHabits.map((habit) => {
             const entry = entriesByRefId.get(
@@ -87,6 +154,7 @@ export default function Habits() {
                 entityId={`habit-${habit.ref_id}`}
               >
                 <EntityLink to={`/app/workspace/habits/${habit.ref_id}`}>
+                  <IsKeyTag isKey={habit.is_key} />
                   <EntityNameComponent name={habit.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,

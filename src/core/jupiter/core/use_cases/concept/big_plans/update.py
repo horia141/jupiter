@@ -46,6 +46,7 @@ class BigPlanUpdateArgs(UseCaseArgsBase):
     name: UpdateAction[BigPlanName]
     status: UpdateAction[BigPlanStatus]
     project_ref_id: UpdateAction[EntityId]
+    is_key: UpdateAction[bool]
     eisen: UpdateAction[Eisen]
     difficulty: UpdateAction[Difficulty]
     actionable_date: UpdateAction[ADate | None]
@@ -81,6 +82,7 @@ class BigPlanUpdateUseCase(
             name=args.name,
             status=args.status,
             project_ref_id=args.project_ref_id,
+            is_key=args.is_key,
             eisen=args.eisen,
             difficulty=args.difficulty,
             actionable_date=args.actionable_date,

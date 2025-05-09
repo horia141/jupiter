@@ -59,6 +59,8 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase, BigPlanFindResult]
             )
             big_plan_text.append(" ")
             big_plan_text.append(entity_id_to_rich_text(big_plan.ref_id))
+            if big_plan.is_key:
+                big_plan_text.append(" 🔑")
             big_plan_text.append(f" {big_plan.name}")
 
             big_plan_info_text = Text("")

@@ -53,6 +53,7 @@ class HabitUpdateArgs(UseCaseArgsBase):
     ref_id: EntityId
     name: UpdateAction[HabitName]
     project_ref_id: UpdateAction[EntityId]
+    is_key: UpdateAction[bool]
     period: UpdateAction[RecurringTaskPeriod]
     eisen: UpdateAction[Eisen]
     difficulty: UpdateAction[Difficulty]
@@ -139,6 +140,7 @@ class HabitUpdateUseCase(
             ctx=context.domain_context,
             project_ref_id=args.project_ref_id,
             name=args.name,
+            is_key=args.is_key,
             gen_params=habit_gen_params,
             repeats_strategy=args.repeats_strategy,
             repeats_in_period_count=args.repeats_in_period_count,
@@ -208,6 +210,7 @@ class HabitUpdateUseCase(
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
+                    is_key=habit.is_key,
                     repeat_index=recurring_repeat_index,
                     actionable_date=task_ranges[repeat_index][0],
                     repeats_in_period_count=habit.repeats_in_period_count,

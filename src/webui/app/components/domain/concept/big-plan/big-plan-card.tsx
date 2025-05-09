@@ -13,6 +13,7 @@ import { ProjectTag } from "~/components/domain/concept/project/project-tag";
 import { DifficultyTag } from "~/components/domain/core/difficulty-tag";
 import { EisenTag } from "~/components/domain/core/eisen-tag";
 import { BigPlanDonePctTag } from "~/components/domain/concept/big-plan/big-plan-done-pct-tag";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 
 export interface BigPlanShowOptions {
   showDonePct?: boolean;
@@ -71,6 +72,7 @@ export function BigPlanCard(props: BigPlanCardProps) {
         to={`/app/workspace/big-plans/${props.bigPlan.ref_id}`}
         block={props.onClick !== undefined}
       >
+        <IsKeyTag isKey={props.bigPlan.is_key} />
         <EntityNameComponent
           compact={props.compact}
           name={props.bigPlan.name}

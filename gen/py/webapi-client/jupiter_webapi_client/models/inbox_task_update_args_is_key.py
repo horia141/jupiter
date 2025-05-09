@@ -1,37 +1,30 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union, cast
+from typing import Any, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="HomeConfigUpdateArgsKeyHabits")
+T = TypeVar("T", bound="InboxTaskUpdateArgsIsKey")
 
 
 @_attrs_define
-class HomeConfigUpdateArgsKeyHabits:
+class InboxTaskUpdateArgsIsKey:
     """
     Attributes:
         should_change (bool):
-        value (Union[None, Unset, list[str]]):
+        value (Union[Unset, bool]):
     """
 
     should_change: bool
-    value: Union[None, Unset, list[str]] = UNSET
+    value: Union[Unset, bool] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         should_change = self.should_change
 
-        value: Union[None, Unset, list[str]]
-        if isinstance(self.value, Unset):
-            value = UNSET
-        elif isinstance(self.value, list):
-            value = self.value
-
-        else:
-            value = self.value
+        value = self.value
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -50,30 +43,15 @@ class HomeConfigUpdateArgsKeyHabits:
         d = dict(src_dict)
         should_change = d.pop("should_change")
 
-        def _parse_value(data: object) -> Union[None, Unset, list[str]]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, list):
-                    raise TypeError()
-                value_type_0 = cast(list[str], data)
+        value = d.pop("value", UNSET)
 
-                return value_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[None, Unset, list[str]], data)
-
-        value = _parse_value(d.pop("value", UNSET))
-
-        home_config_update_args_key_habits = cls(
+        inbox_task_update_args_is_key = cls(
             should_change=should_change,
             value=value,
         )
 
-        home_config_update_args_key_habits.additional_properties = d
-        return home_config_update_args_key_habits
+        inbox_task_update_args_is_key.additional_properties = d
+        return inbox_task_update_args_is_key
 
     @property
     def additional_keys(self) -> list[str]:

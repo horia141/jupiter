@@ -1,6 +1,5 @@
 """Shared service for archiving a habit."""
 
-from jupiter.core.domain.application.home.home_config import HomeConfig
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTaskRepository
@@ -18,7 +17,6 @@ from jupiter.core.domain.core.notes.service.note_archive_service import (
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
 
 
@@ -40,24 +38,6 @@ class HabitArchiveService:
         habit_collection = await uow.get_for(HabitCollection).load_by_id(
             habit.habit_collection.ref_id,
         )
-
-        home_config = await uow.get_for(HomeConfig).load_by_parent(
-            habit_collection.workspace.ref_id,
-        )
-        if habit.ref_id in home_config.key_habits:
-            home_config = home_config.update(
-                ctx=ctx,
-                key_habits=UpdateAction.change_to(
-                    [
-                        habit_ref_id
-                        for habit_ref_id in home_config.key_habits
-                        if habit_ref_id != habit.ref_id
-                    ]
-                ),
-                key_metrics=UpdateAction.change_to([]),
-            )
-            await uow.get_for(HomeConfig).save(home_config)
-
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             habit_collection.workspace.ref_id,
         )
