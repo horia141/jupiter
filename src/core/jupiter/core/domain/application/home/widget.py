@@ -37,8 +37,8 @@ class WidgetTypeConstraints(CompositeValue):
     """A constraints for a widget type."""
 
     allowed_dimensions: list[WidgetDimension]
-    for_desktop: bool
-    for_mobile: bool
+    for_big_screen: bool
+    for_small_screen: bool
 
 
 WIDGET_CONSTRAINTS = {
@@ -48,27 +48,27 @@ WIDGET_CONSTRAINTS = {
             WidgetDimension.DIM_1x2,
             WidgetDimension.DIM_1x3,
         ],
-        for_desktop=True,
-        for_mobile=True,
+        for_big_screen=True,
+        for_small_screen=True,
     ),
     WidgetType.WORKING_MEMORY: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_1x1],
-        for_desktop=True,
-        for_mobile=True,
+        for_big_screen=True,
+        for_small_screen=True,
     ),
     WidgetType.KEY_HABITS_STREAKS: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_1x1, WidgetDimension.DIM_1x2],
-        for_desktop=True,
-        for_mobile=True,
+        for_big_screen=True,
+        for_small_screen=True,
     ),
     WidgetType.HABIT_INBOX_TASKS: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
-        for_desktop=True,
-        for_mobile=True,
+        for_big_screen=True,
+        for_small_screen=True,
     ),
     WidgetType.CALENDAR_DAY: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
-        for_desktop=True,
-        for_mobile=True,
+        for_big_screen=True,
+        for_small_screen=True,
     ),
 }

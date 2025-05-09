@@ -1,6 +1,8 @@
 """The home config domain application."""
 
-from jupiter.core.domain.application.home.home_widget import HomeWidget
+from jupiter.core.domain.application.home.home_big_screen_tab import HomeBigScreenTab, HomeDesktopTab
+from jupiter.core.domain.application.home.home_small_screen_tab import HomeMobileTab, HomeSmallScreenTab
+from jupiter.core.domain.application.home.home_big_screen_widget import HomeWidget
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -16,43 +18,6 @@ from jupiter.core.framework.entity import (
 )
 from jupiter.core.framework.value import CompositeValue, value
 
-MAX_KEY_HABITS = 3
-MAX_KEY_METRICS = 3
-
-
-@value
-class HomeDesktopTabConfig(CompositeValue):
-    """A tab on the home page."""
-
-    name: EntityName
-    icon: EntityIcon | None
-    widgets: list[list[EntityId]]
-
-
-@value
-class HomeDesktopConfig(CompositeValue):
-    """A desktop config for the home page."""
-
-    home_config: ParentLink
-    tabs: list[HomeDesktopTabConfig]
-
-
-@value
-class HomeMobileTabConfig(CompositeValue):
-    """A tab on the home page."""
-
-    name: EntityName
-    icon: EntityIcon | None
-    widgets: list[list[EntityId]]
-
-
-@value
-class HomeMobileConfig(CompositeValue):
-    """A mobile config for the home page."""
-
-    home_config: ParentLink
-    tabs: list[HomeMobileTabConfig]
-
 
 @entity
 class HomeConfig(TrunkEntity):
@@ -60,11 +25,12 @@ class HomeConfig(TrunkEntity):
 
     workspace: ParentLink
 
-    desktop_config: HomeDesktopConfig
-    mobile_config: HomeMobileConfig
+    order_of_big_screen_tabs: list[EntityId]
+    order_of_small_screen_tabs: list[EntityId]
 
-    widgets = ContainsMany(HomeWidget, home_config_ref_id=IsRefId())
-
+    big_screen_tabs = ContainsMany(HomeBigScreenTab, home_config_ref_id=IsRefId())
+    small_screen_tabs = ContainsMany(HomeSmallScreenTab, home_config_ref_id=IsRefId())
+    
     @staticmethod
     @create_entity_action
     def new_home_config(
@@ -75,14 +41,54 @@ class HomeConfig(TrunkEntity):
         return HomeConfig._create(
             ctx,
             workspace=ParentLink(workspace_ref_id),
+            order_of_big_screen_tabs=[],
+            order_of_small_screen_tabs=[],
         )
-
+    
     @update_entity_action
-    def update(
+    def add_big_screen_tab(
         self,
         ctx: DomainContext,
+        big_screen_tab_ref_id: EntityId,
     ) -> "HomeConfig":
-        """Update a home config."""
-        return self._new_version(
-            ctx,
-        )
+        return self._new_version(ctx, order_of_big_screen_tabs=[*self.order_of_big_screen_tabs, big_screen_tab_ref_id])  
+    
+    @update_entity_action
+    def remove_big_screen_tab(
+        self,
+        ctx: DomainContext,
+        big_screen_tab_ref_id: EntityId,
+    ) -> "HomeConfig":
+        return self._new_version(ctx, order_of_big_screen_tabs=[*self.order_of_big_screen_tabs, big_screen_tab_ref_id])
+    
+    @update_entity_action
+    def reorder_big_screen_tabs(
+        self,
+        ctx: DomainContext,
+        order_of_big_screen_tabs: list[EntityId],
+    ) -> "HomeConfig":
+        return self._new_version(ctx, order_of_big_screen_tabs=order_of_big_screen_tabs)
+    
+    @update_entity_action
+    def add_small_screen_tab(
+        self,
+        ctx: DomainContext,
+        small_screen_tab_ref_id: EntityId,
+    ) -> "HomeConfig":
+        return self._new_version(ctx, order_of_small_screen_tabs=[*self.order_of_small_screen_tabs, small_screen_tab_ref_id])
+    
+    @update_entity_action
+    def remove_small_screen_tab(
+        self,
+        ctx: DomainContext,
+        small_screen_tab_ref_id: EntityId,
+    ) -> "HomeConfig":
+        return self._new_version(ctx, order_of_small_screen_tabs=[*self.order_of_small_screen_tabs, small_screen_tab_ref_id])
+    
+    @update_entity_action
+    def reorder_small_screen_tabs(
+        self,
+        ctx: DomainContext,
+        order_of_small_screen_tabs: list[EntityId],
+    ) -> "HomeConfig":
+        return self._new_version(ctx, order_of_small_screen_tabs=order_of_small_screen_tabs)
