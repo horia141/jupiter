@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 interface IsKeySelectProps {
   name: string;
   value?: boolean;
-  inputsEnabled?: boolean;
+  inputsEnabled: boolean;
   defaultValue?: boolean;
   onChange?: (value: boolean) => void;
 }

@@ -384,6 +384,7 @@ export default function Habit() {
                 <IsKeySelect
                   name="isKey"
                   defaultValue={loaderData.habit.is_key}
+                  inputsEnabled={inputsEnabled}
                 />
                 <FieldError actionResult={actionData} fieldName="/is_key" />
               </FormControl>

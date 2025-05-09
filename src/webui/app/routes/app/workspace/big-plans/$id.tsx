@@ -436,6 +436,7 @@ export default function BigPlan() {
               <IsKeySelect
                 name="isKey"
                 defaultValue={loaderData.bigPlan.is_key}
+                inputsEnabled={inputsEnabled}
               />
             </FormControl>
             <FormControl sx={{ flexGrow: 1 }}>

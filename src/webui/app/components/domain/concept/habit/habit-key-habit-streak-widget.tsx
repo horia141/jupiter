@@ -1,6 +1,6 @@
 import { Habit, InboxTask, HabitStreakMark } from "@jupiter/webapi-client";
 import { Box, Card, Stack, Tab, Tabs } from "@mui/material";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
 
@@ -24,9 +24,12 @@ export function HabitKeyHabitStreakWidget(
 ) {
   const [selectedEntry, setSelectedEntry] = useState<number>(0);
 
-  setTimeout(() => {
-    setSelectedEntry((entry) => (entry + 1) % props.entries.length);
-  }, ANIMATION_DURATION_MS);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSelectedEntry((entry) => (entry + 1) % props.entries.length);
+    }, ANIMATION_DURATION_MS);
+    return () => clearInterval(interval);
+  }, [props.entries]);
 
   return (
     <Card>
