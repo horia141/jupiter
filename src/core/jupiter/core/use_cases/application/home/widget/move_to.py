@@ -2,7 +2,6 @@
 
 from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.application.home.home_widget import HomeWidget
-from jupiter.core.domain.application.home.widget import WidgetDimension, WidgetGeometry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import ProgressReporter
@@ -42,9 +41,7 @@ class HomeWidgetMoveAndResizeUseCase(
         await uow.get_for(HomeWidget).save(widget)
         await progress_reporter.mark_updated(widget)
 
-        tab = await uow.get_for(HomeTab).load_by_id(
-            widget.home_tab.ref_id
-        )
+        tab = await uow.get_for(HomeTab).load_by_id(widget.home_tab.ref_id)
         tab = tab.move_widget_to(
             context.domain_context,
             widget_ref_id=args.ref_id,

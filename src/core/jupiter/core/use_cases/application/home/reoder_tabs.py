@@ -5,11 +5,14 @@ from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.framework.use_case import ProgressReporter, UseCase, UseCaseContext
+from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInMutationUseCaseContext, AppTransactionalLoggedInMutationUseCase, mutation_use_case
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInMutationUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
+)
 
 
 @use_case_args
@@ -21,7 +24,9 @@ class ReorderTabsArgs(UseCaseArgsBase):
 
 
 @mutation_use_case()
-class ReorderTabsUseCase(AppTransactionalLoggedInMutationUseCase[ReorderTabsArgs, None]):
+class ReorderTabsUseCase(
+    AppTransactionalLoggedInMutationUseCase[ReorderTabsArgs, None]
+):
     """The use case for reordering tabs in the home config."""
 
     async def _perform_transactional_mutation(

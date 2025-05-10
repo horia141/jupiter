@@ -1,9 +1,8 @@
 """The home config domain application."""
 
 from jupiter.core.domain.application.home.home_tab import HomeTab
-from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsMany,
@@ -14,8 +13,6 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
-from jupiter.core.framework.value import CompositeValue, value
-from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 
 
 @entity
@@ -43,7 +40,7 @@ class HomeConfig(TrunkEntity):
                 HomeTabTarget.SMALL_SCREEN: [],
             },
         )
-    
+
     @update_entity_action
     def add_tab(
         self,
@@ -51,8 +48,14 @@ class HomeConfig(TrunkEntity):
         target: HomeTabTarget,
         tab_ref_id: EntityId,
     ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_tabs={**self.order_of_tabs, target: [*self.order_of_tabs[target], tab_ref_id]})
-    
+        return self._new_version(
+            ctx,
+            order_of_tabs={
+                **self.order_of_tabs,
+                target: [*self.order_of_tabs[target], tab_ref_id],
+            },
+        )
+
     @update_entity_action
     def remove_tab(
         self,
@@ -60,8 +63,16 @@ class HomeConfig(TrunkEntity):
         target: HomeTabTarget,
         tab_ref_id: EntityId,
     ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_tabs={**self.order_of_tabs, target: [tab for tab in self.order_of_tabs[target] if tab != tab_ref_id]})
-    
+        return self._new_version(
+            ctx,
+            order_of_tabs={
+                **self.order_of_tabs,
+                target: [
+                    tab for tab in self.order_of_tabs[target] if tab != tab_ref_id
+                ],
+            },
+        )
+
     @update_entity_action
     def reoder_tabs(
         self,
@@ -69,4 +80,6 @@ class HomeConfig(TrunkEntity):
         target: HomeTabTarget,
         order_of_tabs: list[EntityId],
     ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_tabs={**self.order_of_tabs, target: order_of_tabs})
+        return self._new_version(
+            ctx, order_of_tabs={**self.order_of_tabs, target: order_of_tabs}
+        )

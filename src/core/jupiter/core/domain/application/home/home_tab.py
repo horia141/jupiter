@@ -1,10 +1,12 @@
 """A tab on the home page."""
 
-import abc
-from typing import Literal
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
+from jupiter.core.domain.application.home.home_tab_widget_placement import (
+    OneOfHomeTabWidgetPlacement,
+    build_home_tab_widget_placement,
+)
 from jupiter.core.domain.application.home.home_widget import HomeWidget
-from jupiter.core.domain.application.home.widget import WidgetDimension, WidgetGeometry
+from jupiter.core.domain.application.home.widget import WidgetGeometry
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -19,8 +21,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.value import CompositeValue, value
-from jupiter.core.domain.application.home.home_tab_widget_placement import OneOfHomeTabWidgetPlacement, build_home_tab_widget_placement
+
 
 @entity
 class HomeTab(BranchEntity):
@@ -38,7 +39,7 @@ class HomeTab(BranchEntity):
     )
 
     @staticmethod
-    @create_entity_action  
+    @create_entity_action
     def new_home_tab(
         ctx: DomainContext,
         home_config_ref_id: EntityId,
@@ -67,7 +68,7 @@ class HomeTab(BranchEntity):
             name=name.or_else(self.name),
             icon=icon.or_else(self.icon),
         )
-    
+
     @update_entity_action
     def add_widget(
         self,

@@ -2,7 +2,6 @@
 
 from jupiter.core.domain.application.home.home_config import HomeConfig
 from jupiter.core.domain.application.home.home_tab import HomeTab
-from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.infra.generic_crown_remover import generic_crown_remover
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -39,7 +38,9 @@ class HomeTabRemoveUseCase(
         workspace = context.workspace
         tab = await uow.get_for(HomeTab).load_by_id(args.ref_id)
         home_config = await uow.get_for(HomeConfig).load_by_parent(workspace.ref_id)
-        home_config = home_config.remove_tab(context.domain_context, tab.target, tab.ref_id)
+        home_config = home_config.remove_tab(
+            context.domain_context, tab.target, tab.ref_id
+        )
         await uow.get_for(HomeConfig).save(home_config)
 
         await generic_crown_remover(
@@ -49,4 +50,3 @@ class HomeTabRemoveUseCase(
             HomeTab,
             args.ref_id,
         )
-    

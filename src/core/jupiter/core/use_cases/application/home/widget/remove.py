@@ -9,7 +9,6 @@ from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import UseCaseArgsBase, use_case_args
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
-    AppLoggedInUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
     mutation_use_case,
 )
@@ -37,11 +36,9 @@ class HomeWidgetRemoveUseCase(
     ) -> None:
         """Execute the command's action."""
         widget = await uow.get_for(HomeWidget).load_by_id(args.ref_id)
-        
+
         # First remove widget from tab
-        tab = await uow.get_for(HomeTab).load_by_id(
-            widget.home_tab.ref_id
-        )
+        tab = await uow.get_for(HomeTab).load_by_id(widget.home_tab.ref_id)
         tab = tab.remove_widget(context.domain_context, widget.ref_id)
         await uow.get_for(HomeTab).save(tab)
         await progress_reporter.mark_updated(tab)

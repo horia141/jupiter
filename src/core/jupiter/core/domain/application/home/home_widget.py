@@ -1,10 +1,20 @@
 """A widget on the home page."""
 
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
-from jupiter.core.domain.application.home.widget import WIDGET_CONSTRAINTS, WidgetDimension, WidgetGeometry, WidgetType
+from jupiter.core.domain.application.home.widget import (
+    WIDGET_CONSTRAINTS,
+    WidgetGeometry,
+    WidgetType,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
-from jupiter.core.framework.entity import LeafEntity, ParentLink, create_entity_action, entity, update_entity_action
+from jupiter.core.framework.entity import (
+    LeafEntity,
+    ParentLink,
+    create_entity_action,
+    entity,
+    update_entity_action,
+)
 
 
 @entity
@@ -28,16 +38,20 @@ class HomeWidget(LeafEntity):
         if constraints is None:
             raise ValueError(f"Widget type {the_type} is not supported")
         if geometry.dimension not in constraints.allowed_dimensions:
-            raise ValueError(f"Dimension {geometry.dimension} is not allowed for widget type {the_type}")
+            raise ValueError(
+                f"Dimension {geometry.dimension} is not allowed for widget type {the_type}"
+            )
         if home_tab_target not in constraints.for_tab_target:
-            raise ValueError(f"Widget type {the_type} is not allowed for tab target {home_tab_target}")
+            raise ValueError(
+                f"Widget type {the_type} is not allowed for tab target {home_tab_target}"
+            )
         return HomeWidget._create(
             ctx,
             home_tab_ref_id=home_tab_ref_id,
             the_type=the_type,
             geometry=geometry,
         )
-    
+
     @update_entity_action
     def move_to(
         self,
@@ -45,4 +59,9 @@ class HomeWidget(LeafEntity):
         row: int,
         col: int,
     ) -> "HomeWidget":
-        return self._new_version(ctx, geometry=WidgetGeometry(row=row, col=col, dimension=self.geometry.dimension))
+        return self._new_version(
+            ctx,
+            geometry=WidgetGeometry(
+                row=row, col=col, dimension=self.geometry.dimension
+            ),
+        )

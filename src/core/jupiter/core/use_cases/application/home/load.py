@@ -3,7 +3,6 @@
 from jupiter.core.domain.application.home.home_config import HomeConfig
 from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-from jupiter.core.framework import use_case
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -28,6 +27,7 @@ class HomeConfigLoadResult(UseCaseResultBase):
 
     home_config: HomeConfig
     tabs: list[HomeTab]
+
 
 @readonly_use_case()
 class HomeConfigLoadUseCase(

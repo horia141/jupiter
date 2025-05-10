@@ -2,15 +2,17 @@
 
 from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.application.home.home_widget import HomeWidget
-from jupiter.core.domain.application.home.widget import WidgetDimension, WidgetGeometry, WidgetType
+from jupiter.core.domain.application.home.widget import (
+    WidgetDimension,
+    WidgetGeometry,
+    WidgetType,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
-    UseCaseResultBase,
     use_case_args,
-    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -53,7 +55,9 @@ class HomeWidgetCreateUseCase(
             home_tab_ref_id=home_tab.ref_id,
             home_tab_target=home_tab.target,
             the_type=args.the_type,
-            geometry=WidgetGeometry(row=args.row, col=args.col, dimension=args.dimension),
+            geometry=WidgetGeometry(
+                row=args.row, col=args.col, dimension=args.dimension
+            ),
         )
         home_widget = await uow.get_for(HomeWidget).create(home_widget)
         await progress_reporter.mark_created(home_widget)
@@ -61,7 +65,9 @@ class HomeWidgetCreateUseCase(
         home_tab = home_tab.add_widget(
             context.domain_context,
             widget_ref_id=home_widget.ref_id,
-            geometry=WidgetGeometry(row=args.row, col=args.col, dimension=args.dimension),
+            geometry=WidgetGeometry(
+                row=args.row, col=args.col, dimension=args.dimension
+            ),
         )
         await uow.get_for(HomeTab).save(home_tab)
         await progress_reporter.mark_updated(home_tab)
