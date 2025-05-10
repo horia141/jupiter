@@ -21,6 +21,51 @@ class WidgetDimension(EnumValue):
     DIM_kx2 = "kx2"
     DIM_kx3 = "kx3"
 
+    @property
+    def rows(self) -> int:
+        """The number of rows a widget of this dimension has."""
+        return {
+            WidgetDimension.DIM_1x1: 1,
+            WidgetDimension.DIM_1x2: 1,
+            WidgetDimension.DIM_1x3: 1,
+            WidgetDimension.DIM_2x1: 2,
+            WidgetDimension.DIM_2x2: 2,
+            WidgetDimension.DIM_2x3: 2,
+            WidgetDimension.DIM_3x1: 3,
+            WidgetDimension.DIM_3x2: 3,
+            WidgetDimension.DIM_3x3: 3,
+            WidgetDimension.DIM_kx1: 1,
+            WidgetDimension.DIM_kx2: 1,
+            WidgetDimension.DIM_kx3: 1,
+        }[self]
+
+    @property
+    def cols(self) -> int:
+        """The number of columns a widget of this dimension has."""
+        return {
+            WidgetDimension.DIM_1x1: 1,
+            WidgetDimension.DIM_1x2: 2,
+            WidgetDimension.DIM_1x3: 3,
+            WidgetDimension.DIM_2x1: 1,
+            WidgetDimension.DIM_2x2: 2,
+            WidgetDimension.DIM_2x3: 3,
+            WidgetDimension.DIM_3x1: 1,
+            WidgetDimension.DIM_3x2: 2,
+            WidgetDimension.DIM_3x3: 3,
+            WidgetDimension.DIM_kx1: 1,
+            WidgetDimension.DIM_kx2: 2,
+            WidgetDimension.DIM_kx3: 3,
+        }[self]
+
+    @property
+    def is_k_sized(self) -> bool:
+        """Whether the widget is k-sized."""
+        return self in (
+            WidgetDimension.DIM_kx1,
+            WidgetDimension.DIM_kx2,
+            WidgetDimension.DIM_kx3,
+        )
+
 
 @value
 class WidgetGeometry(CompositeValue):
