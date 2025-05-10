@@ -3,8 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityId } from './EntityId';
-import type { HomeDesktopConfig } from './HomeDesktopConfig';
-import type { HomeMobileConfig } from './HomeMobileConfig';
 import type { Timestamp } from './Timestamp';
 /**
  * The home config entity.
@@ -18,7 +16,6 @@ export type HomeConfig = {
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
     workspace_ref_id: string;
-    desktop_config: HomeDesktopConfig;
-    mobile_config: HomeMobileConfig;
+    order_of_tabs: Record<string, Array<EntityId>>;
 };
 

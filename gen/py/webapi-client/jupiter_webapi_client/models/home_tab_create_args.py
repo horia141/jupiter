@@ -4,34 +4,31 @@ from typing import Any, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.home_tab_target import HomeTabTarget
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="HomeMobileTabConfig")
+T = TypeVar("T", bound="HomeTabCreateArgs")
 
 
 @_attrs_define
-class HomeMobileTabConfig:
-    """A tab on the home page.
+class HomeTabCreateArgs:
+    """The arguments for the create home tab use case.
 
     Attributes:
+        target (HomeTabTarget): A target for a tab.
         name (str): The name for an entity which acts as both name and unique identifier.
-        widgets (list[list[str]]):
         icon (Union[None, Unset, str]):
     """
 
+    target: HomeTabTarget
     name: str
-    widgets: list[list[str]]
     icon: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        target = self.target.value
+
         name = self.name
-
-        widgets = []
-        for widgets_item_data in self.widgets:
-            widgets_item = widgets_item_data
-
-            widgets.append(widgets_item)
 
         icon: Union[None, Unset, str]
         if isinstance(self.icon, Unset):
@@ -43,8 +40,8 @@ class HomeMobileTabConfig:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
+                "target": target,
                 "name": name,
-                "widgets": widgets,
             }
         )
         if icon is not UNSET:
@@ -55,14 +52,9 @@ class HomeMobileTabConfig:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
+        target = HomeTabTarget(d.pop("target"))
+
         name = d.pop("name")
-
-        widgets = []
-        _widgets = d.pop("widgets")
-        for widgets_item_data in _widgets:
-            widgets_item = cast(list[str], widgets_item_data)
-
-            widgets.append(widgets_item)
 
         def _parse_icon(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -73,14 +65,14 @@ class HomeMobileTabConfig:
 
         icon = _parse_icon(d.pop("icon", UNSET))
 
-        home_mobile_tab_config = cls(
+        home_tab_create_args = cls(
+            target=target,
             name=name,
-            widgets=widgets,
             icon=icon,
         )
 
-        home_mobile_tab_config.additional_properties = d
-        return home_mobile_tab_config
+        home_tab_create_args.additional_properties = d
+        return home_tab_create_args
 
     @property
     def additional_keys(self) -> list[str]:

@@ -3,14 +3,14 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { EntityIcon } from './EntityIcon';
-import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
+import type { HomeTabTarget } from './HomeTabTarget';
 /**
- * A tab on the home page.
+ * The arguments for the create home tab use case.
  */
-export type HomeMobileTabConfig = {
+export type HomeTabCreateArgs = {
+    target: HomeTabTarget;
     name: EntityName;
     icon?: (EntityIcon | null);
-    widgets: Array<Array<EntityId>>;
 };
 

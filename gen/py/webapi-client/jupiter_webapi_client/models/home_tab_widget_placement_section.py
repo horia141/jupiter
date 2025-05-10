@@ -5,39 +5,36 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.home_desktop_tab_config import HomeDesktopTabConfig
+    from ..models.widget_geometry import WidgetGeometry
 
 
-T = TypeVar("T", bound="HomeDesktopConfig")
+T = TypeVar("T", bound="HomeTabWidgetPlacementSection")
 
 
 @_attrs_define
-class HomeDesktopConfig:
-    """A desktop config for the home page.
+class HomeTabWidgetPlacementSection:
+    """A section of the placement of widgets on a tab.
 
     Attributes:
-        home_config_ref_id (str):
-        tabs (list['HomeDesktopTabConfig']):
+        ref_id (str): A generic entity id.
+        geometry (WidgetGeometry): A geometry of a widget.
     """
 
-    home_config_ref_id: str
-    tabs: list["HomeDesktopTabConfig"]
+    ref_id: str
+    geometry: "WidgetGeometry"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        home_config_ref_id = self.home_config_ref_id
+        ref_id = self.ref_id
 
-        tabs = []
-        for tabs_item_data in self.tabs:
-            tabs_item = tabs_item_data.to_dict()
-            tabs.append(tabs_item)
+        geometry = self.geometry.to_dict()
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "home_config_ref_id": home_config_ref_id,
-                "tabs": tabs,
+                "ref_id": ref_id,
+                "geometry": geometry,
             }
         )
 
@@ -45,25 +42,20 @@ class HomeDesktopConfig:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.home_desktop_tab_config import HomeDesktopTabConfig
+        from ..models.widget_geometry import WidgetGeometry
 
         d = dict(src_dict)
-        home_config_ref_id = d.pop("home_config_ref_id")
+        ref_id = d.pop("ref_id")
 
-        tabs = []
-        _tabs = d.pop("tabs")
-        for tabs_item_data in _tabs:
-            tabs_item = HomeDesktopTabConfig.from_dict(tabs_item_data)
+        geometry = WidgetGeometry.from_dict(d.pop("geometry"))
 
-            tabs.append(tabs_item)
-
-        home_desktop_config = cls(
-            home_config_ref_id=home_config_ref_id,
-            tabs=tabs,
+        home_tab_widget_placement_section = cls(
+            ref_id=ref_id,
+            geometry=geometry,
         )
 
-        home_desktop_config.additional_properties = d
-        return home_desktop_config
+        home_tab_widget_placement_section.additional_properties = d
+        return home_tab_widget_placement_section
 
     @property
     def additional_keys(self) -> list[str]:

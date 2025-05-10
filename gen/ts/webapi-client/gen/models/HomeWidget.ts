@@ -5,7 +5,7 @@
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
 import type { Timestamp } from './Timestamp';
-import type { WidgetDimension } from './WidgetDimension';
+import type { WidgetGeometry } from './WidgetGeometry';
 import type { WidgetType } from './WidgetType';
 /**
  * A widget on the home page.
@@ -19,8 +19,8 @@ export type HomeWidget = {
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
     name: EntityName;
-    home_config_ref_id: string;
+    home_tab_ref_id: string;
     the_type: WidgetType;
-    dimension: WidgetDimension;
+    geometry: WidgetGeometry;
 };
 

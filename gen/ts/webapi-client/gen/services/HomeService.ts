@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { HomeConfigLoadArgs } from '../models/HomeConfigLoadArgs';
 import type { HomeConfigLoadResult } from '../models/HomeConfigLoadResult';
-import type { HomeConfigUpdateArgs } from '../models/HomeConfigUpdateArgs';
+import type { ReorderTabsArgs } from '../models/ReorderTabsArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class HomeService {
@@ -32,18 +32,18 @@ export class HomeService {
         });
     }
     /**
-     * The use case for updating the home config.
-     * The use case for updating the home config.
+     * The use case for reordering tabs in the home config.
+     * The use case for reordering tabs in the home config.
      * @param requestBody The input data
      * @returns any Successful response / Empty body
      * @throws ApiError
      */
-    public homeConfigUpdate(
-        requestBody?: HomeConfigUpdateArgs,
+    public reorderTabs(
+        requestBody?: ReorderTabsArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/home-config-update',
+            url: '/reorder-tabs',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

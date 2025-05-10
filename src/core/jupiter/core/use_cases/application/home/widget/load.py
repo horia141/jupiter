@@ -38,7 +38,7 @@ class HomeWidgetLoadUseCase(
 ):
     """The use case for loading a home widget."""
 
-    async def _perform_transactional(
+    async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,

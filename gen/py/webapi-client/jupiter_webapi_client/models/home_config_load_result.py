@@ -6,6 +6,7 @@ from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
     from ..models.home_config import HomeConfig
+    from ..models.home_tab import HomeTab
 
 
 T = TypeVar("T", bound="HomeConfigLoadResult")
@@ -17,19 +18,27 @@ class HomeConfigLoadResult:
 
     Attributes:
         home_config (HomeConfig): The home config entity.
+        tabs (list['HomeTab']):
     """
 
     home_config: "HomeConfig"
+    tabs: list["HomeTab"]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         home_config = self.home_config.to_dict()
+
+        tabs = []
+        for tabs_item_data in self.tabs:
+            tabs_item = tabs_item_data.to_dict()
+            tabs.append(tabs_item)
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "home_config": home_config,
+                "tabs": tabs,
             }
         )
 
@@ -38,12 +47,21 @@ class HomeConfigLoadResult:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.home_config import HomeConfig
+        from ..models.home_tab import HomeTab
 
         d = dict(src_dict)
         home_config = HomeConfig.from_dict(d.pop("home_config"))
 
+        tabs = []
+        _tabs = d.pop("tabs")
+        for tabs_item_data in _tabs:
+            tabs_item = HomeTab.from_dict(tabs_item_data)
+
+            tabs.append(tabs_item)
+
         home_config_load_result = cls(
             home_config=home_config,
+            tabs=tabs,
         )
 
         home_config_load_result.additional_properties = d

@@ -1,86 +1,71 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..types import UNSET, Unset
+if TYPE_CHECKING:
+    from ..models.home_tab import HomeTab
+    from ..models.home_widget import HomeWidget
 
-T = TypeVar("T", bound="HomeDesktopTabConfig")
+
+T = TypeVar("T", bound="HomeTabLoadResult")
 
 
 @_attrs_define
-class HomeDesktopTabConfig:
-    """A tab on the home page.
+class HomeTabLoadResult:
+    """The result of loading a home tab.
 
     Attributes:
-        name (str): The name for an entity which acts as both name and unique identifier.
-        widgets (list[list[str]]):
-        icon (Union[None, Unset, str]):
+        tab (HomeTab): A tab on the home page.
+        widgets (list['HomeWidget']):
     """
 
-    name: str
-    widgets: list[list[str]]
-    icon: Union[None, Unset, str] = UNSET
+    tab: "HomeTab"
+    widgets: list["HomeWidget"]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        name = self.name
+        tab = self.tab.to_dict()
 
         widgets = []
         for widgets_item_data in self.widgets:
-            widgets_item = widgets_item_data
-
+            widgets_item = widgets_item_data.to_dict()
             widgets.append(widgets_item)
-
-        icon: Union[None, Unset, str]
-        if isinstance(self.icon, Unset):
-            icon = UNSET
-        else:
-            icon = self.icon
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "name": name,
+                "tab": tab,
                 "widgets": widgets,
             }
         )
-        if icon is not UNSET:
-            field_dict["icon"] = icon
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.home_tab import HomeTab
+        from ..models.home_widget import HomeWidget
+
         d = dict(src_dict)
-        name = d.pop("name")
+        tab = HomeTab.from_dict(d.pop("tab"))
 
         widgets = []
         _widgets = d.pop("widgets")
         for widgets_item_data in _widgets:
-            widgets_item = cast(list[str], widgets_item_data)
+            widgets_item = HomeWidget.from_dict(widgets_item_data)
 
             widgets.append(widgets_item)
 
-        def _parse_icon(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        icon = _parse_icon(d.pop("icon", UNSET))
-
-        home_desktop_tab_config = cls(
-            name=name,
+        home_tab_load_result = cls(
+            tab=tab,
             widgets=widgets,
-            icon=icon,
         )
 
-        home_desktop_tab_config.additional_properties = d
-        return home_desktop_tab_config
+        home_tab_load_result.additional_properties = d
+        return home_tab_load_result
 
     @property
     def additional_keys(self) -> list[str]:

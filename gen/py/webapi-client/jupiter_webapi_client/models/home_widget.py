@@ -1,12 +1,15 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.widget_dimension import WidgetDimension
 from ..models.widget_type import WidgetType
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.widget_geometry import WidgetGeometry
+
 
 T = TypeVar("T", bound="HomeWidget")
 
@@ -22,9 +25,9 @@ class HomeWidget:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         name (str): The name for an entity which acts as both name and unique identifier.
-        home_config_ref_id (str):
+        home_tab_ref_id (str):
         the_type (WidgetType): A type of widget.
-        dimension (WidgetDimension): A dimension of a widget.
+        geometry (WidgetGeometry): A geometry of a widget.
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
@@ -35,9 +38,9 @@ class HomeWidget:
     created_time: str
     last_modified_time: str
     name: str
-    home_config_ref_id: str
+    home_tab_ref_id: str
     the_type: WidgetType
-    dimension: WidgetDimension
+    geometry: "WidgetGeometry"
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -55,11 +58,11 @@ class HomeWidget:
 
         name = self.name
 
-        home_config_ref_id = self.home_config_ref_id
+        home_tab_ref_id = self.home_tab_ref_id
 
         the_type = self.the_type.value
 
-        dimension = self.dimension.value
+        geometry = self.geometry.to_dict()
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -83,9 +86,9 @@ class HomeWidget:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "name": name,
-                "home_config_ref_id": home_config_ref_id,
+                "home_tab_ref_id": home_tab_ref_id,
                 "the_type": the_type,
-                "dimension": dimension,
+                "geometry": geometry,
             }
         )
         if archival_reason is not UNSET:
@@ -97,6 +100,8 @@ class HomeWidget:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.widget_geometry import WidgetGeometry
+
         d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
@@ -110,11 +115,11 @@ class HomeWidget:
 
         name = d.pop("name")
 
-        home_config_ref_id = d.pop("home_config_ref_id")
+        home_tab_ref_id = d.pop("home_tab_ref_id")
 
         the_type = WidgetType(d.pop("the_type"))
 
-        dimension = WidgetDimension(d.pop("dimension"))
+        geometry = WidgetGeometry.from_dict(d.pop("geometry"))
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -141,9 +146,9 @@ class HomeWidget:
             created_time=created_time,
             last_modified_time=last_modified_time,
             name=name,
-            home_config_ref_id=home_config_ref_id,
+            home_tab_ref_id=home_tab_ref_id,
             the_type=the_type,
-            dimension=dimension,
+            geometry=geometry,
             archival_reason=archival_reason,
             archived_time=archived_time,
         )

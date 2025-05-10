@@ -4,6 +4,7 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.home_tab_target import HomeTabTarget
 from ..models.widget_dimension import WidgetDimension
 
 T = TypeVar("T", bound="WidgetTypeConstraints")
@@ -15,13 +16,11 @@ class WidgetTypeConstraints:
 
     Attributes:
         allowed_dimensions (list[WidgetDimension]):
-        for_desktop (bool):
-        for_mobile (bool):
+        for_tab_target (list[HomeTabTarget]):
     """
 
     allowed_dimensions: list[WidgetDimension]
-    for_desktop: bool
-    for_mobile: bool
+    for_tab_target: list[HomeTabTarget]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -30,17 +29,17 @@ class WidgetTypeConstraints:
             allowed_dimensions_item = allowed_dimensions_item_data.value
             allowed_dimensions.append(allowed_dimensions_item)
 
-        for_desktop = self.for_desktop
-
-        for_mobile = self.for_mobile
+        for_tab_target = []
+        for for_tab_target_item_data in self.for_tab_target:
+            for_tab_target_item = for_tab_target_item_data.value
+            for_tab_target.append(for_tab_target_item)
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "allowed_dimensions": allowed_dimensions,
-                "for_desktop": for_desktop,
-                "for_mobile": for_mobile,
+                "for_tab_target": for_tab_target,
             }
         )
 
@@ -56,14 +55,16 @@ class WidgetTypeConstraints:
 
             allowed_dimensions.append(allowed_dimensions_item)
 
-        for_desktop = d.pop("for_desktop")
+        for_tab_target = []
+        _for_tab_target = d.pop("for_tab_target")
+        for for_tab_target_item_data in _for_tab_target:
+            for_tab_target_item = HomeTabTarget(for_tab_target_item_data)
 
-        for_mobile = d.pop("for_mobile")
+            for_tab_target.append(for_tab_target_item)
 
         widget_type_constraints = cls(
             allowed_dimensions=allowed_dimensions,
-            for_desktop=for_desktop,
-            for_mobile=for_mobile,
+            for_tab_target=for_tab_target,
         )
 
         widget_type_constraints.additional_properties = d

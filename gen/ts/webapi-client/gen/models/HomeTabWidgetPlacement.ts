@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * The arguments for updating the home config.
+ * The placement of widgets on a tab.
  */
-export type HomeConfigUpdateArgs = {
+export type HomeTabWidgetPlacement = {
 };
 
