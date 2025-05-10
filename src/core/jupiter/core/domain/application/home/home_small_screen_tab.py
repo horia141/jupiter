@@ -68,7 +68,7 @@ class HomeSmallScreenTab(BranchEntity):
         ctx: DomainContext,
         widget_ref_id: EntityId,
         row: int,
-        size: WidgetDimension,
+        dimension: WidgetDimension,
     ) -> "HomeSmallScreenTab":
         pass
 
@@ -86,6 +86,6 @@ class HomeSmallScreenTab(BranchEntity):
         ctx: DomainContext,
         widget_ref_id: EntityId,
         row: int,
-        size: WidgetDimension,
+        dimension: WidgetDimension,
     ) -> "HomeSmallScreenTab":
         pass

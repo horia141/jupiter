@@ -155,8 +155,12 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                         name=UpdateAction.change_to(args.workspace_name),
                     )
 
-                    home_config = home_config.update(
+                    home_config = home_config.reorder_big_screen_tabs(
                         ctx=context.domain_context,
+                        order_of_big_screen_tabs=[],
+                    ).reorder_small_screen_tabs(
+                        ctx=context.domain_context,
+                        order_of_small_screen_tabs=[],
                     )
                     await uow.get_for(HomeConfig).save(home_config)
 
@@ -181,6 +185,9 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     root_project = root_project.update(
                         ctx=context.domain_context,
                         name=UpdateAction.change_to(args.workspace_root_project_name),
+                    ).reorder_child_projects(
+                        ctx=context.domain_context,
+                        new_order=[],
                     )
                     await uow.get_for(Project).save(root_project)
 

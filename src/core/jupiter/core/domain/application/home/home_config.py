@@ -1,8 +1,7 @@
 """The home config domain application."""
 
-from jupiter.core.domain.application.home.home_big_screen_tab import HomeBigScreenTab, HomeDesktopTab
-from jupiter.core.domain.application.home.home_small_screen_tab import HomeMobileTab, HomeSmallScreenTab
-from jupiter.core.domain.application.home.home_big_screen_widget import HomeWidget
+from jupiter.core.domain.application.home.home_big_screen_tab import HomeBigScreenTab
+from jupiter.core.domain.application.home.home_small_screen_tab import HomeSmallScreenTab
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
