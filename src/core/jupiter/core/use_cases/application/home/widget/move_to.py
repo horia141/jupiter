@@ -2,7 +2,7 @@
 
 from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.application.home.home_widget import HomeWidget
-from jupiter.core.domain.application.home.widget import WidgetDimension
+from jupiter.core.domain.application.home.widget import WidgetDimension, WidgetGeometry
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import ProgressReporter
@@ -20,6 +20,7 @@ class HomeWidgetMoveAndResizeArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     row: int
+    col: int
 
 
 @mutation_use_case()
@@ -37,17 +38,17 @@ class HomeWidgetMoveAndResizeUseCase(
     ) -> None:
         """Execute the command's action."""
         widget = await uow.get_for(HomeWidget).load_by_id(args.ref_id)
+        widget = widget.move_to(context.domain_context, args.row, args.col)
+        await uow.get_for(HomeWidget).save(widget)
+        await progress_reporter.mark_updated(widget)
 
         tab = await uow.get_for(HomeTab).load_by_id(
             widget.home_tab.ref_id
         )
-        
         tab = tab.move_widget_to(
             context.domain_context,
             widget_ref_id=args.ref_id,
-            row=args.row,
-            dimension=widget.dimension
+            geometry=widget.geometry,
         )
-        
         await uow.get_for(HomeTab).save(tab)
         await progress_reporter.mark_updated(tab)

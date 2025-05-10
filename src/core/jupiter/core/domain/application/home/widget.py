@@ -22,6 +22,19 @@ class WidgetDimension(EnumValue):
     DIM_kx3 = "kx3"
 
 
+@value
+class WidgetGeometry(CompositeValue):
+    """A geometry of a widget."""
+
+    row: int
+    col: int
+    dimension: WidgetDimension
+
+    def with_row(self, row: int) -> "WidgetGeometry":
+        """Return a new geometry with the row changed."""
+        return WidgetGeometry(row=row, col=self.col, dimension=self.dimension)
+
+
 @enum_value
 class WidgetType(EnumValue):
     """A type of widget."""

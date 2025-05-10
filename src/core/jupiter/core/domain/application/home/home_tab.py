@@ -4,7 +4,7 @@ import abc
 from typing import Literal
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.domain.application.home.home_widget import HomeWidget
-from jupiter.core.domain.application.home.widget import WidgetDimension
+from jupiter.core.domain.application.home.widget import WidgetDimension, WidgetGeometry
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -73,10 +73,10 @@ class HomeTab(BranchEntity):
         self,
         ctx: DomainContext,
         widget_ref_id: EntityId,
-        row: int,
-        dimension: WidgetDimension,
+        geometry: WidgetGeometry,
     ) -> "HomeTab":
-        pass
+        widget_placement = self.widget_placement.add_widget(widget_ref_id, geometry)
+        return self._new_version(ctx, widget_placement=widget_placement)
 
     @update_entity_action
     def remove_widget(
@@ -84,14 +84,15 @@ class HomeTab(BranchEntity):
         ctx: DomainContext,
         widget_ref_id: EntityId,
     ) -> "HomeTab":
-        pass
+        widget_placement = self.widget_placement.remove_widget(widget_ref_id)
+        return self._new_version(ctx, widget_placement=widget_placement)
 
     @update_entity_action
     def move_widget_to(
         self,
         ctx: DomainContext,
         widget_ref_id: EntityId,
-        row: int,
-        dimension: WidgetDimension,
+        geometry: WidgetGeometry,
     ) -> "HomeTab":
-        pass
+        widget_placement = self.widget_placement.move_widget_to(widget_ref_id, geometry)
+        return self._new_version(ctx, widget_placement=widget_placement)
