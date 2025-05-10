@@ -1,9 +1,9 @@
 """The use case for loading the home."""
 
-from jupiter.core.domain.application.home.home_big_screen_tab import HomeBigScreenTab
 from jupiter.core.domain.application.home.home_config import HomeConfig
-from jupiter.core.domain.application.home.home_small_screen_tab import HomeSmallScreenTab
+from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
+from jupiter.core.framework import use_case
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -13,6 +13,7 @@ from jupiter.core.framework.use_case_io import (
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCaseContext,
     AppTransactionalLoggedInReadOnlyUseCase,
+    readonly_use_case,
 )
 
 
@@ -26,10 +27,9 @@ class HomeConfigLoadResult(UseCaseResultBase):
     """The result of the home config load use case."""
 
     home_config: HomeConfig
-    big_screen_tabs: list[HomeBigScreenTab]
-    small_screen_tabs: list[HomeSmallScreenTab]
+    tabs: list[HomeTab]
 
-
+@readonly_use_case()
 class HomeConfigLoadUseCase(
     AppTransactionalLoggedInReadOnlyUseCase[HomeConfigLoadArgs, HomeConfigLoadResult]
 ):
@@ -45,19 +45,12 @@ class HomeConfigLoadUseCase(
         workspace = context.workspace
         home_config = await uow.get_for(HomeConfig).load_by_parent(workspace.ref_id)
 
-        big_screen_tabs = await uow.get_for(HomeBigScreenTab).find_all(
+        tabs = await uow.get_for(HomeTab).find_all(
             parent_ref_id=home_config.ref_id,
             allow_archived=False,
-            filter_ref_ids=home_config.order_of_big_screen_tabs,
-        )
-        small_screen_tabs = await uow.get_for(HomeSmallScreenTab).find_all(
-            parent_ref_id=home_config.ref_id,
-            allow_archived=False,
-            filter_ref_ids=home_config.order_of_small_screen_tabs,
         )
 
         return HomeConfigLoadResult(
             home_config=home_config,
-            big_screen_tabs=big_screen_tabs,
-            small_screen_tabs=small_screen_tabs,
+            tabs=tabs,
         )

@@ -1,7 +1,6 @@
 """The home config domain application."""
 
-from jupiter.core.domain.application.home.home_big_screen_tab import HomeBigScreenTab
-from jupiter.core.domain.application.home.home_small_screen_tab import HomeSmallScreenTab
+from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -16,6 +15,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.value import CompositeValue, value
+from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 
 
 @entity
@@ -24,12 +24,10 @@ class HomeConfig(TrunkEntity):
 
     workspace: ParentLink
 
-    order_of_big_screen_tabs: list[EntityId]
-    order_of_small_screen_tabs: list[EntityId]
+    order_of_tabs: dict[HomeTabTarget, list[EntityId]]
 
-    big_screen_tabs = ContainsMany(HomeBigScreenTab, home_config_ref_id=IsRefId())
-    small_screen_tabs = ContainsMany(HomeSmallScreenTab, home_config_ref_id=IsRefId())
-    
+    tabs = ContainsMany(HomeTab, home_config_ref_id=IsRefId())
+
     @staticmethod
     @create_entity_action
     def new_home_config(
@@ -40,54 +38,35 @@ class HomeConfig(TrunkEntity):
         return HomeConfig._create(
             ctx,
             workspace=ParentLink(workspace_ref_id),
-            order_of_big_screen_tabs=[],
-            order_of_small_screen_tabs=[],
+            order_of_tabs={
+                HomeTabTarget.BIG_SCREEN: [],
+                HomeTabTarget.SMALL_SCREEN: [],
+            },
         )
     
     @update_entity_action
-    def add_big_screen_tab(
+    def add_tab(
         self,
         ctx: DomainContext,
-        big_screen_tab_ref_id: EntityId,
+        target: HomeTabTarget,
+        tab_ref_id: EntityId,
     ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_big_screen_tabs=[*self.order_of_big_screen_tabs, big_screen_tab_ref_id])  
+        return self._new_version(ctx, order_of_tabs={**self.order_of_tabs, target: [*self.order_of_tabs[target], tab_ref_id]})
     
     @update_entity_action
-    def remove_big_screen_tab(
+    def remove_tab(
         self,
         ctx: DomainContext,
-        big_screen_tab_ref_id: EntityId,
+        target: HomeTabTarget,
+        tab_ref_id: EntityId,
     ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_big_screen_tabs=[*self.order_of_big_screen_tabs, big_screen_tab_ref_id])
+        return self._new_version(ctx, order_of_tabs={**self.order_of_tabs, target: [tab for tab in self.order_of_tabs[target] if tab != tab_ref_id]})
     
     @update_entity_action
-    def reorder_big_screen_tabs(
+    def reoder_tabs(
         self,
         ctx: DomainContext,
-        order_of_big_screen_tabs: list[EntityId],
+        target: HomeTabTarget,
+        order_of_tabs: list[EntityId],
     ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_big_screen_tabs=order_of_big_screen_tabs)
-    
-    @update_entity_action
-    def add_small_screen_tab(
-        self,
-        ctx: DomainContext,
-        small_screen_tab_ref_id: EntityId,
-    ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_small_screen_tabs=[*self.order_of_small_screen_tabs, small_screen_tab_ref_id])
-    
-    @update_entity_action
-    def remove_small_screen_tab(
-        self,
-        ctx: DomainContext,
-        small_screen_tab_ref_id: EntityId,
-    ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_small_screen_tabs=[*self.order_of_small_screen_tabs, small_screen_tab_ref_id])
-    
-    @update_entity_action
-    def reorder_small_screen_tabs(
-        self,
-        ctx: DomainContext,
-        order_of_small_screen_tabs: list[EntityId],
-    ) -> "HomeConfig":
-        return self._new_version(ctx, order_of_small_screen_tabs=order_of_small_screen_tabs)
+        return self._new_version(ctx, order_of_tabs={**self.order_of_tabs, target: order_of_tabs})

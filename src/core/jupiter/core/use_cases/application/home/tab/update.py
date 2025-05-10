@@ -1,6 +1,6 @@
 """The command for updating a home small screen tab's properties."""
 
-from jupiter.core.domain.application.home.home_small_screen_tab import HomeSmallScreenTab
+from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -16,37 +16,37 @@ from jupiter.core.use_cases.infra.use_cases import (
 
 
 @use_case_args
-class HomeSmallScreenTabUpdateArgs(UseCaseArgsBase):
-    """The arguments for updating a home small screen tab."""
+class HomeTabUpdateArgs(UseCaseArgsBase):
+    """The arguments for updating a home tab."""
 
     ref_id: EntityId
     name: UpdateAction[EntityName]
     icon: UpdateAction[EntityIcon | None]
 
 
-@mutation_use_case(None)
-class HomeSmallScreenTabUpdateUseCase(
-    AppTransactionalLoggedInMutationUseCase[HomeSmallScreenTabUpdateArgs, None]
+@mutation_use_case()
+class HomeTabUpdateUseCase(
+    AppTransactionalLoggedInMutationUseCase[HomeTabUpdateArgs, None]
 ):
-    """The command for updating a home small screen tab's properties."""
+    """The command for updating a home tab's properties."""
 
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInMutationUseCaseContext,
-        args: HomeSmallScreenTabUpdateArgs,
+        args: HomeTabUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        home_small_screen_tab = await uow.get_for(HomeSmallScreenTab).load_by_id(
+        home_tab = await uow.get_for(HomeTab).load_by_id(
             args.ref_id,
         )
 
-        home_small_screen_tab = home_small_screen_tab.update(
+        home_tab = home_tab.update(
             context.domain_context,
             name=args.name,
             icon=args.icon,
         )
 
-        await uow.get_for(HomeSmallScreenTab).save(home_small_screen_tab)
-        await progress_reporter.mark_updated(home_small_screen_tab) 
+        await uow.get_for(HomeTab).save(home_tab)
+        await progress_reporter.mark_updated(home_tab)

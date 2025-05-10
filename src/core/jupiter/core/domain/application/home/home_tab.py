@@ -1,6 +1,7 @@
 """A tab on the home page."""
 
-from jupiter.core.domain.application.home.home_small_screen_widget import HomeSmallScreenWidget
+from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
+from jupiter.core.domain.application.home.home_widget import HomeWidget
 from jupiter.core.domain.application.home.widget import WidgetDimension
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.framework.base.entity_id import EntityId
@@ -19,31 +20,33 @@ from jupiter.core.framework.update_action import UpdateAction
 
 
 @entity
-class HomeSmallScreenTab(BranchEntity):
+class HomeTab(BranchEntity):
     """A tab on the home page."""
 
     home_config: ParentLink
+    target: HomeTabTarget
     name: EntityName
     icon: EntityIcon | None
-
     placement_of_widgets: list[list[EntityId]]
 
     widgets = ContainsMany(
-        HomeSmallScreenWidget,
-        home_small_screen_tab_ref_id=IsRefId(),
+        HomeWidget,
+        home_tab_ref_id=IsRefId(),
     )
 
     @staticmethod
     @create_entity_action  
-    def new_home_small_screen_tab(
+    def new_home_tab(
         ctx: DomainContext,
         home_config_ref_id: EntityId,
+        target: HomeTabTarget,
         name: EntityName,
         icon: EntityIcon | None,
-    ) -> "HomeSmallScreenTab":
-        return HomeSmallScreenTab._create(
+    ) -> "HomeTab":
+        return HomeTab._create(
             ctx,
             home_config_ref_id=home_config_ref_id,
+            target=target,
             name=name,
             icon=icon,
             placement_of_widgets=[],
@@ -55,7 +58,7 @@ class HomeSmallScreenTab(BranchEntity):
         ctx: DomainContext,
         name: UpdateAction[EntityName],
         icon: UpdateAction[EntityIcon | None],
-    ) -> "HomeSmallScreenTab":
+    ) -> "HomeTab":
         return self._new_version(
             ctx,
             name=name.or_else(self.name),
@@ -69,7 +72,7 @@ class HomeSmallScreenTab(BranchEntity):
         widget_ref_id: EntityId,
         row: int,
         dimension: WidgetDimension,
-    ) -> "HomeSmallScreenTab":
+    ) -> "HomeTab":
         pass
 
     @update_entity_action
@@ -77,7 +80,7 @@ class HomeSmallScreenTab(BranchEntity):
         self,
         ctx: DomainContext,
         widget_ref_id: EntityId,
-    ) -> "HomeSmallScreenTab":
+    ) -> "HomeTab":
         pass
 
     @update_entity_action
@@ -87,5 +90,5 @@ class HomeSmallScreenTab(BranchEntity):
         widget_ref_id: EntityId,
         row: int,
         dimension: WidgetDimension,
-    ) -> "HomeSmallScreenTab":
+    ) -> "HomeTab":
         pass

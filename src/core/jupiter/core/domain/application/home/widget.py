@@ -1,5 +1,6 @@
 """A type of widget."""
 
+from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
 
 
@@ -37,8 +38,7 @@ class WidgetTypeConstraints(CompositeValue):
     """A constraints for a widget type."""
 
     allowed_dimensions: list[WidgetDimension]
-    for_big_screen: bool
-    for_small_screen: bool
+    for_tab_target: set[HomeTabTarget]
 
 
 WIDGET_CONSTRAINTS = {
@@ -48,27 +48,22 @@ WIDGET_CONSTRAINTS = {
             WidgetDimension.DIM_1x2,
             WidgetDimension.DIM_1x3,
         ],
-        for_big_screen=True,
-        for_small_screen=True,
+        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
     ),
     WidgetType.WORKING_MEMORY: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_1x1],
-        for_big_screen=True,
-        for_small_screen=True,
+        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
     ),
     WidgetType.KEY_HABITS_STREAKS: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_1x1, WidgetDimension.DIM_1x2],
-        for_big_screen=True,
-        for_small_screen=True,
+        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
     ),
     WidgetType.HABIT_INBOX_TASKS: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
-        for_big_screen=True,
-        for_small_screen=True,
+        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
     ),
     WidgetType.CALENDAR_DAY: WidgetTypeConstraints(
         allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
-        for_big_screen=True,
-        for_small_screen=True,
+        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
     ),
 }

@@ -1,7 +1,8 @@
 """The use case for creating a home small screen tab."""
 
 from jupiter.core.domain.application.home.home_config import HomeConfig
-from jupiter.core.domain.application.home.home_small_screen_tab import HomeSmallScreenTab
+from jupiter.core.domain.application.home.home_tab import HomeTab
+from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.domain.core.entity_icon import EntityIcon
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_name import EntityName
@@ -16,44 +17,49 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
     AppLoggedInUseCaseContext,
     AppTransactionalLoggedInMutationUseCase,
+    mutation_use_case,
 )
 
 
 @use_case_args
-class HomeSmallScreenTabCreateArgs(UseCaseArgsBase):
-    """The arguments for the create home small screen tab use case."""
+class HomeTabCreateArgs(UseCaseArgsBase):
+    """The arguments for the create home tab use case."""
 
+    target: HomeTabTarget
     name: EntityName
     icon: EntityIcon | None
 
 
-class HomeSmallScreenTabCreateUseCase(
-    AppTransactionalLoggedInMutationUseCase[HomeSmallScreenTabCreateArgs, None]
+@mutation_use_case()
+class HomeTabCreateUseCase(
+    AppTransactionalLoggedInMutationUseCase[HomeTabCreateArgs, None]
 ):
-    """The use case for creating a home small screen tab."""
+    """The use case for creating a home tab."""
 
     async def _perform_transactional_mutation(
         self,
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInMutationUseCaseContext,
-        args: HomeSmallScreenTabCreateArgs,
+        args: HomeTabCreateArgs,
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
         home_config = await uow.get_for(HomeConfig).load_by_parent(workspace.ref_id)
 
-        home_small_screen_tab = HomeSmallScreenTab.new_home_small_screen_tab(
+        home_tab = HomeTab.new_home_tab(
             context.domain_context,
             home_config_ref_id=home_config.ref_id,
+            target=args.target,
             name=args.name,
             icon=args.icon,
         )
-        home_small_screen_tab = await uow.get_for(HomeSmallScreenTab).create(home_small_screen_tab)
-        await progress_reporter.mark_created(home_small_screen_tab)
+        home_tab = await uow.get_for(HomeTab).create(home_tab)
+        await progress_reporter.mark_created(home_tab)
 
-        home_config = home_config.add_small_screen_tab(
+        home_config = home_config.add_tab(
             context.domain_context,
-            home_small_screen_tab.ref_id,
+            target=args.target,
+            tab_ref_id=home_tab.ref_id,
         )
         await uow.get_for(HomeConfig).save(home_config)
