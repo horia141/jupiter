@@ -1,5 +1,7 @@
 """A tab on the home page."""
 
+import abc
+from typing import Literal
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.domain.application.home.home_widget import HomeWidget
 from jupiter.core.domain.application.home.widget import WidgetDimension
@@ -17,7 +19,8 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.update_action import UpdateAction
-
+from jupiter.core.framework.value import CompositeValue, value
+from jupiter.core.domain.application.home.home_tab_widget_placement import OneOfHomeTabWidgetPlacement, build_home_tab_widget_placement
 
 @entity
 class HomeTab(BranchEntity):
@@ -27,7 +30,7 @@ class HomeTab(BranchEntity):
     target: HomeTabTarget
     name: EntityName
     icon: EntityIcon | None
-    placement_of_widgets: list[list[EntityId]]
+    widget_placement: OneOfHomeTabWidgetPlacement
 
     widgets = ContainsMany(
         HomeWidget,
@@ -49,7 +52,7 @@ class HomeTab(BranchEntity):
             target=target,
             name=name,
             icon=icon,
-            placement_of_widgets=[],
+            widget_placement=build_home_tab_widget_placement(target),
         )
 
     @update_entity_action
