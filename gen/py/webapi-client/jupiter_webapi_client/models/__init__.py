@@ -184,6 +184,7 @@ from .home_config_order_of_tabs import HomeConfigOrderOfTabs
 from .home_tab import HomeTab
 from .home_tab_archive_args import HomeTabArchiveArgs
 from .home_tab_create_args import HomeTabCreateArgs
+from .home_tab_create_result import HomeTabCreateResult
 from .home_tab_load_args import HomeTabLoadArgs
 from .home_tab_load_result import HomeTabLoadResult
 from .home_tab_remove_args import HomeTabRemoveArgs
@@ -864,6 +865,7 @@ __all__ = (
     "HomeTab",
     "HomeTabArchiveArgs",
     "HomeTabCreateArgs",
+    "HomeTabCreateResult",
     "HomeTabLoadArgs",
     "HomeTabLoadResult",
     "HomeTabRemoveArgs",

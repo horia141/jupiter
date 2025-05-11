@@ -1,4 +1,4 @@
-import { ApiError } from "@jupiter/webapi-client";
+import { ApiError, HomeTabTarget } from "@jupiter/webapi-client";
 import { z } from "zod";
 import {
   ActionFunctionArgs,
@@ -10,14 +10,20 @@ import { parseForm } from "zodix";
 import { StatusCodes } from "http-status-codes";
 import {
   Form,
+  Outlet,
   ShouldRevalidateFunction,
   useActionData,
   useNavigation,
 } from "@remix-run/react";
 import { useContext } from "react";
 import { Stack } from "@mui/material";
+import { AnimatePresence } from "framer-motion";
 
-import { DisplayType } from "~/rendering/use-nested-entities";
+import {
+  DisplayType,
+  useTrunkNeedsToShowBranch,
+  useTrunkNeedsToShowLeaf,
+} from "~/rendering/use-nested-entities";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -32,6 +38,12 @@ import {
   SectionActions,
 } from "~/components/infra/section-actions";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { EntityCard } from "~/components/infra/entity-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 
 const ParamsSchema = z.object({});
 
@@ -42,7 +54,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
 ]);
 
 export const handle = {
-  displayType: DisplayType.BRANCH,
+  displayType: DisplayType.TRUNK,
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -52,6 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     homeConfig: homeConfigResponse.home_config,
+    tabs: homeConfigResponse.tabs,
   });
 }
 
@@ -61,11 +74,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     switch (form.intent) {
-      case "update": {
-        await apiClient.home.homeConfigUpdate({});
-        return redirect(`/app/workspace/home/settings`);
-      }
-
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -89,41 +97,42 @@ export default function HomeSettings() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
 
+  const shouldShowABranch = useTrunkNeedsToShowBranch();
+  const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
+
   const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
   const isBigScreen = useBigScreen();
 
   return (
-    <BranchPanel
+    <TrunkPanel
       key={"home/settings"}
       returnLocation="/app/workspace"
-      inputsEnabled={inputsEnabled}
+      createLocation="/app/workspace/home/settings/tabs/new"
     >
-      <Form method="post">
-        <SectionCardNew
-          id="home-settings"
-          title="Settings"
-          actions={
-            <SectionActions
-              id="home-settings-actions"
-              topLevelInfo={topLevelInfo}
-              inputsEnabled={inputsEnabled}
-              actions={[
-                ActionSingle({
-                  id: "home-settings-save",
-                  text: "Save",
-                  value: "update",
-                  highlight: true,
-                }),
-              ]}
-            />
-          }
-        >
-          <GlobalError actionResult={actionData} />
-          <Stack spacing={2} useFlexGap></Stack>
-        </SectionCardNew>
-      </Form>
-    </BranchPanel>
+      <NestingAwareBlock
+        branchForceHide={shouldShowABranch}
+        shouldHide={shouldShowABranch || shouldShowALeafToo}
+      >
+        <GlobalError actionResult={actionData} />
+        <Form method="post">
+          <Stack spacing={2} useFlexGap>
+            {loaderData.tabs.length === 0 && (
+              <EntityNoNothingCard
+                title="You Have To Start Somewhere"
+                message="There are no tabs to show. You can create a new tab."
+                newEntityLocations="/app/workspace/home/settings/tabs/new"
+                helpSubject={DocsHelpSubject.HOME}
+              />
+            )}
+          </Stack>
+        </Form>
+      </NestingAwareBlock>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

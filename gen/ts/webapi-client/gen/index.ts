@@ -152,6 +152,7 @@ export type { HomeConfigLoadResult } from './models/HomeConfigLoadResult';
 export type { HomeTab } from './models/HomeTab';
 export type { HomeTabArchiveArgs } from './models/HomeTabArchiveArgs';
 export type { HomeTabCreateArgs } from './models/HomeTabCreateArgs';
+export type { HomeTabCreateResult } from './models/HomeTabCreateResult';
 export type { HomeTabLoadArgs } from './models/HomeTabLoadArgs';
 export type { HomeTabLoadResult } from './models/HomeTabLoadResult';
 export type { HomeTabRemoveArgs } from './models/HomeTabRemoveArgs';

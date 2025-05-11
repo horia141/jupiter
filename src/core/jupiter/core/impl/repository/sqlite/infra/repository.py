@@ -279,8 +279,10 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
                     field_args[1] is type(None) and field_args[0] is not type(None)
                 ):
                     return field_args[0], True
+                elif all(f is not type(None) for f in field_args):
+                    return field.type, False
                 else:
-                    raise Exception("Not implemented - union")
+                    raise Exception(f"Not implemented - union {field.type}")
             else:
                 return field.type, False
 
@@ -427,7 +429,25 @@ class SqliteEntityRepository(Generic[_EntityT], SqliteRepository, abc.ABC):
                 table.append_column(Column(field.name, String, nullable=field_optional))
             elif get_origin(field_type) is not None:
                 origin_field_type = get_origin(field_type)
-                if origin_field_type == list:
+                if origin_field_type is typing.Union or (
+                    isinstance(origin_field_type, type)
+                    and issubclass(origin_field_type, types.UnionType)
+                ):
+                    field_args = get_args(field.type)
+                    if all(
+                        isinstance(f, type)
+                        and get_origin(f) is None
+                        and issubclass(f, CompositeValue)
+                        for f in field_args
+                    ):
+                        table.append_column(
+                            Column(field.name, JSON, nullable=field_optional)
+                        )
+                    else:
+                        raise Exception(
+                            f"Unsupported field type {field_type} for {entity_type.__name__}:{field.name}"
+                        )
+                elif origin_field_type == list:
                     table.append_column(
                         Column(field.name, JSON, nullable=field_optional)
                     )

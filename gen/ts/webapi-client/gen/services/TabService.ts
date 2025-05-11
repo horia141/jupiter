@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { HomeTabArchiveArgs } from '../models/HomeTabArchiveArgs';
 import type { HomeTabCreateArgs } from '../models/HomeTabCreateArgs';
+import type { HomeTabCreateResult } from '../models/HomeTabCreateResult';
 import type { HomeTabLoadArgs } from '../models/HomeTabLoadArgs';
 import type { HomeTabLoadResult } from '../models/HomeTabLoadResult';
 import type { HomeTabRemoveArgs } from '../models/HomeTabRemoveArgs';
@@ -38,12 +39,12 @@ export class TabService {
      * The use case for creating a home tab.
      * The use case for creating a home tab.
      * @param requestBody The input data
-     * @returns any Successful response / Empty body
+     * @returns HomeTabCreateResult Successful response
      * @throws ApiError
      */
     public homeTabCreate(
         requestBody?: HomeTabCreateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<HomeTabCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/home-tab-create',

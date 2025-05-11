@@ -34,6 +34,7 @@ nav:
           - 'Accounts': 'concepts/accounts.md'
           - 'Workspace': 'concepts/workspaces.md'
           - 'Feature Flags': 'concepts/feature-flags.md'
+          - 'Home Page': 'concepts/home-page.md'
           - 'Inbox Tasks': 'concepts/inbox-tasks.md'
           - 'Working Mem': 'concepts/working-mem.md'
           - 'Calendar': 'concepts/calendar.md'

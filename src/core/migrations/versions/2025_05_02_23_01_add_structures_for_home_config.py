@@ -56,11 +56,6 @@ def upgrade() -> None:
         );
     """
     )
-    op.execute(
-        """
-        CREATE UNIQUE INDEX ix_home_config_event_owner_ref_id ON home_config_event (owner_ref_id);
-    """
-    )
 
     op.execute(
         """

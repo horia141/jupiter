@@ -9,7 +9,9 @@ from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
+    UseCaseResultBase,
     use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -27,9 +29,16 @@ class HomeTabCreateArgs(UseCaseArgsBase):
     icon: EntityIcon | None
 
 
+@use_case_result
+class HomeTabCreateResult(UseCaseResultBase):
+    """The result of the create home tab use case."""
+
+    new_home_tab: HomeTab
+
+
 @mutation_use_case()
 class HomeTabCreateUseCase(
-    AppTransactionalLoggedInMutationUseCase[HomeTabCreateArgs, None]
+    AppTransactionalLoggedInMutationUseCase[HomeTabCreateArgs, HomeTabCreateResult]
 ):
     """The use case for creating a home tab."""
 
@@ -39,7 +48,7 @@ class HomeTabCreateUseCase(
         progress_reporter: ProgressReporter,
         context: AppLoggedInMutationUseCaseContext,
         args: HomeTabCreateArgs,
-    ) -> None:
+    ) -> HomeTabCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
         home_config = await uow.get_for(HomeConfig).load_by_parent(workspace.ref_id)
@@ -60,3 +69,5 @@ class HomeTabCreateUseCase(
             tab_ref_id=home_tab.ref_id,
         )
         await uow.get_for(HomeConfig).save(home_config)
+
+        return HomeTabCreateResult(new_home_tab=home_tab)

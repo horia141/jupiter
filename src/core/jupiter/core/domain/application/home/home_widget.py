@@ -7,6 +7,7 @@ from jupiter.core.domain.application.home.widget import (
     WidgetType,
 )
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     LeafEntity,
@@ -48,6 +49,7 @@ class HomeWidget(LeafEntity):
         return HomeWidget._create(
             ctx,
             home_tab_ref_id=home_tab_ref_id,
+            name=HomeWidget._build_name(home_tab_target, home_tab_ref_id),
             the_type=the_type,
             geometry=geometry,
         )
@@ -65,3 +67,9 @@ class HomeWidget(LeafEntity):
                 row=row, col=col, dimension=self.geometry.dimension
             ),
         )
+
+    @staticmethod
+    def _build_name(
+        home_tab_target: HomeTabTarget, home_tab_ref_id: EntityId
+    ) -> EntityName:
+        return EntityName(f"Widget on {home_tab_target.value} {home_tab_ref_id}")

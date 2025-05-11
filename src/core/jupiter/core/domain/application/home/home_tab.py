@@ -49,7 +49,7 @@ class HomeTab(BranchEntity):
     ) -> "HomeTab":
         return HomeTab._create(
             ctx,
-            home_config_ref_id=home_config_ref_id,
+            home_config=ParentLink(home_config_ref_id),
             target=target,
             name=name,
             icon=icon,

@@ -118,7 +118,11 @@ class BigScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
         sections_by_id = {section.ref_id: section for section in sections}
 
         # Build the matrix
-        max_row = max(section.geometry.row for section in sections) + 2
+        max_row = (
+            max(section.geometry.row for section in sections) + 2
+            if len(sections) > 0
+            else 2
+        )
         matrix_c1: list[EntityId | None] = [None] * max_row
         matrix_c2: list[EntityId | None] = [None] * max_row
         matrix_c3: list[EntityId | None] = [None] * max_row
@@ -233,7 +237,11 @@ class SmallScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
         sections_by_id = {section.ref_id: section for section in sections}
 
         # Build the matrix
-        max_row = max(section.geometry.row for section in sections) + 1
+        max_row = (
+            max(section.geometry.row for section in sections) + 2
+            if len(sections) > 0
+            else 2
+        )
         matrix: list[EntityId | None] = [None] * max_row
         for section in sections:
             for row in range(

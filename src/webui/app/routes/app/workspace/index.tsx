@@ -144,6 +144,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return json({
+    homeConfig: {
+      config: homeConfigResponse.home_config,
+      tabs: homeConfigResponse.tabs,
+    },
     motd: motdResponse.motd,
     habitInboxTasks: habitInboxTasksResponse.entries,
     keyHabitResults: keyHabitResults.map((h) => ({

@@ -18,7 +18,23 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.execute("""
+    op.execute(
+        """
+        DROP INDEX ix_home_config_event_owner_ref_id;
+    """
+    )
+
+    with op.batch_alter_table("home_config") as batch_op:
+        batch_op.add_column(sa.Column("order_of_tabs", sa.JSON))
+
+    op.execute(
+        """
+        UPDATE home_config SET order_of_tabs = '{"big-screen": [], "small-screen": []}' where order_of_tabs is NULL
+    """
+    )
+
+    op.execute(
+        """
         CREATE TABLE home_tab (
             ref_id INTEGER NOT NULL PRIMARY KEY,
             version INTEGER NOT NULL,
@@ -34,10 +50,11 @@ def upgrade() -> None:
             widget_placement JSON NOT NULL,
             FOREIGN KEY (home_config_ref_id) REFERENCES home_config (ref_id)
         )
-    """)
+    """
+    )
     op.execute(
         """
-        CREATE UNIQUE INDEX ix_home_tab_home_config_ref_id ON home_tab (home_config_ref_id);
+        CREATE INDEX ix_home_tab_home_config_ref_id ON home_tab (home_config_ref_id);
     """
     )
     op.execute(
@@ -56,13 +73,9 @@ def upgrade() -> None:
         );
     """
     )
+
     op.execute(
         """
-        CREATE UNIQUE INDEX ix_home_tab_event_owner_ref_id ON home_tab_event (owner_ref_id);
-    """
-    )
-
-    op.execute("""
         CREATE TABLE home_widget (
             ref_id INTEGER NOT NULL PRIMARY KEY,
             version INTEGER NOT NULL,
@@ -72,14 +85,16 @@ def upgrade() -> None:
             last_modified_time DATETIME NOT NULL,
             archived_time DATETIME,
             home_tab_ref_id INTEGER NOT NULL,
+            name VARCHAR(256) NOT NULL,
             the_type VARCHAR(32) NOT NULL,
             geometry JSON NOT NULL,
             FOREIGN KEY (home_tab_ref_id) REFERENCES home_tab (ref_id)
         )
-    """)
+    """
+    )
     op.execute(
         """
-        CREATE UNIQUE INDEX ix_home_widget_home_tab_ref_id ON home_widget (home_tab_ref_id);
+        CREATE INDEX ix_home_widget_home_tab_ref_id ON home_widget (home_tab_ref_id);
     """
     )
     op.execute(
@@ -96,11 +111,6 @@ def upgrade() -> None:
             PRIMARY KEY (owner_ref_id, timestamp, session_index, name),
             FOREIGN KEY (owner_ref_id) REFERENCES home_widget (ref_id)
         );
-    """
-    )
-    op.execute(
-        """
-        CREATE UNIQUE INDEX ix_home_widget_event_owner_ref_id ON home_widget_event (owner_ref_id);
     """
     )
 
