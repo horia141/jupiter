@@ -163,6 +163,7 @@ export type { HomeTabWidgetPlacementSection } from './models/HomeTabWidgetPlacem
 export type { HomeWidget } from './models/HomeWidget';
 export type { HomeWidgetArchiveArgs } from './models/HomeWidgetArchiveArgs';
 export type { HomeWidgetCreateArgs } from './models/HomeWidgetCreateArgs';
+export type { HomeWidgetCreateResult } from './models/HomeWidgetCreateResult';
 export type { HomeWidgetLoadArgs } from './models/HomeWidgetLoadArgs';
 export type { HomeWidgetLoadResult } from './models/HomeWidgetLoadResult';
 export type { HomeWidgetMoveAndResizeArgs } from './models/HomeWidgetMoveAndResizeArgs';

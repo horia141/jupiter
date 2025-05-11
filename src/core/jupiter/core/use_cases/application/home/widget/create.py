@@ -12,7 +12,9 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
+    UseCaseResultBase,
     use_case_args,
+    use_case_result,
 )
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCaseContext,
@@ -31,10 +33,16 @@ class HomeWidgetCreateArgs(UseCaseArgsBase):
     col: int
     dimension: WidgetDimension
 
+@use_case_result
+class HomeWidgetCreateResult(UseCaseResultBase):
+    """The result of the create home widget use case."""
+
+    new_widget: HomeWidget
+
 
 @mutation_use_case()
 class HomeWidgetCreateUseCase(
-    AppTransactionalLoggedInMutationUseCase[HomeWidgetCreateArgs, None]
+    AppTransactionalLoggedInMutationUseCase[HomeWidgetCreateArgs, HomeWidgetCreateResult]
 ):
     """The use case for creating a home small screen widget."""
 
@@ -44,7 +52,7 @@ class HomeWidgetCreateUseCase(
         progress_reporter: ProgressReporter,
         context: AppLoggedInMutationUseCaseContext,
         args: HomeWidgetCreateArgs,
-    ) -> None:
+    ) -> HomeWidgetCreateResult:
         """Execute the command's action."""
         home_tab = await uow.get_for(HomeTab).load_by_id(
             args.home_tab_ref_id,
@@ -71,3 +79,5 @@ class HomeWidgetCreateUseCase(
         )
         await uow.get_for(HomeTab).save(home_tab)
         await progress_reporter.mark_updated(home_tab)
+
+        return HomeWidgetCreateResult(new_widget=home_widget)

@@ -1,6 +1,6 @@
-import type { HomeTab } from "@jupiter/webapi-client";
-import { ApiError } from "@jupiter/webapi-client";
-import { Button } from "@mui/material";
+import type { HomeTab, HomeWidget, SmallScreenHomeTabWidgetPlacement } from "@jupiter/webapi-client";
+import { ApiError, HomeTabTarget } from "@jupiter/webapi-client";
+import { Button, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -135,18 +135,16 @@ export default function HomeTab() {
         )}
 
         <EntityStack>
-          {loaderData.widgets.map((widget) => (
-            <EntityCard
-              entityId={`home-widget-${widget.ref_id}`}
-              key={`home-widget-${widget.ref_id}`}
-            >
-              <EntityLink
-                to={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}/widgets/${widget.ref_id}`}
-              >
-                <EntityNameComponent name={widget.name} />
-              </EntityLink>
-            </EntityCard>
-          ))}
+          {loaderData.tab.target === HomeTabTarget.BIG_SCREEN && (
+            <>A big screen widget</>
+          )}
+
+          {loaderData.tab.target === HomeTabTarget.SMALL_SCREEN && (
+            <SmallScreenWidgetPlacement
+              homeTab={loaderData.tab}
+              widgets={loaderData.widgets}
+            />
+          )}
         </EntityStack>
       </NestingAwareBlock>
 
@@ -166,3 +164,29 @@ export const ErrorBoundary = makeBranchErrorBoundary(
       `There was an error loading tab #${params.id}! Please try again!`,
   },
 );
+
+interface SmallScreenWidgetPlacementProps {
+    homeTab: HomeTab;
+    widgets: HomeWidget[];
+}
+
+function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
+  const widgetPlacement = props.homeTab.widget_placement as SmallScreenHomeTabWidgetPlacement;
+  const widgetByRefId = new Map(props.widgets.map(widget => [widget.ref_id, widget]));
+
+  return (
+    <Stack useFlexGap>
+      {widgetPlacement.matrix.map((row, rowIndex) => {
+          if (row === null) {
+            return <Button key={rowIndex} component={Link} to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?row=${rowIndex}&col=0`} variant="outlined">Add Widget</Button>
+          }
+
+          const widget = widgetByRefId.get(row);
+
+          return (
+              <p key={rowIndex}>{widget?.name}</p>
+          );
+      })}
+    </Stack>
+  );
+}

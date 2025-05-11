@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { HomeWidgetArchiveArgs } from '../models/HomeWidgetArchiveArgs';
 import type { HomeWidgetCreateArgs } from '../models/HomeWidgetCreateArgs';
+import type { HomeWidgetCreateResult } from '../models/HomeWidgetCreateResult';
 import type { HomeWidgetLoadArgs } from '../models/HomeWidgetLoadArgs';
 import type { HomeWidgetLoadResult } from '../models/HomeWidgetLoadResult';
 import type { HomeWidgetMoveAndResizeArgs } from '../models/HomeWidgetMoveAndResizeArgs';
@@ -38,12 +39,12 @@ export class WidgetService {
      * The use case for creating a home small screen widget.
      * The use case for creating a home small screen widget.
      * @param requestBody The input data
-     * @returns any Successful response / Empty body
+     * @returns HomeWidgetCreateResult Successful response
      * @throws ApiError
      */
     public homeWidgetCreate(
         requestBody?: HomeWidgetCreateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<HomeWidgetCreateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/home-widget-create',

@@ -41,7 +41,6 @@ class HomeWidgetLoadUseCase(
     async def _perform_transactional_read(
         self,
         uow: DomainUnitOfWork,
-        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: HomeWidgetLoadArgs,
     ) -> HomeWidgetLoadResult:

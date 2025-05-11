@@ -197,6 +197,7 @@ from .home_tab_widget_placement_section import HomeTabWidgetPlacementSection
 from .home_widget import HomeWidget
 from .home_widget_archive_args import HomeWidgetArchiveArgs
 from .home_widget_create_args import HomeWidgetCreateArgs
+from .home_widget_create_result import HomeWidgetCreateResult
 from .home_widget_load_args import HomeWidgetLoadArgs
 from .home_widget_load_result import HomeWidgetLoadResult
 from .home_widget_move_and_resize_args import HomeWidgetMoveAndResizeArgs
@@ -878,6 +879,7 @@ __all__ = (
     "HomeWidget",
     "HomeWidgetArchiveArgs",
     "HomeWidgetCreateArgs",
+    "HomeWidgetCreateResult",
     "HomeWidgetLoadArgs",
     "HomeWidgetLoadResult",
     "HomeWidgetMoveAndResizeArgs",

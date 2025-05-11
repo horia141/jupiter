@@ -48,7 +48,7 @@ class HomeWidget(LeafEntity):
             )
         return HomeWidget._create(
             ctx,
-            home_tab_ref_id=home_tab_ref_id,
+            home_tab=ParentLink(home_tab_ref_id),
             name=HomeWidget._build_name(home_tab_target, home_tab_ref_id),
             the_type=the_type,
             geometry=geometry,
