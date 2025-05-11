@@ -35,10 +35,14 @@ class HomeWidgetRemoveUseCase(
         args: HomeWidgetRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        widget = await uow.get_for(HomeWidget).load_by_id(args.ref_id)
+        widget = await uow.get_for(HomeWidget).load_by_id(
+            args.ref_id, allow_archived=True
+        )
 
         # First remove widget from tab
-        tab = await uow.get_for(HomeTab).load_by_id(widget.home_tab.ref_id)
+        tab = await uow.get_for(HomeTab).load_by_id(
+            widget.home_tab.ref_id, allow_archived=True
+        )
         tab = tab.remove_widget(context.domain_context, widget.ref_id)
         await uow.get_for(HomeTab).save(tab)
         await progress_reporter.mark_updated(tab)

@@ -36,7 +36,7 @@ class HomeTabRemoveUseCase(
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
-        tab = await uow.get_for(HomeTab).load_by_id(args.ref_id)
+        tab = await uow.get_for(HomeTab).load_by_id(args.ref_id, allow_archived=True)
         home_config = await uow.get_for(HomeConfig).load_by_parent(workspace.ref_id)
         home_config = home_config.remove_tab(
             context.domain_context, tab.target, tab.ref_id

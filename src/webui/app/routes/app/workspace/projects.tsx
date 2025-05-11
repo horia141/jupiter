@@ -35,11 +35,9 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 
-const UpdateFormSchema = z.discriminatedUnion("intent", [
-  z.object({
-    intent: z.literal("reorder"),
-  }),
-]);
+const UpdateFormSchema = z.object({
+  intent: z.string(),
+});
 
 export const handle = {
   displayType: DisplayType.TRUNK,

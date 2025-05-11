@@ -1,17 +1,17 @@
-import type { HomeTab, HomeWidget } from "@jupiter/webapi-client";
+import type { HomeTab } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
-import { Button, IconButton } from "@mui/material";
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from "@mui/material";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { useContext } from "react";
 import { z } from "zod";
-import { parseParams } from "zodix";
+import { parseForm, parseParams } from "zodix";
+import TuneIcon from "@mui/icons-material/Tune";
+import { StatusCodes } from "http-status-codes";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import EntityIconComponent from "~/components/infra/entity-icon";
 import { EntityNameComponent } from "~/components/infra/entity-name";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
@@ -25,12 +25,21 @@ import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { TopLevelInfoContext } from "~/top-level-context";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 
 const ParamsSchema = z.object({
   id: z.string(),
 });
+
+const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("archive"),
+  }),
+  z.object({
+    intent: z.literal("remove"),
+  }),
+]);
 
 export const handle = {
   displayType: DisplayType.BRANCH,
@@ -48,13 +57,50 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return json(result);
 }
 
+export async function action({ request, params }: ActionFunctionArgs) {
+  const apiClient = await getLoggedInApiClient(request);
+  const { id } = parseParams(params, ParamsSchema);
+  const form = await parseForm(request, UpdateFormSchema);
+
+  try {
+    switch (form.intent) {
+      case "archive": {
+        await apiClient.tab.homeTabArchive({
+          ref_id: id,
+        });
+
+        return redirect(`/app/workspace/home/settings`);
+      }
+
+      case "remove": {
+        await apiClient.tab.homeTabRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/app/workspace/home/settings`);
+      }
+
+      default:
+        throw new Response("Bad Intent", { status: 500 });
+    }
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === StatusCodes.UNPROCESSABLE_ENTITY
+    ) {
+      return json(validationErrorToUIErrorInfo(error.body));
+    }
+
+    throw error;
+  }
+}
+
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function HomeTab() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
-  const topLevelInfo = useContext(TopLevelInfoContext);
   const navigation = useNavigation();
   const inputsEnabled = navigation.state === "idle";
 
@@ -66,6 +112,17 @@ export default function HomeTab() {
       key={`home-tab-${loaderData.tab.ref_id}`}
       createLocation={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}/widgets/new`}
       returnLocation="/app/workspace/home/settings"
+      extraControls={[
+        <Button
+          key="home-tab-details"
+          variant="outlined"
+          to={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}/details`}
+          component={Link}
+          startIcon={<TuneIcon />}
+        >
+          Details
+        </Button>,
+      ]}
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         {loaderData.widgets.length === 0 && (
