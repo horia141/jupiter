@@ -4,7 +4,7 @@ import abc
 from typing import Literal
 
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
-from jupiter.core.domain.application.home.widget import WidgetGeometry
+from jupiter.core.domain.application.home.widget import WidgetDimension, WidgetGeometry
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import CompositeValue, value
@@ -119,9 +119,9 @@ class BigScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
 
         # Build the matrix
         max_row = (
-            max(section.geometry.row for section in sections) + 3
+            max(section.geometry.row + _buffer_from_dimension(section.geometry.dimension) for section in sections)
             if len(sections) > 0
-            else 3
+            else _buffer_from_dimension(WidgetDimension.DIM_1x1)
         )
         matrix_c1: list[EntityId | None] = [None] * max_row
         matrix_c2: list[EntityId | None] = [None] * max_row
@@ -238,9 +238,9 @@ class SmallScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
 
         # Build the matrix
         max_row = (
-            max(section.geometry.row for section in sections) + 3
+            max(section.geometry.row + _buffer_from_dimension(section.geometry.dimension) for section in sections)
             if len(sections) > 0
-            else 3
+            else _buffer_from_dimension(WidgetDimension.DIM_1x1)
         )
         matrix: list[EntityId | None] = [None] * max_row
         for section in sections:
@@ -278,3 +278,10 @@ def build_home_tab_widget_placement(
         return BigScreenHomeTabWidgetPlacement.empty()
     else:
         return SmallScreenHomeTabWidgetPlacement.empty()
+
+
+def _buffer_from_dimension(dimension: WidgetDimension) -> int:
+    if dimension.is_k_sized:
+        return 3
+    else:
+        return dimension.rows + 2

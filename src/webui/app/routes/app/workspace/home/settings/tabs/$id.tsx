@@ -1,6 +1,6 @@
-import type { HomeTab, HomeWidget, SmallScreenHomeTabWidgetPlacement } from "@jupiter/webapi-client";
+import type { EntityId, HomeTab, HomeWidget, SmallScreenHomeTabWidgetPlacement } from "@jupiter/webapi-client";
 import { ApiError, HomeTabTarget } from "@jupiter/webapi-client";
-import { Button, Stack } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -27,6 +27,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { widgetDimensionRows, widgetTypeName } from "~/logic/widget";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -175,18 +176,72 @@ function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
   const widgetByRefId = new Map(props.widgets.map(widget => [widget.ref_id, widget]));
 
   return (
-    <Stack useFlexGap>
+    <Stack useFlexGap sx={{alignItems: "center"}}>
       {widgetPlacement.matrix.map((row, rowIndex) => {
           if (row === null) {
-            return <Button key={rowIndex} component={Link} to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?row=${rowIndex}&col=0`} variant="outlined">Add Widget</Button>
+            return <NewWidgetButton key={rowIndex} homeTab={props.homeTab} row={rowIndex} col={0} />
+          }
+
+          if (rowIndex > 0 && widgetPlacement.matrix[rowIndex] === widgetPlacement.matrix[rowIndex - 1]) {
+            return null;
           }
 
           const widget = widgetByRefId.get(row);
 
           return (
-              <p key={rowIndex}>{widget?.name}</p>
+              <PlacedWidget key={rowIndex} widget={widget!} row={rowIndex} col={0} />
           );
       })}
     </Stack>
   );
+}
+
+interface NewWidgetButtonProps {
+    homeTab: HomeTab;
+    row: number;
+    col: number;
+}
+
+function NewWidgetButton(props: NewWidgetButtonProps) {
+    return (<Button 
+            component={Link} 
+            to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?row=${props.row}&col=${props.col}`} 
+            variant="outlined"
+            sx={{
+                width: "8rem",
+                height: "8rem",
+            }}
+            >
+                Add Widget
+            </Button>
+    );
+}
+
+interface PlacedWidgetProps {
+    widget: HomeWidget;
+    row: number;
+    col: number;
+}
+
+function PlacedWidget(props: PlacedWidgetProps) {
+    const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 8;
+
+    return (
+        <Box
+            sx={{
+                width: "8rem",
+                height: `${heightInRem}rem`,
+                border: theme => `2px dotted ${theme.palette.primary.main}`,
+                borderRadius: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+            }}
+        >
+            <Link to={`/app/workspace/home/settings/tabs/${props.widget.home_tab_ref_id}/widgets/${props.widget.ref_id}`}
+            style={{ marginLeft: "0.5rem", marginRight: "0.5rem", textAlign: "center"}}>
+                {widgetTypeName(props.widget.the_type)}
+            </Link>
+        </Box>
+    );
 }

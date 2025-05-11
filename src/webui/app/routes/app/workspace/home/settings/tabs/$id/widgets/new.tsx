@@ -11,7 +11,7 @@ import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { FieldError } from "~/components/infra/errors";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
   ActionSingle,
@@ -104,6 +104,7 @@ export default function NewWidget() {
           />
         }
       >
+        <GlobalError actionResult={actionData} />
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <InputLabel id="type">Type</InputLabel>
@@ -127,7 +128,7 @@ export default function NewWidget() {
             <Select
               labelId="dimension" 
               name="dimension"
-              defaultValue={WidgetDimension._1X1}
+              defaultValue={WidgetDimension.DIM_1X1}
               disabled={!inputsEnabled}
             >
               {Object.values(WidgetDimension).map((dim) => (

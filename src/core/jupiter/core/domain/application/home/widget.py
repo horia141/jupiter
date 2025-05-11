@@ -8,18 +8,18 @@ from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, 
 class WidgetDimension(EnumValue):
     """A dimension of a widget."""
 
-    DIM_1x1 = "1x1"
-    DIM_1x2 = "1x2"
-    DIM_1x3 = "1x3"
-    DIM_2x1 = "2x1"
-    DIM_2x2 = "2x2"
-    DIM_2x3 = "2x3"
-    DIM_3x1 = "3x1"
-    DIM_3x2 = "3x2"
-    DIM_3x3 = "3x3"
-    DIM_kx1 = "kx1"
-    DIM_kx2 = "kx2"
-    DIM_kx3 = "kx3"
+    DIM_1x1 = "Dim-1x1"
+    DIM_1x2 = "Dim-1x2"
+    DIM_1x3 = "Dim-1x3"
+    DIM_2x1 = "Dim-2x1"
+    DIM_2x2 = "Dim-2x2"
+    DIM_2x3 = "Dim-2x3"
+    DIM_3x1 = "Dim-3x1"
+    DIM_3x2 = "Dim-3x2"
+    DIM_3x3 = "Dim-3x3"
+    DIM_kx1 = "Dim-kx1"
+    DIM_kx2 = "Dim-kx2"
+    DIM_kx3 = "Dim-kx3"
 
     @property
     def rows(self) -> int:
