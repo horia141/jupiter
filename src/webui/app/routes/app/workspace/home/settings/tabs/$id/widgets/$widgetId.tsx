@@ -1,5 +1,11 @@
-import { ApiError, HomeTabTarget, WidgetDimension, WidgetType } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, MenuItem, OutlinedInput, Select, Stack } from "@mui/material";
+import {
+  ApiError,
+} from "@jupiter/webapi-client";
+import {
+  FormControl,
+  InputLabel,
+  Stack,
+} from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -11,7 +17,7 @@ import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { FieldError, GlobalError } from "~/components/infra/errors";
+import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
   ActionSingle,
@@ -23,6 +29,8 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { SectionCardNew } from "~/components/infra/section-card-new";
+import { WidgetTypeSelector } from "~/components/home/widget-type-selector";
+import { WidgetDimensionSelector } from "~/components/home/widget-dimension-selector";
 const ParamsSchema = z.object({
   id: z.string(),
   widgetId: z.string(),
@@ -43,14 +51,25 @@ export const handle = {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
-  const { widgetId } = parseParams(params, ParamsSchema);
+  const { id, widgetId } = parseParams(params, ParamsSchema);
+
+  const homeConfig = await apiClient.home.homeConfigLoad({});
+
+  const tab = await apiClient.tab.homeTabLoad({
+    ref_id: id,
+    allow_archived: false,
+  });
 
   const widget = await apiClient.widget.homeWidgetLoad({
     ref_id: widgetId,
     allow_archived: true,
   });
 
-  return json({ widget: widget.widget });
+  return json({
+    widget: widget.widget,
+    widgetConstraints: homeConfig.widget_constraints,
+    tab: tab.tab,
+  });
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -64,7 +83,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
         await apiClient.widget.homeWidgetArchive({
           ref_id: widgetId,
         });
-        return redirect(`/app/workspace/home/settings/tabs/${id}/widgets/${widgetId}`);
+        return redirect(
+          `/app/workspace/home/settings/tabs/${id}/widgets/${widgetId}`,
+        );
 
       case "remove":
         await apiClient.widget.homeWidgetRemove({
@@ -87,7 +108,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Widget() {
   const { id } = useParams();
@@ -126,28 +148,25 @@ export default function Widget() {
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth disabled>
             <InputLabel id="type">Type</InputLabel>
-            <Select
-              labelId="type"
-              value={loaderData.widget.the_type}
-              disabled={!inputsEnabled}
-            >
-              <MenuItem value={loaderData.widget.the_type}>
-                {loaderData.widget.the_type}
-              </MenuItem>
-            </Select>
+            <WidgetTypeSelector
+              name="type"
+              inputsEnabled={false}
+              defaultValue={loaderData.widget.the_type}
+              target={loaderData.tab.target}
+              widgetConstraints={loaderData.widgetConstraints}
+            />
           </FormControl>
 
           <FormControl fullWidth disabled>
             <InputLabel id="dimension">Dimension</InputLabel>
-            <Select
-              labelId="dimension"
-              value={loaderData.widget.geometry.dimension}
-              disabled={!inputsEnabled}
-            >
-              <MenuItem value={loaderData.widget.geometry.dimension}>
-                {loaderData.widget.geometry.dimension}
-              </MenuItem>
-            </Select>
+            <WidgetDimensionSelector
+              name="dimension"
+              inputsEnabled={false}
+              defaultValue={loaderData.widget.geometry.dimension}
+              target={loaderData.tab.target}
+              widgetType={loaderData.widget.the_type}
+              widgetConstraints={loaderData.widgetConstraints}
+            />
           </FormControl>
         </Stack>
       </SectionCardNew>

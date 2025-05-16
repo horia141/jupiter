@@ -18,7 +18,6 @@ import {
   Outlet,
   ShouldRevalidateFunction,
   useActionData,
-  useNavigation,
 } from "@remix-run/react";
 import { IconButton, Stack } from "@mui/material";
 import { AnimatePresence } from "framer-motion";

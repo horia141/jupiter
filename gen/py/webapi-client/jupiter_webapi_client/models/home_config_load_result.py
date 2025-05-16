@@ -6,6 +6,7 @@ from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
     from ..models.home_config import HomeConfig
+    from ..models.home_config_load_result_widget_constraints import HomeConfigLoadResultWidgetConstraints
     from ..models.home_tab import HomeTab
 
 
@@ -19,10 +20,12 @@ class HomeConfigLoadResult:
     Attributes:
         home_config (HomeConfig): The home config entity.
         tabs (list['HomeTab']):
+        widget_constraints (HomeConfigLoadResultWidgetConstraints):
     """
 
     home_config: "HomeConfig"
     tabs: list["HomeTab"]
+    widget_constraints: "HomeConfigLoadResultWidgetConstraints"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -33,12 +36,15 @@ class HomeConfigLoadResult:
             tabs_item = tabs_item_data.to_dict()
             tabs.append(tabs_item)
 
+        widget_constraints = self.widget_constraints.to_dict()
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "home_config": home_config,
                 "tabs": tabs,
+                "widget_constraints": widget_constraints,
             }
         )
 
@@ -47,6 +53,7 @@ class HomeConfigLoadResult:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.home_config import HomeConfig
+        from ..models.home_config_load_result_widget_constraints import HomeConfigLoadResultWidgetConstraints
         from ..models.home_tab import HomeTab
 
         d = dict(src_dict)
@@ -59,9 +66,12 @@ class HomeConfigLoadResult:
 
             tabs.append(tabs_item)
 
+        widget_constraints = HomeConfigLoadResultWidgetConstraints.from_dict(d.pop("widget_constraints"))
+
         home_config_load_result = cls(
             home_config=home_config,
             tabs=tabs,
+            widget_constraints=widget_constraints,
         )
 
         home_config_load_result.additional_properties = d

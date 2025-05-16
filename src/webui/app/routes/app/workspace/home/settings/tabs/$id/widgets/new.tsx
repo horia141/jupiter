@@ -1,15 +1,30 @@
-import { ApiError, HomeTabTarget, WidgetDimension, WidgetType } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, MenuItem, OutlinedInput, Select, Stack } from "@mui/material";
+import {
+  ApiError,
+  WidgetDimension,
+  WidgetType,
+} from "@jupiter/webapi-client";
+import {
+  FormControl,
+  InputLabel,
+  Stack,
+} from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams } from "@remix-run/react";
+import {
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useParams,
+} from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { WidgetDimensionSelector } from "~/components/home/widget-dimension-selector";
+import { WidgetTypeSelector } from "~/components/home/widget-type-selector";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -28,8 +43,8 @@ const ParamsSchema = z.object({
 });
 
 const QuerySchema = z.object({
-   row: z.coerce.number(),
-   col: z.coerce.number(),
+  row: z.coerce.number(),
+  col: z.coerce.number(),
 });
 
 const CreateFormSchema = z.object({
@@ -40,6 +55,22 @@ const CreateFormSchema = z.object({
 export const handle = {
   displayType: DisplayType.LEAF,
 };
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const apiClient = await getLoggedInApiClient(request);
+  const { id } = parseParams(params, ParamsSchema);
+
+  const tab = await apiClient.tab.homeTabLoad({
+    ref_id: id,
+    allow_archived: false,
+  });
+
+  const homeConfig = await apiClient.home.homeConfigLoad({});
+  return json({
+    widgetConstraints: homeConfig.widget_constraints,
+    tab: tab.tab,
+  });
+}
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
@@ -56,7 +87,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
       dimension: form.dimension,
     });
 
-    return redirect(`/app/workspace/home/settings/tabs/${params.id}/widgets/${result.new_widget.ref_id}`);
+    return redirect(
+      `/app/workspace/home/settings/tabs/${params.id}/widgets/${result.new_widget.ref_id}`,
+    );
   } catch (error) {
     if (
       error instanceof ApiError &&
@@ -74,10 +107,13 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function NewWidget() {
   const { id } = useParams();
+  const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
+
+  const [theType, setTheType] = useState<WidgetType>(WidgetType.MOTD);
 
   return (
     <LeafPanel
@@ -108,36 +144,29 @@ export default function NewWidget() {
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <InputLabel id="type">Type</InputLabel>
-            <Select
-              labelId="type"
+            <WidgetTypeSelector
               name="type"
-              defaultValue={WidgetType.MOTD}
-              disabled={!inputsEnabled}
-            >
-              {Object.values(WidgetType).map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
-                </MenuItem>
-              ))}
-            </Select>
+              inputsEnabled={inputsEnabled}
+              value={theType}
+              onChange={(type) => setTheType(type)}
+              target={loaderData.tab.target}
+              widgetConstraints={loaderData.widgetConstraints}
+            />
             <FieldError actionResult={actionData} fieldName="/type" />
           </FormControl>
 
           <FormControl fullWidth>
             <InputLabel id="dimension">Dimension</InputLabel>
-            <Select
-              labelId="dimension" 
+            <WidgetDimensionSelector
               name="dimension"
-              defaultValue={WidgetDimension.DIM_1X1}
-              disabled={!inputsEnabled}
-            >
-              {Object.values(WidgetDimension).map((dim) => (
-                <MenuItem key={dim} value={dim}>
-                  {dim}
-                </MenuItem>
-              ))}
-            </Select>
-            <FieldError actionResult={actionData} fieldName="/dimension" />
+              inputsEnabled={inputsEnabled}
+              defaultValue={
+                loaderData.widgetConstraints[theType].allowed_dimensions[0]
+              }
+              target={loaderData.tab.target}
+              widgetType={theType}
+              widgetConstraints={loaderData.widgetConstraints}
+            />
           </FormControl>
         </Stack>
       </SectionCardNew>

@@ -119,7 +119,11 @@ class BigScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
 
         # Build the matrix
         max_row = (
-            max(section.geometry.row + _buffer_from_dimension(section.geometry.dimension) for section in sections)
+            max(
+                section.geometry.row
+                + _buffer_from_dimension(section.geometry.dimension)
+                for section in sections
+            )
             if len(sections) > 0
             else _buffer_from_dimension(WidgetDimension.DIM_1x1)
         )
@@ -238,7 +242,11 @@ class SmallScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
 
         # Build the matrix
         max_row = (
-            max(section.geometry.row + _buffer_from_dimension(section.geometry.dimension) for section in sections)
+            max(
+                section.geometry.row
+                + _buffer_from_dimension(section.geometry.dimension)
+                for section in sections
+            )
             if len(sections) > 0
             else _buffer_from_dimension(WidgetDimension.DIM_1x1)
         )

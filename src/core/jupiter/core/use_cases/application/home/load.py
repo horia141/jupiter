@@ -2,6 +2,11 @@
 
 from jupiter.core.domain.application.home.home_config import HomeConfig
 from jupiter.core.domain.application.home.home_tab import HomeTab
+from jupiter.core.domain.application.home.widget import (
+    WIDGET_CONSTRAINTS,
+    WidgetType,
+    WidgetTypeConstraints,
+)
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
@@ -27,6 +32,7 @@ class HomeConfigLoadResult(UseCaseResultBase):
 
     home_config: HomeConfig
     tabs: list[HomeTab]
+    widget_constraints: dict[WidgetType, WidgetTypeConstraints]
 
 
 @readonly_use_case()
@@ -53,4 +59,5 @@ class HomeConfigLoadUseCase(
         return HomeConfigLoadResult(
             home_config=home_config,
             tabs=tabs,
+            widget_constraints=WIDGET_CONSTRAINTS,
         )

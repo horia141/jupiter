@@ -1,4 +1,8 @@
-import type { EntityId, HomeTab, HomeWidget, SmallScreenHomeTabWidgetPlacement } from "@jupiter/webapi-client";
+import type {
+  HomeTab,
+  HomeWidget,
+  SmallScreenHomeTabWidgetPlacement,
+} from "@jupiter/webapi-client";
 import { ApiError, HomeTabTarget } from "@jupiter/webapi-client";
 import { Box, Button, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -12,9 +16,7 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { StatusCodes } from "http-status-codes";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNameComponent } from "~/components/infra/entity-name";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
-import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
@@ -167,81 +169,107 @@ export const ErrorBoundary = makeBranchErrorBoundary(
 );
 
 interface SmallScreenWidgetPlacementProps {
-    homeTab: HomeTab;
-    widgets: HomeWidget[];
+  homeTab: HomeTab;
+  widgets: HomeWidget[];
 }
 
 function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
-  const widgetPlacement = props.homeTab.widget_placement as SmallScreenHomeTabWidgetPlacement;
-  const widgetByRefId = new Map(props.widgets.map(widget => [widget.ref_id, widget]));
+  const widgetPlacement = props.homeTab
+    .widget_placement as SmallScreenHomeTabWidgetPlacement;
+  const widgetByRefId = new Map(
+    props.widgets.map((widget) => [widget.ref_id, widget]),
+  );
 
   return (
-    <Stack useFlexGap sx={{alignItems: "center"}}>
+    <Stack useFlexGap sx={{ alignItems: "center" }}>
       {widgetPlacement.matrix.map((row, rowIndex) => {
-          if (row === null) {
-            return <NewWidgetButton key={rowIndex} homeTab={props.homeTab} row={rowIndex} col={0} />
-          }
-
-          if (rowIndex > 0 && widgetPlacement.matrix[rowIndex] === widgetPlacement.matrix[rowIndex - 1]) {
-            return null;
-          }
-
-          const widget = widgetByRefId.get(row);
-
+        if (row === null) {
           return (
-              <PlacedWidget key={rowIndex} widget={widget!} row={rowIndex} col={0} />
+            <NewWidgetButton
+              key={rowIndex}
+              homeTab={props.homeTab}
+              row={rowIndex}
+              col={0}
+            />
           );
+        }
+
+        if (
+          rowIndex > 0 &&
+          widgetPlacement.matrix[rowIndex] ===
+            widgetPlacement.matrix[rowIndex - 1]
+        ) {
+          return null;
+        }
+
+        const widget = widgetByRefId.get(row);
+
+        return (
+          <PlacedWidget
+            key={rowIndex}
+            widget={widget!}
+            row={rowIndex}
+            col={0}
+          />
+        );
       })}
     </Stack>
   );
 }
 
 interface NewWidgetButtonProps {
-    homeTab: HomeTab;
-    row: number;
-    col: number;
+  homeTab: HomeTab;
+  row: number;
+  col: number;
 }
 
 function NewWidgetButton(props: NewWidgetButtonProps) {
-    return (<Button 
-            component={Link} 
-            to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?row=${props.row}&col=${props.col}`} 
-            variant="outlined"
-            sx={{
-                width: "8rem",
-                height: "8rem",
-            }}
-            >
-                Add Widget
-            </Button>
-    );
+  return (
+    <Button
+      component={Link}
+      to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?row=${props.row}&col=${props.col}`}
+      variant="outlined"
+      sx={{
+        width: "8rem",
+        height: "8rem",
+      }}
+    >
+      Add Widget
+    </Button>
+  );
 }
 
 interface PlacedWidgetProps {
-    widget: HomeWidget;
-    row: number;
-    col: number;
+  widget: HomeWidget;
+  row: number;
+  col: number;
 }
 
 function PlacedWidget(props: PlacedWidgetProps) {
-    const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 8;
+  const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 8;
 
-    return (
-        <Box
-            sx={{
-                width: "8rem",
-                height: `${heightInRem}rem`,
-                border: theme => `2px dotted ${theme.palette.primary.main}`,
-                borderRadius: "0.5rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-            }}
-        >
-            <Link to={`/app/workspace/home/settings/tabs/${props.widget.home_tab_ref_id}/widgets/${props.widget.ref_id}`}
-            style={{ marginLeft: "0.5rem", marginRight: "0.5rem", textAlign: "center"}}>
-                {widgetTypeName(props.widget.the_type)}
-            </Link>
-        </Box>
-    );
+  return (
+    <Box
+      sx={{
+        width: "8rem",
+        height: `${heightInRem}rem`,
+        border: (theme) => `2px dotted ${theme.palette.primary.main}`,
+        borderRadius: "0.5rem",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Link
+        to={`/app/workspace/home/settings/tabs/${props.widget.home_tab_ref_id}/widgets/${props.widget.ref_id}`}
+        style={{
+          marginLeft: "0.5rem",
+          marginRight: "0.5rem",
+          textAlign: "center",
+        }}
+      >
+        {widgetTypeName(props.widget.the_type)}
+      </Link>
+    </Box>
+  );
 }

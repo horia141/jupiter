@@ -33,6 +33,7 @@ class HomeWidgetCreateArgs(UseCaseArgsBase):
     col: int
     dimension: WidgetDimension
 
+
 @use_case_result
 class HomeWidgetCreateResult(UseCaseResultBase):
     """The result of the create home widget use case."""
@@ -42,7 +43,9 @@ class HomeWidgetCreateResult(UseCaseResultBase):
 
 @mutation_use_case()
 class HomeWidgetCreateUseCase(
-    AppTransactionalLoggedInMutationUseCase[HomeWidgetCreateArgs, HomeWidgetCreateResult]
+    AppTransactionalLoggedInMutationUseCase[
+        HomeWidgetCreateArgs, HomeWidgetCreateResult
+    ]
 ):
     """The use case for creating a home small screen widget."""
 
