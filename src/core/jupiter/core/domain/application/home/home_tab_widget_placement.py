@@ -263,13 +263,16 @@ class SmallScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
                 matrix[row] = section.ref_id
 
         # Check that kx* widgets are last in their rows
-        for widget_id in matrix:
+        # Check that k-sized widgets are followed by None values only
+        for i, widget_id in enumerate(matrix):
             if widget_id is not None:
                 section = sections_by_id[widget_id]
                 if section.geometry.dimension.is_k_sized:
-                    raise InputValidationError(
-                        f"Widget {widget_id} with k-sized dimension must be last in its row"
-                    )
+                    # Verify no widgets exist after this one
+                    if any(id is not None for id in matrix[i+1:]):
+                        raise InputValidationError(
+                            f"Widget {widget_id} with k-sized dimension must be last in the layout"
+                        )
 
         return matrix
 

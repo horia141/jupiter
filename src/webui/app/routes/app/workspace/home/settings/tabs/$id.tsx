@@ -29,7 +29,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { widgetDimensionRows, widgetTypeName } from "~/logic/widget";
+import { isWidgetDimensionKSized, widgetDimensionRows, widgetTypeName } from "~/logic/widget";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -254,7 +254,12 @@ function PlacedWidget(props: PlacedWidgetProps) {
         width: "8rem",
         height: `${heightInRem}rem`,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
-        borderRadius: "0.5rem",
+        borderRadius: "4px",
+        borderBottomLeftRadius: isWidgetDimensionKSized(props.widget.geometry.dimension) ? 0 : "4px",
+        borderBottomRightRadius: isWidgetDimensionKSized(props.widget.geometry.dimension) ? 0 : "4px",
+        borderBottom: (theme) => isWidgetDimensionKSized(props.widget.geometry.dimension) ? 
+          `4px dotted ${theme.palette.primary.main}` : 
+          `2px dotted ${theme.palette.primary.main}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
