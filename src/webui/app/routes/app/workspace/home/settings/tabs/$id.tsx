@@ -1,4 +1,5 @@
 import type {
+  BigScreenHomeTabWidgetPlacement,
   HomeTab,
   HomeWidget,
   SmallScreenHomeTabWidgetPlacement,
@@ -38,6 +39,7 @@ import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import {
   isWidgetDimensionKSized,
+  widgetDimensionCols,
   widgetDimensionRows,
   widgetTypeName,
 } from "~/logic/widget";
@@ -171,7 +173,11 @@ export default function HomeTab() {
 
         <EntityStack>
           {loaderData.tab.target === HomeTabTarget.BIG_SCREEN && (
-            <>A big screen widget</>
+            <BigScreenWidgetPlacement
+              action={query.action}
+              homeTab={loaderData.tab}
+              widgets={loaderData.widgets}
+            />
           )}
 
           {loaderData.tab.target === HomeTabTarget.SMALL_SCREEN && (
@@ -200,6 +206,89 @@ export const ErrorBoundary = makeBranchErrorBoundary(
       `There was an error loading tab #${params.id}! Please try again!`,
   },
 );
+
+interface BigScreenWidgetPlacementProps {
+  action: Action;
+  homeTab: HomeTab;
+  widgets: HomeWidget[];
+}
+
+function BigScreenWidgetPlacement(props: BigScreenWidgetPlacementProps) {
+  const widgetPlacement = props.homeTab
+    .widget_placement as BigScreenHomeTabWidgetPlacement;
+  const widgetByRefId = new Map(
+    props.widgets.map((widget) => [widget.ref_id, widget]),
+  );
+
+  const maxCols = widgetPlacement.matrix.length;
+  const maxRows = widgetPlacement.matrix[0].length;
+
+  return (
+    <Stack useFlexGap sx={{ alignItems: "center" }}>
+        {Array.from({ length: maxRows }, (_, rowIndex) => {
+            return (
+                <Stack key={rowIndex} direction="row" useFlexGap>
+                    {Array.from({ length: maxCols }, (_, colIndex) => {
+                        const cell = widgetPlacement.matrix[colIndex][rowIndex];
+
+                        if (cell === null) {
+                            // Check if there's a k-sized widget before this row
+                            for (let i = 0; i < rowIndex; i++) {
+                              const prevWidgetId = widgetPlacement.matrix[colIndex][i];
+                              if (prevWidgetId !== null) {
+                                const prevWidget = widgetByRefId.get(prevWidgetId);
+                                if (
+                                    prevWidget &&
+                                    isWidgetDimensionKSized(prevWidget.geometry.dimension)
+                                ) {
+                                  return null;
+                                }
+                              }
+                            }
+            
+                            switch (props.action) {
+                                case Action.ADD_WIDGET:
+                                  return (
+                                    <NewWidgetButton
+                                      key={`${rowIndex}-${colIndex}`}
+                                      homeTab={props.homeTab}
+                                      row={rowIndex}
+                                      col={colIndex}
+                                    />
+                                  );
+                                case Action.MOVE_WIDGET:
+                                  return <MoveWidgetButton key={`${rowIndex}-${colIndex}`} row={rowIndex} col={colIndex} />;
+                              }
+                          }
+            
+                          // If the previous widget is the same as the current one, don't render the current block,
+                          // since this is a bigger widget that is taking up the space of the smaller one.
+                          // We check both the row and the column to make sure we don't render the same widget twice.
+                          if (rowIndex > 0 && widgetPlacement.matrix[colIndex][rowIndex] === widgetPlacement.matrix[colIndex][rowIndex - 1]) {
+                            return null;
+                          }
+            
+                          if (colIndex > 0 && widgetPlacement.matrix[colIndex][rowIndex] === widgetPlacement.matrix[colIndex - 1][rowIndex]) {
+                            return null;
+                          }
+            
+                          const widget = widgetByRefId.get(cell);
+            
+                          return (
+                            <PlacedWidget
+                              key={`${rowIndex}-${colIndex}`}
+                              widget={widget!}
+                              row={rowIndex}
+                              col={colIndex}
+                            />
+                          );
+                    })}
+                </Stack>
+            )
+        })}
+    </Stack>
+  );
+}
 
 interface SmallScreenWidgetPlacementProps {
   action: Action;
@@ -345,6 +434,7 @@ interface PlacedWidgetProps {
 
 function PlacedWidget(props: PlacedWidgetProps) {
   const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 3;
+  const widthInRem = widgetDimensionCols(props.widget.geometry.dimension) * 8;
   const { widgetId } = useParams();
   const shouldHighlight = widgetId === props.widget.ref_id;
   const theme = useTheme();
@@ -353,7 +443,7 @@ function PlacedWidget(props: PlacedWidgetProps) {
     <Box
       sx={{
         fontSize: "0.64rem",
-        width: "8rem",
+        width: `${widthInRem}rem`,
         height: `${heightInRem}rem`,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",

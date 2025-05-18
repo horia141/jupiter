@@ -39,13 +39,13 @@ class HomeWidget(LeafEntity):
         constraints = WIDGET_CONSTRAINTS.get(the_type, None)
         if constraints is None:
             raise ValueError(f"Widget type {the_type} is not supported")
-        if geometry.dimension not in constraints.allowed_dimensions:
-            raise ValueError(
-                f"Dimension {geometry.dimension} is not allowed for widget type {the_type}"
-            )
-        if home_tab_target not in constraints.for_tab_target:
+        if home_tab_target not in constraints.allowed_dimensions:
             raise ValueError(
                 f"Widget type {the_type} is not allowed for tab target {home_tab_target}"
+            )
+        if geometry.dimension not in constraints.allowed_dimensions[home_tab_target]:
+            raise ValueError(
+                f"Dimension {geometry.dimension} is not allowed for widget type {the_type}"
             )
         return HomeWidget._create(
             ctx,
@@ -59,10 +59,22 @@ class HomeWidget(LeafEntity):
     def move_and_resize(
         self,
         ctx: DomainContext,
+        home_tab_target_for_reference: HomeTabTarget,
         row: int,
         col: int,
         dimension: WidgetDimension,
     ) -> "HomeWidget":
+        constraints = WIDGET_CONSTRAINTS.get(self.the_type, None)
+        if constraints is None:
+            raise ValueError(f"Widget type {self.the_type} is not supported")
+        if home_tab_target_for_reference not in constraints.allowed_dimensions:
+            raise ValueError(
+                f"Widget type {self.the_type} is not allowed for tab target {home_tab_target_for_reference}"
+            )
+        if dimension not in constraints.allowed_dimensions[home_tab_target_for_reference]:
+            raise ValueError(
+                f"Dimension {dimension} is not allowed for widget type {self.the_type}"
+            )
         return self._new_version(
             ctx,
             geometry=WidgetGeometry(row=row, col=col, dimension=dimension),
