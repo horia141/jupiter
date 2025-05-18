@@ -165,6 +165,7 @@ export default function NewWidget() {
 
           <FormControl fullWidth disabled>
             <RowAndColSelector
+              namePrefix="widget"
               row={query.row}
               col={query.col}
               target={loaderData.tab.target}

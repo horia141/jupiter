@@ -1,7 +1,9 @@
 import { TextField, Stack } from "@mui/material";
 import { HomeTabTarget } from "@jupiter/webapi-client";
+import { constructFieldName } from "~/logic/field-names";
 
 interface RowAndColSelectorProps {
+  namePrefix: string;
   target: HomeTabTarget;
   row: number;
   col: number;
@@ -14,7 +16,7 @@ export function RowAndColSelector(props: RowAndColSelectorProps) {
       <TextField
         label="Row"
         type="number"
-        name="row"
+        name={constructFieldName(props.namePrefix, "row")}
         value={props.row}
         disabled={!props.inputsEnabled}
         fullWidth
@@ -23,7 +25,7 @@ export function RowAndColSelector(props: RowAndColSelectorProps) {
       <TextField
         label="Column"
         type="number"
-        name="col"
+        name={constructFieldName(props.namePrefix, "col")}
         value={props.col}
         disabled={!props.inputsEnabled}
         fullWidth

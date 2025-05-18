@@ -3,6 +3,7 @@
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.domain.application.home.widget import (
     WIDGET_CONSTRAINTS,
+    WidgetDimension,
     WidgetGeometry,
     WidgetType,
 )
@@ -55,16 +56,17 @@ class HomeWidget(LeafEntity):
         )
 
     @update_entity_action
-    def move_to(
+    def move_and_resize(
         self,
         ctx: DomainContext,
         row: int,
         col: int,
+        dimension: WidgetDimension,
     ) -> "HomeWidget":
         return self._new_version(
             ctx,
             geometry=WidgetGeometry(
-                row=row, col=col, dimension=self.geometry.dimension
+                row=row, col=col, dimension=dimension
             ),
         )
 
