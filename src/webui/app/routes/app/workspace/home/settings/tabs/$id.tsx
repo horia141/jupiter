@@ -45,6 +45,7 @@ import {
   widgetTypeName,
 } from "~/logic/widget";
 import { newURLParams } from "~/logic/domain/navigation";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 enum Action {
   ADD_WIDGET = "add",
@@ -221,6 +222,7 @@ function BigScreenWidgetPlacement(props: BigScreenWidgetPlacementProps) {
     props.widgets.map((widget) => [widget.ref_id, widget]),
   );
 
+  const isBigScreen = useBigScreen();
   const maxCols = widgetPlacement.matrix.length;
   const maxRows = widgetPlacement.matrix[0].length;
 
@@ -228,12 +230,12 @@ function BigScreenWidgetPlacement(props: BigScreenWidgetPlacementProps) {
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: `repeat(${maxCols}, 8rem)`,
+        gridTemplateColumns: `repeat(${maxCols}, ${isBigScreen ? "8rem" : "1fr"})`,
         gridTemplateRows: `repeat(${maxRows}, 3rem)`,
         gridGap: "0.25rem",
         alignItems: "center",
-        marginLeft: "auto",
-        marginRight: "auto",
+        marginLeft: isBigScreen ? "auto" : undefined,
+        marginRight: isBigScreen ? "auto" : undefined,
       }}
     >
       {Array.from({ length: maxRows }, (_, rowIndex) => {
@@ -383,15 +385,24 @@ function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
           switch (props.action) {
             case Action.ADD_WIDGET:
               return (
-                <NewWidgetButton
-                  key={rowIndex}
-                  homeTab={props.homeTab}
-                  row={rowIndex}
-                  col={0}
-                />
+                <Box sx={{ width: "8rem" }} key={rowIndex}>
+                  <NewWidgetButton
+                    homeTab={props.homeTab}
+                    row={rowIndex}
+                    col={0}
+                  />
+                </Box>
               );
             case Action.MOVE_WIDGET:
-              return <MoveWidgetButton key={rowIndex} row={rowIndex} col={0} />;
+              return (
+                <Box sx={{ width: "8rem" }} key={rowIndex}>
+                  <MoveWidgetButton
+                    key={rowIndex}
+                    row={rowIndex}
+                    col={0}
+                  />
+                </Box>
+              );
           }
         }
 
@@ -408,12 +419,13 @@ function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
         const widget = widgetByRefId.get(row);
 
         return (
-          <PlacedWidget
-            key={rowIndex}
-            widget={widget!}
-            row={rowIndex}
-            col={0}
-          />
+          <Box sx={{ width: "8rem" }} key={rowIndex}>
+            <PlacedWidget
+              widget={widget!}
+              row={rowIndex}
+              col={0}
+            />
+          </Box>
         );
       })}
     </Stack>
@@ -444,7 +456,7 @@ function NewWidgetButton(props: NewWidgetButtonProps) {
           query.row === props.row && query.col === props.col
             ? theme.palette.primary.light
             : "transparent",
-        width: "8rem",
+        width: "100%",
         height: "3rem",
       }}
     >
@@ -476,7 +488,7 @@ function MoveWidgetButton(props: MoveWidgetButtonProps) {
             : theme.palette.primary.main,
         backgroundColor: (theme) =>
           shouldHighlight ? theme.palette.primary.light : "transparent",
-        width: "8rem",
+        width: "100%",
         height: "3rem",
       }}
     >
@@ -495,6 +507,7 @@ function PlacedWidget(props: PlacedWidgetProps) {
   const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 3;
   const widthInRem = widgetDimensionCols(props.widget.geometry.dimension) * 8;
   const { widgetId } = useParams();
+  const isBigScreen = useBigScreen();
   const shouldHighlight = widgetId === props.widget.ref_id;
   const theme = useTheme();
 
@@ -504,7 +517,7 @@ function PlacedWidget(props: PlacedWidgetProps) {
         fontSize: "0.64rem",
         height: `${heightInRem}rem`,
         width: "100%",
-        minWidth: `${widthInRem}rem`,
+        minWidth: isBigScreen ? `${widthInRem}rem` : undefined,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",
         borderBottomLeftRadius: isWidgetDimensionKSized(
