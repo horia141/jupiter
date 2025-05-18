@@ -43,7 +43,10 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
-import { constructFieldErrorName, constructFieldName } from "~/logic/field-names";
+import {
+  constructFieldErrorName,
+  constructFieldName,
+} from "~/logic/field-names";
 
 interface InboxTaskPropertiesEditorProps {
   title: string;
@@ -562,4 +565,3 @@ function constructIntentName(
 
   return `${intentPrefix}-${intent}`;
 }
-

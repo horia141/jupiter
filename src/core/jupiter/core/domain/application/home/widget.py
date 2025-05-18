@@ -95,33 +95,59 @@ class WidgetType(EnumValue):
 class WidgetTypeConstraints(CompositeValue):
     """A constraints for a widget type."""
 
-    allowed_dimensions: list[WidgetDimension]
-    for_tab_target: set[HomeTabTarget]
+    allowed_dimensions: dict[HomeTabTarget, list[WidgetDimension]]
 
 
 WIDGET_CONSTRAINTS = {
     WidgetType.MOTD: WidgetTypeConstraints(
-        allowed_dimensions=[
-            WidgetDimension.DIM_1x1,
-            WidgetDimension.DIM_1x2,
-            WidgetDimension.DIM_1x3,
-        ],
-        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_1x1,
+                WidgetDimension.DIM_1x2,
+                WidgetDimension.DIM_1x3,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_1x1,
+            ],
+        },
     ),
     WidgetType.WORKING_MEMORY: WidgetTypeConstraints(
-        allowed_dimensions=[WidgetDimension.DIM_1x1],
-        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [WidgetDimension.DIM_1x1],
+            HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
+        },
     ),
     WidgetType.KEY_HABITS_STREAKS: WidgetTypeConstraints(
-        allowed_dimensions=[WidgetDimension.DIM_1x1, WidgetDimension.DIM_1x2],
-        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_1x1,
+                WidgetDimension.DIM_1x2,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
+        },
     ),
     WidgetType.HABIT_INBOX_TASKS: WidgetTypeConstraints(
-        allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
-        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+        },
     ),
     WidgetType.CALENDAR_DAY: WidgetTypeConstraints(
-        allowed_dimensions=[WidgetDimension.DIM_3x1, WidgetDimension.DIM_kx1],
-        for_tab_target={HomeTabTarget.BIG_SCREEN, HomeTabTarget.SMALL_SCREEN},
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+        },
     ),
 }

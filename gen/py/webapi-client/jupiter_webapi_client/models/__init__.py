@@ -653,6 +653,7 @@ from .widget_dimension import WidgetDimension
 from .widget_geometry import WidgetGeometry
 from .widget_type import WidgetType
 from .widget_type_constraints import WidgetTypeConstraints
+from .widget_type_constraints_allowed_dimensions import WidgetTypeConstraintsAllowedDimensions
 from .workable_big_plan import WorkableBigPlan
 from .workable_summary import WorkableSummary
 from .working_mem import WorkingMem
@@ -1328,6 +1329,7 @@ __all__ = (
     "WidgetGeometry",
     "WidgetType",
     "WidgetTypeConstraints",
+    "WidgetTypeConstraintsAllowedDimensions",
     "WorkableBigPlan",
     "WorkableSummary",
     "WorkingMem",

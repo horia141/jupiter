@@ -4,11 +4,18 @@ import type {
   SmallScreenHomeTabWidgetPlacement,
 } from "@jupiter/webapi-client";
 import { ApiError, HomeTabTarget } from "@jupiter/webapi-client";
-import { Box, Button, Stack } from "@mui/material";
+import { Box, Button, Stack, useTheme } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useLocation, useNavigation, useSearchParams } from "@remix-run/react";
+import {
+  useParams,
+  Link,
+  Outlet,
+  useLocation,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery, parseQuerySafe } from "zodix";
@@ -29,12 +36,16 @@ import {
 } from "~/rendering/use-nested-entities";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { isWidgetDimensionKSized, widgetDimensionRows, widgetTypeName } from "~/logic/widget";
+import {
+  isWidgetDimensionKSized,
+  widgetDimensionRows,
+  widgetTypeName,
+} from "~/logic/widget";
 import { newURLParams } from "~/logic/domain/navigation";
 
 enum Action {
-    ADD_WIDGET = "add",
-    MOVE_WIDGET = "move",
+  ADD_WIDGET = "add",
+  MOVE_WIDGET = "move",
 }
 
 const ParamsSchema = z.object({
@@ -42,9 +53,9 @@ const ParamsSchema = z.object({
 });
 
 const QuerySchema = z.object({
-    action: z.nativeEnum(Action),
-    row: z.coerce.number().optional(),
-    col: z.coerce.number().optional(),
+  action: z.nativeEnum(Action),
+  row: z.coerce.number().optional(),
+  col: z.coerce.number().optional(),
 });
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -212,7 +223,10 @@ function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
             const prevWidgetId = widgetPlacement.matrix[i];
             if (prevWidgetId !== null) {
               const prevWidget = widgetByRefId.get(prevWidgetId);
-              if (prevWidget && isWidgetDimensionKSized(prevWidget.geometry.dimension)) {
+              if (
+                prevWidget &&
+                isWidgetDimensionKSized(prevWidget.geometry.dimension)
+              ) {
                 return null;
               }
             }
@@ -229,13 +243,7 @@ function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
                 />
               );
             case Action.MOVE_WIDGET:
-              return (
-                <MoveWidgetButton
-                  key={rowIndex}
-                  row={rowIndex}
-                  col={0}
-                />
-              );
+              return <MoveWidgetButton key={rowIndex} row={rowIndex} col={0} />;
           }
         }
 
@@ -271,7 +279,6 @@ interface NewWidgetButtonProps {
 }
 
 function NewWidgetButton(props: NewWidgetButtonProps) {
-  const location = useLocation();
   const [queryRaw] = useSearchParams();
   const query = parseQuery(queryRaw, QuerySchema);
 
@@ -281,8 +288,14 @@ function NewWidgetButton(props: NewWidgetButtonProps) {
       to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?${newURLParams(queryRaw, "row", props.row.toString(), "col", props.col.toString())}`}
       variant="outlined"
       sx={{
-        color: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.contrastText : theme.palette.primary.main,
-        backgroundColor: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.light : "transparent",
+        color: (theme) =>
+          query.row === props.row && query.col === props.col
+            ? theme.palette.primary.contrastText
+            : theme.palette.primary.main,
+        backgroundColor: (theme) =>
+          query.row === props.row && query.col === props.col
+            ? theme.palette.primary.light
+            : "transparent",
         width: "8rem",
         height: "3rem",
       }}
@@ -293,31 +306,36 @@ function NewWidgetButton(props: NewWidgetButtonProps) {
 }
 
 interface MoveWidgetButtonProps {
-    row: number;
-    col: number;
-  }
-  
-  function MoveWidgetButton(props: MoveWidgetButtonProps) {
-    const location = useLocation();
-    const [queryRaw] = useSearchParams();
-    const query = parseQuery(queryRaw, QuerySchema);
+  row: number;
+  col: number;
+}
 
-    return (
-      <Button
-        component={Link}
-        to={`${location.pathname}?${newURLParams(queryRaw, "row", props.row.toString(), "col", props.col.toString())}`}
-        variant="outlined"
-        sx={{
-          color: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.contrastText : theme.palette.primary.main,
-          backgroundColor: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.light : "transparent",
-          width: "8rem",
-          height: "3rem",
-        }}
-      >
-        Move
-      </Button>
-    );
-  }
+function MoveWidgetButton(props: MoveWidgetButtonProps) {
+  const location = useLocation();
+  const [queryRaw] = useSearchParams();
+  const query = parseQuery(queryRaw, QuerySchema);
+  const shouldHighlight = query.row === props.row && query.col === props.col;
+
+  return (
+    <Button
+      component={Link}
+      to={`${location.pathname}?${newURLParams(queryRaw, "row", props.row.toString(), "col", props.col.toString())}`}
+      variant="outlined"
+      sx={{
+        color: (theme) =>
+          shouldHighlight
+            ? theme.palette.primary.contrastText
+            : theme.palette.primary.main,
+        backgroundColor: (theme) =>
+          shouldHighlight ? theme.palette.primary.light : "transparent",
+        width: "8rem",
+        height: "3rem",
+      }}
+    >
+      Move
+    </Button>
+  );
+}
 
 interface PlacedWidgetProps {
   widget: HomeWidget;
@@ -327,6 +345,9 @@ interface PlacedWidgetProps {
 
 function PlacedWidget(props: PlacedWidgetProps) {
   const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 3;
+  const { widgetId } = useParams();
+  const shouldHighlight = widgetId === props.widget.ref_id;
+  const theme = useTheme();
 
   return (
     <Box
@@ -336,11 +357,22 @@ function PlacedWidget(props: PlacedWidgetProps) {
         height: `${heightInRem}rem`,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",
-        borderBottomLeftRadius: isWidgetDimensionKSized(props.widget.geometry.dimension) ? 0 : "4px",
-        borderBottomRightRadius: isWidgetDimensionKSized(props.widget.geometry.dimension) ? 0 : "4px",
-        borderBottom: (theme) => isWidgetDimensionKSized(props.widget.geometry.dimension) ? 
-          `4px dotted ${theme.palette.primary.main}` : 
-          `2px dotted ${theme.palette.primary.main}`,
+        borderBottomLeftRadius: isWidgetDimensionKSized(
+          props.widget.geometry.dimension,
+        )
+          ? 0
+          : "4px",
+        borderBottomRightRadius: isWidgetDimensionKSized(
+          props.widget.geometry.dimension,
+        )
+          ? 0
+          : "4px",
+        borderBottom: isWidgetDimensionKSized(props.widget.geometry.dimension)
+          ? `4px dotted ${theme.palette.primary.main}`
+          : `2px dotted ${theme.palette.primary.main}`,
+        backgroundColor: shouldHighlight
+          ? theme.palette.primary.light
+          : "transparent",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -352,6 +384,9 @@ function PlacedWidget(props: PlacedWidgetProps) {
           marginLeft: "0.5rem",
           marginRight: "0.5rem",
           textAlign: "center",
+          color: shouldHighlight
+            ? theme.palette.primary.contrastText
+            : theme.palette.primary.main,
         }}
       >
         {widgetTypeName(props.widget.the_type)}

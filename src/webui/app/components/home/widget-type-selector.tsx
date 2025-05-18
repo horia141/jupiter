@@ -27,7 +27,9 @@ export function WidgetTypeSelector(props: WidgetTypeSelectorProps) {
   }, [props.value, props.defaultValue]);
 
   const allowedTypes = Object.values(WidgetType).filter((type) =>
-    props.widgetConstraints[type].for_tab_target.includes(props.target),
+    props.widgetConstraints[type].allowed_dimensions[props.target].includes(
+      props.widgetConstraints[type].allowed_dimensions[props.target][0],
+    ),
   );
 
   if (allowedTypes.length === 0) {

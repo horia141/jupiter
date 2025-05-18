@@ -1,13 +1,5 @@
-import {
-  ApiError,
-  WidgetDimension,
-  WidgetType,
-} from "@jupiter/webapi-client";
-import {
-  FormControl,
-  InputLabel,
-  Stack,
-} from "@mui/material";
+import { ApiError, WidgetDimension, WidgetType } from "@jupiter/webapi-client";
+import { FormControl, InputLabel, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -71,6 +63,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return json({
     widgetConstraints: homeConfig.widget_constraints,
     tab: tab.tab,
+    widgets: tab.widgets,
   });
 }
 
@@ -166,9 +159,11 @@ export default function NewWidget() {
           <FormControl fullWidth disabled>
             <RowAndColSelector
               namePrefix="widget"
+              target={loaderData.tab.target}
+              homeTab={loaderData.tab}
+              widgets={loaderData.widgets}
               row={query.row}
               col={query.col}
-              target={loaderData.tab.target}
               inputsEnabled={inputsEnabled}
             />
           </FormControl>
@@ -179,7 +174,9 @@ export default function NewWidget() {
               name="dimension"
               inputsEnabled={inputsEnabled}
               defaultValue={
-                loaderData.widgetConstraints[theType].allowed_dimensions[0]
+                loaderData.widgetConstraints[theType].allowed_dimensions[
+                  loaderData.tab.target
+                ][0]
               }
               target={loaderData.tab.target}
               widgetType={theType}

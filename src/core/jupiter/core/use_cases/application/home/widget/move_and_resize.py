@@ -39,7 +39,9 @@ class HomeWidgetMoveAndResizeUseCase(
     ) -> None:
         """Execute the command's action."""
         widget = await uow.get_for(HomeWidget).load_by_id(args.ref_id)
-        widget = widget.move_and_resize(context.domain_context, args.row, args.col, args.dimension)
+        widget = widget.move_and_resize(
+            context.domain_context, args.row, args.col, args.dimension
+        )
         await uow.get_for(HomeWidget).save(widget)
         await progress_reporter.mark_updated(widget)
 

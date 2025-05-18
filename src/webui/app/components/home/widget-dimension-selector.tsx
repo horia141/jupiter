@@ -7,9 +7,7 @@ import {
 } from "@jupiter/webapi-client";
 import { useEffect, useState } from "react";
 
-import {
-  widgetDimensionName,
-} from "~/logic/widget";
+import { widgetDimensionName } from "~/logic/widget";
 
 interface WidgetDimensionSelectorProps {
   name: string;
@@ -47,7 +45,14 @@ export function WidgetDimensionSelector(props: WidgetDimensionSelectorProps) {
     return <Typography>No constraints for this widget type</Typography>;
   }
 
-  if (constraintForType.allowed_dimensions.length === 0) {
+  if (Object.keys(constraintForType.allowed_dimensions).length === 0) {
+    return <Typography>No dimensions allowed for this widget type</Typography>;
+  }
+
+  const constraintForTarget =
+    constraintForType.allowed_dimensions[props.target];
+
+  if (!constraintForTarget) {
     return <Typography>No dimensions allowed for this widget type</Typography>;
   }
 
@@ -63,9 +68,9 @@ export function WidgetDimensionSelector(props: WidgetDimensionSelectorProps) {
           props.onChange?.(event.target.value as WidgetDimension);
         }}
       >
-        {constraintForType.allowed_dimensions.map((dimension) => (
+        {constraintForTarget.map((dimension) => (
           <MenuItem key={dimension} value={dimension}>
-            {widgetDimensionName(dimension)}
+            {widgetDimensionName(dimension as WidgetDimension)}
           </MenuItem>
         ))}
       </Select>

@@ -1,16 +1,14 @@
-import {
-  ApiError,
-  WidgetDimension,
-} from "@jupiter/webapi-client";
-import {
-  FormControl,
-  InputLabel,
-  Stack,
-} from "@mui/material";
+import { ApiError, WidgetDimension } from "@jupiter/webapi-client";
+import { FormControl, InputLabel, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams, useSearchParams } from "@remix-run/react";
+import {
+  useActionData,
+  useNavigation,
+  useParams,
+  useSearchParams,
+} from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext, useState, useEffect } from "react";
 import { z } from "zod";
@@ -33,7 +31,6 @@ import { SectionCardNew } from "~/components/infra/section-card-new";
 import { WidgetTypeSelector } from "~/components/home/widget-type-selector";
 import { WidgetDimensionSelector } from "~/components/home/widget-dimension-selector";
 import { RowAndColSelector } from "~/components/home/row-and-col-selector";
-import { constructFieldErrorName } from "~/logic/field-names";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -84,6 +81,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     widget: widget.widget,
     widgetConstraints: homeConfig.widget_constraints,
     tab: tab.tab,
+    widgets: tab.widgets,
   });
 }
 
@@ -102,18 +100,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
           dimension: form.widgetDimension,
         });
 
-        return redirect(
-          `/app/workspace/home/settings/tabs/${id}`,
-        );
+        return redirect(`/app/workspace/home/settings/tabs/${id}`);
       }
 
       case "archive":
         await apiClient.widget.homeWidgetArchive({
           ref_id: widgetId,
         });
-        return redirect(
-          `/app/workspace/home/settings/tabs/${id}`,
-        );
+        return redirect(`/app/workspace/home/settings/tabs/${id}`);
 
       case "remove":
         await apiClient.widget.homeWidgetRemove({
@@ -196,19 +190,15 @@ export default function Widget() {
           <FormControl fullWidth disabled>
             <RowAndColSelector
               namePrefix="widget"
+              target={loaderData.tab.target}
+              homeTab={loaderData.tab}
+              widgets={loaderData.widgets}
               row={query.row ?? loaderData.widget.geometry.row}
               col={query.col ?? loaderData.widget.geometry.col}
-              target={loaderData.tab.target}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError
-              actionResult={actionData}
-              fieldName={"/row"}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName={"/col"}
-            />
+            <FieldError actionResult={actionData} fieldName={"/row"} />
+            <FieldError actionResult={actionData} fieldName={"/col"} />
           </FormControl>
 
           <FormControl fullWidth disabled>
@@ -221,10 +211,7 @@ export default function Widget() {
               widgetType={loaderData.widget.the_type}
               widgetConstraints={loaderData.widgetConstraints}
             />
-            <FieldError
-              actionResult={actionData}
-              fieldName={"/dimension"}
-            />
+            <FieldError actionResult={actionData} fieldName={"/dimension"} />
           </FormControl>
         </Stack>
       </SectionCardNew>

@@ -65,9 +65,7 @@ class HomeWidget(LeafEntity):
     ) -> "HomeWidget":
         return self._new_version(
             ctx,
-            geometry=WidgetGeometry(
-                row=row, col=col, dimension=dimension
-            ),
+            geometry=WidgetGeometry(row=row, col=col, dimension=dimension),
         )
 
     @staticmethod

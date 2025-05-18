@@ -1,11 +1,12 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.home_tab_target import HomeTabTarget
-from ..models.widget_dimension import WidgetDimension
+if TYPE_CHECKING:
+    from ..models.widget_type_constraints_allowed_dimensions import WidgetTypeConstraintsAllowedDimensions
+
 
 T = TypeVar("T", bound="WidgetTypeConstraints")
 
@@ -15,31 +16,20 @@ class WidgetTypeConstraints:
     """A constraints for a widget type.
 
     Attributes:
-        allowed_dimensions (list[WidgetDimension]):
-        for_tab_target (list[HomeTabTarget]):
+        allowed_dimensions (WidgetTypeConstraintsAllowedDimensions):
     """
 
-    allowed_dimensions: list[WidgetDimension]
-    for_tab_target: list[HomeTabTarget]
+    allowed_dimensions: "WidgetTypeConstraintsAllowedDimensions"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        allowed_dimensions = []
-        for allowed_dimensions_item_data in self.allowed_dimensions:
-            allowed_dimensions_item = allowed_dimensions_item_data.value
-            allowed_dimensions.append(allowed_dimensions_item)
-
-        for_tab_target = []
-        for for_tab_target_item_data in self.for_tab_target:
-            for_tab_target_item = for_tab_target_item_data.value
-            for_tab_target.append(for_tab_target_item)
+        allowed_dimensions = self.allowed_dimensions.to_dict()
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "allowed_dimensions": allowed_dimensions,
-                "for_tab_target": for_tab_target,
             }
         )
 
@@ -47,24 +37,13 @@ class WidgetTypeConstraints:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.widget_type_constraints_allowed_dimensions import WidgetTypeConstraintsAllowedDimensions
+
         d = dict(src_dict)
-        allowed_dimensions = []
-        _allowed_dimensions = d.pop("allowed_dimensions")
-        for allowed_dimensions_item_data in _allowed_dimensions:
-            allowed_dimensions_item = WidgetDimension(allowed_dimensions_item_data)
-
-            allowed_dimensions.append(allowed_dimensions_item)
-
-        for_tab_target = []
-        _for_tab_target = d.pop("for_tab_target")
-        for for_tab_target_item_data in _for_tab_target:
-            for_tab_target_item = HomeTabTarget(for_tab_target_item_data)
-
-            for_tab_target.append(for_tab_target_item)
+        allowed_dimensions = WidgetTypeConstraintsAllowedDimensions.from_dict(d.pop("allowed_dimensions"))
 
         widget_type_constraints = cls(
             allowed_dimensions=allowed_dimensions,
-            for_tab_target=for_tab_target,
         )
 
         widget_type_constraints.additional_properties = d

@@ -269,7 +269,7 @@ class SmallScreenHomeTabWidgetPlacement(HomeTabWidgetPlacement):
                 section = sections_by_id[widget_id]
                 if section.geometry.dimension.is_k_sized:
                     # Verify no widgets exist after this one
-                    if any(id is not None for id in matrix[i+1:]):
+                    if any(other_id is not None for other_id in matrix[i + 1 :]):
                         raise InputValidationError(
                             f"Widget {widget_id} with k-sized dimension must be last in the layout"
                         )

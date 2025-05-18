@@ -1,11 +1,20 @@
 import { TextField, Stack } from "@mui/material";
-import { HomeTabTarget } from "@jupiter/webapi-client";
-import { constructFieldName } from "~/logic/field-names";
+import {
+  HomeTab,
+  HomeTabTarget,
+  HomeWidget,
+  WidgetDimension,
+} from "@jupiter/webapi-client";
 import { useEffect, useState } from "react";
+
+import { constructFieldName } from "~/logic/field-names";
+import { WidgetPlacementQuickSelector } from "~/components/home/widget-placement-quick-selector";
 
 interface RowAndColSelectorProps {
   namePrefix: string;
   target: HomeTabTarget;
+  homeTab: HomeTab;
+  widgets: HomeWidget[];
   row: number;
   col: number;
   onRowAndColChange?: (row: number, col: number) => void;
@@ -55,11 +64,26 @@ export function RowAndColSelector(props: RowAndColSelectorProps) {
         }}
         disabled={!props.inputsEnabled}
         fullWidth
-        inputProps={{ 
-          min: 0, 
+        inputProps={{
+          min: 0,
           readOnly: true,
+        }}
+      />
+      <WidgetPlacementQuickSelector
+        target={props.target}
+        homeTab={props.homeTab}
+        widgets={props.widgets}
+        onRowAndColChange={(newRow, newCol) => {
+          setRow(newRow);
+          setCol(newCol);
+          props.onRowAndColChange?.(newRow, newCol);
+        }}
+        hightlightGeometry={{
+          row: props.row,
+          col: props.col,
+          dimension: WidgetDimension.DIM_1X1,
         }}
       />
     </Stack>
   );
-} 
+}
