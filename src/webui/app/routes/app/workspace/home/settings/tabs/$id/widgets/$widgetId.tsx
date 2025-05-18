@@ -13,7 +13,7 @@ import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
@@ -31,12 +31,22 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { WidgetTypeSelector } from "~/components/home/widget-type-selector";
 import { WidgetDimensionSelector } from "~/components/home/widget-dimension-selector";
+import { RowAndColSelector } from "~/components/home/row-and-col-selector";
+
 const ParamsSchema = z.object({
   id: z.string(),
   widgetId: z.string(),
 });
 
+const QuerySchema = z.object({
+  row: z.coerce.number(),
+  col: z.coerce.number(),
+});
+
 const UpdateFormSchema = z.discriminatedUnion("intent", [
+  z.object({
+    intent: z.literal("update"),
+  }),
   z.object({
     intent: z.literal("archive"),
   }),
@@ -76,15 +86,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id, widgetId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
+  const query = await parseQuery(request, QuerySchema);
 
   try {
     switch (form.intent) {
+      case "update":
+        await apiClient.widget.homeWidgetMoveAndResize({
+          ref_id: widgetId,
+          row: query.row,
+          col: query.col,
+        });
+
+        return redirect(
+          `/app/workspace/home/settings/tabs/${id}`,
+        );
+
       case "archive":
         await apiClient.widget.homeWidgetArchive({
           ref_id: widgetId,
         });
         return redirect(
-          `/app/workspace/home/settings/tabs/${id}/widgets/${widgetId}`,
+          `/app/workspace/home/settings/tabs/${id}`,
         );
 
       case "remove":
@@ -124,6 +146,7 @@ export default function Widget() {
       key={`home/settings/tabs/${id}/widgets/${loaderData.widget.ref_id}`}
       returnLocation={`/app/workspace/home/settings/tabs/${id}`}
       inputsEnabled={inputsEnabled}
+      showArchiveAndRemoveButton
     >
       <SectionCardNew
         title="Widget Settings"
@@ -154,6 +177,15 @@ export default function Widget() {
               defaultValue={loaderData.widget.the_type}
               target={loaderData.tab.target}
               widgetConstraints={loaderData.widgetConstraints}
+            />
+          </FormControl>
+
+          <FormControl fullWidth disabled>
+            <RowAndColSelector
+              row={loaderData.widget.geometry.row}
+              col={loaderData.widget.geometry.col}
+              target={loaderData.tab.target}
+              inputsEnabled={false}
             />
           </FormControl>
 

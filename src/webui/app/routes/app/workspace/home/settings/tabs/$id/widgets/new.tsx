@@ -16,15 +16,17 @@ import {
   useLoaderData,
   useNavigation,
   useParams,
+  useSearchParams,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { WidgetDimensionSelector } from "~/components/home/widget-dimension-selector";
 import { WidgetTypeSelector } from "~/components/home/widget-type-selector";
+import { RowAndColSelector } from "~/components/home/row-and-col-selector";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -112,8 +114,14 @@ export default function NewWidget() {
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(parseQuery(searchParams, QuerySchema));
 
   const [theType, setTheType] = useState<WidgetType>(WidgetType.MOTD);
+
+  useEffect(() => {
+    setQuery(parseQuery(searchParams, QuerySchema));
+  }, [searchParams]);
 
   return (
     <LeafPanel
@@ -153,6 +161,15 @@ export default function NewWidget() {
               widgetConstraints={loaderData.widgetConstraints}
             />
             <FieldError actionResult={actionData} fieldName="/type" />
+          </FormControl>
+
+          <FormControl fullWidth disabled>
+            <RowAndColSelector
+              row={query.row}
+              col={query.col}
+              target={loaderData.tab.target}
+              inputsEnabled={inputsEnabled}
+            />
           </FormControl>
 
           <FormControl fullWidth>

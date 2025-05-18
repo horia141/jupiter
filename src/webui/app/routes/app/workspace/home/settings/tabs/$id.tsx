@@ -8,10 +8,10 @@ import { Box, Button, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useNavigation } from "@remix-run/react";
+import { Link, Outlet, useLocation, useNavigation, useSearchParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery, parseQuerySafe } from "zodix";
 import TuneIcon from "@mui/icons-material/Tune";
 import { StatusCodes } from "http-status-codes";
 
@@ -30,9 +30,21 @@ import {
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWidgetDimensionKSized, widgetDimensionRows, widgetTypeName } from "~/logic/widget";
+import { newURLParams } from "~/logic/domain/navigation";
+
+enum Action {
+    ADD_WIDGET = "add",
+    MOVE_WIDGET = "move",
+}
 
 const ParamsSchema = z.object({
   id: z.string(),
+});
+
+const QuerySchema = z.object({
+    action: z.nativeEnum(Action),
+    row: z.coerce.number().optional(),
+    col: z.coerce.number().optional(),
 });
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -51,6 +63,13 @@ export const handle = {
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
+  const url = new URL(request.url);
+  const query = parseQuerySafe(request, QuerySchema);
+
+  if (query.error) {
+    url.searchParams.set("action", Action.ADD_WIDGET);
+    return redirect(url.pathname + url.search);
+  }
 
   const result = await apiClient.tab.homeTabLoad({
     ref_id: id,
@@ -106,6 +125,8 @@ export default function HomeTab() {
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
   const navigation = useNavigation();
   const inputsEnabled = navigation.state === "idle";
+  const [queryRaw] = useSearchParams();
+  const query = parseQuery(queryRaw, QuerySchema);
 
   return (
     <BranchPanel
@@ -144,6 +165,7 @@ export default function HomeTab() {
 
           {loaderData.tab.target === HomeTabTarget.SMALL_SCREEN && (
             <SmallScreenWidgetPlacement
+              action={query.action}
               homeTab={loaderData.tab}
               widgets={loaderData.widgets}
             />
@@ -169,6 +191,7 @@ export const ErrorBoundary = makeBranchErrorBoundary(
 );
 
 interface SmallScreenWidgetPlacementProps {
+  action: Action;
   homeTab: HomeTab;
   widgets: HomeWidget[];
 }
@@ -184,16 +207,40 @@ function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
     <Stack useFlexGap sx={{ alignItems: "center" }}>
       {widgetPlacement.matrix.map((row, rowIndex) => {
         if (row === null) {
-          return (
-            <NewWidgetButton
-              key={rowIndex}
-              homeTab={props.homeTab}
-              row={rowIndex}
-              col={0}
-            />
-          );
+          // Check if there's a k-sized widget before this row
+          for (let i = 0; i < rowIndex; i++) {
+            const prevWidgetId = widgetPlacement.matrix[i];
+            if (prevWidgetId !== null) {
+              const prevWidget = widgetByRefId.get(prevWidgetId);
+              if (prevWidget && isWidgetDimensionKSized(prevWidget.geometry.dimension)) {
+                return null;
+              }
+            }
+          }
+
+          switch (props.action) {
+            case Action.ADD_WIDGET:
+              return (
+                <NewWidgetButton
+                  key={rowIndex}
+                  homeTab={props.homeTab}
+                  row={rowIndex}
+                  col={0}
+                />
+              );
+            case Action.MOVE_WIDGET:
+              return (
+                <MoveWidgetButton
+                  key={rowIndex}
+                  row={rowIndex}
+                  col={0}
+                />
+              );
+          }
         }
 
+        // If the previous widget is the same as the current one, don't render the current block,
+        // since this is a bigger widget that is taking up the space of the smaller one.
         if (
           rowIndex > 0 &&
           widgetPlacement.matrix[rowIndex] ===
@@ -224,20 +271,53 @@ interface NewWidgetButtonProps {
 }
 
 function NewWidgetButton(props: NewWidgetButtonProps) {
+  const location = useLocation();
+  const [queryRaw] = useSearchParams();
+  const query = parseQuery(queryRaw, QuerySchema);
+
   return (
     <Button
       component={Link}
-      to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?row=${props.row}&col=${props.col}`}
+      to={`/app/workspace/home/settings/tabs/${props.homeTab.ref_id}/widgets/new?${newURLParams(queryRaw, "row", props.row.toString(), "col", props.col.toString())}`}
       variant="outlined"
       sx={{
+        color: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.contrastText : theme.palette.primary.main,
+        backgroundColor: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.light : "transparent",
         width: "8rem",
-        height: "8rem",
+        height: "3rem",
       }}
     >
-      Add Widget
+      Add
     </Button>
   );
 }
+
+interface MoveWidgetButtonProps {
+    row: number;
+    col: number;
+  }
+  
+  function MoveWidgetButton(props: MoveWidgetButtonProps) {
+    const location = useLocation();
+    const [queryRaw] = useSearchParams();
+    const query = parseQuery(queryRaw, QuerySchema);
+
+    return (
+      <Button
+        component={Link}
+        to={`${location.pathname}?${newURLParams(queryRaw, "row", props.row.toString(), "col", props.col.toString())}`}
+        variant="outlined"
+        sx={{
+          color: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.contrastText : theme.palette.primary.main,
+          backgroundColor: theme => query.row === props.row && query.col === props.col ? theme.palette.primary.light : "transparent",
+          width: "8rem",
+          height: "3rem",
+        }}
+      >
+        Move
+      </Button>
+    );
+  }
 
 interface PlacedWidgetProps {
   widget: HomeWidget;
@@ -246,11 +326,12 @@ interface PlacedWidgetProps {
 }
 
 function PlacedWidget(props: PlacedWidgetProps) {
-  const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 8;
+  const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 3;
 
   return (
     <Box
       sx={{
+        fontSize: "0.64rem",
         width: "8rem",
         height: `${heightInRem}rem`,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
@@ -266,7 +347,7 @@ function PlacedWidget(props: PlacedWidgetProps) {
       }}
     >
       <Link
-        to={`/app/workspace/home/settings/tabs/${props.widget.home_tab_ref_id}/widgets/${props.widget.ref_id}`}
+        to={`/app/workspace/home/settings/tabs/${props.widget.home_tab_ref_id}/widgets/${props.widget.ref_id}?action=${Action.MOVE_WIDGET}`}
         style={{
           marginLeft: "0.5rem",
           marginRight: "0.5rem",
