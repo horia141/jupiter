@@ -71,7 +71,10 @@ class HomeWidget(LeafEntity):
             raise ValueError(
                 f"Widget type {self.the_type} is not allowed for tab target {home_tab_target_for_reference}"
             )
-        if dimension not in constraints.allowed_dimensions[home_tab_target_for_reference]:
+        if (
+            dimension
+            not in constraints.allowed_dimensions[home_tab_target_for_reference]
+        ):
             raise ValueError(
                 f"Dimension {dimension} is not allowed for widget type {self.the_type}"
             )

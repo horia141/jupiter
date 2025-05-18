@@ -22,6 +22,7 @@ import { z } from "zod";
 import { parseForm, parseParams, parseQuery, parseQuerySafe } from "zodix";
 import TuneIcon from "@mui/icons-material/Tune";
 import { StatusCodes } from "http-status-codes";
+import { Fragment } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
@@ -224,69 +225,127 @@ function BigScreenWidgetPlacement(props: BigScreenWidgetPlacementProps) {
   const maxRows = widgetPlacement.matrix[0].length;
 
   return (
-    <Stack useFlexGap sx={{ alignItems: "center" }}>
-        {Array.from({ length: maxRows }, (_, rowIndex) => {
-            return (
-                <Stack key={rowIndex} direction="row" useFlexGap>
-                    {Array.from({ length: maxCols }, (_, colIndex) => {
-                        const cell = widgetPlacement.matrix[colIndex][rowIndex];
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${maxCols}, 8rem)`,
+        gridTemplateRows: `repeat(${maxRows}, 3rem)`,
+        gridGap: "0.25rem",
+        alignItems: "center",
+        marginLeft: "auto",
+        marginRight: "auto",
+      }}
+    >
+      {Array.from({ length: maxRows }, (_, rowIndex) => {
+        return (
+          <Fragment key={rowIndex}>
+            {Array.from({ length: maxCols }, (_, colIndex) => {
+              const cell = widgetPlacement.matrix[colIndex][rowIndex];
 
-                        if (cell === null) {
-                            // Check if there's a k-sized widget before this row
-                            for (let i = 0; i < rowIndex; i++) {
-                              const prevWidgetId = widgetPlacement.matrix[colIndex][i];
-                              if (prevWidgetId !== null) {
-                                const prevWidget = widgetByRefId.get(prevWidgetId);
-                                if (
-                                    prevWidget &&
-                                    isWidgetDimensionKSized(prevWidget.geometry.dimension)
-                                ) {
-                                  return null;
-                                }
-                              }
-                            }
-            
-                            switch (props.action) {
-                                case Action.ADD_WIDGET:
-                                  return (
-                                    <NewWidgetButton
-                                      key={`${rowIndex}-${colIndex}`}
-                                      homeTab={props.homeTab}
-                                      row={rowIndex}
-                                      col={colIndex}
-                                    />
-                                  );
-                                case Action.MOVE_WIDGET:
-                                  return <MoveWidgetButton key={`${rowIndex}-${colIndex}`} row={rowIndex} col={colIndex} />;
-                              }
-                          }
-            
-                          // If the previous widget is the same as the current one, don't render the current block,
-                          // since this is a bigger widget that is taking up the space of the smaller one.
-                          // We check both the row and the column to make sure we don't render the same widget twice.
-                          if (rowIndex > 0 && widgetPlacement.matrix[colIndex][rowIndex] === widgetPlacement.matrix[colIndex][rowIndex - 1]) {
-                            return null;
-                          }
-            
-                          if (colIndex > 0 && widgetPlacement.matrix[colIndex][rowIndex] === widgetPlacement.matrix[colIndex - 1][rowIndex]) {
-                            return null;
-                          }
-            
-                          const widget = widgetByRefId.get(cell);
-            
-                          return (
-                            <PlacedWidget
-                              key={`${rowIndex}-${colIndex}`}
-                              widget={widget!}
-                              row={rowIndex}
-                              col={colIndex}
-                            />
-                          );
-                    })}
-                </Stack>
-            )
-        })}
-    </Stack>
+              if (cell === null) {
+                // Check if there's a k-sized widget before this row
+                for (let i = 0; i < rowIndex; i++) {
+                  const prevWidgetId = widgetPlacement.matrix[colIndex][i];
+                  if (prevWidgetId !== null) {
+                    const prevWidget = widgetByRefId.get(prevWidgetId);
+                    if (
+                      prevWidget &&
+                      isWidgetDimensionKSized(prevWidget.geometry.dimension)
+                    ) {
+                      return null;
+                    }
+                  }
+                }
+
+                switch (props.action) {
+                  case Action.ADD_WIDGET:
+                    return (
+                      <Box
+                        key={`${rowIndex}-${colIndex}`}
+                        sx={{
+                          display: "flex",
+                          gridRowStart: rowIndex + 1,
+                          gridColumnStart: colIndex + 1,
+                        }}
+                      >
+                        <NewWidgetButton
+                          key={`${rowIndex}-${colIndex}`}
+                          homeTab={props.homeTab}
+                          row={rowIndex}
+                          col={colIndex}
+                        />
+                      </Box>
+                    );
+                  case Action.MOVE_WIDGET:
+                    return (
+                      <Box
+                        key={`${rowIndex}-${colIndex}`}
+                        sx={{
+                          display: "flex",
+                          gridRowStart: rowIndex + 1,
+                          gridColumnStart: colIndex + 1,
+                        }}
+                      >
+                        <MoveWidgetButton
+                          key={`${rowIndex}-${colIndex}`}
+                          row={rowIndex}
+                          col={colIndex}
+                        />
+                      </Box>
+                    );
+                }
+              }
+
+              // If the previous widget is the same as the current one, don't render the current block,
+              // since this is a bigger widget that is taking up the space of the smaller one.
+              // We check both the row and the column to make sure we don't render the same widget twice.
+              if (
+                rowIndex > 0 &&
+                widgetPlacement.matrix[colIndex][rowIndex] ===
+                  widgetPlacement.matrix[colIndex][rowIndex - 1]
+              ) {
+                return null;
+              }
+
+              if (
+                colIndex > 0 &&
+                widgetPlacement.matrix[colIndex][rowIndex] ===
+                  widgetPlacement.matrix[colIndex - 1][rowIndex]
+              ) {
+                return null;
+              }
+
+              const widget = widgetByRefId.get(cell);
+
+              return (
+                <Box
+                  key={`${rowIndex}-${colIndex}`}
+                  sx={{
+                    display: "flex",
+                    gridRowStart: rowIndex + 1,
+                    gridRowEnd:
+                      rowIndex +
+                      1 +
+                      widgetDimensionRows(widget!.geometry.dimension),
+                    gridColumnStart: colIndex + 1,
+                    gridColumnEnd:
+                      colIndex +
+                      1 +
+                      widgetDimensionCols(widget!.geometry.dimension),
+                  }}
+                >
+                  <PlacedWidget
+                    widget={widget!}
+                    row={rowIndex}
+                    col={colIndex}
+                  />
+                </Box>
+              );
+            })}
+          </Fragment>
+        );
+      })}
+    </Box>
   );
 }
 
@@ -443,8 +502,9 @@ function PlacedWidget(props: PlacedWidgetProps) {
     <Box
       sx={{
         fontSize: "0.64rem",
-        width: `${widthInRem}rem`,
         height: `${heightInRem}rem`,
+        width: "100%",
+        minWidth: `${widthInRem}rem`,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",
         borderBottomLeftRadius: isWidgetDimensionKSized(
