@@ -1,4 +1,5 @@
 import {
+    BigScreenHomeTabWidgetPlacement,
   HomeTab,
   HomeTabTarget,
   HomeWidget,
@@ -14,9 +15,10 @@ import {
   Stack,
   Box,
 } from "@mui/material";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
-import { isWidgetDimensionKSized, widgetDimensionRows } from "~/logic/widget";
+import { isWidgetDimensionKSized, widgetDimensionCols, widgetDimensionRows, widgetTypeName } from "~/logic/widget";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface WidgetPlacementQuickSelectorProps {
   target: HomeTabTarget;
@@ -73,7 +75,117 @@ function TheWidgetPlacement(props: WidgetPlacementQuickSelectorProps) {
 }
 
 function BigScreenWidgetPlacement(props: WidgetPlacementQuickSelectorProps) {
-  return <>Here</>;
+  const widgetPlacement = props.homeTab.widget_placement as BigScreenHomeTabWidgetPlacement;
+  const widgetByRefId = new Map(props.widgets.map((w) => [w.ref_id, w]));
+
+  const isBigScreen = useBigScreen();
+  const maxCols = widgetPlacement.matrix.length;
+  const maxRows = widgetPlacement.matrix[0].length;
+
+  return (
+    <Box
+        sx={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${maxCols}, ${isBigScreen ? "8rem" : "1fr"})`,
+            gridTemplateRows: `repeat(${maxRows}, 3rem)`,
+            gridGap: "0.25rem",
+            alignItems: "center",
+            marginLeft: isBigScreen ? "auto" : undefined,
+            marginRight: isBigScreen ? "auto" : undefined,
+        }}
+    >
+        {Array.from({ length: maxRows }, (_, rowIndex) => {
+            return (
+                <Fragment key={rowIndex}>
+                    {Array.from({ length: maxCols }, (_, colIndex) => {
+                        const cell = widgetPlacement.matrix[colIndex][rowIndex];
+
+                        if (cell === null) {
+                          // Check if there's a k-sized widget before this row
+                          for (let i = 0; i < rowIndex; i++) {
+                            const prevWidgetId = widgetPlacement.matrix[colIndex][i];
+                            if (prevWidgetId !== null) {
+                              const prevWidget = widgetByRefId.get(prevWidgetId);
+                              if (
+                                prevWidget &&
+                                isWidgetDimensionKSized(prevWidget.geometry.dimension)
+                              ) {
+                                return null;
+                              }
+                            }
+                          }
+          
+                    
+                            return (
+                                <Box
+                                    key={`${rowIndex}-${colIndex}`}
+                                    sx={{
+                                    display: "flex",
+                                    gridRowStart: rowIndex + 1,
+                                    gridColumnStart: colIndex + 1,
+                                    }}
+                                >
+                                    <MoveWidgetButton
+                                    key={`${rowIndex}-${colIndex}`}
+                                    row={rowIndex}
+                                    col={colIndex}
+                                    onClick={() => props.onRowAndColChange(rowIndex, colIndex)}
+                                    />
+                                </Box>
+                                );
+                        }
+          
+                        // If the previous widget is the same as the current one, don't render the current block,
+                        // since this is a bigger widget that is taking up the space of the smaller one.
+                        // We check both the row and the column to make sure we don't render the same widget twice.
+                        if (
+                          rowIndex > 0 &&
+                          widgetPlacement.matrix[colIndex][rowIndex] ===
+                            widgetPlacement.matrix[colIndex][rowIndex - 1]
+                        ) {
+                          return null;
+                        }
+          
+                        if (
+                          colIndex > 0 &&
+                          widgetPlacement.matrix[colIndex][rowIndex] ===
+                            widgetPlacement.matrix[colIndex - 1][rowIndex]
+                        ) {
+                          return null;
+                        }
+          
+                        const widget = widgetByRefId.get(cell);
+          
+                        return (
+                          <Box
+                            key={`${rowIndex}-${colIndex}`}
+                            sx={{
+                              display: "flex",
+                              gridRowStart: rowIndex + 1,
+                              gridRowEnd:
+                                rowIndex +
+                                1 +
+                                widgetDimensionRows(widget!.geometry.dimension),
+                              gridColumnStart: colIndex + 1,
+                              gridColumnEnd:
+                                colIndex +
+                                1 +
+                                widgetDimensionCols(widget!.geometry.dimension),
+                            }}
+                          >
+                            <PlacedWidget
+                              widget={widget!}
+                              row={rowIndex}
+                              col={colIndex}
+                            />
+                          </Box>
+                        );
+                    })}
+                </Fragment>
+            )
+        })}
+    </Box>
+  )
 }
 
 function SmallScreenWidgetPlacement(props: WidgetPlacementQuickSelectorProps) {
@@ -82,7 +194,7 @@ function SmallScreenWidgetPlacement(props: WidgetPlacementQuickSelectorProps) {
   const widgetByRefId = new Map(props.widgets.map((w) => [w.ref_id, w]));
 
   return (
-    <Stack useFlexGap direction="column" sx={{ alignItems: "center" }}>
+    <Stack useFlexGap direction="column" sx={{ alignItems: "center", gap: "0.25rem" }}>
       {widgetPlacement.matrix.map((row, rowIndex) => {
         if (row === null) {
           // Check if there's a k-sized widget before this row
@@ -179,6 +291,8 @@ interface PlacedWidgetProps {
 
 function PlacedWidget(props: PlacedWidgetProps) {
   const heightInRem = widgetDimensionRows(props.widget.geometry.dimension) * 3;
+  const widthInRem = widgetDimensionCols(props.widget.geometry.dimension) * 8;
+  const isBigScreen = useBigScreen();
   const shouldHighlight =
     props.highlightGeometry &&
     props.highlightGeometry.row === props.row &&
@@ -188,7 +302,8 @@ function PlacedWidget(props: PlacedWidgetProps) {
     <Box
       sx={{
         fontSize: "0.64rem",
-        width: "8rem",
+        width: "100%",
+        minWidth: isBigScreen ? `${widthInRem}rem` : undefined,
         height: `${heightInRem}rem`,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",
@@ -217,7 +332,7 @@ function PlacedWidget(props: PlacedWidgetProps) {
           shouldHighlight ? theme.palette.primary.light : "transparent",
       }}
     >
-      {props.widget.name}
+        {widgetTypeName(props.widget.the_type)}
     </Box>
   );
 }

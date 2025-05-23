@@ -365,7 +365,7 @@ function SmallScreenWidgetPlacement(props: SmallScreenWidgetPlacementProps) {
   );
 
   return (
-    <Stack useFlexGap sx={{ alignItems: "center" }}>
+    <Stack useFlexGap sx={{ alignItems: "center", gap: "0.25rem" }} >
       {widgetPlacement.matrix.map((row, rowIndex) => {
         if (row === null) {
           // Check if there's a k-sized widget before this row
