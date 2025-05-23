@@ -54,6 +54,7 @@ enum Action {
 
 const ParamsSchema = z.object({
   id: z.string(),
+  widgetId: z.string().optional()
 });
 
 const QuerySchema = z.object({
@@ -77,12 +78,16 @@ export const handle = {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
-  const { id } = parseParams(params, ParamsSchema);
+  const { id, widgetId } = parseParams(params, ParamsSchema);
   const url = new URL(request.url);
   const query = parseQuerySafe(request, QuerySchema);
 
   if (query.error) {
-    url.searchParams.set("action", Action.ADD_WIDGET);
+    if (widgetId) {
+      url.searchParams.set("action", Action.MOVE_WIDGET);
+    } else {
+      url.searchParams.set("action", Action.ADD_WIDGET);
+    }
     return redirect(url.pathname + url.search);
   }
 
