@@ -7,67 +7,56 @@ import {
   TimePlanActivityFeasability,
   TimePlanActivityKind,
 } from "@jupiter/webapi-client";
-import { DateTime } from "luxon";
 import { Stack } from "@mui/material";
 
-import { TopLevelInfo } from "~/top-level-context";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
 import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/time-plan-merged-activities";
+import {
+  WidgetContainer,
+  WidgetProps,
+} from "~/components/domain/application/home/common";
 
-interface TimePlanViewWidgetProps {
-  today: DateTime;
-  topLevelInfo: TopLevelInfo;
-  timePlanForToday?: {
-    timePlan: TimePlan;
-    activities: TimePlanActivity[];
-    targetInboxTasks: InboxTask[];
-    targetBigPlans: BigPlan[];
-    activityDoneness: Record<string, TimePlanActivityDoneness>;
-  };
-  timePlanForWeek?: {
-    timePlan: TimePlan;
-    activities: TimePlanActivity[];
-    targetInboxTasks: InboxTask[];
-    targetBigPlans: BigPlan[];
-    activityDoneness: Record<string, TimePlanActivityDoneness>;
-  };
-}
+export function TimePlanViewWidget(props: WidgetProps) {
+  const timePlans = props.timePlans!;
 
-export function TimePlanViewWidget(props: TimePlanViewWidgetProps) {
-  if (!props.timePlanForToday && !props.timePlanForWeek) {
+  if (!timePlans?.timePlanForToday && !timePlans?.timePlanForWeek) {
     return (
-      <EntityNoNothingCard
-        title="You Have To Start Somewhere"
-        message="There are no time plans to show. You can create a new time plan."
-        newEntityLocations={`/app/workspace/time-plans/new`}
-        helpSubject={DocsHelpSubject.TIME_PLANS}
-      />
+      <WidgetContainer>
+        <EntityNoNothingCard
+          title="You Have To Start Somewhere"
+          message="There are no time plans to show. You can create a new time plan."
+          newEntityLocations={`/app/workspace/time-plans/new`}
+          helpSubject={DocsHelpSubject.TIME_PLANS}
+        />
+      </WidgetContainer>
     );
   }
 
   return (
-    <Stack>
-      {props.timePlanForToday && (
-        <SingleTimePlan
-          timePlan={props.timePlanForToday.timePlan}
-          activities={props.timePlanForToday.activities}
-          targetInboxTasks={props.timePlanForToday.targetInboxTasks}
-          targetBigPlans={props.timePlanForToday.targetBigPlans}
-          activityDoneness={props.timePlanForToday.activityDoneness}
-        />
-      )}
-      {props.timePlanForWeek && (
-        <SingleTimePlan
-          timePlan={props.timePlanForWeek.timePlan}
-          activities={props.timePlanForWeek.activities}
-          targetInboxTasks={props.timePlanForWeek.targetInboxTasks}
-          targetBigPlans={props.timePlanForWeek.targetBigPlans}
-          activityDoneness={props.timePlanForWeek.activityDoneness}
-        />
-      )}
-    </Stack>
+    <WidgetContainer>
+      <Stack>
+        {timePlans.timePlanForToday && (
+          <SingleTimePlan
+            timePlan={timePlans.timePlanForToday.timePlan}
+            activities={timePlans.timePlanForToday.activities}
+            targetInboxTasks={timePlans.timePlanForToday.targetInboxTasks}
+            targetBigPlans={timePlans.timePlanForToday.targetBigPlans}
+            activityDoneness={timePlans.timePlanForToday.activityDoneness}
+          />
+        )}
+        {timePlans.timePlanForWeek && (
+          <SingleTimePlan
+            timePlan={timePlans.timePlanForWeek.timePlan}
+            activities={timePlans.timePlanForWeek.activities}
+            targetInboxTasks={timePlans.timePlanForWeek.targetInboxTasks}
+            targetBigPlans={timePlans.timePlanForWeek.targetBigPlans}
+            activityDoneness={timePlans.timePlanForWeek.activityDoneness}
+          />
+        )}
+      </Stack>
+    </WidgetContainer>
   );
 }
 

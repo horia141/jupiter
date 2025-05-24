@@ -1,38 +1,42 @@
-import { Habit, InboxTask, HabitStreakMark } from "@jupiter/webapi-client";
-import { Box, Card, Stack, Tab, Tabs } from "@mui/material";
+import { Box, Stack, Tab, Tabs } from "@mui/material";
 import { Fragment, useEffect, useState } from "react";
 
 import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
+import {
+  WidgetContainer,
+  WidgetProps,
+} from "~/components/domain/application/home/common";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 
 const ANIMATION_DURATION_MS = 10_000;
 
-interface Entry {
-  habit: Habit;
-  streakMarks: HabitStreakMark[];
-  inboxTasks: InboxTask[];
-}
-
-interface HabitKeyHabitStreakWidgetProps {
-  year: number;
-  currentYear: number;
-  entries: Entry[];
-  getYearUrl: (year: number) => string;
-}
-
-export function HabitKeyHabitStreakWidget(
-  props: HabitKeyHabitStreakWidgetProps,
-) {
+export function HabitKeyHabitStreakWidget(props: WidgetProps) {
+  const habitStreak = props.habitStreak!;
   const [selectedEntry, setSelectedEntry] = useState<number>(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSelectedEntry((entry) => (entry + 1) % props.entries.length);
+      setSelectedEntry((entry) => (entry + 1) % habitStreak.entries.length);
     }, ANIMATION_DURATION_MS);
     return () => clearInterval(interval);
-  }, [props.entries]);
+  }, [habitStreak.entries]);
+
+  if (habitStreak.entries.length === 0) {
+    return (
+      <WidgetContainer>
+        <EntityNoNothingCard
+          title="No Key Habit Streaks"
+          message="No key habit streaks found. You can create a new habit to start a streak."
+          newEntityLocations="/app/workspace/habits/new"
+          helpSubject={DocsHelpSubject.HABITS}
+        />
+      </WidgetContainer>
+    );
+  }
 
   return (
-    <Card>
+    <WidgetContainer>
       <Stack>
         <Tabs
           value={selectedEntry}
@@ -40,21 +44,21 @@ export function HabitKeyHabitStreakWidget(
           variant="scrollable"
           scrollButtons="auto"
         >
-          {props.entries.map((entry, index) => (
+          {habitStreak.entries.map((entry, index) => (
             <Tab key={index} label={entry.habit.name} />
           ))}
         </Tabs>
-        {props.entries.map((entry, index) => (
+        {habitStreak.entries.map((entry, index) => (
           <Fragment key={index}>
             {index === selectedEntry && (
               <Box sx={{ margin: "0.4rem" }}>
                 <HabitStreakCalendar
-                  year={props.year}
-                  currentYear={props.currentYear}
+                  year={habitStreak.year}
+                  currentYear={habitStreak.currentYear}
                   habit={entry.habit}
                   streakMarks={entry.streakMarks}
                   inboxTasks={entry.inboxTasks}
-                  getYearUrl={props.getYearUrl}
+                  getYearUrl={habitStreak.getYearUrl}
                   alwaysWide
                 />
               </Box>
@@ -62,6 +66,6 @@ export function HabitKeyHabitStreakWidget(
           </Fragment>
         ))}
       </Stack>
-    </Card>
+    </WidgetContainer>
   );
 }

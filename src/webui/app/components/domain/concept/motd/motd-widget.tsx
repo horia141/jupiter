@@ -1,25 +1,21 @@
-import { Card, CardContent, Typography } from "@mui/material";
-import type { MOTD } from "@jupiter/webapi-client";
+import { Typography } from "@mui/material";
 
-interface MOTDWidgetProps {
-  motd: MOTD;
-}
+import {
+  WidgetContainer,
+  WidgetProps,
+} from "~/components/domain/application/home/common";
 
-export function MOTDWidget(props: MOTDWidgetProps) {
+export function MOTDWidget(props: WidgetProps) {
+  const motd = props.motd!;
+
   return (
-    <Card sx={{ marginBottom: 2 }}>
-      <CardContent>
-        <Typography variant="h6" component="div" sx={{ fontStyle: "italic" }}>
-          {props.motd.quote} -{" "}
-          <a
-            href={props.motd.wikiquote_link}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {props.motd.author}
-          </a>
-        </Typography>
-      </CardContent>
-    </Card>
+    <WidgetContainer>
+      <Typography variant="h6" component="div" sx={{ fontStyle: "italic" }}>
+        {motd.quote} -{" "}
+        <a href={motd.wikiquote_link} target="_blank" rel="noopener noreferrer">
+          {motd.author}
+        </a>
+      </Typography>
+    </WidgetContainer>
   );
 }

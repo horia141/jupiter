@@ -43,6 +43,10 @@ import {
 import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import {
+  constructFieldErrorName,
+  constructFieldName,
+} from "~/logic/field-names";
 
 interface InboxTaskPropertiesEditorProps {
   title: string;
@@ -560,26 +564,4 @@ function constructIntentName(
   }
 
   return `${intentPrefix}-${intent}`;
-}
-
-function constructFieldName(
-  namePrefix: string | undefined,
-  fieldName: string,
-): string {
-  if (!namePrefix) {
-    return fieldName;
-  }
-  return `${namePrefix}${
-    fieldName.charAt(0).toUpperCase() + fieldName.slice(1)
-  }`;
-}
-
-function constructFieldErrorName(
-  fieldsPrefix: string | undefined,
-  fieldName: string,
-): string {
-  if (!fieldsPrefix) {
-    return `/${fieldName}`;
-  }
-  return `/${fieldsPrefix}_${fieldName}`;
 }

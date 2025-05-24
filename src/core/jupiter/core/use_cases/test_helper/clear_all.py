@@ -1,6 +1,7 @@
 """The command for clearing all branch and leaf type entities."""
 
 from jupiter.core.domain.application.home.home_config import HomeConfig
+from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.concept.auth.password_plain import PasswordPlain
@@ -155,9 +156,12 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                         name=UpdateAction.change_to(args.workspace_name),
                     )
 
-                    home_config = home_config.update(
-                        ctx=context.domain_context,
-                    )
+                    for target in HomeTabTarget:
+                        home_config = home_config.reoder_tabs(
+                            ctx=context.domain_context,
+                            target=target,
+                            order_of_tabs=[],
+                        )
                     await uow.get_for(HomeConfig).save(home_config)
 
                     if args.workspace_feature_flags is not None:
@@ -181,6 +185,9 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     root_project = root_project.update(
                         ctx=context.domain_context,
                         name=UpdateAction.change_to(args.workspace_root_project_name),
+                    ).reorder_child_projects(
+                        ctx=context.domain_context,
+                        new_order=[],
                     )
                     await uow.get_for(Project).save(root_project)
 

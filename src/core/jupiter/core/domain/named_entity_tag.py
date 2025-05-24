@@ -10,6 +10,8 @@ class NamedEntityTag(EnumValue):
 
     SCORE_LOG_ENTRY = "ScoreLogEntry"  # ScoreLogEntry.__name__
 
+    HOME_TAB = "HomeTab"  # HomeTab.__name__
+    HOME_WIDGET = "HomeWidget"  # HomeWidget.__name__
     INBOX_TASK = "InboxTask"  # InboxTask.__name__
     WORKING_MEM = "WorkingMem"  # WorkingMem.__name__
     TIME_PLAN = "TimePlan"  # TimePlan.__name__

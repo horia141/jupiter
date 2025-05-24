@@ -5,19 +5,19 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.home_config_update_args import HomeConfigUpdateArgs
+from ...models.home_tab_archive_args import HomeTabArchiveArgs
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: HomeConfigUpdateArgs,
+    body: HomeTabArchiveArgs,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/home-config-update",
+        "url": "/home-tab-archive",
     }
 
     _body = body.to_dict()
@@ -56,14 +56,14 @@ def _build_response(*, client: Union[AuthenticatedClient, Client], response: htt
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: HomeConfigUpdateArgs,
+    body: HomeTabArchiveArgs,
 ) -> Response[Any]:
-    """The use case for updating the home config.
+    """The command for archiving a home tab.
 
-     The use case for updating the home config.
+     The command for archiving a home tab.
 
     Args:
-        body (HomeConfigUpdateArgs): The arguments for updating the home config.
+        body (HomeTabArchiveArgs): The arguments for archiving a home tab.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -87,14 +87,14 @@ def sync_detailed(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: HomeConfigUpdateArgs,
+    body: HomeTabArchiveArgs,
 ) -> Response[Any]:
-    """The use case for updating the home config.
+    """The command for archiving a home tab.
 
-     The use case for updating the home config.
+     The command for archiving a home tab.
 
     Args:
-        body (HomeConfigUpdateArgs): The arguments for updating the home config.
+        body (HomeTabArchiveArgs): The arguments for archiving a home tab.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

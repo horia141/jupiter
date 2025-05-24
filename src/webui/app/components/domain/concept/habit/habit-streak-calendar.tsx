@@ -107,13 +107,25 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
         direction="row"
         sx={{ justifyContent: "center", alignItems: "center", gap: 1 }}
       >
-        <StandardLink to={props.getYearUrl(props.year - 3)} inline="true">
+        <StandardLink
+          to={props.getYearUrl(props.year - 3)}
+          inline="true"
+          replace
+        >
           {props.year - 3}
         </StandardLink>
-        <StandardLink to={props.getYearUrl(props.year - 2)} inline="true">
+        <StandardLink
+          to={props.getYearUrl(props.year - 2)}
+          inline="true"
+          replace
+        >
           {props.year - 2}
         </StandardLink>
-        <StandardLink to={props.getYearUrl(props.year - 1)} inline="true">
+        <StandardLink
+          to={props.getYearUrl(props.year - 1)}
+          inline="true"
+          replace
+        >
           {props.year - 1}
         </StandardLink>
         <StandardLink
@@ -124,17 +136,29 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
           {props.year}
         </StandardLink>
         {props.year + 1 <= props.currentYear && (
-          <StandardLink to={props.getYearUrl(props.year + 1)} inline="true">
+          <StandardLink
+            to={props.getYearUrl(props.year + 1)}
+            inline="true"
+            replace
+          >
             {props.year + 1}
           </StandardLink>
         )}
         {props.year + 2 <= props.currentYear && (
-          <StandardLink to={props.getYearUrl(props.year + 2)} inline="true">
+          <StandardLink
+            to={props.getYearUrl(props.year + 2)}
+            inline="true"
+            replace
+          >
             {props.year + 2}
           </StandardLink>
         )}
         {props.year + 3 <= props.currentYear && (
-          <StandardLink to={props.getYearUrl(props.year + 3)} inline="true">
+          <StandardLink
+            to={props.getYearUrl(props.year + 3)}
+            inline="true"
+            replace
+          >
             {props.year + 3}
           </StandardLink>
         )}

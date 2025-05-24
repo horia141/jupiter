@@ -7,6 +7,8 @@
  */
 export enum NamedEntityTag {
     SCORE_LOG_ENTRY = 'ScoreLogEntry',
+    HOME_TAB = 'HomeTab',
+    HOME_WIDGET = 'HomeWidget',
     INBOX_TASK = 'InboxTask',
     WORKING_MEM = 'WorkingMem',
     TIME_PLAN = 'TimePlan',

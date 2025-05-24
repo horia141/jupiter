@@ -39,6 +39,7 @@ import {
 import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 import { HabitKeyHabitStreakWidget } from "~/components/domain/concept/habit/habit-key-habit-streak-widget";
 import { newURLParams } from "~/logic/domain/navigation";
+import { WidgetProps } from "~/components/domain/application/home/common";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -108,7 +109,22 @@ export default function Habits() {
     entriesByRefId.set(entry.habit.ref_id, entry);
   }
 
-  const rightNow = DateTime.now();
+  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
+  const today = rightNow.toISODate();
+
+  const widgetProps: WidgetProps = {
+    rightNow,
+    today,
+    timezone: topLevelInfo.user.timezone,
+    topLevelInfo,
+    habitStreak: {
+      year: loaderData.keyHabitResults[0]?.streakMarkYear ?? rightNow.year,
+      currentYear: rightNow.year,
+      entries: loaderData.keyHabitResults,
+      getYearUrl: (year) =>
+        `/app/workspace/habits?${newURLParams(query, "includeStreakMarksForYear", year.toString())}`,
+    },
+  };
 
   return (
     <TrunkPanel
@@ -127,20 +143,7 @@ export default function Habits() {
         )}
 
         {loaderData.keyHabitResults.length > 0 && (
-          <HabitKeyHabitStreakWidget
-            year={
-              loaderData.keyHabitResults[0]?.streakMarkYear ?? rightNow.year
-            }
-            currentYear={rightNow.year}
-            entries={loaderData.keyHabitResults}
-            getYearUrl={(year) =>
-              `/app/workspace/habits?${newURLParams(
-                query,
-                "includeStreakMarksForYear",
-                year.toString(),
-              )}`
-            }
-          />
+          <HabitKeyHabitStreakWidget {...widgetProps} />
         )}
 
         <EntityStack>

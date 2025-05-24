@@ -1,10 +1,14 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.home_config_order_of_tabs import HomeConfigOrderOfTabs
+
 
 T = TypeVar("T", bound="HomeConfig")
 
@@ -20,6 +24,7 @@ class HomeConfig:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         workspace_ref_id (str):
+        order_of_tabs (HomeConfigOrderOfTabs):
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
@@ -30,6 +35,7 @@ class HomeConfig:
     created_time: str
     last_modified_time: str
     workspace_ref_id: str
+    order_of_tabs: "HomeConfigOrderOfTabs"
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -46,6 +52,8 @@ class HomeConfig:
         last_modified_time = self.last_modified_time
 
         workspace_ref_id = self.workspace_ref_id
+
+        order_of_tabs = self.order_of_tabs.to_dict()
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -69,6 +77,7 @@ class HomeConfig:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "workspace_ref_id": workspace_ref_id,
+                "order_of_tabs": order_of_tabs,
             }
         )
         if archival_reason is not UNSET:
@@ -80,6 +89,8 @@ class HomeConfig:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.home_config_order_of_tabs import HomeConfigOrderOfTabs
+
         d = dict(src_dict)
         ref_id = d.pop("ref_id")
 
@@ -92,6 +103,8 @@ class HomeConfig:
         last_modified_time = d.pop("last_modified_time")
 
         workspace_ref_id = d.pop("workspace_ref_id")
+
+        order_of_tabs = HomeConfigOrderOfTabs.from_dict(d.pop("order_of_tabs"))
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -118,6 +131,7 @@ class HomeConfig:
             created_time=created_time,
             last_modified_time=last_modified_time,
             workspace_ref_id=workspace_ref_id,
+            order_of_tabs=order_of_tabs,
             archival_reason=archival_reason,
             archived_time=archived_time,
         )

@@ -1,52 +1,44 @@
 import {
-  InboxTask,
   InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
 } from "@jupiter/webapi-client";
-import { DateTime } from "luxon";
 import { Stack } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 
 import {
   filterInboxTasksForDisplay,
-  InboxTaskOptimisticState,
-  InboxTaskParent,
   sortInboxTasksByEisenAndDifficulty,
 } from "~/logic/domain/inbox-task";
-import { TopLevelInfo } from "~/top-level-context";
 import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import {
   ActionableTime,
   actionableTimeToDateTime,
 } from "~/rendering/actionable-time";
 import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
+import {
+  WidgetContainer,
+  WidgetProps,
+} from "~/components/domain/application/home/common";
+import { aDateToDate } from "~/logic/domain/adate";
 
-interface HabitInboxTasksWidgetProps {
-  today: DateTime;
-  topLevelInfo: TopLevelInfo;
-  habitInboxTasks: Array<InboxTask>;
-  optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
-  habitEntriesByRefId: { [key: string]: InboxTaskParent };
-  onCardMarkDone: (it: InboxTask) => void;
-  onCardMarkNotDone: (it: InboxTask) => void;
-}
-
-export function HabitInboxTasksWidget(props: HabitInboxTasksWidgetProps) {
-  const endOfTheWeek = props.today.endOf("week").endOf("day");
+export function HabitInboxTasksWidget(props: WidgetProps) {
+  const habitTasks = props.habitTasks!;
+  const today = aDateToDate(props.today);
+  const endOfTheWeek = today.endOf("week").endOf("day");
   const actionableTime = actionableTimeToDateTime(
     ActionableTime.ONE_WEEK,
     props.topLevelInfo.user.timezone,
   );
 
   const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(
-    props.habitInboxTasks,
+    habitTasks.habitInboxTasks,
   );
 
   const inboxTasksForHabitsDueToday = filterInboxTasksForDisplay(
     sortedInboxTasks,
-    props.habitEntriesByRefId,
-    props.optimisticUpdates,
+    habitTasks.habitEntriesByRefId,
+    habitTasks.optimisticUpdates,
     {
       allowSources: [InboxTaskSource.HABIT],
       allowStatuses: [
@@ -57,15 +49,15 @@ export function HabitInboxTasksWidget(props: HabitInboxTasksWidgetProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateEnd: props.today,
+      dueDateEnd: today,
       allowPeriodsIfHabit: [RecurringTaskPeriod.DAILY],
     },
   );
 
   const inboxTasksForHabitsDueThisWeek = filterInboxTasksForDisplay(
     sortedInboxTasks,
-    props.habitEntriesByRefId,
-    props.optimisticUpdates,
+    habitTasks.habitEntriesByRefId,
+    habitTasks.optimisticUpdates,
     {
       allowSources: [InboxTaskSource.HABIT],
       allowStatuses: [
@@ -82,51 +74,53 @@ export function HabitInboxTasksWidget(props: HabitInboxTasksWidgetProps) {
   );
 
   const habitsStack = (
-    <Stack>
-      <AnimatePresence>
-        <InboxTaskStack
-          key="habit-due-today"
-          today={props.today}
-          topLevelInfo={props.topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showProject: true,
-            showEisen: true,
-            showDifficulty: true,
-            showParent: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Due Today"
-          inboxTasks={inboxTasksForHabitsDueToday}
-          optimisticUpdates={props.optimisticUpdates}
-          moreInfoByRefId={props.habitEntriesByRefId}
-          onCardMarkDone={props.onCardMarkDone}
-          onCardMarkNotDone={props.onCardMarkNotDone}
-        />
+    <WidgetContainer>
+      <Stack>
+        <AnimatePresence>
+          <InboxTaskStack
+            key="habit-due-today"
+            today={today}
+            topLevelInfo={props.topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showProject: true,
+              showEisen: true,
+              showDifficulty: true,
+              showParent: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            label="Due Today"
+            inboxTasks={inboxTasksForHabitsDueToday}
+            optimisticUpdates={habitTasks.optimisticUpdates}
+            moreInfoByRefId={habitTasks.habitEntriesByRefId}
+            onCardMarkDone={habitTasks.onCardMarkDone}
+            onCardMarkNotDone={habitTasks.onCardMarkNotDone}
+          />
 
-        <InboxTaskStack
-          today={props.today}
-          topLevelInfo={props.topLevelInfo}
-          key="habit-due-this-week"
-          showOptions={{
-            showStatus: true,
-            showProject: true,
-            showEisen: true,
-            showDifficulty: true,
-            showParent: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Due This Week"
-          inboxTasks={inboxTasksForHabitsDueThisWeek}
-          optimisticUpdates={props.optimisticUpdates}
-          moreInfoByRefId={props.habitEntriesByRefId}
-          onCardMarkDone={props.onCardMarkDone}
-          onCardMarkNotDone={props.onCardMarkNotDone}
-        />
-      </AnimatePresence>
-    </Stack>
+          <InboxTaskStack
+            today={today}
+            topLevelInfo={props.topLevelInfo}
+            key="habit-due-this-week"
+            showOptions={{
+              showStatus: true,
+              showProject: true,
+              showEisen: true,
+              showDifficulty: true,
+              showParent: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            label="Due This Week"
+            inboxTasks={inboxTasksForHabitsDueThisWeek}
+            optimisticUpdates={habitTasks.optimisticUpdates}
+            moreInfoByRefId={habitTasks.habitEntriesByRefId}
+            onCardMarkDone={habitTasks.onCardMarkDone}
+            onCardMarkNotDone={habitTasks.onCardMarkNotDone}
+          />
+        </AnimatePresence>
+      </Stack>
+    </WidgetContainer>
   );
 
   if (
@@ -134,11 +128,13 @@ export function HabitInboxTasksWidget(props: HabitInboxTasksWidgetProps) {
     inboxTasksForHabitsDueThisWeek.length === 0
   ) {
     return (
-      <InboxTasksNoTasksCard
-        parent="habit"
-        parentLabel="New Habit"
-        parentNewLocations="/app/workspace/habits/new"
-      />
+      <WidgetContainer>
+        <InboxTasksNoTasksCard
+          parent="habit"
+          parentLabel="New Habit"
+          parentNewLocations="/app/workspace/habits/new"
+        />
+      </WidgetContainer>
     );
   }
 

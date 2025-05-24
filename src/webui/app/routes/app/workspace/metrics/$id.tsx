@@ -34,6 +34,7 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -84,25 +85,38 @@ export async function action({ request, params }: LoaderFunctionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  switch (form.intent) {
-    case "archive": {
-      await apiClient.metrics.metricArchive({
-        ref_id: id,
-      });
+  try {
+    switch (form.intent) {
+      case "archive": {
+        await apiClient.metrics.metricArchive({
+          ref_id: id,
+        });
 
-      return redirect(`/app/workspace/metrics`);
+        return redirect(`/app/workspace/metrics`);
+      }
+
+      case "remove": {
+        await apiClient.metrics.metricRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/app/workspace/metrics`);
+      }
+
+      default:
+        throw new Response("Bad Intent", { status: 500 });
+    }
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === StatusCodes.UNPROCESSABLE_ENTITY
+    ) {
+      return json(validationErrorToUIErrorInfo(error.body));
     }
 
-    case "remove": {
-      await apiClient.metrics.metricRemove({
-        ref_id: id,
-      });
-
-      return redirect(`/app/workspace/metrics`);
-    }
+    throw error;
   }
 }
-
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 

@@ -33,6 +33,8 @@ from .big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
 from .big_plan_update_args_status import BigPlanUpdateArgsStatus
 from .big_plan_update_result import BigPlanUpdateResult
 from .big_plan_work_summary import BigPlanWorkSummary
+from .big_screen_home_tab_widget_placement import BigScreenHomeTabWidgetPlacement
+from .big_screen_home_tab_widget_placement_kind import BigScreenHomeTabWidgetPlacementKind
 from .bulleted_list_block import BulletedListBlock
 from .bulleted_list_block_kind import BulletedListBlockKind
 from .calendar_events_entries import CalendarEventsEntries
@@ -178,7 +180,29 @@ from .heading_block_kind import HeadingBlockKind
 from .home_config import HomeConfig
 from .home_config_load_args import HomeConfigLoadArgs
 from .home_config_load_result import HomeConfigLoadResult
-from .home_config_update_args import HomeConfigUpdateArgs
+from .home_config_load_result_widget_constraints import HomeConfigLoadResultWidgetConstraints
+from .home_config_order_of_tabs import HomeConfigOrderOfTabs
+from .home_tab import HomeTab
+from .home_tab_archive_args import HomeTabArchiveArgs
+from .home_tab_create_args import HomeTabCreateArgs
+from .home_tab_create_result import HomeTabCreateResult
+from .home_tab_load_args import HomeTabLoadArgs
+from .home_tab_load_result import HomeTabLoadResult
+from .home_tab_remove_args import HomeTabRemoveArgs
+from .home_tab_target import HomeTabTarget
+from .home_tab_update_args import HomeTabUpdateArgs
+from .home_tab_update_args_icon import HomeTabUpdateArgsIcon
+from .home_tab_update_args_name import HomeTabUpdateArgsName
+from .home_tab_widget_placement import HomeTabWidgetPlacement
+from .home_tab_widget_placement_section import HomeTabWidgetPlacementSection
+from .home_widget import HomeWidget
+from .home_widget_archive_args import HomeWidgetArchiveArgs
+from .home_widget_create_args import HomeWidgetCreateArgs
+from .home_widget_create_result import HomeWidgetCreateResult
+from .home_widget_load_args import HomeWidgetLoadArgs
+from .home_widget_load_result import HomeWidgetLoadResult
+from .home_widget_move_and_resize_args import HomeWidgetMoveAndResizeArgs
+from .home_widget_remove_args import HomeWidgetRemoveArgs
 from .hosting import Hosting
 from .inbox_task import InboxTask
 from .inbox_task_archive_args import InboxTaskArchiveArgs
@@ -375,6 +399,7 @@ from .recurring_task_gen_params import RecurringTaskGenParams
 from .recurring_task_period import RecurringTaskPeriod
 from .recurring_task_work_summary import RecurringTaskWorkSummary
 from .remove_all_args import RemoveAllArgs
+from .reorder_tabs_args import ReorderTabsArgs
 from .report_args import ReportArgs
 from .report_breakdown import ReportBreakdown
 from .report_period_result import ReportPeriodResult
@@ -465,6 +490,8 @@ from .slack_task_update_args_generation_name import SlackTaskUpdateArgsGeneratio
 from .slack_task_update_args_generation_status import SlackTaskUpdateArgsGenerationStatus
 from .slack_task_update_args_message import SlackTaskUpdateArgsMessage
 from .slack_task_update_args_user import SlackTaskUpdateArgsUser
+from .small_screen_home_tab_widget_placement import SmallScreenHomeTabWidgetPlacement
+from .small_screen_home_tab_widget_placement_kind import SmallScreenHomeTabWidgetPlacementKind
 from .smart_list import SmartList
 from .smart_list_archive_args import SmartListArchiveArgs
 from .smart_list_collection import SmartListCollection
@@ -622,6 +649,11 @@ from .vacation_update_args import VacationUpdateArgs
 from .vacation_update_args_end_date import VacationUpdateArgsEndDate
 from .vacation_update_args_name import VacationUpdateArgsName
 from .vacation_update_args_start_date import VacationUpdateArgsStartDate
+from .widget_dimension import WidgetDimension
+from .widget_geometry import WidgetGeometry
+from .widget_type import WidgetType
+from .widget_type_constraints import WidgetTypeConstraints
+from .widget_type_constraints_allowed_dimensions import WidgetTypeConstraintsAllowedDimensions
 from .workable_big_plan import WorkableBigPlan
 from .workable_summary import WorkableSummary
 from .working_mem import WorkingMem
@@ -685,6 +717,8 @@ __all__ = (
     "BigPlanUpdateArgsStatus",
     "BigPlanUpdateResult",
     "BigPlanWorkSummary",
+    "BigScreenHomeTabWidgetPlacement",
+    "BigScreenHomeTabWidgetPlacementKind",
     "BulletedListBlock",
     "BulletedListBlockKind",
     "CalendarEventsEntries",
@@ -830,7 +864,29 @@ __all__ = (
     "HomeConfig",
     "HomeConfigLoadArgs",
     "HomeConfigLoadResult",
-    "HomeConfigUpdateArgs",
+    "HomeConfigLoadResultWidgetConstraints",
+    "HomeConfigOrderOfTabs",
+    "HomeTab",
+    "HomeTabArchiveArgs",
+    "HomeTabCreateArgs",
+    "HomeTabCreateResult",
+    "HomeTabLoadArgs",
+    "HomeTabLoadResult",
+    "HomeTabRemoveArgs",
+    "HomeTabTarget",
+    "HomeTabUpdateArgs",
+    "HomeTabUpdateArgsIcon",
+    "HomeTabUpdateArgsName",
+    "HomeTabWidgetPlacement",
+    "HomeTabWidgetPlacementSection",
+    "HomeWidget",
+    "HomeWidgetArchiveArgs",
+    "HomeWidgetCreateArgs",
+    "HomeWidgetCreateResult",
+    "HomeWidgetLoadArgs",
+    "HomeWidgetLoadResult",
+    "HomeWidgetMoveAndResizeArgs",
+    "HomeWidgetRemoveArgs",
     "Hosting",
     "InboxTask",
     "InboxTaskArchiveArgs",
@@ -1023,6 +1079,7 @@ __all__ = (
     "RecurringTaskPeriod",
     "RecurringTaskWorkSummary",
     "RemoveAllArgs",
+    "ReorderTabsArgs",
     "ReportArgs",
     "ReportBreakdown",
     "ReportPeriodResult",
@@ -1113,6 +1170,8 @@ __all__ = (
     "SlackTaskUpdateArgsGenerationStatus",
     "SlackTaskUpdateArgsMessage",
     "SlackTaskUpdateArgsUser",
+    "SmallScreenHomeTabWidgetPlacement",
+    "SmallScreenHomeTabWidgetPlacementKind",
     "SmartList",
     "SmartListArchiveArgs",
     "SmartListCollection",
@@ -1266,6 +1325,11 @@ __all__ = (
     "VacationUpdateArgsEndDate",
     "VacationUpdateArgsName",
     "VacationUpdateArgsStartDate",
+    "WidgetDimension",
+    "WidgetGeometry",
+    "WidgetType",
+    "WidgetTypeConstraints",
+    "WidgetTypeConstraintsAllowedDimensions",
     "WorkableBigPlan",
     "WorkableSummary",
     "WorkingMem",

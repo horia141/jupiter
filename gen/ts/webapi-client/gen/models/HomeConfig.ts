@@ -16,5 +16,6 @@ export type HomeConfig = {
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
     workspace_ref_id: string;
+    order_of_tabs: Record<string, Array<EntityId>>;
 };
 

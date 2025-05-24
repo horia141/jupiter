@@ -1,38 +1,24 @@
-import {
-  ADate,
-  CalendarEventsEntries,
-  CalendarEventsStats,
-  Timezone,
-  RecurringTaskPeriod,
-} from "@jupiter/webapi-client";
-import { DateTime } from "luxon";
-
 import { ViewAsCalendarDaily } from "~/components/domain/application/calendar/view-as-calendar-daily";
+import {
+  WidgetContainer,
+  WidgetProps,
+} from "~/components/domain/application/home/common";
 
-interface CalendarDailyWidgetProps {
-  rightNow: DateTime;
-  today: ADate;
-  timezone: Timezone;
-  period: RecurringTaskPeriod;
-  periodStartDate: ADate;
-  periodEndDate: ADate;
-  entries?: CalendarEventsEntries;
-  stats?: CalendarEventsStats;
-}
-
-export function CalendarDailyWidget(props: CalendarDailyWidgetProps) {
+export function CalendarDailyWidget(props: WidgetProps) {
+  const calendar = props.calendar!;
   return (
-    <ViewAsCalendarDaily
-      rightNow={props.rightNow}
-      today={props.today}
-      timezone={props.timezone}
-      period={props.period}
-      periodStartDate={props.periodStartDate}
-      periodEndDate={props.periodEndDate}
-      entries={props.entries}
-      stats={props.stats}
-      calendarLocation={""}
-      isAdding={false}
-    />
+    <WidgetContainer>
+      <ViewAsCalendarDaily
+        rightNow={props.rightNow}
+        today={props.today}
+        timezone={props.timezone}
+        period={calendar.period}
+        periodStartDate={calendar.periodStartDate}
+        periodEndDate={calendar.periodEndDate}
+        entries={calendar.entries}
+        calendarLocation={""}
+        isAdding={false}
+      />
+    </WidgetContainer>
   );
 }

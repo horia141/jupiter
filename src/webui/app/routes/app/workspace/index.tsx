@@ -1,26 +1,32 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 import {
+  Link,
   Outlet,
   useFetcher,
   useNavigation,
   useSearchParams,
   type ShouldRevalidateFunction,
 } from "@remix-run/react";
-import Grid from "@mui/material/Grid2";
 import {
+  BigScreenHomeTabWidgetPlacement,
   HabitLoadResult,
+  HomeTab,
+  HomeTabTarget,
+  HomeWidget,
   InboxTask,
   InboxTaskSource,
   InboxTaskStatus,
   RecurringTaskPeriod,
+  SmallScreenHomeTabWidgetPlacement,
+  WidgetType,
 } from "@jupiter/webapi-client";
-import { useContext, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { AnimatePresence } from "framer-motion";
 import TuneIcon from "@mui/icons-material/Tune";
 import { z } from "zod";
 import { parseQuery } from "zodix";
-import { Tabs, Tab, Stack } from "@mui/material";
+import { Tabs, Tab, Box } from "@mui/material";
 
 import {
   useTrunkNeedsToShowLeaf,
@@ -47,19 +53,17 @@ import { TimePlanViewWidget } from "~/components/domain/concept/time-plan/time-p
 import { CalendarDailyWidget } from "~/components/domain/application/calendar/calendar-daily-widget";
 import { HabitKeyHabitStreakWidget } from "~/components/domain/concept/habit/habit-key-habit-streak-widget";
 import { useBigScreen } from "~/rendering/use-big-screen";
-
-enum MobileTab {
-  FIRST = "First",
-  HABIT_INBOX_TASKS = "Habit Tasks",
-  CALENDAR = "Calendar",
-  TIME_PLAN = "Time Plan",
-}
+import { WidgetProps } from "~/components/domain/application/home/common";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { widgetDimensionRows, widgetDimensionCols } from "~/logic/widget";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
 const QuerySchema = z.object({
+  tabRefId: z.string().optional(),
   includeStreakMarksForYear: z
     .string()
     .transform((s) => parseInt(s, 10))
@@ -144,6 +148,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return json({
+    homeConfig: {
+      config: homeConfigResponse.home_config,
+      tabs: homeConfigResponse.tabs,
+      widgets: homeConfigResponse.widgets,
+    },
     motd: motdResponse.motd,
     habitInboxTasks: habitInboxTasksResponse.entries,
     keyHabitResults: keyHabitResults.map((h) => ({
@@ -207,7 +216,16 @@ export default function Workspace() {
   const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
   const today = rightNow.toISODate();
 
-  const [mobileTab, setMobileTab] = useState<MobileTab>(MobileTab.FIRST);
+  const bigScreenTabs = loaderData.homeConfig.tabs.filter(
+    (t) => t.target === HomeTabTarget.BIG_SCREEN,
+  );
+  const smallScreenTabs = loaderData.homeConfig.tabs.filter(
+    (t) => t.target === HomeTabTarget.SMALL_SCREEN,
+  );
+
+  const widgetByRefId = new Map(
+    loaderData.homeConfig.widgets.map((w) => [w.ref_id, w]),
+  );
 
   function handleCardMarkDone(it: InboxTask) {
     setOptimisticUpdates((oldOptimisticUpdates) => {
@@ -259,6 +277,41 @@ export default function Workspace() {
     }, 0);
   }
 
+  const widgetProps: WidgetProps = {
+    rightNow,
+    today,
+    timezone: topLevelInfo.user.timezone,
+    topLevelInfo,
+    motd: loaderData.motd,
+    habitTasks: {
+      habits: loaderData.keyHabitResults.map((h) => h.habit),
+      habitInboxTasks: sortedHabitInboxTasks,
+      habitEntriesByRefId,
+      optimisticUpdates,
+      onCardMarkDone: handleCardMarkDone,
+      onCardMarkNotDone: handleCardMarkNotDone,
+    },
+    habitStreak: {
+      year: loaderData.keyHabitResults[0]?.streakMarkYear ?? rightNow.year,
+      currentYear: rightNow.year,
+      entries: loaderData.keyHabitResults,
+      getYearUrl: (year) =>
+        `/app/workspace?${newURLParams(query, "includeStreakMarksForYear", year.toString())}`,
+    },
+    calendar: loaderData.calendarEntriesForToday
+      ? {
+          period: RecurringTaskPeriod.DAILY,
+          periodStartDate: today,
+          periodEndDate: today,
+          entries: loaderData.calendarEntriesForToday,
+        }
+      : undefined,
+    timePlans: {
+      timePlanForToday: loaderData.timePlanForToday,
+      timePlanForWeek: loaderData.timePlanForWeek,
+    },
+  };
+
   return (
     <TrunkPanel
       key={"workspace"}
@@ -281,153 +334,44 @@ export default function Workspace() {
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         {isBigScreen && (
           <>
-            <Grid container spacing={2}>
-              <Grid size={{ md: 4 }}>
-                <MOTDWidget motd={loaderData.motd} />
-              </Grid>
-              <Grid size={{ md: 4 }}>
-                <HabitKeyHabitStreakWidget
-                  year={
-                    loaderData.keyHabitResults[0]?.streakMarkYear ??
-                    rightNow.year
-                  }
-                  currentYear={rightNow.year}
-                  entries={loaderData.keyHabitResults}
-                  getYearUrl={(year) =>
-                    `/app/workspace?${newURLParams(
-                      query,
-                      "includeStreakMarksForYear",
-                      year.toString(),
-                    )}`
-                  }
-                />
-              </Grid>
-            </Grid>
-            <Grid container spacing={2}>
-              <Grid size={{ md: 4 }}>
-                <HabitInboxTasksWidget
-                  today={rightNow}
-                  topLevelInfo={topLevelInfo}
-                  habitInboxTasks={sortedHabitInboxTasks}
-                  optimisticUpdates={optimisticUpdates}
-                  habitEntriesByRefId={habitEntriesByRefId}
-                  onCardMarkDone={handleCardMarkDone}
-                  onCardMarkNotDone={handleCardMarkNotDone}
-                />
-              </Grid>
-              <Grid size={{ md: 4 }}>
-                <CalendarDailyWidget
-                  rightNow={rightNow}
-                  today={today}
-                  timezone={topLevelInfo.user.timezone}
-                  period={RecurringTaskPeriod.DAILY}
-                  periodStartDate={today}
-                  periodEndDate={today}
-                  entries={loaderData.calendarEntriesForToday!}
-                />
-              </Grid>
+            {bigScreenTabs.length === 0 && (
+              <EntityNoNothingCard
+                title="You Have To Start Somewhere"
+                message="There are no tabs to show for the big screen. You can create a new tab."
+                newEntityLocations="/app/workspace/home/settings/tabs/new"
+                helpSubject={DocsHelpSubject.HOME}
+              />
+            )}
 
-              <Grid size={{ md: 4 }}>
-                <TimePlanViewWidget
-                  today={rightNow}
-                  topLevelInfo={topLevelInfo}
-                  timePlanForToday={loaderData.timePlanForToday}
-                  timePlanForWeek={loaderData.timePlanForWeek}
-                />
-              </Grid>
-            </Grid>
+            {bigScreenTabs.length > 0 && (
+              <BigScreenTabs
+                bigScreenTabs={bigScreenTabs}
+                widgetByRefId={widgetByRefId}
+                widgetProps={widgetProps}
+              />
+            )}
           </>
         )}
 
         {!isBigScreen && (
-          <Stack>
-            <Tabs
-              value={mobileTab}
-              onChange={(_, value) => setMobileTab(value)}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab
-                icon={<p>🏠</p>}
-                iconPosition="top"
-                label={MobileTab.FIRST}
-                value={MobileTab.FIRST}
-              />
-              <Tab
-                icon={<p>💪</p>}
-                iconPosition="top"
-                label={MobileTab.HABIT_INBOX_TASKS}
-                value={MobileTab.HABIT_INBOX_TASKS}
-              />
-              <Tab
-                icon={<p>📅</p>}
-                iconPosition="top"
-                label={MobileTab.CALENDAR}
-                value={MobileTab.CALENDAR}
-              />
-              <Tab
-                icon={<p>🏭</p>}
-                iconPosition="top"
-                label={MobileTab.TIME_PLAN}
-                value={MobileTab.TIME_PLAN}
-              />
-            </Tabs>
-
-            {mobileTab === MobileTab.FIRST && (
-              <>
-                <MOTDWidget motd={loaderData.motd} />
-
-                <HabitKeyHabitStreakWidget
-                  year={
-                    loaderData.keyHabitResults[0]?.streakMarkYear ??
-                    rightNow.year
-                  }
-                  currentYear={rightNow.year}
-                  entries={loaderData.keyHabitResults}
-                  getYearUrl={(year) =>
-                    `/app/workspace?${newURLParams(
-                      query,
-                      "includeStreakMarksForYear",
-                      year.toString(),
-                    )}`
-                  }
-                />
-              </>
-            )}
-
-            {mobileTab === MobileTab.HABIT_INBOX_TASKS && (
-              <HabitInboxTasksWidget
-                today={rightNow}
-                topLevelInfo={topLevelInfo}
-                habitInboxTasks={sortedHabitInboxTasks}
-                optimisticUpdates={optimisticUpdates}
-                habitEntriesByRefId={habitEntriesByRefId}
-                onCardMarkDone={handleCardMarkDone}
-                onCardMarkNotDone={handleCardMarkNotDone}
+          <>
+            {smallScreenTabs.length === 0 && (
+              <EntityNoNothingCard
+                title="You Have To Start Somewhere"
+                message="There are no tabs to show for the small screen. You can create a new tab."
+                newEntityLocations="/app/workspace/home/settings/tabs/new"
+                helpSubject={DocsHelpSubject.HOME}
               />
             )}
 
-            {mobileTab === MobileTab.CALENDAR && (
-              <CalendarDailyWidget
-                rightNow={rightNow}
-                today={today}
-                timezone={topLevelInfo.user.timezone}
-                period={RecurringTaskPeriod.DAILY}
-                periodStartDate={today}
-                periodEndDate={today}
-                entries={loaderData.calendarEntriesForToday!}
+            {smallScreenTabs.length > 0 && (
+              <SmallScreenTabs
+                smallScreenTabs={smallScreenTabs}
+                widgetByRefId={widgetByRefId}
+                widgetProps={widgetProps}
               />
             )}
-
-            {mobileTab === MobileTab.TIME_PLAN && (
-              <TimePlanViewWidget
-                today={rightNow}
-                topLevelInfo={topLevelInfo}
-                timePlanForToday={loaderData.timePlanForToday}
-                timePlanForWeek={loaderData.timePlanForWeek}
-              />
-            )}
-          </Stack>
+          </>
         )}
       </NestingAwareBlock>
 
@@ -441,3 +385,264 @@ export default function Workspace() {
 export const ErrorBoundary = makeRootErrorBoundary({
   error: () => `There was an error loading the workspace! Please try again!`,
 });
+
+interface BigScreenTabsProps {
+  bigScreenTabs: HomeTab[];
+  widgetByRefId: Map<string, HomeWidget>;
+  widgetProps: WidgetProps;
+}
+
+function BigScreenTabs(props: BigScreenTabsProps) {
+  const [query] = useSearchParams();
+  const { tabRefId } = parseQuery(query, QuerySchema);
+  const [bigScreenTab, setBigScreenTab] = useState<string>(
+    inferCurrentTabs(props.bigScreenTabs, tabRefId),
+  );
+
+  useEffect(() => {
+    setBigScreenTab(inferCurrentTabs(props.bigScreenTabs, tabRefId));
+  }, [tabRefId, props.bigScreenTabs]);
+
+  return (
+    <>
+      <Tabs value={bigScreenTab} variant="scrollable" scrollButtons="auto">
+        {props.bigScreenTabs.map((t) => {
+          return (
+            <Tab
+              key={t.ref_id}
+              icon={<p>{t.icon}</p>}
+              iconPosition="top"
+              label={t.name}
+              value={t.ref_id}
+              component={Link}
+              to={`/app/workspace?${newURLParams(query, "tabRefId", t.ref_id)}`}
+              replace
+            />
+          );
+        })}
+      </Tabs>
+
+      {props.bigScreenTabs.map((t) => {
+        if (t.ref_id !== bigScreenTab) {
+          return null;
+        }
+
+        const widgetPlacement =
+          t.widget_placement as BigScreenHomeTabWidgetPlacement;
+
+        if (widgetPlacement.matrix.every((r) => r.every((c) => c === null))) {
+          return (
+            <EntityNoNothingCard
+              key={t.ref_id}
+              title="You Have To Start Somewhere"
+              message="There are no widgets to show. You can create a new widget."
+              newEntityLocations={`/app/workspace/home/settings/tabs/${t.ref_id}`}
+              helpSubject={DocsHelpSubject.HOME}
+            />
+          );
+        }
+
+        const maxCols = widgetPlacement.matrix.length;
+        const maxRows = widgetPlacement.matrix[0].length;
+
+        return (
+          <Box
+            key={t.ref_id}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${maxCols}, 1fr)`,
+              gridGap: "0.25rem",
+              alignItems: "flex-start",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            {Array.from({ length: maxRows }, (_, rowIndex) => {
+              return (
+                <Fragment key={rowIndex}>
+                  {Array.from({ length: maxCols }, (_, colIndex) => {
+                    const cell = widgetPlacement.matrix[colIndex][rowIndex];
+
+                    if (cell === null) {
+                      return null;
+                    }
+
+                    // If the previous widget is the same as the current one, don't render the current block,
+                    // since this is a bigger widget that is taking up the space of the smaller one.
+                    // We check both the row and the column to make sure we don't render the same widget twice.
+                    if (
+                      rowIndex > 0 &&
+                      widgetPlacement.matrix[colIndex][rowIndex] ===
+                        widgetPlacement.matrix[colIndex][rowIndex - 1]
+                    ) {
+                      return null;
+                    }
+
+                    if (
+                      colIndex > 0 &&
+                      widgetPlacement.matrix[colIndex][rowIndex] ===
+                        widgetPlacement.matrix[colIndex - 1][rowIndex]
+                    ) {
+                      return null;
+                    }
+
+                    const widget = props.widgetByRefId.get(cell)!;
+
+                    return (
+                      <Box
+                        key={`${rowIndex}-${colIndex}`}
+                        sx={{
+                          display: "flex",
+                          gridRowStart: rowIndex + 1,
+                          gridRowEnd:
+                            rowIndex +
+                            1 +
+                            widgetDimensionRows(widget!.geometry.dimension),
+                          gridColumnStart: colIndex + 1,
+                          gridColumnEnd:
+                            colIndex +
+                            1 +
+                            widgetDimensionCols(widget!.geometry.dimension),
+                        }}
+                      >
+                        <ActualWidget
+                          widget={widget}
+                          widgetProps={props.widgetProps}
+                        />
+                      </Box>
+                    );
+                  })}
+                </Fragment>
+              );
+            })}
+          </Box>
+        );
+      })}
+    </>
+  );
+}
+
+interface SmallScreenTabsProps {
+  smallScreenTabs: HomeTab[];
+  widgetByRefId: Map<string, HomeWidget>;
+  widgetProps: WidgetProps;
+}
+
+function SmallScreenTabs(props: SmallScreenTabsProps) {
+  const [query] = useSearchParams();
+  const { tabRefId } = parseQuery(query, QuerySchema);
+  const [mobileTab, setMobileTab] = useState<string>(
+    inferCurrentTabs(props.smallScreenTabs, tabRefId),
+  );
+
+  useEffect(() => {
+    setMobileTab(inferCurrentTabs(props.smallScreenTabs, tabRefId));
+  }, [tabRefId, props.smallScreenTabs]);
+
+  return (
+    <>
+      <Tabs value={mobileTab} variant="scrollable" scrollButtons="auto">
+        {props.smallScreenTabs.map((t) => {
+          return (
+            <Tab
+              key={t.ref_id}
+              icon={<p>{t.icon}</p>}
+              iconPosition="top"
+              label={t.name}
+              value={t.ref_id}
+              component={Link}
+              to={`/app/workspace?${newURLParams(query, "tabRefId", t.ref_id)}`}
+              replace
+            />
+          );
+        })}
+      </Tabs>
+
+      {props.smallScreenTabs.map((t) => {
+        if (t.ref_id !== mobileTab) {
+          return null;
+        }
+
+        const widgetPlacement =
+          t.widget_placement as SmallScreenHomeTabWidgetPlacement;
+
+        if (widgetPlacement.matrix.every((r) => r === null)) {
+          return (
+            <EntityNoNothingCard
+              key={t.ref_id}
+              title="You Have To Start Somewhere"
+              message="There are no widgets to show. You can create a new widget."
+              newEntityLocations={`/app/workspace/home/settings/tabs/${t.ref_id}`}
+              helpSubject={DocsHelpSubject.HOME}
+            />
+          );
+        }
+
+        return (
+          <Fragment key={t.ref_id}>
+            {widgetPlacement.matrix.map((row, rowIndex) => {
+              if (row === null) {
+                return null;
+              }
+
+              // If the previous widget is the same as the current one, don't render the current block,
+              // since this is a bigger widget that is taking up the space of the smaller one.
+              if (
+                rowIndex > 0 &&
+                widgetPlacement.matrix[rowIndex] ===
+                  widgetPlacement.matrix[rowIndex - 1]
+              ) {
+                return null;
+              }
+
+              const widget = props.widgetByRefId.get(row)!;
+
+              return (
+                <ActualWidget
+                  key={rowIndex}
+                  widget={widget}
+                  widgetProps={props.widgetProps}
+                />
+              );
+            })}
+          </Fragment>
+        );
+      })}
+    </>
+  );
+}
+
+interface ActualWidgetProps {
+  widget: HomeWidget;
+  widgetProps: WidgetProps;
+}
+
+function ActualWidget({ widget, widgetProps }: ActualWidgetProps) {
+  switch (widget.the_type) {
+    case WidgetType.MOTD:
+      return <MOTDWidget {...widgetProps} />;
+    case WidgetType.WORKING_MEM:
+      return <div>Not implemented</div>;
+    case WidgetType.KEY_HABITS_STREAKS:
+      return <HabitKeyHabitStreakWidget {...widgetProps} />;
+    case WidgetType.HABIT_INBOX_TASKS:
+      return <HabitInboxTasksWidget {...widgetProps} />;
+    case WidgetType.CALENDAR_DAY:
+      return <CalendarDailyWidget {...widgetProps} />;
+    case WidgetType.TIME_PLAN_VIEW:
+      return <TimePlanViewWidget {...widgetProps} />;
+    default:
+      return <div>Not implemented</div>;
+  }
+}
+
+function inferCurrentTabs(tabs: HomeTab[], tabRefId?: string): string {
+  if (tabRefId) {
+    const tab = tabs.find((t) => t.ref_id === tabRefId);
+    if (tab) {
+      return tab.ref_id;
+    }
+  }
+
+  return tabs[0].ref_id;
+}
