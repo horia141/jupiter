@@ -56,7 +56,10 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { WidgetProps } from "~/components/domain/application/home/common";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
-import { widgetDimensionRows, widgetDimensionCols } from "~/logic/widget";
+import {
+  widgetDimensionRows,
+  widgetDimensionCols,
+} from "~/logic/widget";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -487,12 +490,24 @@ function BigScreenTabs(props: BigScreenTabsProps) {
                     }
 
                     const widget = props.widgetByRefId.get(cell)!;
+                    const isLastInColumn =
+                      rowIndex ===
+                        widgetPlacement.matrix[colIndex].length - 1 ||
+                      widgetPlacement.matrix[colIndex].every(
+                        (w, idx) =>
+                          idx <=
+                            rowIndex +
+                              widgetDimensionRows(widget!.geometry.dimension) -
+                              1 || w === null,
+                      );
+                    const shouldBeFullWidget = !isLastInColumn;
 
                     return (
                       <Box
                         key={`${rowIndex}-${colIndex}`}
                         sx={{
                           display: "flex",
+                          height: shouldBeFullWidget ? "100%" : undefined,
                           gridRowStart: rowIndex + 1,
                           gridRowEnd:
                             rowIndex +
