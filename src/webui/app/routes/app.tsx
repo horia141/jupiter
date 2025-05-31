@@ -31,8 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = () => false;
 
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();

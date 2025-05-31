@@ -72,8 +72,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = () => false;
 
 // @secureFn
 export default function Workspace() {

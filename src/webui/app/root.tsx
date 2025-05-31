@@ -68,8 +68,7 @@ export function links() {
   return [{ rel: "manifest", href: "/pwa-manifest" }];
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = () => false;
 
 export default function Root() {
   const loaderData = useLoaderData<typeof loader>();

@@ -186,8 +186,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = ({
+  currentUrl,
+  defaultShouldRevalidate,
+  formAction,
+  formMethod,
+  nextUrl,
+}) => {
+  if (currentUrl.pathname === nextUrl.pathname) {
+    return false;
+  }
+
+  return standardShouldRevalidate({
+    currentUrl,
+    defaultShouldRevalidate,
+    formAction,
+    formMethod,
+    nextUrl,
+    currentParams: {},
+    nextParams: {},
+  });
+};
+
 
 export default function Workspace() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
