@@ -46,8 +46,8 @@ class MOTDGetForTodayUseCase(
         today = self._time_provider.get_current_date()
         seed = f"{today}-{context.user.ref_id}"
 
-        # Create a hash of the seed to get a number between 0 and len(MOTDs)-1
-        hash_value = int(hashlib.sha256(seed.encode()).hexdigest(), 16)
-        index = hash_value % len(MOTDs)
+        # Use the first 4 bytes of the hash as an integer to get a deterministic index
+        hash_bytes = hashlib.sha256(seed.encode()).digest()[:4]
+        index = int.from_bytes(hash_bytes, byteorder="big") % len(MOTDs)
 
         return MOTDGetForTodayResult(motd=MOTDs[index])
