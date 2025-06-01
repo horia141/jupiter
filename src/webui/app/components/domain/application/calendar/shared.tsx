@@ -76,6 +76,7 @@ export interface ViewAsProps {
   stats?: CalendarEventsStats;
   calendarLocation: string;
   isAdding: boolean;
+  showOnlyFromRightNowIfDaily?: boolean;
 }
 
 export function ViewAsCalendarDaysAndFullDaysContiner(
@@ -146,8 +147,15 @@ export function ViewAsCalendarDateHeader(props: ViewAsCalendarDateHeaderProps) {
   );
 }
 
-export function ViewAsCalendarLeftColumn() {
+interface ViewAsCalendarLeftColumnProps {
+  rightNow: DateTime;
+  showOnlyFromRightNowIfDaily?: boolean;
+}
+
+export function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
   const theme = useTheme();
+  const deltaHour = props.showOnlyFromRightNowIfDaily ? props.rightNow.hour : 0;
+  const heightInRem = 96 - deltaHour * 4;
   const hours = Array.from({ length: 24 }, (_, i) =>
     DateTime.utc(1987, 9, 18, i, 0, 0),
   );
@@ -156,7 +164,7 @@ export function ViewAsCalendarLeftColumn() {
     <Box
       sx={{
         width: "3.5rem",
-        height: "96rem",
+        height: `${heightInRem}rem`,
         position: "sticky",
         left: "0px",
         top: "0px",
@@ -165,30 +173,48 @@ export function ViewAsCalendarLeftColumn() {
         borderRight: "1px solid darkgray",
       }}
     >
-      {hours.map((hour, idx) => (
-        <Box
-          key={idx}
-          sx={{
-            height: "4rem",
-            width: "3.5rem",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "top",
-          }}
-        >
-          {hour.toFormat("HH:mm")}
-        </Box>
-      ))}
+      {hours.map((hour, idx) => {
+        if (
+          props.showOnlyFromRightNowIfDaily &&
+          hour.hour < props.rightNow.hour
+        ) {
+          return null;
+        }
+
+        return (
+          <Box
+            key={idx}
+            sx={{
+              height: "4rem",
+              width: "3.5rem",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "top",
+            }}
+          >
+            {hour.toFormat("HH:mm")}
+          </Box>
+        );
+      })}
     </Box>
   );
 }
 
-export function ViewAsCalendarRightColumn() {
+interface ViewAsCalendarRightColumnProps {
+  rightNow: DateTime;
+  showOnlyFromRightNowIfDaily?: boolean;
+}
+
+export function ViewAsCalendarRightColumn(
+  props: ViewAsCalendarRightColumnProps,
+) {
+  const deltaHour = props.showOnlyFromRightNowIfDaily ? props.rightNow.hour : 0;
+  const heightInRem = 96 - deltaHour * 4;
   return (
     <Box
       sx={{
         width: "3.5rem",
-        height: "96rem",
+        height: `${heightInRem}rem`,
       }}
     ></Box>
   );
@@ -406,6 +432,7 @@ interface ViewAsCalendarTimeEventInDayColumnProps {
   date: ADate;
   timeEventsInDay: Array<CombinedTimeEventInDayEntry>;
   isAdding: boolean;
+  showOnlyFromRightNowIfDaily?: boolean;
 }
 
 export function ViewAsCalendarTimeEventInDayColumn(
@@ -416,6 +443,8 @@ export function ViewAsCalendarTimeEventInDayColumn(
   const [query] = useSearchParams();
   const navigate = useNavigate();
   const wholeColumnRef = useRef<HTMLDivElement>(null);
+  const deltaHour = props.showOnlyFromRightNowIfDaily ? props.rightNow.hour : 0;
+  const heightInRem = 96 - deltaHour * 4;
 
   const startOfDay = DateTime.fromISO(`${props.date}T00:00:00`, {
     zone: "UTC",
@@ -499,7 +528,7 @@ export function ViewAsCalendarTimeEventInDayColumn(
       sx={{
         position: "relative",
         flexGrow: 1,
-        height: "96rem",
+        height: `${heightInRem}rem`,
         minWidth: "7rem",
       }}
       ref={wholeColumnRef}
@@ -509,7 +538,10 @@ export function ViewAsCalendarTimeEventInDayColumn(
         <Box
           sx={{
             position: "absolute",
-            top: calendarTimeEventInDayStartMinutesToRems(theMinutes),
+            top: calendarTimeEventInDayStartMinutesToRems(
+              theMinutes,
+              deltaHour,
+            ),
             height: "0.15rem",
             width: "100%",
             backgroundColor: theme.palette.info.dark,
@@ -518,34 +550,49 @@ export function ViewAsCalendarTimeEventInDayColumn(
         ></Box>
       )}
 
-      {hours.map((hour, idx) => (
-        <Box
-          key={idx}
-          sx={{
-            position: "absolute",
-            height: "0.05rem",
-            left: "-0.05rem", // Offset for gap: 0.1 in container
-            backgroundColor: theme.palette.text.disabled,
-            top: `${idx * 4}rem`,
-            width: "calc(100% + 0.1rem)", // Offset for gap 0.1 in container
-          }}
-        ></Box>
-      ))}
+      {hours.map((hour, idx) => {
+        if (
+          props.showOnlyFromRightNowIfDaily &&
+          hour.hour < props.rightNow.hour
+        ) {
+          return null;
+        }
+
+        const locationInRem = idx * 4 - deltaHour * 4;
+
+        return (
+          <Box
+            key={idx}
+            sx={{
+              position: "absolute",
+              height: "0.05rem",
+              left: "-0.05rem", // Offset for gap: 0.1 in container
+              backgroundColor: theme.palette.text.disabled,
+              top: `${locationInRem}rem`,
+              width: "calc(100% + 0.1rem)", // Offset for gap 0.1 in container
+            }}
+          ></Box>
+        );
+      })}
 
       <TimeEventParamsNewPlaceholder
         daysToTheLeft={props.daysToTheLeft}
         date={props.date}
+        deltaHour={deltaHour}
       />
 
-      {props.timeEventsInDay.map((entry, index) => (
-        <ViewAsCalendarTimeEventInDayCell
-          key={index}
-          offset={timeBlockOffsetsMap.get(entry.time_event_in_tz.ref_id) || 0}
-          startOfDay={startOfDay}
-          entry={entry}
-          isAdding={props.isAdding}
-        />
-      ))}
+      {props.timeEventsInDay.map((entry, index) => {
+        return (
+          <ViewAsCalendarTimeEventInDayCell
+            key={index}
+            offset={timeBlockOffsetsMap.get(entry.time_event_in_tz.ref_id) || 0}
+            startOfDay={startOfDay}
+            entry={entry}
+            isAdding={props.isAdding}
+            deltaHour={deltaHour}
+          />
+        );
+      })}
     </Box>
   );
 }
@@ -555,6 +602,7 @@ interface ViewAsCalendarTimeEventInDayCellProps {
   startOfDay: DateTime;
   entry: CombinedTimeEventInDayEntry;
   isAdding: boolean;
+  deltaHour: number;
 }
 
 export function ViewAsCalendarTimeEventInDayCell(
@@ -593,15 +641,22 @@ export function ViewAsCalendarTimeEventInDayCell(
         scheduleEntry.time_event.duration_mins,
       );
 
+      const topRems = calendarTimeEventInDayStartMinutesToRems(
+        minutesSinceStartOfDay,
+        props.deltaHour,
+      );
+
+      if (topRems === undefined) {
+        return null;
+      }
+
       return (
         <Box
           ref={containerRef}
           sx={{
             fontSize: "10px",
             position: "absolute",
-            top: calendarTimeEventInDayStartMinutesToRems(
-              minutesSinceStartOfDay,
-            ),
+            top: topRems,
             height: calendarTimeEventInDayDurationToRems(
               minutesSinceStartOfDay,
               scheduleEntry.time_event.duration_mins,
@@ -669,15 +724,22 @@ export function ViewAsCalendarTimeEventInDayCell(
         props.entry.time_event_in_tz.duration_mins,
       );
 
+      const topRems = calendarTimeEventInDayStartMinutesToRems(
+        minutesSinceStartOfDay,
+        props.deltaHour,
+      );
+
+      if (topRems === undefined) {
+        return null;
+      }
+
       return (
         <Box
           ref={containerRef}
           sx={{
             fontSize: "10px",
             position: "absolute",
-            top: calendarTimeEventInDayStartMinutesToRems(
-              minutesSinceStartOfDay,
-            ),
+            top: topRems,
             height: calendarTimeEventInDayDurationToRems(
               minutesSinceStartOfDay,
               props.entry.time_event_in_tz.duration_mins,
@@ -813,6 +875,7 @@ export function ViewAsCalendarStatsCell(props: ViewAsCalendarStatsCellProps) {
 interface ViewAsScheduleTimeEventFullDaysRowsProps {
   entry: CombinedTimeEventFullDaysEntry;
   isAdding: boolean;
+  period: RecurringTaskPeriod;
 }
 
 export function ViewAsScheduleTimeEventFullDaysRows(
@@ -826,7 +889,10 @@ export function ViewAsScheduleTimeEventFullDaysRows(
       const fullDaysEntry = props.entry.entry as ScheduleFullDaysEventEntry;
       return (
         <Fragment>
-          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+          <ViewAsScheduleTimeCell
+            period={props.period}
+            isbigscreen={isBigScreen.toString()}
+          >
             [All Day]
           </ViewAsScheduleTimeCell>
 
@@ -857,7 +923,10 @@ export function ViewAsScheduleTimeEventFullDaysRows(
       const fullDaysEntry = props.entry.entry as PersonEntry;
       return (
         <Fragment>
-          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+          <ViewAsScheduleTimeCell
+            period={props.period}
+            isbigscreen={isBigScreen.toString()}
+          >
             [All Day]
           </ViewAsScheduleTimeCell>
 
@@ -891,7 +960,10 @@ export function ViewAsScheduleTimeEventFullDaysRows(
       const fullDaysEntry = props.entry.entry as VacationEntry;
       return (
         <Fragment>
-          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+          <ViewAsScheduleTimeCell
+            period={props.period}
+            isbigscreen={isBigScreen.toString()}
+          >
             [All Day]
           </ViewAsScheduleTimeCell>
 
@@ -924,6 +996,7 @@ export function ViewAsScheduleTimeEventFullDaysRows(
 }
 
 interface ViewAsScheduleTimeEventInDaysRowsProps {
+  period: RecurringTaskPeriod;
   entry: CombinedTimeEventInDayEntry;
   isAdding: boolean;
 }
@@ -944,7 +1017,10 @@ export function ViewAsScheduleTimeEventInDaysRows(
       const scheduleEntry = props.entry.entry as ScheduleInDayEventEntry;
       return (
         <Fragment>
-          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+          <ViewAsScheduleTimeCell
+            period={props.period}
+            isbigscreen={isBigScreen.toString()}
+          >
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
           </ViewAsScheduleTimeCell>
 
@@ -977,7 +1053,10 @@ export function ViewAsScheduleTimeEventInDaysRows(
       const inboxTaskEntry = props.entry.entry as InboxTaskEntry;
       return (
         <Fragment>
-          <ViewAsScheduleTimeCell isbigscreen={isBigScreen.toString()}>
+          <ViewAsScheduleTimeCell
+            period={props.period}
+            isbigscreen={isBigScreen.toString()}
+          >
             [{startTime.toFormat("HH:mm")} - {endTime.toFormat("HH:mm")}]
           </ViewAsScheduleTimeCell>
 
@@ -1018,16 +1097,9 @@ export function ViewAsScheduleTimeEventInDaysRows(
   }
 }
 
-interface ViewAsScheduleDateCellProps {
-  isbigscreen: string;
-}
-
-export const ViewAsScheduleDateCell = styled(
-  TableCell,
-)<ViewAsScheduleDateCellProps>(({ isbigscreen }) => ({
+export const ViewAsScheduleDateCell = styled(TableCell)(() => ({
   verticalAlign: "top",
   padding: "0.25rem",
-  width: isbigscreen === "true" ? "15%" : "25%",
 }));
 
 export const ViewAsScheduleContentCell = styled(TableCell)({
@@ -1036,14 +1108,18 @@ export const ViewAsScheduleContentCell = styled(TableCell)({
 
 interface ViewAsScheduleTimeCellProps {
   isbigscreen: string;
+  period: RecurringTaskPeriod;
 }
 
 export const ViewAsScheduleTimeCell = styled(
   TableCell,
-)<ViewAsScheduleTimeCellProps>(({ isbigscreen }) => ({
+)<ViewAsScheduleTimeCellProps>(({ isbigscreen, period }) => ({
   verticalAlign: "top",
   padding: "0.25rem",
-  width: isbigscreen === "true" ? "15%" : "30%",
+  width:
+    isbigscreen === "false" || period === RecurringTaskPeriod.DAILY
+      ? "30%"
+      : "15%",
 }));
 
 interface ViewAsScheduleEventCellProps {

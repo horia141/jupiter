@@ -24,7 +24,7 @@ import { aDateToDate } from "~/logic/domain/adate";
 
 export function HabitInboxTasksWidget(props: WidgetProps) {
   const habitTasks = props.habitTasks!;
-  const today = aDateToDate(props.today);
+  const today = aDateToDate(props.today).endOf("day");
   const endOfTheWeek = today.endOf("week").endOf("day");
   const actionableTime = actionableTimeToDateTime(
     ActionableTime.ONE_WEEK,

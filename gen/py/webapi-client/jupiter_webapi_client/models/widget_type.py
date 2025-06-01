@@ -6,6 +6,7 @@ class WidgetType(str, Enum):
     HABIT_INBOX_TASKS = "habit-inbox-tasks"
     KEY_HABITS_STREAKS = "key-habits-streaks"
     MOTD = "motd"
+    SCHEDULE_DAY = "schedule-day"
     TIME_PLAN_VIEW = "time-plan-view"
     WORKING_MEM = "working-mem"
 

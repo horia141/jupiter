@@ -17,7 +17,6 @@ import { EnvBanner } from "~/components/infra/env-banner";
 import { serverToClientGlobalProperties } from "~/global-properties-client";
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { loadFrontDoorInfo } from "~/logic/frontdoor.server";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 const THEME = createTheme({
   palette: {

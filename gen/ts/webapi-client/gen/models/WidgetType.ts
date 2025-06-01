@@ -11,5 +11,6 @@ export enum WidgetType {
     KEY_HABITS_STREAKS = 'key-habits-streaks',
     HABIT_INBOX_TASKS = 'habit-inbox-tasks',
     CALENDAR_DAY = 'calendar-day',
+    SCHEDULE_DAY = 'schedule-day',
     TIME_PLAN_VIEW = 'time-plan-view',
 }

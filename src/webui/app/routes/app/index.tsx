@@ -11,7 +11,6 @@ import { SmartAppBar } from "~/components/infra/smart-appbar";
 import { Logo } from "~/components/infra/logo";
 import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 export const shouldRevalidate: ShouldRevalidateFunction = () => false;
 

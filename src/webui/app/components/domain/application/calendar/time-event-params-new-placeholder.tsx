@@ -11,6 +11,7 @@ import {
 interface TimeEventParamsNewPlaceholderParams {
   daysToTheLeft: number;
   date: ADate;
+  deltaHour: number;
 }
 
 export function TimeEventParamsNewPlaceholder(
@@ -49,7 +50,10 @@ export function TimeEventParamsNewPlaceholder(
       <Box
         sx={{
           position: "absolute",
-          top: calendarTimeEventInDayStartMinutesToRems(minutesSinceStartOfDay),
+          top: calendarTimeEventInDayStartMinutesToRems(
+            minutesSinceStartOfDay,
+            props.deltaHour,
+          ),
           height: calendarTimeEventInDayDurationToRems(
             minutesSinceStartOfDay,
             overflowMinutes > 0

@@ -89,6 +89,7 @@ class WidgetType(EnumValue):
     KEY_HABITS_STREAKS = "key-habits-streaks"
     HABIT_INBOX_TASKS = "habit-inbox-tasks"
     CALENDAR_DAY = "calendar-day"
+    SCHEDULE_DAY = "schedule-day"
     TIME_PLAN_VIEW = "time-plan-view"
 
 
@@ -140,6 +141,18 @@ WIDGET_CONSTRAINTS = {
         },
     ),
     WidgetType.CALENDAR_DAY: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+        },
+    ),
+    WidgetType.SCHEDULE_DAY: WidgetTypeConstraints(
         allowed_dimensions={
             HomeTabTarget.BIG_SCREEN: [
                 WidgetDimension.DIM_3x1,

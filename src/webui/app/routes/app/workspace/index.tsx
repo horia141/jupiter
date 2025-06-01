@@ -56,10 +56,8 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { WidgetProps } from "~/components/domain/application/home/common";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
-import {
-  widgetDimensionRows,
-  widgetDimensionCols,
-} from "~/logic/widget";
+import { widgetDimensionRows, widgetDimensionCols } from "~/logic/widget";
+import { ScheduleDailyWidget } from "~/components/domain/application/calendar/schedule-daily-widget";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -207,7 +205,6 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
     nextParams: {},
   });
 };
-
 
 export default function Workspace() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
@@ -664,6 +661,8 @@ function ActualWidget({ widget, widgetProps }: ActualWidgetProps) {
       return <HabitInboxTasksWidget {...widgetProps} />;
     case WidgetType.CALENDAR_DAY:
       return <CalendarDailyWidget {...widgetProps} />;
+    case WidgetType.SCHEDULE_DAY:
+      return <ScheduleDailyWidget {...widgetProps} />;
     case WidgetType.TIME_PLAN_VIEW:
       return <TimePlanViewWidget {...widgetProps} />;
     default:

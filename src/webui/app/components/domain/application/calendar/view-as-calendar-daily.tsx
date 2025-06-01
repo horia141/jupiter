@@ -138,7 +138,10 @@ export function ViewAsCalendarDaily(props: ViewAsProps) {
       </ViewAsCalendarDaysAndFullDaysContiner>
 
       <ViewAsCalendarInDayContainer>
-        <ViewAsCalendarLeftColumn />
+        <ViewAsCalendarLeftColumn
+          rightNow={props.rightNow}
+          showOnlyFromRightNowIfDaily={props.showOnlyFromRightNowIfDaily}
+        />
         <ViewAsCalendarTimeEventInDayColumn
           daysToTheLeft={0}
           rightNow={props.rightNow}
@@ -147,8 +150,12 @@ export function ViewAsCalendarDaily(props: ViewAsProps) {
           date={props.periodStartDate}
           timeEventsInDay={thePartitionInDay}
           isAdding={props.isAdding}
+          showOnlyFromRightNowIfDaily={props.showOnlyFromRightNowIfDaily}
         />
-        <ViewAsCalendarRightColumn />
+        <ViewAsCalendarRightColumn
+          rightNow={props.rightNow}
+          showOnlyFromRightNowIfDaily={props.showOnlyFromRightNowIfDaily}
+        />
       </ViewAsCalendarInDayContainer>
     </Box>
   );

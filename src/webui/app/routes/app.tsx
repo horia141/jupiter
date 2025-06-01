@@ -13,7 +13,6 @@ import {
 } from "~/global-properties-client";
 import { GLOBAL_PROPERTIES } from "~/global-properties-server";
 import { loadFrontDoorInfo } from "~/logic/frontdoor.server";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // This is the only place where we can read this field.

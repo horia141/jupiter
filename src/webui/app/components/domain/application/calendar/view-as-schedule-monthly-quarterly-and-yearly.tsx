@@ -1,6 +1,7 @@
 import {
   Table,
   TableBody,
+  TableCell,
   TableContainer,
   TableRow,
   Typography,
@@ -11,7 +12,6 @@ import { RecurringTaskPeriod } from "@jupiter/webapi-client";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import type { ViewAsProps } from "~/components/domain/application/calendar/shared";
 import {
-  ViewAsScheduleDateCell,
   ViewAsScheduleContentCell,
   ViewAsStatsPerSubperiod,
   View,
@@ -54,13 +54,18 @@ export function ViewAsScheduleMonthlyQuarterlyAndYearly(props: ViewAsProps) {
             {props.stats.per_subperiod.map((stats, index) => {
               return (
                 <TableRow key={index}>
-                  <ViewAsScheduleDateCell isbigscreen={isBigScreen.toString()}>
+                  <TableCell
+                    sx={{
+                      padding: "0.25rem",
+                      width: isBigScreen ? "15%" : "25%",
+                    }}
+                  >
                     {DateTime.fromISO(stats.period_start_date).toFormat(
                       props.period === RecurringTaskPeriod.YEARLY
                         ? "MMM"
                         : "MMM-dd",
                     )}
-                  </ViewAsScheduleDateCell>
+                  </TableCell>
 
                   <ViewAsScheduleContentCell>
                     <ViewAsStatsPerSubperiod

@@ -39,7 +39,6 @@ import Sidebar from "~/components/infra/sidebar";
 import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";

@@ -209,10 +209,15 @@ export function timeEventInDayBlockParamsToTimezone(
 
 export function calendarTimeEventInDayStartMinutesToRems(
   startMins: number,
-): string {
+  deltaHour: number,
+): string | undefined {
   // Each 15 minutes is 1 rem. Display has 96=4*24 rem height.
   const startHours = Math.max(0, startMins / 15);
-  return `${startHours}rem`;
+  const rems = startHours - deltaHour * 4;
+  if (rems < 0) {
+    return undefined;
+  }
+  return `${rems}rem`;
 }
 
 export function calendarPxHeightToMinutes(

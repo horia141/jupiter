@@ -12,6 +12,8 @@ export function widgetTypeName(type: WidgetType): string {
       return "Habit Tasks";
     case WidgetType.CALENDAR_DAY:
       return "Calendar For Today";
+    case WidgetType.SCHEDULE_DAY:
+      return "Schedule For Today";
     case WidgetType.TIME_PLAN_VIEW:
       return "Time Plan View";
   }

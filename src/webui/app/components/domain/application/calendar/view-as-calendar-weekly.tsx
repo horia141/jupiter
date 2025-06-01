@@ -150,7 +150,10 @@ export function ViewAsCalendarWeekly(props: ViewAsProps) {
       </ViewAsCalendarDaysAndFullDaysContiner>
 
       <ViewAsCalendarInDayContainer>
-        <ViewAsCalendarLeftColumn />
+        <ViewAsCalendarLeftColumn
+          rightNow={props.rightNow}
+          showOnlyFromRightNowIfDaily={props.showOnlyFromRightNowIfDaily}
+        />
 
         {allDays.map((date, idx) => (
           <ViewAsCalendarTimeEventInDayColumn
@@ -162,10 +165,14 @@ export function ViewAsCalendarWeekly(props: ViewAsProps) {
             date={date}
             timeEventsInDay={partitionedCombinedTimeEventInDay[date] || []}
             isAdding={props.isAdding}
+            showOnlyFromRightNowIfDaily={props.showOnlyFromRightNowIfDaily}
           />
         ))}
 
-        <ViewAsCalendarRightColumn />
+        <ViewAsCalendarRightColumn
+          rightNow={props.rightNow}
+          showOnlyFromRightNowIfDaily={props.showOnlyFromRightNowIfDaily}
+        />
       </ViewAsCalendarInDayContainer>
     </Box>
   );
