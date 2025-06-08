@@ -7,10 +7,7 @@ interface StandardDividerProps {
 
 export function StandardDivider(props: StandardDividerProps) {
   return (
-    <Divider
-      variant="fullWidth"
-      sx={{ marginTop: "1rem", marginBottom: "1rem" }}
-    >
+    <Divider variant="fullWidth">
       <Typography
         variant={
           props.size === "small"

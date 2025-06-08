@@ -10,12 +10,28 @@ export function widgetTypeName(type: WidgetType): string {
       return "Key Habits Streaks";
     case WidgetType.HABIT_INBOX_TASKS:
       return "Habit Tasks";
+    case WidgetType.RANDOM_HABIT:
+      return "Random Habit";
+    case WidgetType.CHORE_INBOX_TASKS:
+      return "Chore Tasks";
+    case WidgetType.RANDOM_CHORE:
+      return "Random Chore";
+    case WidgetType.KEY_BIG_PLANS_PROGRESS:
+      return "Key Big Plans Progress";
+    case WidgetType.UPCOMING_BIRTHDAYS:
+      return "Upcoming Birthdays";
     case WidgetType.CALENDAR_DAY:
       return "Calendar For Today";
     case WidgetType.SCHEDULE_DAY:
       return "Schedule For Today";
     case WidgetType.TIME_PLAN_VIEW:
       return "Time Plan View";
+    case WidgetType.GAMIFICATION_OVERVIEW:
+      return "Gamification Overview";
+    case WidgetType.GAMIFICATION_HISTORY_WEEKLY:
+      return "Weekly Score History";
+    case WidgetType.GAMIFICATION_HISTORY_MONTHLY:
+      return "Monthly Score History";
   }
 }
 

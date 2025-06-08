@@ -15,11 +15,13 @@ class BigPlanSummary:
         ref_id (str): A generic entity id.
         name (str): The big plan name.
         project_ref_id (str): A generic entity id.
+        is_key (bool):
     """
 
     ref_id: str
     name: str
     project_ref_id: str
+    is_key: bool
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -29,6 +31,8 @@ class BigPlanSummary:
 
         project_ref_id = self.project_ref_id
 
+        is_key = self.is_key
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -36,6 +40,7 @@ class BigPlanSummary:
                 "ref_id": ref_id,
                 "name": name,
                 "project_ref_id": project_ref_id,
+                "is_key": is_key,
             }
         )
 
@@ -50,10 +55,13 @@ class BigPlanSummary:
 
         project_ref_id = d.pop("project_ref_id")
 
+        is_key = d.pop("is_key")
+
         big_plan_summary = cls(
             ref_id=ref_id,
             name=name,
             project_ref_id=project_ref_id,
+            is_key=is_key,
         )
 
         big_plan_summary.additional_properties = d

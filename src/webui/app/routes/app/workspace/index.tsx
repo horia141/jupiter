@@ -19,6 +19,7 @@ import {
   RecurringTaskPeriod,
   SmallScreenHomeTabWidgetPlacement,
   WidgetType,
+  BigPlanLoadResult,
 } from "@jupiter/webapi-client";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { DateTime } from "luxon";
@@ -58,6 +59,14 @@ import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { widgetDimensionRows, widgetDimensionCols } from "~/logic/widget";
 import { ScheduleDailyWidget } from "~/components/domain/application/calendar/schedule-daily-widget";
+import { HabitRandomWidget } from "~/components/domain/concept/habit/habit-random-widget";
+import { ChoreInboxTasksWidget } from "~/components/domain/concept/chore/chore-inbox-tasks-widget";
+import { ChoreRandomWidget } from "~/components/domain/concept/chore/chore-random-widget";
+import { UpcomingBirthdaysWidget } from "~/components/domain/concept/person/upcoming-birthdays-widget";
+import { GamificationOverviewWidget } from "~/components/domain/application/gamification/gamification-overview-widget";
+import { GamificationHistoryWeeklyWidget } from "~/components/domain/application/gamification/gamification-history-weekly-widget";
+import { GamificationHistoryMonthlyWidget } from "~/components/domain/application/gamification/gamification-history-monthly-widget";
+import { KeyBigPlansProgressWidget } from "~/components/domain/concept/big-plan/key-big-plans-progress-widget";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -79,6 +88,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const summaryResponse = await apiClient.getSummaries.getSummaries({
     include_habits: true,
+    include_chores: true,
+    include_big_plans: true,
+    include_persons: true,
   });
 
   const homeConfigResponse = await apiClient.home.homeConfigLoad({});
@@ -105,6 +117,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
     include_notes: false,
     include_time_event_blocks: false,
     filter_sources: [InboxTaskSource.HABIT],
+  });
+
+  const choreInboxTasksResponse = await apiClient.inboxTasks.inboxTaskFind({
+    allow_archived: false,
+    include_notes: false,
+    include_time_event_blocks: false,
+    filter_sources: [InboxTaskSource.CHORE],
+  });
+
+  const keyBigPlans =
+    summaryResponse.big_plans?.filter((bp) => bp.is_key) || [];
+  let keyBigPlansResults: BigPlanLoadResult[] = [];
+  if (keyBigPlans.length > 0) {
+    keyBigPlansResults = await Promise.all(
+      keyBigPlans.map((bp) =>
+        apiClient.bigPlans.bigPlanLoad({
+          ref_id: bp.ref_id,
+          allow_archived: false,
+        }),
+      ),
+    );
+  }
+
+  const personInboxTasksResponse = await apiClient.inboxTasks.inboxTaskFind({
+    allow_archived: false,
+    include_notes: false,
+    include_time_event_blocks: false,
+    filter_sources: [InboxTaskSource.PERSON_BIRTHDAY],
   });
 
   const calendarForTodayResponse =
@@ -148,6 +188,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
+  const userResponse = await apiClient.users.userLoad({});
+
   return json({
     homeConfig: {
       config: homeConfigResponse.home_config,
@@ -156,11 +198,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
     motd: motdResponse.motd,
     habitInboxTasks: habitInboxTasksResponse.entries,
+    choreInboxTasks: choreInboxTasksResponse.entries,
+    personInboxTasks: personInboxTasksResponse.entries,
     keyHabitResults: keyHabitResults.map((h) => ({
       habit: h.habit,
       streakMarkYear: h.streak_mark_year,
       streakMarks: h.streak_marks,
       inboxTasks: h.inbox_tasks,
+    })),
+    keyBigPlansResults: keyBigPlansResults.map((bp) => ({
+      bigPlan: bp.big_plan,
+      stats: bp.stats,
     })),
     calendarEntriesForToday: calendarForTodayResponse.entries,
     timePlanForToday: fullTimePlanForToday
@@ -181,6 +229,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
           activityDoneness: fullTimePlanForWeek.activity_doneness ?? {},
         }
       : undefined,
+    gamificationOverview: userResponse.user_score_overview,
+    gamificationHistory: userResponse.user_score_history,
   });
 }
 
@@ -227,6 +277,33 @@ export default function Workspace() {
     habitEntriesByRefId[entry.inbox_task.ref_id] =
       inboxTaskFindEntryToParent(entry);
   }
+
+  const sortedChoreInboxTasks = sortInboxTasksNaturally(
+    loaderData.choreInboxTasks.map((e) => e.inbox_task),
+  );
+  const choreInboxTasksByRefId: { [key: string]: InboxTask } = {};
+  for (const entry of loaderData.choreInboxTasks) {
+    choreInboxTasksByRefId[entry.inbox_task.ref_id] = entry.inbox_task;
+  }
+  const choreEntriesByRefId: { [key: string]: InboxTaskParent } = {};
+  for (const entry of loaderData.choreInboxTasks) {
+    choreEntriesByRefId[entry.inbox_task.ref_id] =
+      inboxTaskFindEntryToParent(entry);
+  }
+
+  const sortedPersonInboxTasks = sortInboxTasksNaturally(
+    loaderData.personInboxTasks.map((e) => e.inbox_task),
+  );
+  const personInboxTasksByRefId: { [key: string]: InboxTask } = {};
+  for (const entry of loaderData.personInboxTasks) {
+    personInboxTasksByRefId[entry.inbox_task.ref_id] = entry.inbox_task;
+  }
+  const personEntriesByRefId: { [key: string]: InboxTaskParent } = {};
+  for (const entry of loaderData.personInboxTasks) {
+    personEntriesByRefId[entry.inbox_task.ref_id] =
+      inboxTaskFindEntryToParent(entry);
+  }
+
   const [optimisticUpdates, setOptimisticUpdates] = useState<{
     [key: string]: InboxTaskOptimisticState;
   }>({});
@@ -311,12 +388,32 @@ export default function Workspace() {
       onCardMarkDone: handleCardMarkDone,
       onCardMarkNotDone: handleCardMarkNotDone,
     },
+    choreTasks: {
+      choreInboxTasks: sortedChoreInboxTasks,
+      choreEntriesByRefId,
+      optimisticUpdates,
+      onCardMarkDone: handleCardMarkDone,
+      onCardMarkNotDone: handleCardMarkNotDone,
+    },
+    personTasks: {
+      personInboxTasks: sortedPersonInboxTasks,
+      personEntriesByRefId,
+      optimisticUpdates,
+      onCardMarkDone: handleCardMarkDone,
+      onCardMarkNotDone: handleCardMarkNotDone,
+    },
     habitStreak: {
       year: loaderData.keyHabitResults[0]?.streakMarkYear ?? rightNow.year,
       currentYear: rightNow.year,
       entries: loaderData.keyHabitResults,
       getYearUrl: (year) =>
         `/app/workspace?${newURLParams(query, "includeStreakMarksForYear", year.toString())}`,
+    },
+    keyBigPlans: {
+      bigPlans: loaderData.keyBigPlansResults.map((bp) => ({
+        bigPlan: bp.bigPlan,
+        stats: bp.stats,
+      })),
     },
     calendar: loaderData.calendarEntriesForToday
       ? {
@@ -330,6 +427,8 @@ export default function Workspace() {
       timePlanForToday: loaderData.timePlanForToday,
       timePlanForWeek: loaderData.timePlanForWeek,
     },
+    gamificationOverview: loaderData.gamificationOverview ?? undefined,
+    gamificationHistory: loaderData.gamificationHistory ?? undefined,
   };
 
   return (
@@ -659,12 +758,28 @@ function ActualWidget({ widget, widgetProps }: ActualWidgetProps) {
       return <HabitKeyHabitStreakWidget {...widgetProps} />;
     case WidgetType.HABIT_INBOX_TASKS:
       return <HabitInboxTasksWidget {...widgetProps} />;
+    case WidgetType.RANDOM_HABIT:
+      return <HabitRandomWidget {...widgetProps} />;
+    case WidgetType.CHORE_INBOX_TASKS:
+      return <ChoreInboxTasksWidget {...widgetProps} />;
+    case WidgetType.RANDOM_CHORE:
+      return <ChoreRandomWidget {...widgetProps} />;
+    case WidgetType.KEY_BIG_PLANS_PROGRESS:
+      return <KeyBigPlansProgressWidget {...widgetProps} />;
+    case WidgetType.UPCOMING_BIRTHDAYS:
+      return <UpcomingBirthdaysWidget {...widgetProps} />;
     case WidgetType.CALENDAR_DAY:
       return <CalendarDailyWidget {...widgetProps} />;
     case WidgetType.SCHEDULE_DAY:
       return <ScheduleDailyWidget {...widgetProps} />;
     case WidgetType.TIME_PLAN_VIEW:
       return <TimePlanViewWidget {...widgetProps} />;
+    case WidgetType.GAMIFICATION_OVERVIEW:
+      return <GamificationOverviewWidget {...widgetProps} />;
+    case WidgetType.GAMIFICATION_HISTORY_WEEKLY:
+      return <GamificationHistoryWeeklyWidget {...widgetProps} />;
+    case WidgetType.GAMIFICATION_HISTORY_MONTHLY:
+      return <GamificationHistoryMonthlyWidget {...widgetProps} />;
     default:
       return <div>Not implemented</div>;
   }

@@ -20,8 +20,8 @@ import {
 } from "~/components/domain/application/home/common";
 import { aDateToDate } from "~/logic/domain/adate";
 
-export function HabitInboxTasksWidget(props: WidgetProps) {
-  const habitTasks = props.habitTasks!;
+export function ChoreInboxTasksWidget(props: WidgetProps) {
+  const choreTasks = props.choreTasks!;
   const today = aDateToDate(props.today).endOf("day");
   const endOfTheWeek = today.endOf("week").endOf("day");
   const actionableTime = actionableTimeToDateTime(
@@ -30,15 +30,15 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
   );
 
   const sortedInboxTasks = sortInboxTasksByEisenAndDifficulty(
-    habitTasks.habitInboxTasks,
+    choreTasks.choreInboxTasks,
   );
 
-  const inboxTasksForHabitsDueToday = filterInboxTasksForDisplay(
+  const inboxTasksForChoresDueToday = filterInboxTasksForDisplay(
     sortedInboxTasks,
-    habitTasks.habitEntriesByRefId,
-    habitTasks.optimisticUpdates,
+    choreTasks.choreEntriesByRefId,
+    choreTasks.optimisticUpdates,
     {
-      allowSources: [InboxTaskSource.HABIT],
+      allowSources: [InboxTaskSource.CHORE],
       allowStatuses: [
         InboxTaskStatus.NOT_STARTED,
         InboxTaskStatus.NOT_STARTED_GEN,
@@ -48,16 +48,16 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
       dueDateEnd: today,
-      allowPeriodsIfHabit: [RecurringTaskPeriod.DAILY],
+      allowPeriodsIfChore: [RecurringTaskPeriod.DAILY],
     },
   );
 
-  const inboxTasksForHabitsDueThisWeek = filterInboxTasksForDisplay(
+  const inboxTasksForChoresDueThisWeek = filterInboxTasksForDisplay(
     sortedInboxTasks,
-    habitTasks.habitEntriesByRefId,
-    habitTasks.optimisticUpdates,
+    choreTasks.choreEntriesByRefId,
+    choreTasks.optimisticUpdates,
     {
-      allowSources: [InboxTaskSource.HABIT],
+      allowSources: [InboxTaskSource.CHORE],
       allowStatuses: [
         InboxTaskStatus.NOT_STARTED,
         InboxTaskStatus.NOT_STARTED_GEN,
@@ -67,14 +67,14 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
       dueDateEnd: endOfTheWeek,
-      allowPeriodsIfHabit: [RecurringTaskPeriod.WEEKLY],
+      allowPeriodsIfChore: [RecurringTaskPeriod.WEEKLY],
     },
   );
 
-  const habitsStack = (
+  const choresStack = (
     <WidgetContainer>
       <InboxTaskStack
-        key="habit-due-today"
+        key="chore-due-today"
         today={today}
         topLevelInfo={props.topLevelInfo}
         showOptions={{
@@ -87,17 +87,17 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
           showHandleMarkNotDone: true,
         }}
         label="Due Today"
-        inboxTasks={inboxTasksForHabitsDueToday}
-        optimisticUpdates={habitTasks.optimisticUpdates}
-        moreInfoByRefId={habitTasks.habitEntriesByRefId}
-        onCardMarkDone={habitTasks.onCardMarkDone}
-        onCardMarkNotDone={habitTasks.onCardMarkNotDone}
+        inboxTasks={inboxTasksForChoresDueToday}
+        optimisticUpdates={choreTasks.optimisticUpdates}
+        moreInfoByRefId={choreTasks.choreEntriesByRefId}
+        onCardMarkDone={choreTasks.onCardMarkDone}
+        onCardMarkNotDone={choreTasks.onCardMarkNotDone}
       />
 
       <InboxTaskStack
         today={today}
         topLevelInfo={props.topLevelInfo}
-        key="habit-due-this-week"
+        key="chore-due-this-week"
         showOptions={{
           showStatus: true,
           showProject: true,
@@ -108,29 +108,29 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
           showHandleMarkNotDone: true,
         }}
         label="Due This Week"
-        inboxTasks={inboxTasksForHabitsDueThisWeek}
-        optimisticUpdates={habitTasks.optimisticUpdates}
-        moreInfoByRefId={habitTasks.habitEntriesByRefId}
-        onCardMarkDone={habitTasks.onCardMarkDone}
-        onCardMarkNotDone={habitTasks.onCardMarkNotDone}
+        inboxTasks={inboxTasksForChoresDueThisWeek}
+        optimisticUpdates={choreTasks.optimisticUpdates}
+        moreInfoByRefId={choreTasks.choreEntriesByRefId}
+        onCardMarkDone={choreTasks.onCardMarkDone}
+        onCardMarkNotDone={choreTasks.onCardMarkNotDone}
       />
     </WidgetContainer>
   );
 
   if (
-    inboxTasksForHabitsDueToday.length === 0 &&
-    inboxTasksForHabitsDueThisWeek.length === 0
+    inboxTasksForChoresDueToday.length === 0 &&
+    inboxTasksForChoresDueThisWeek.length === 0
   ) {
     return (
       <WidgetContainer>
         <InboxTasksNoTasksCard
-          parent="habit"
-          parentLabel="New Habit"
-          parentNewLocations="/app/workspace/habits/new"
+          parent="chore"
+          parentLabel="New Chore"
+          parentNewLocations="/app/workspace/chores/new"
         />
       </WidgetContainer>
     );
   }
 
-  return habitsStack;
+  return choresStack;
 }

@@ -11,6 +11,9 @@ import {
   RecurringTaskPeriod,
   Habit,
   HabitStreakMark,
+  UserScoreOverview,
+  UserScoreHistory,
+  BigPlanStats,
 } from "@jupiter/webapi-client";
 import { Box } from "@mui/material";
 import { DateTime } from "luxon";
@@ -28,6 +31,11 @@ interface HabitStreakEntry {
   inboxTasks: InboxTask[];
 }
 
+interface BigPlanStatsEntry {
+  bigPlan: BigPlan;
+  stats: BigPlanStats;
+}
+
 export interface WidgetProps {
   rightNow: DateTime;
   today: ADate;
@@ -42,11 +50,28 @@ export interface WidgetProps {
     onCardMarkDone: (it: InboxTask) => void;
     onCardMarkNotDone: (it: InboxTask) => void;
   };
+  choreTasks?: {
+    choreInboxTasks: InboxTask[];
+    choreEntriesByRefId: { [key: string]: InboxTaskParent };
+    optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
+    onCardMarkDone: (it: InboxTask) => void;
+    onCardMarkNotDone: (it: InboxTask) => void;
+  };
+  personTasks?: {
+    personInboxTasks: InboxTask[];
+    personEntriesByRefId: { [key: string]: InboxTaskParent };
+    optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
+    onCardMarkDone: (it: InboxTask) => void;
+    onCardMarkNotDone: (it: InboxTask) => void;
+  };
   habitStreak?: {
     year: number;
     currentYear: number;
     entries: HabitStreakEntry[];
     getYearUrl: (year: number) => string;
+  };
+  keyBigPlans?: {
+    bigPlans: BigPlanStatsEntry[];
   };
   calendar?: {
     period: RecurringTaskPeriod;
@@ -70,6 +95,8 @@ export interface WidgetProps {
       activityDoneness: Record<string, TimePlanActivityDoneness>;
     };
   };
+  gamificationOverview?: UserScoreOverview;
+  gamificationHistory?: UserScoreHistory;
 }
 
 export function WidgetContainer(props: PropsWithChildren) {
@@ -86,4 +113,26 @@ export function WidgetContainer(props: PropsWithChildren) {
       {props.children}
     </Box>
   );
+}
+
+/**
+ * Returns a deterministic random element from an array based on the given date.
+ * The same date will always return the same element from the array.
+ * @param array The array to select from
+ * @param date The date to use as a seed
+ * @returns A random element from the array
+ */
+export function getDeterministicRandomElement<T>(array: T[], date: ADate): T {
+  if (array.length === 0) {
+    throw new Error("Cannot select random element from empty array");
+  }
+
+  // Create a deterministic seed based on the date
+  const seed = date
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  // Use the seed to select an element
+  const index = Math.abs(seed) % array.length;
+  return array[index];
 }

@@ -88,9 +88,17 @@ class WidgetType(EnumValue):
     WORKING_MEMORY = "working-mem"
     KEY_HABITS_STREAKS = "key-habits-streaks"
     HABIT_INBOX_TASKS = "habit-inbox-tasks"
+    RANDOM_HABIT = "random-habit"
+    CHORE_INBOX_TASKS = "chore-inbox-tasks"
+    RANDOM_CHORE = "random-chore"
+    KEY_BIG_PLANS_PROGRESS = "key-big-plans-progress"
+    UPCOMING_BIRTHDAYS = "upcoming-birthdays"
     CALENDAR_DAY = "calendar-day"
     SCHEDULE_DAY = "schedule-day"
     TIME_PLAN_VIEW = "time-plan-view"
+    GAMIFICATION_OVERVIEW = "gamification-overview"
+    GAMIFICATION_HISTORY_WEEKLY = "gamification-history-weekly"
+    GAMIFICATION_HISTORY_MONTHLY = "gamification-history-monthly"
 
 
 @value
@@ -140,6 +148,54 @@ WIDGET_CONSTRAINTS = {
             ],
         },
     ),
+    WidgetType.RANDOM_HABIT: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [WidgetDimension.DIM_1x1],
+            HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
+        },
+    ),
+    WidgetType.CHORE_INBOX_TASKS: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+        },
+    ),
+    WidgetType.RANDOM_CHORE: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [WidgetDimension.DIM_1x1],
+            HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
+        },
+    ),
+    WidgetType.KEY_BIG_PLANS_PROGRESS: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x2,
+                WidgetDimension.DIM_kx1,
+                WidgetDimension.DIM_kx2,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
+            ],
+        },
+    ),
+    WidgetType.UPCOMING_BIRTHDAYS: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_3x1,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_3x1,
+            ],
+        },
+    ),
     WidgetType.CALENDAR_DAY: WidgetTypeConstraints(
         allowed_dimensions={
             HomeTabTarget.BIG_SCREEN: [
@@ -173,6 +229,39 @@ WIDGET_CONSTRAINTS = {
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
                 WidgetDimension.DIM_kx1,
+            ],
+        },
+    ),
+    WidgetType.GAMIFICATION_OVERVIEW: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_1x2,
+                WidgetDimension.DIM_1x3,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_2x1,
+            ],
+        },
+    ),
+    WidgetType.GAMIFICATION_HISTORY_WEEKLY: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_1x2,
+                WidgetDimension.DIM_1x3,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_1x1,
+            ],
+        },
+    ),
+    WidgetType.GAMIFICATION_HISTORY_MONTHLY: WidgetTypeConstraints(
+        allowed_dimensions={
+            HomeTabTarget.BIG_SCREEN: [
+                WidgetDimension.DIM_1x2,
+                WidgetDimension.DIM_1x3,
+            ],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_1x1,
             ],
         },
     ),
