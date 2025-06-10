@@ -9,6 +9,10 @@ I wanted to get done actually got done, while juggling the standard complexities
 
 The current version is both a [webapp](https://get-thriving.com) and a CLI application.
 
+Here's a picture from the "home page" view:
+
+![Home Page](assets/showcase-desktop-home-page.png)
+
 Here's a picture from the "inbox" view:
 
 ![Inbox Tasks](assets/showcase-desktop-inbox-tasks.png)

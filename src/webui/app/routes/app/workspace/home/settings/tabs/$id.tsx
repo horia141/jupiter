@@ -44,6 +44,7 @@ import {
 } from "~/logic/widget";
 import { newURLParams } from "~/logic/domain/navigation";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { EntityLink } from "~/components/infra/entity-card";
 
 enum Action {
   ADD_WIDGET = "add",
@@ -527,19 +528,13 @@ function PlacedWidget(props: PlacedWidgetProps) {
         justifyContent: "center",
       }}
     >
-      <Link
+      <EntityLink
+        inline
+        light={shouldHighlight}
         to={`/app/workspace/home/settings/tabs/${props.widget.home_tab_ref_id}/widgets/${props.widget.ref_id}?action=${Action.MOVE_WIDGET}`}
-        style={{
-          marginLeft: "0.5rem",
-          marginRight: "0.5rem",
-          textAlign: "center",
-          color: shouldHighlight
-            ? theme.palette.primary.contrastText
-            : theme.palette.primary.main,
-        }}
       >
         {widgetTypeName(props.widget.the_type)}
-      </Link>
+      </EntityLink>
     </Box>
   );
 }

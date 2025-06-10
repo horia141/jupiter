@@ -179,6 +179,8 @@ export default function Widget() {
           <FormControl fullWidth disabled>
             <InputLabel id="type">Type</InputLabel>
             <WidgetTypeSelector
+              user={topLevelInfo.user}
+              workspace={topLevelInfo.workspace}
               name="type"
               inputsEnabled={false}
               defaultValue={loaderData.widget.the_type}

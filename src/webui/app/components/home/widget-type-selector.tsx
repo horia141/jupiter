@@ -1,14 +1,18 @@
 import { MenuItem, Select, Typography } from "@mui/material";
 import {
   HomeTabTarget,
+  User,
   WidgetType,
   WidgetTypeConstraints,
+  Workspace,
 } from "@jupiter/webapi-client";
 import { useEffect, useState } from "react";
 
-import { widgetTypeName } from "~/logic/widget";
+import { isAllowedForWidgetConstraints, widgetTypeName } from "~/logic/widget";
 
 interface WidgetTypeSelectorProps {
+  user: User;
+  workspace: Workspace;
   name: string;
   value?: WidgetType;
   defaultValue?: WidgetType;
@@ -48,11 +52,25 @@ export function WidgetTypeSelector(props: WidgetTypeSelectorProps) {
           props.onChange?.(event.target.value as WidgetType);
         }}
       >
-        {allowedTypes.map((type) => (
-          <MenuItem key={type} value={type}>
-            {widgetTypeName(type)}
-          </MenuItem>
-        ))}
+        {allowedTypes.map((type) => {
+          const constraints = props.widgetConstraints[type];
+
+          return (
+            <MenuItem
+              key={type}
+              value={type}
+              disabled={
+                !isAllowedForWidgetConstraints(
+                  constraints,
+                  props.user,
+                  props.workspace,
+                )
+              }
+            >
+              {widgetTypeName(type)}
+            </MenuItem>
+          );
+        })}
       </Select>
     </>
   );

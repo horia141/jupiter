@@ -1,6 +1,9 @@
 """A type of widget."""
 
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
+from jupiter.core.domain.concept.user.user import User
+from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
 
 
@@ -106,6 +109,24 @@ class WidgetTypeConstraints(CompositeValue):
     """A constraints for a widget type."""
 
     allowed_dimensions: dict[HomeTabTarget, list[WidgetDimension]]
+    only_for_workspace_features: list[WorkspaceFeature] | None
+    only_for_user_features: list[UserFeature] | None
+
+    def is_allowed_for(self, user: User, workspace: Workspace) -> bool:
+        """Whether the widget is allowed for the given user and workspace."""
+        # Keep in sync with the logic in the frontend on
+        # widget.ts:isAllowedForWidgetConstraints
+        if self.only_for_user_features is not None:
+            for user_feature in self.only_for_user_features:
+                if not user.feature_flags.get(user_feature, False):
+                    return False
+
+        if self.only_for_workspace_features is not None:
+            for workspace_feature in self.only_for_workspace_features:
+                if not workspace.feature_flags.get(workspace_feature, False):
+                    return False
+
+        return True
 
 
 WIDGET_CONSTRAINTS = {
@@ -120,12 +141,16 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_1x1,
             ],
         },
+        only_for_workspace_features=None,
+        only_for_user_features=None,
     ),
     WidgetType.WORKING_MEMORY: WidgetTypeConstraints(
         allowed_dimensions={
             HomeTabTarget.BIG_SCREEN: [WidgetDimension.DIM_1x1],
             HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
         },
+        only_for_workspace_features=[WorkspaceFeature.WORKING_MEM],
+        only_for_user_features=None,
     ),
     WidgetType.KEY_HABITS_STREAKS: WidgetTypeConstraints(
         allowed_dimensions={
@@ -135,6 +160,8 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
         },
+        only_for_workspace_features=[WorkspaceFeature.HABITS],
+        only_for_user_features=None,
     ),
     WidgetType.HABIT_INBOX_TASKS: WidgetTypeConstraints(
         allowed_dimensions={
@@ -147,12 +174,16 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_kx1,
             ],
         },
+        only_for_workspace_features=[WorkspaceFeature.HABITS],
+        only_for_user_features=None,
     ),
     WidgetType.RANDOM_HABIT: WidgetTypeConstraints(
         allowed_dimensions={
             HomeTabTarget.BIG_SCREEN: [WidgetDimension.DIM_1x1],
             HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
         },
+        only_for_workspace_features=[WorkspaceFeature.HABITS],
+        only_for_user_features=None,
     ),
     WidgetType.CHORE_INBOX_TASKS: WidgetTypeConstraints(
         allowed_dimensions={
@@ -165,12 +196,16 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_kx1,
             ],
         },
+        only_for_workspace_features=[WorkspaceFeature.CHORES],
+        only_for_user_features=None,
     ),
     WidgetType.RANDOM_CHORE: WidgetTypeConstraints(
         allowed_dimensions={
             HomeTabTarget.BIG_SCREEN: [WidgetDimension.DIM_1x1],
             HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
         },
+        only_for_workspace_features=[WorkspaceFeature.CHORES],
+        only_for_user_features=None,
     ),
     WidgetType.KEY_BIG_PLANS_PROGRESS: WidgetTypeConstraints(
         allowed_dimensions={
@@ -185,6 +220,8 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_kx1,
             ],
         },
+        only_for_workspace_features=[WorkspaceFeature.BIG_PLANS],
+        only_for_user_features=None,
     ),
     WidgetType.UPCOMING_BIRTHDAYS: WidgetTypeConstraints(
         allowed_dimensions={
@@ -195,6 +232,8 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_3x1,
             ],
         },
+        only_for_workspace_features=[WorkspaceFeature.PERSONS],
+        only_for_user_features=None,
     ),
     WidgetType.CALENDAR_DAY: WidgetTypeConstraints(
         allowed_dimensions={
@@ -207,6 +246,8 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_kx1,
             ],
         },
+        only_for_workspace_features=[WorkspaceFeature.SCHEDULE],
+        only_for_user_features=None,
     ),
     WidgetType.SCHEDULE_DAY: WidgetTypeConstraints(
         allowed_dimensions={
@@ -219,6 +260,8 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_kx1,
             ],
         },
+        only_for_workspace_features=[WorkspaceFeature.SCHEDULE],
+        only_for_user_features=None,
     ),
     WidgetType.TIME_PLAN_VIEW: WidgetTypeConstraints(
         allowed_dimensions={
@@ -231,6 +274,8 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_kx1,
             ],
         },
+        only_for_workspace_features=[WorkspaceFeature.TIME_PLANS],
+        only_for_user_features=None,
     ),
     WidgetType.GAMIFICATION_OVERVIEW: WidgetTypeConstraints(
         allowed_dimensions={
@@ -242,6 +287,8 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_2x1,
             ],
         },
+        only_for_workspace_features=None,
+        only_for_user_features=[UserFeature.GAMIFICATION],
     ),
     WidgetType.GAMIFICATION_HISTORY_WEEKLY: WidgetTypeConstraints(
         allowed_dimensions={
@@ -253,6 +300,8 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_1x1,
             ],
         },
+        only_for_workspace_features=None,
+        only_for_user_features=[UserFeature.GAMIFICATION],
     ),
     WidgetType.GAMIFICATION_HISTORY_MONTHLY: WidgetTypeConstraints(
         allowed_dimensions={
@@ -264,5 +313,7 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_1x1,
             ],
         },
+        only_for_workspace_features=None,
+        only_for_user_features=[UserFeature.GAMIFICATION],
     ),
 }

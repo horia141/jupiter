@@ -14,10 +14,7 @@ import {
   actionableTimeToDateTime,
 } from "~/rendering/actionable-time";
 import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
-import {
-  WidgetContainer,
-  WidgetProps,
-} from "~/components/domain/application/home/common";
+import { WidgetProps } from "~/components/domain/application/home/common";
 import { aDateToDate } from "~/logic/domain/adate";
 
 export function ChoreInboxTasksWidget(props: WidgetProps) {
@@ -72,7 +69,7 @@ export function ChoreInboxTasksWidget(props: WidgetProps) {
   );
 
   const choresStack = (
-    <WidgetContainer>
+    <>
       <InboxTaskStack
         key="chore-due-today"
         today={today}
@@ -114,7 +111,7 @@ export function ChoreInboxTasksWidget(props: WidgetProps) {
         onCardMarkDone={choreTasks.onCardMarkDone}
         onCardMarkNotDone={choreTasks.onCardMarkNotDone}
       />
-    </WidgetContainer>
+    </>
   );
 
   if (
@@ -122,13 +119,11 @@ export function ChoreInboxTasksWidget(props: WidgetProps) {
     inboxTasksForChoresDueThisWeek.length === 0
   ) {
     return (
-      <WidgetContainer>
-        <InboxTasksNoTasksCard
-          parent="chore"
-          parentLabel="New Chore"
-          parentNewLocations="/app/workspace/chores/new"
-        />
-      </WidgetContainer>
+      <InboxTasksNoTasksCard
+        parent="chore"
+        parentLabel="New Chore"
+        parentNewLocations="/app/workspace/chores/new"
+      />
     );
   }
 

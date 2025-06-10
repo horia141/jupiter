@@ -1,21 +1,22 @@
 import { Typography } from "@mui/material";
 
-import {
-  WidgetContainer,
-  WidgetProps,
-} from "~/components/domain/application/home/common";
+import { WidgetProps } from "~/components/domain/application/home/common";
+import { StandardLink } from "~/components/infra/standard-link";
 
 export function MOTDWidget(props: WidgetProps) {
   const motd = props.motd!;
 
   return (
-    <WidgetContainer>
-      <Typography variant="h6" component="div" sx={{ fontStyle: "italic" }}>
-        {motd.quote} -{" "}
-        <a href={motd.wikiquote_link} target="_blank" rel="noopener noreferrer">
-          {motd.author}
-        </a>
-      </Typography>
-    </WidgetContainer>
+    <Typography variant="h6" component="div" sx={{ fontStyle: "italic" }}>
+      {motd.quote} -{" "}
+      <StandardLink
+        inline={"true"}
+        to={motd.wikiquote_link}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {motd.author}
+      </StandardLink>
+    </Typography>
   );
 }

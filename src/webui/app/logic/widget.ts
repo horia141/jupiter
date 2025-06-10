@@ -1,4 +1,10 @@
-import { WidgetDimension, WidgetType } from "@jupiter/webapi-client";
+import {
+  User,
+  WidgetDimension,
+  WidgetType,
+  WidgetTypeConstraints,
+  Workspace,
+} from "@jupiter/webapi-client";
 
 export function widgetTypeName(type: WidgetType): string {
   switch (type) {
@@ -90,4 +96,30 @@ export function widgetDimensionName(dimension: WidgetDimension): string {
   const rows = widgetDimensionRows(dimension);
   const cols = widgetDimensionCols(dimension);
   return `${rows}x${cols}`;
+}
+
+export function isAllowedForWidgetConstraints(
+  constraints: WidgetTypeConstraints,
+  user: User,
+  workspace: Workspace,
+): boolean {
+  // Keep in sync with the logic in the backend in
+  // widget.py:is_allowed_for
+  if (constraints.only_for_user_features) {
+    for (const userFeature of constraints.only_for_user_features) {
+      if (!user.feature_flags[userFeature]) {
+        return false;
+      }
+    }
+  }
+
+  if (constraints.only_for_workspace_features) {
+    for (const workspaceFeature of constraints.only_for_workspace_features) {
+      if (!workspace.feature_flags[workspaceFeature]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

@@ -4,10 +4,11 @@ import { styled } from "@mui/material";
 interface StyledLinkProps {
   light?: string;
   inline?: string;
+  singleline?: string;
 }
 
 export const StandardLink = styled(Link)<StyledLinkProps>(
-  ({ theme, light, inline }) => ({
+  ({ theme, light, singleline, inline }) => ({
     textDecoration: "none",
     width: inline === "true" ? undefined : "100%",
     color:
@@ -22,8 +23,8 @@ export const StandardLink = styled(Link)<StyledLinkProps>(
     },
     display: "flex",
     gap: "0.5rem",
-    flexGrow: "1",
-    flexWrap: "wrap",
+    flexGrow: inline === "true" ? undefined : "1",
+    flexWrap: singleline === "true" ? undefined : "wrap",
     padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
     WebkitTapHighlightColor: "transparent",
@@ -31,7 +32,7 @@ export const StandardLink = styled(Link)<StyledLinkProps>(
 );
 
 export const FakeLink = styled("span")<StyledLinkProps>(
-  ({ theme, inline, light }) => ({
+  ({ theme, inline, singleline, light }) => ({
     textDecoration: "none",
     width: "100%",
     color:
@@ -46,7 +47,7 @@ export const FakeLink = styled("span")<StyledLinkProps>(
     },
     display: "flex",
     gap: "0.5rem",
-    flexWrap: "wrap",
+    flexWrap: singleline === "true" ? undefined : "wrap",
     padding: inline === "true" ? undefined : "16px",
     alignItems: "center",
     WebkitTapHighlightColor: "transparent",

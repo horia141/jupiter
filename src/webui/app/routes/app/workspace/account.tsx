@@ -18,7 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { json, redirectDocument } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
@@ -72,6 +72,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
+  // We do a hard redirect for all actions here, because changing these
+  // vary basic properties of the properties, most assuredly will
+  // modify topLevelInfo which will need to invalidate all the
+  // routes. Since there's some caching over there, we take this
+  // simple approach.
+
   try {
     switch (form.intent) {
       case "update": {
@@ -86,7 +92,7 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         });
 
-        return redirect(`/app/workspace/account`);
+        return redirectDocument(`/app/workspace/account`);
       }
 
       case "change-feature-flags": {
@@ -94,13 +100,13 @@ export async function action({ request }: ActionFunctionArgs) {
           feature_flags: form.featureFlags,
         });
 
-        return redirect(`/app/workspace/account`);
+        return redirectDocument(`/app/workspace/account`);
       }
 
       case "close-account": {
         await apiClient.application.closeAccount({});
 
-        return redirect(`/app/init`);
+        return redirectDocument(`/app/init`);
       }
 
       default:

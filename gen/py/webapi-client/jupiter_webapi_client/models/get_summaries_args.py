@@ -15,6 +15,7 @@ class GetSummariesArgs:
 
     Attributes:
         allow_archived (Union[None, Unset, bool]):
+        include_user (Union[None, Unset, bool]):
         include_workspace (Union[None, Unset, bool]):
         include_schedule_streams (Union[None, Unset, bool]):
         include_vacations (Union[None, Unset, bool]):
@@ -30,6 +31,7 @@ class GetSummariesArgs:
     """
 
     allow_archived: Union[None, Unset, bool] = UNSET
+    include_user: Union[None, Unset, bool] = UNSET
     include_workspace: Union[None, Unset, bool] = UNSET
     include_schedule_streams: Union[None, Unset, bool] = UNSET
     include_vacations: Union[None, Unset, bool] = UNSET
@@ -50,6 +52,12 @@ class GetSummariesArgs:
             allow_archived = UNSET
         else:
             allow_archived = self.allow_archived
+
+        include_user: Union[None, Unset, bool]
+        if isinstance(self.include_user, Unset):
+            include_user = UNSET
+        else:
+            include_user = self.include_user
 
         include_workspace: Union[None, Unset, bool]
         if isinstance(self.include_workspace, Unset):
@@ -128,6 +136,8 @@ class GetSummariesArgs:
         field_dict.update({})
         if allow_archived is not UNSET:
             field_dict["allow_archived"] = allow_archived
+        if include_user is not UNSET:
+            field_dict["include_user"] = include_user
         if include_workspace is not UNSET:
             field_dict["include_workspace"] = include_workspace
         if include_schedule_streams is not UNSET:
@@ -167,6 +177,15 @@ class GetSummariesArgs:
             return cast(Union[None, Unset, bool], data)
 
         allow_archived = _parse_allow_archived(d.pop("allow_archived", UNSET))
+
+        def _parse_include_user(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        include_user = _parse_include_user(d.pop("include_user", UNSET))
 
         def _parse_include_workspace(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -278,6 +297,7 @@ class GetSummariesArgs:
 
         get_summaries_args = cls(
             allow_archived=allow_archived,
+            include_user=include_user,
             include_workspace=include_workspace,
             include_schedule_streams=include_schedule_streams,
             include_vacations=include_vacations,

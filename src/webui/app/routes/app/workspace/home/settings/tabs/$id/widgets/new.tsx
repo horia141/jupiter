@@ -37,13 +37,15 @@ const ParamsSchema = z.object({
 });
 
 const QuerySchema = z.object({
-  row: z.coerce.number(),
-  col: z.coerce.number(),
+  row: z.coerce.number().optional(),
+  col: z.coerce.number().optional(),
 });
 
 const CreateFormSchema = z.object({
   type: z.nativeEnum(WidgetType),
   dimension: z.nativeEnum(WidgetDimension),
+  widgetRow: z.coerce.number(),
+  widgetCol: z.coerce.number(),
 });
 
 export const handle = {
@@ -71,14 +73,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, CreateFormSchema);
-  const query = await parseQuery(request, QuerySchema);
 
   try {
     const result = await apiClient.widget.homeWidgetCreate({
       home_tab_ref_id: id,
       the_type: form.type,
-      row: query.row,
-      col: query.col,
+      row: form.widgetRow,
+      col: form.widgetCol,
       dimension: form.dimension,
     });
 
@@ -146,6 +147,8 @@ export default function NewWidget() {
           <FormControl fullWidth>
             <InputLabel id="type">Type</InputLabel>
             <WidgetTypeSelector
+              user={topLevelInfo.user}
+              workspace={topLevelInfo.workspace}
               name="type"
               inputsEnabled={inputsEnabled}
               value={theType}
@@ -162,8 +165,8 @@ export default function NewWidget() {
               target={loaderData.tab.target}
               homeTab={loaderData.tab}
               widgets={loaderData.widgets}
-              row={query.row}
-              col={query.col}
+              row={query.row ?? 0}
+              col={query.col ?? 0}
               inputsEnabled={inputsEnabled}
             />
           </FormControl>

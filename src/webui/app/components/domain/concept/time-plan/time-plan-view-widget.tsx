@@ -23,40 +23,36 @@ export function TimePlanViewWidget(props: WidgetProps) {
 
   if (!timePlans?.timePlanForToday && !timePlans?.timePlanForWeek) {
     return (
-      <WidgetContainer>
-        <EntityNoNothingCard
-          title="You Have To Start Somewhere"
-          message="There are no time plans to show. You can create a new time plan."
-          newEntityLocations={`/app/workspace/time-plans/new`}
-          helpSubject={DocsHelpSubject.TIME_PLANS}
-        />
-      </WidgetContainer>
+      <EntityNoNothingCard
+        title="You Have To Start Somewhere"
+        message="There are no time plans to show. You can create a new time plan."
+        newEntityLocations={`/app/workspace/time-plans/new`}
+        helpSubject={DocsHelpSubject.TIME_PLANS}
+      />
     );
   }
 
   return (
-    <WidgetContainer>
-      <Stack>
-        {timePlans.timePlanForToday && (
-          <SingleTimePlan
-            timePlan={timePlans.timePlanForToday.timePlan}
-            activities={timePlans.timePlanForToday.activities}
-            targetInboxTasks={timePlans.timePlanForToday.targetInboxTasks}
-            targetBigPlans={timePlans.timePlanForToday.targetBigPlans}
-            activityDoneness={timePlans.timePlanForToday.activityDoneness}
-          />
-        )}
-        {timePlans.timePlanForWeek && (
-          <SingleTimePlan
-            timePlan={timePlans.timePlanForWeek.timePlan}
-            activities={timePlans.timePlanForWeek.activities}
-            targetInboxTasks={timePlans.timePlanForWeek.targetInboxTasks}
-            targetBigPlans={timePlans.timePlanForWeek.targetBigPlans}
-            activityDoneness={timePlans.timePlanForWeek.activityDoneness}
-          />
-        )}
-      </Stack>
-    </WidgetContainer>
+    <Stack>
+      {timePlans.timePlanForToday && (
+        <SingleTimePlan
+          timePlan={timePlans.timePlanForToday.timePlan}
+          activities={timePlans.timePlanForToday.activities}
+          targetInboxTasks={timePlans.timePlanForToday.targetInboxTasks}
+          targetBigPlans={timePlans.timePlanForToday.targetBigPlans}
+          activityDoneness={timePlans.timePlanForToday.activityDoneness}
+        />
+      )}
+      {timePlans.timePlanForWeek && (
+        <SingleTimePlan
+          timePlan={timePlans.timePlanForWeek.timePlan}
+          activities={timePlans.timePlanForWeek.activities}
+          targetInboxTasks={timePlans.timePlanForWeek.targetInboxTasks}
+          targetBigPlans={timePlans.timePlanForWeek.targetBigPlans}
+          activityDoneness={timePlans.timePlanForWeek.activityDoneness}
+        />
+      )}
+    </Stack>
   );
 }
 

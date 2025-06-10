@@ -3,9 +3,15 @@
 from jupiter.core.domain.application.home.home_tab import HomeTab
 from jupiter.core.domain.application.home.home_widget import HomeWidget
 from jupiter.core.domain.application.home.widget import (
+    WIDGET_CONSTRAINTS,
     WidgetDimension,
     WidgetGeometry,
     WidgetType,
+)
+from jupiter.core.domain.features import (
+    FeatureUnavailableError,
+    UserFeature,
+    WorkspaceFeature,
 )
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -57,6 +63,25 @@ class HomeWidgetCreateUseCase(
         args: HomeWidgetCreateArgs,
     ) -> HomeWidgetCreateResult:
         """Execute the command's action."""
+        user = context.user
+        workspace = context.workspace
+
+        constraints = WIDGET_CONSTRAINTS[args.the_type]
+        if not constraints.is_allowed_for(user, workspace):
+            # make the the_feature be the first one in the constraints
+            the_feature: WorkspaceFeature | UserFeature | str = ""
+            if (
+                constraints.only_for_user_features is not None
+                and len(constraints.only_for_user_features) > 0
+            ):
+                the_feature = constraints.only_for_user_features[0]
+            elif (
+                constraints.only_for_workspace_features is not None
+                and len(constraints.only_for_workspace_features) > 0
+            ):
+                the_feature = constraints.only_for_workspace_features[0]
+            raise FeatureUnavailableError(the_feature)
+
         home_tab = await uow.get_for(HomeTab).load_by_id(
             args.home_tab_ref_id,
         )

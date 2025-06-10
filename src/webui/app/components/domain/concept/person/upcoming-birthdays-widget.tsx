@@ -10,10 +10,7 @@ import {
   actionableTimeToDateTime,
 } from "~/rendering/actionable-time";
 import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
-import {
-  WidgetContainer,
-  WidgetProps,
-} from "~/components/domain/application/home/common";
+import { WidgetProps } from "~/components/domain/application/home/common";
 import { aDateToDate } from "~/logic/domain/adate";
 
 export function UpcomingBirthdaysWidget(props: WidgetProps) {
@@ -49,35 +46,31 @@ export function UpcomingBirthdaysWidget(props: WidgetProps) {
 
   if (upcomingBirthdays.length === 0) {
     return (
-      <WidgetContainer>
-        <InboxTasksNoTasksCard
-          parent="person"
-          parentLabel="New Person"
-          parentNewLocations="/app/workspace/persons/new"
-        />
-      </WidgetContainer>
+      <InboxTasksNoTasksCard
+        parent="person"
+        parentLabel="New Person"
+        parentNewLocations="/app/workspace/persons/new"
+      />
     );
   }
 
   return (
-    <WidgetContainer>
-      <InboxTaskStack
-        key="upcoming-birthdays"
-        today={today}
-        topLevelInfo={props.topLevelInfo}
-        showOptions={{
-          showStatus: true,
-          showDueDate: true,
-          showHandleMarkDone: true,
-          showHandleMarkNotDone: true,
-        }}
-        label="Upcoming Birthdays"
-        inboxTasks={upcomingBirthdays}
-        optimisticUpdates={personTasks.optimisticUpdates}
-        moreInfoByRefId={personTasks.personEntriesByRefId}
-        onCardMarkDone={personTasks.onCardMarkDone}
-        onCardMarkNotDone={personTasks.onCardMarkNotDone}
-      />
-    </WidgetContainer>
+    <InboxTaskStack
+      key="upcoming-birthdays"
+      today={today}
+      topLevelInfo={props.topLevelInfo}
+      showOptions={{
+        showStatus: true,
+        showDueDate: true,
+        showHandleMarkDone: true,
+        showHandleMarkNotDone: true,
+      }}
+      label="Upcoming Birthdays"
+      inboxTasks={upcomingBirthdays}
+      optimisticUpdates={personTasks.optimisticUpdates}
+      moreInfoByRefId={personTasks.personEntriesByRefId}
+      onCardMarkDone={personTasks.onCardMarkDone}
+      onCardMarkNotDone={personTasks.onCardMarkNotDone}
+    />
   );
 }

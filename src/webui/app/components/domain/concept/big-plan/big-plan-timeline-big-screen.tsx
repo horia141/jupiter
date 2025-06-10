@@ -100,6 +100,7 @@ export function BigPlanTimelineBigScreen({
                   <EntityLink
                     block={allowSelect}
                     to={`/app/workspace/big-plans/${entry.ref_id}`}
+                    singleLine
                   >
                     <IsKeyTag isKey={entry.is_key} />
                     <EntityNameOneLineComponent name={entry.name} />

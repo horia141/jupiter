@@ -13,7 +13,6 @@ import {
 import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
 import {
   getDeterministicRandomElement,
-  WidgetContainer,
   WidgetProps,
 } from "~/components/domain/application/home/common";
 import { aDateToDate } from "~/logic/domain/adate";
@@ -54,13 +53,11 @@ export function ChoreRandomWidget(props: WidgetProps) {
   // If no tasks, show the no tasks card
   if (allChoreTasks.length === 0) {
     return (
-      <WidgetContainer>
-        <InboxTasksNoTasksCard
-          parent="chore"
-          parentLabel="New Chore"
-          parentNewLocations="/app/workspace/chores/new"
-        />
-      </WidgetContainer>
+      <InboxTasksNoTasksCard
+        parent="chore"
+        parentLabel="New Chore"
+        parentNewLocations="/app/workspace/chores/new"
+      />
     );
   }
 
@@ -68,7 +65,7 @@ export function ChoreRandomWidget(props: WidgetProps) {
   const randomTask = getDeterministicRandomElement(allChoreTasks, props.today);
 
   return (
-    <WidgetContainer>
+    <>
       <InboxTaskStack
         key="random-chore"
         today={today}
@@ -89,6 +86,6 @@ export function ChoreRandomWidget(props: WidgetProps) {
         onCardMarkDone={choreTasks.onCardMarkDone}
         onCardMarkNotDone={choreTasks.onCardMarkNotDone}
       />
-    </WidgetContainer>
+    </>
   );
 }

@@ -1,9 +1,6 @@
 import { BigPlanStats } from "@jupiter/webapi-client";
 
-import {
-  WidgetContainer,
-  WidgetProps,
-} from "~/components/domain/application/home/common";
+import { WidgetProps } from "~/components/domain/application/home/common";
 import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
@@ -21,19 +18,17 @@ export function KeyBigPlansProgressWidget(props: WidgetProps) {
 
   if (sortedBigPlans.length === 0) {
     return (
-      <WidgetContainer>
-        <EntityNoNothingCard
-          title="No key big plans found"
-          message="Mark some big plans as key to see their progress here."
-          newEntityLocations="/app/workspace/big-plans/new"
-          helpSubject={DocsHelpSubject.BIG_PLANS}
-        />
-      </WidgetContainer>
+      <EntityNoNothingCard
+        title="No key big plans found"
+        message="Mark some big plans as key to see their progress here."
+        newEntityLocations="/app/workspace/big-plans/new"
+        helpSubject={DocsHelpSubject.BIG_PLANS}
+      />
     );
   }
 
   return (
-    <WidgetContainer>
+    <>
       <StandardDivider title="📋 Key Big Plans Progress" size="large" />
       <BigPlanStack
         topLevelInfo={props.topLevelInfo}
@@ -51,6 +46,6 @@ export function KeyBigPlansProgressWidget(props: WidgetProps) {
           showHandleMarkNotDone: false,
         }}
       />
-    </WidgetContainer>
+    </>
   );
 }

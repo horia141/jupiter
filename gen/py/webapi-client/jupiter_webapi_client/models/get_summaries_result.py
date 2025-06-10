@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from ..models.project_summary import ProjectSummary
     from ..models.schedule_stream_summary import ScheduleStreamSummary
     from ..models.smart_list_summary import SmartListSummary
+    from ..models.user import User
     from ..models.vacation_summary import VacationSummary
     from ..models.workspace import Workspace
 
@@ -29,6 +30,7 @@ class GetSummariesResult:
     """Get summaries result.
 
     Attributes:
+        user (Union['User', None, Unset]):
         workspace (Union['Workspace', None, Unset]):
         vacations (Union[None, Unset, list['VacationSummary']]):
         schedule_streams (Union[None, Unset, list['ScheduleStreamSummary']]):
@@ -44,6 +46,7 @@ class GetSummariesResult:
         persons (Union[None, Unset, list['PersonSummary']]):
     """
 
+    user: Union["User", None, Unset] = UNSET
     workspace: Union["Workspace", None, Unset] = UNSET
     vacations: Union[None, Unset, list["VacationSummary"]] = UNSET
     schedule_streams: Union[None, Unset, list["ScheduleStreamSummary"]] = UNSET
@@ -61,7 +64,16 @@ class GetSummariesResult:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.project_summary import ProjectSummary
+        from ..models.user import User
         from ..models.workspace import Workspace
+
+        user: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.user, Unset):
+            user = UNSET
+        elif isinstance(self.user, User):
+            user = self.user.to_dict()
+        else:
+            user = self.user
 
         workspace: Union[None, Unset, dict[str, Any]]
         if isinstance(self.workspace, Unset):
@@ -214,6 +226,8 @@ class GetSummariesResult:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
+        if user is not UNSET:
+            field_dict["user"] = user
         if workspace is not UNSET:
             field_dict["workspace"] = workspace
         if vacations is not UNSET:
@@ -255,10 +269,28 @@ class GetSummariesResult:
         from ..models.project_summary import ProjectSummary
         from ..models.schedule_stream_summary import ScheduleStreamSummary
         from ..models.smart_list_summary import SmartListSummary
+        from ..models.user import User
         from ..models.vacation_summary import VacationSummary
         from ..models.workspace import Workspace
 
         d = dict(src_dict)
+
+        def _parse_user(data: object) -> Union["User", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                user_type_0 = User.from_dict(data)
+
+                return user_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["User", None, Unset], data)
+
+        user = _parse_user(d.pop("user", UNSET))
 
         def _parse_workspace(data: object) -> Union["Workspace", None, Unset]:
             if data is None:
@@ -537,6 +569,7 @@ class GetSummariesResult:
         persons = _parse_persons(d.pop("persons", UNSET))
 
         get_summaries_result = cls(
+            user=user,
             workspace=workspace,
             vacations=vacations,
             schedule_streams=schedule_streams,

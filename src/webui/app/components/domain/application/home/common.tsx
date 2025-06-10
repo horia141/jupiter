@@ -14,16 +14,35 @@ import {
   UserScoreOverview,
   UserScoreHistory,
   BigPlanStats,
+  WidgetType,
+  WorkspaceFeature,
+  UserFeature,
+  WidgetGeometry,
 } from "@jupiter/webapi-client";
-import { Box } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Button,
+  Typography,
+} from "@mui/material";
 import { DateTime } from "luxon";
 import { PropsWithChildren } from "react";
+import { Link } from "react-router-dom";
 
 import {
   InboxTaskParent,
   InboxTaskOptimisticState,
 } from "~/logic/domain/inbox-task";
 import { TopLevelInfo } from "~/top-level-context";
+import {
+  isWidgetDimensionKSized,
+  widgetDimensionRows,
+  widgetTypeName,
+} from "~/logic/widget";
+import { workspaceFeatureName, userFeatureName } from "~/logic/domain/feature";
 
 interface HabitStreakEntry {
   habit: Habit;
@@ -99,19 +118,89 @@ export interface WidgetProps {
   gamificationHistory?: UserScoreHistory;
 }
 
-export function WidgetContainer(props: PropsWithChildren) {
+interface WidgetContainerProps {
+  geometry: WidgetGeometry;
+}
+
+export function WidgetContainer(
+  props: PropsWithChildren<WidgetContainerProps>,
+) {
+  let heightInRem;
+  if (isWidgetDimensionKSized(props.geometry.dimension)) {
+    heightInRem = undefined;
+  } else {
+    heightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+  }
   return (
     <Box
       sx={{
         width: "100%",
+        height: heightInRem,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",
         margin: "0.2rem",
         padding: "0.4rem",
+        overflowY: !isWidgetDimensionKSized(props.geometry.dimension)
+          ? "scroll"
+          : undefined,
       }}
     >
       {props.children}
     </Box>
+  );
+}
+
+interface WidgetFeatureNotAvailableBannerProps {
+  widgetType: WidgetType;
+  missingWorkspaceFeatures: WorkspaceFeature[];
+  missingUserFeatures: UserFeature[];
+}
+
+export function WidgetFeatureNotAvailableBanner(
+  props: WidgetFeatureNotAvailableBannerProps,
+) {
+  const { widgetType, missingWorkspaceFeatures, missingUserFeatures } = props;
+
+  const workspaceFeatureNames =
+    missingWorkspaceFeatures.map(workspaceFeatureName);
+  const userFeatureNames = missingUserFeatures.map(userFeatureName);
+
+  const allFeatureNames = [...workspaceFeatureNames, ...userFeatureNames];
+  const hasWorkspaceFeatures = missingWorkspaceFeatures.length > 0;
+  const hasUserFeatures = missingUserFeatures.length > 0;
+
+  return (
+    <Card>
+      <CardHeader title={`${widgetTypeName(widgetType)} Not Available`} />
+      <CardContent>
+        <Typography variant="body1">
+          This widget requires the following features to be enabled:{" "}
+          {allFeatureNames.join(", ")}
+        </Typography>
+      </CardContent>
+      <CardActions>
+        {hasWorkspaceFeatures && (
+          <Button
+            variant="contained"
+            size="small"
+            component={Link}
+            to="/app/workspace/settings"
+          >
+            Enable Workspace Features
+          </Button>
+        )}
+        {hasUserFeatures && (
+          <Button
+            variant="contained"
+            size="small"
+            component={Link}
+            to="/app/workspace/account"
+          >
+            Enable User Features
+          </Button>
+        )}
+      </CardActions>
+    </Card>
   );
 }
 

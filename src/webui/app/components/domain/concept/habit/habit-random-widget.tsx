@@ -13,7 +13,6 @@ import {
 import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
 import {
   getDeterministicRandomElement,
-  WidgetContainer,
   WidgetProps,
 } from "~/components/domain/application/home/common";
 import { aDateToDate } from "~/logic/domain/adate";
@@ -54,13 +53,11 @@ export function HabitRandomWidget(props: WidgetProps) {
   // If no tasks, show the no tasks card
   if (allHabitTasks.length === 0) {
     return (
-      <WidgetContainer>
-        <InboxTasksNoTasksCard
-          parent="habit"
-          parentLabel="New Habit"
-          parentNewLocations="/app/workspace/habits/new"
-        />
-      </WidgetContainer>
+      <InboxTasksNoTasksCard
+        parent="habit"
+        parentLabel="New Habit"
+        parentNewLocations="/app/workspace/habits/new"
+      />
     );
   }
 
@@ -68,27 +65,25 @@ export function HabitRandomWidget(props: WidgetProps) {
   const randomTask = getDeterministicRandomElement(allHabitTasks, props.today);
 
   return (
-    <WidgetContainer>
-      <InboxTaskStack
-        key="random-habit"
-        today={today}
-        topLevelInfo={props.topLevelInfo}
-        showOptions={{
-          showStatus: true,
-          showProject: true,
-          showEisen: true,
-          showDifficulty: true,
-          showParent: true,
-          showHandleMarkDone: true,
-          showHandleMarkNotDone: true,
-        }}
-        label="Do A Random Habit"
-        inboxTasks={[randomTask]}
-        optimisticUpdates={habitTasks.optimisticUpdates}
-        moreInfoByRefId={habitTasks.habitEntriesByRefId}
-        onCardMarkDone={habitTasks.onCardMarkDone}
-        onCardMarkNotDone={habitTasks.onCardMarkNotDone}
-      />
-    </WidgetContainer>
+    <InboxTaskStack
+      key="random-habit"
+      today={today}
+      topLevelInfo={props.topLevelInfo}
+      showOptions={{
+        showStatus: true,
+        showProject: true,
+        showEisen: true,
+        showDifficulty: true,
+        showParent: true,
+        showHandleMarkDone: true,
+        showHandleMarkNotDone: true,
+      }}
+      label="Do A Random Habit"
+      inboxTasks={[randomTask]}
+      optimisticUpdates={habitTasks.optimisticUpdates}
+      moreInfoByRefId={habitTasks.habitEntriesByRefId}
+      onCardMarkDone={habitTasks.onCardMarkDone}
+      onCardMarkNotDone={habitTasks.onCardMarkNotDone}
+    />
   );
 }

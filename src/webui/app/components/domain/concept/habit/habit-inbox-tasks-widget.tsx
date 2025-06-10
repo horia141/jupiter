@@ -72,7 +72,7 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
   );
 
   const habitsStack = (
-    <WidgetContainer>
+    <>
       <InboxTaskStack
         key="habit-due-today"
         today={today}
@@ -114,7 +114,7 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
         onCardMarkDone={habitTasks.onCardMarkDone}
         onCardMarkNotDone={habitTasks.onCardMarkNotDone}
       />
-    </WidgetContainer>
+    </>
   );
 
   if (
@@ -122,13 +122,11 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
     inboxTasksForHabitsDueThisWeek.length === 0
   ) {
     return (
-      <WidgetContainer>
-        <InboxTasksNoTasksCard
-          parent="habit"
-          parentLabel="New Habit"
-          parentNewLocations="/app/workspace/habits/new"
-        />
-      </WidgetContainer>
+      <InboxTasksNoTasksCard
+        parent="habit"
+        parentLabel="New Habit"
+        parentNewLocations="/app/workspace/habits/new"
+      />
     );
   }
 

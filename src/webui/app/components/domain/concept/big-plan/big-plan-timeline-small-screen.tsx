@@ -201,9 +201,14 @@ interface TimelineLinkProps {
 }
 
 const TimelineLink = styled(Link)<TimelineLinkProps>(
-  ({ leftmargin, width }) => ({
+  ({ leftmargin, width, theme }) => ({
+    textDecoration: "none",
     position: "absolute",
     display: "flex",
+    color: theme.palette.info.dark,
+    ":visited": {
+      color: theme.palette.info.dark,
+    },
     marginLeft: `${leftmargin * 100}%`,
     width: `${width * 100}%`,
     paddingLeft: "0.5rem",

@@ -159,6 +159,7 @@ interface EntityLinkProps {
   block?: boolean;
   light?: boolean;
   inline?: boolean;
+  singleLine?: boolean;
 }
 
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
@@ -169,6 +170,7 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
         to={props.to}
         inline={props.inline === true ? "true" : "false"}
         light={props.light === true ? "true" : "false"}
+        singleline={props.singleLine === true ? "true" : "false"}
       >
         {props.children}
       </StandardLink>
@@ -185,6 +187,7 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
 interface EntityFakeLinkProps {
   inline?: boolean;
   light?: boolean;
+  singleLine?: boolean;
 }
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
@@ -192,6 +195,7 @@ export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
     <FakeLink
       inline={props.inline ? "true" : "false"}
       light={props.light ? "true" : "false"}
+      singleline={props.singleLine === true ? "true" : "false"}
     >
       {props.children}
     </FakeLink>
