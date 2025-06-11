@@ -22,6 +22,7 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Link, useOutlet } from "@remix-run/react";
 import { AnimatePresence, useAnimate } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
+import { DateTime } from "luxon";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/infra/community-link";
@@ -123,7 +124,11 @@ export default function Workspace() {
     };
   }, []);
 
+  const rightNow = DateTime.local({ zone: loaderData.user.timezone });
+  const today = rightNow.toISODate();
+
   const topLevelInfo = {
+    today,
     userFeatureFlagControls: loaderData.userFeatureFlagControls,
     workspaceFeatureFlagControls: loaderData.workspaceFeatureFlagControls,
     user: loaderData.user,

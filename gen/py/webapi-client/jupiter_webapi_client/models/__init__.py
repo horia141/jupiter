@@ -534,6 +534,7 @@ from .stats_load_runs_args import StatsLoadRunsArgs
 from .stats_load_runs_result import StatsLoadRunsResult
 from .stats_log import StatsLog
 from .stats_log_entry import StatsLogEntry
+from .suggested_date import SuggestedDate
 from .sync_target import SyncTarget
 from .table_block import TableBlock
 from .table_block_kind import TableBlockKind
@@ -1214,6 +1215,7 @@ __all__ = (
     "StatsLoadRunsResult",
     "StatsLog",
     "StatsLogEntry",
+    "SuggestedDate",
     "SyncTarget",
     "TableBlock",
     "TableBlockKind",

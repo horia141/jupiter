@@ -53,7 +53,6 @@ import { SectionCardNew } from "~/components/infra/section-card-new";
 import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { TimePlanActivityList } from "~/components/domain/concept/time-plan/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { aDateToDate } from "~/logic/domain/adate";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -68,6 +67,8 @@ import {
   ActionSingle,
 } from "~/components/infra/section-actions";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
+import { getSuggestedDatesForBigPlanActionableDate, getSuggestedDatesForBigPlanDueDate } from "~/logic/domain/suggested-date";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -496,24 +497,16 @@ export default function BigPlan() {
             <InputLabel id="actionableDate" shrink>
               Actionable From [Optional]
             </InputLabel>
-            <OutlinedInput
-              type="date"
+            <DateInputWithSuggestions
+              name="actionableDate"
               label="actionableDate"
-              notched
+              inputsEnabled={inputsEnabled}
               defaultValue={
                 loaderData.bigPlan.actionable_date
-                  ? aDateToDate(loaderData.bigPlan.actionable_date).toFormat(
-                      "yyyy-MM-dd",
-                    )
-                  : undefined
               }
-              name="actionableDate"
-              readOnly={!inputsEnabled}
-            />
-
-            <FieldError
-              actionResult={actionData}
-              fieldName="/actionable_date"
+              suggestedDates={getSuggestedDatesForBigPlanActionableDate(
+                topLevelInfo.today,
+              )}
             />
           </FormControl>
 
@@ -521,22 +514,15 @@ export default function BigPlan() {
             <InputLabel id="dueDate" shrink>
               Due At [Optional]
             </InputLabel>
-            <OutlinedInput
-              type="date"
-              notched
-              label="dueDate"
-              defaultValue={
-                loaderData.bigPlan.due_date
-                  ? aDateToDate(loaderData.bigPlan.due_date).toFormat(
-                      "yyyy-MM-dd",
-                    )
-                  : undefined
-              }
+            <DateInputWithSuggestions
               name="dueDate"
-              readOnly={!inputsEnabled}
+              label="dueDate"
+              inputsEnabled={inputsEnabled}
+              defaultValue={loaderData.bigPlan.due_date}
+              suggestedDates={getSuggestedDatesForBigPlanDueDate(
+                topLevelInfo.today,
+              )}
             />
-
-            <FieldError actionResult={actionData} fieldName="/due_date" />
           </FormControl>
         </Stack>
 

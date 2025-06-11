@@ -439,6 +439,7 @@ export type { StatsLoadRunsArgs } from './models/StatsLoadRunsArgs';
 export type { StatsLoadRunsResult } from './models/StatsLoadRunsResult';
 export type { StatsLog } from './models/StatsLog';
 export type { StatsLogEntry } from './models/StatsLogEntry';
+export type { SuggestedDate } from './models/SuggestedDate';
 export { SyncTarget } from './models/SyncTarget';
 export { TableBlock } from './models/TableBlock';
 export type { TagName } from './models/TagName';

@@ -1,5 +1,4 @@
 import type {
-  ADate,
   BigPlanSummary,
   Project,
   ProjectSummary,
@@ -50,13 +49,17 @@ import { ProjectSelect } from "~/components/domain/concept/project/project-selec
 import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
+import {
+  getSuggestedDatesForInboxTaskActionableDate,
+  getSuggestedDatesForInboxTaskDueDate,
+} from "~/logic/domain/suggested-date";
 
 const ParamsSchema = z.object({});
 
@@ -445,25 +448,23 @@ export default function NewInboxTask() {
               <InputLabel id="actionableDate" shrink>
                 Actionable From [Optional]
               </InputLabel>
-              <OutlinedInput
-                type="date"
-                label="actionableDate"
-                readOnly={!inputsEnabled}
+              <DateInputWithSuggestions
                 name="actionableDate"
-                notched
+                label="actionableDate"
+                inputsEnabled={inputsEnabled}
                 defaultValue={
                   loaderData.timePlanReason === "for-time-plan"
-                    ? aDateToDate(
-                        (loaderData.associatedTimePlan as TimePlan)
-                          .start_date as ADate,
-                      ).toFormat("yyyy-MM-dd")
+                    ? (loaderData.associatedTimePlan as TimePlan).start_date
                     : loaderData.bigPlanReason === "for-big-plan" &&
                         loaderData.ownerBigPlan?.actionable_date
-                      ? aDateToDate(
-                          loaderData.ownerBigPlan.actionable_date,
-                        ).toFormat("yyyy-MM-dd")
+                      ? loaderData.ownerBigPlan.actionable_date
                       : undefined
                 }
+                suggestedDates={getSuggestedDatesForInboxTaskActionableDate(
+                  topLevelInfo.today,
+                  loaderData.ownerBigPlan,
+                  loaderData.associatedTimePlan,
+                )}
               />
 
               <FieldError
@@ -476,25 +477,23 @@ export default function NewInboxTask() {
               <InputLabel id="dueDate" shrink>
                 Due At [Optional]
               </InputLabel>
-              <OutlinedInput
-                type="date"
-                label="dueDate"
-                readOnly={!inputsEnabled}
-                notched
+              <DateInputWithSuggestions
                 name="dueDate"
+                label="dueDate"
+                inputsEnabled={inputsEnabled}
                 defaultValue={
                   loaderData.timePlanReason === "for-time-plan"
-                    ? aDateToDate(
-                        (loaderData.associatedTimePlan as TimePlan)
-                          .end_date as ADate,
-                      ).toFormat("yyyy-MM-dd")
+                    ? (loaderData.associatedTimePlan as TimePlan).end_date
                     : loaderData.bigPlanReason === "for-big-plan" &&
                         loaderData.ownerBigPlan?.due_date
-                      ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
-                          "yyyy-MM-dd",
-                        )
-                      : ""
+                      ? loaderData.ownerBigPlan.due_date
+                      : undefined
                 }
+                suggestedDates={getSuggestedDatesForInboxTaskDueDate(
+                  topLevelInfo.today,
+                  loaderData.ownerBigPlan,
+                  loaderData.associatedTimePlan,
+                )}
               />
 
               <FieldError actionResult={actionData} fieldName="/due_date" />

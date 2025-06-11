@@ -1,7 +1,5 @@
 import { ViewAsCalendarDaily } from "~/components/domain/application/calendar/view-as-calendar-daily";
-import {
-  WidgetProps,
-} from "~/components/domain/application/home/common";
+import { WidgetProps } from "~/components/domain/application/home/common";
 
 export function CalendarDailyWidget(props: WidgetProps) {
   const calendar = props.calendar!;

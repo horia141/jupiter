@@ -1,4 +1,5 @@
 import {
+  ADate,
   type User,
   UserCategory,
   type UserFeatureFlagsControls,
@@ -9,6 +10,7 @@ import {
 import { createContext } from "react";
 
 export interface TopLevelInfo {
+  today: ADate;
   userFeatureFlagControls: UserFeatureFlagsControls;
   workspaceFeatureFlagControls: WorkspaceFeatureFlagsControls;
   user: User;
@@ -17,6 +19,7 @@ export interface TopLevelInfo {
 }
 
 export const TopLevelInfoContext = createContext<TopLevelInfo>({
+  today: "2025-01-01",
   userFeatureFlagControls: {
     controls: {},
   },

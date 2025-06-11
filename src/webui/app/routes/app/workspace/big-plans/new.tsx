@@ -1,4 +1,4 @@
-import type { ADate, ProjectSummary, TimePlan } from "@jupiter/webapi-client";
+import type { ProjectSummary, TimePlan } from "@jupiter/webapi-client";
 import {
   ApiError,
   Difficulty,
@@ -39,12 +39,13 @@ import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/t
 import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
+import { getSuggestedDatesForBigPlanActionableDate, getSuggestedDatesForBigPlanDueDate } from "~/logic/domain/suggested-date";
 
 const ParamsSchema = z.object({});
 
@@ -259,20 +260,19 @@ export default function NewBigPlan() {
             <InputLabel id="actionableDate" shrink margin="dense">
               Actionable From [Optional]
             </InputLabel>
-            <OutlinedInput
-              type="date"
-              label="actionableDate"
-              notched
+            <DateInputWithSuggestions
               name="actionableDate"
-              readOnly={!inputsEnabled}
+              label="actionableDate"
+              inputsEnabled={inputsEnabled}
               defaultValue={
                 loaderData.timePlanReason === "for-time-plan"
-                  ? aDateToDate(
-                      (loaderData.associatedTimePlan as TimePlan)
-                        .start_date as ADate,
-                    ).toFormat("yyyy-MM-dd")
+                  ? (loaderData.associatedTimePlan as TimePlan).start_date
                   : undefined
               }
+              suggestedDates={getSuggestedDatesForBigPlanActionableDate(
+                topLevelInfo.today,
+                loaderData.associatedTimePlan,
+              )}
             />
             <FieldError
               actionResult={actionData}
@@ -284,12 +284,19 @@ export default function NewBigPlan() {
             <InputLabel id="dueDate" shrink margin="dense">
               Due Date [Optional]
             </InputLabel>
-            <OutlinedInput
-              type="date"
-              label="dueDate"
-              notched
+            <DateInputWithSuggestions
               name="dueDate"
-              readOnly={!inputsEnabled}
+              label="dueDate"
+              inputsEnabled={inputsEnabled}
+              defaultValue={
+                loaderData.timePlanReason === "for-time-plan"
+                  ? (loaderData.associatedTimePlan as TimePlan).end_date
+                  : undefined
+              }
+              suggestedDates={getSuggestedDatesForBigPlanDueDate(
+                topLevelInfo.today,
+                loaderData.associatedTimePlan,
+              )}
             />
             <FieldError actionResult={actionData} fieldName="/due_date" />
           </FormControl>

@@ -26,7 +26,6 @@ import {
 import { useEffect, useState } from "react";
 
 import type { SomeErrorNoData } from "~/logic/action-result";
-import { aDateToDate } from "~/logic/domain/adate";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
@@ -47,6 +46,11 @@ import {
   constructFieldErrorName,
   constructFieldName,
 } from "~/logic/field-names";
+import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
+import {
+  getSuggestedDatesForInboxTaskActionableDate,
+  getSuggestedDatesForInboxTaskDueDate,
+} from "~/logic/domain/suggested-date";
 
 interface InboxTaskPropertiesEditorProps {
   title: string;
@@ -348,19 +352,16 @@ export function InboxTaskPropertiesEditor(
           <InputLabel id="actionableDate" shrink>
             Actionable From {corePropertyEditable ? "[Optional]" : ""}
           </InputLabel>
-          <OutlinedInput
-            type="date"
-            notched
-            label="actionableDate"
-            readOnly={!props.inputsEnabled || !corePropertyEditable}
-            defaultValue={
-              props.inboxTask.actionable_date
-                ? aDateToDate(props.inboxTask.actionable_date).toFormat(
-                    "yyyy-MM-dd",
-                  )
-                : undefined
-            }
+          <DateInputWithSuggestions
             name={constructFieldName(props.namePrefix, "actionableDate")}
+            label="actionableDate"
+            inputsEnabled={props.inputsEnabled && corePropertyEditable}
+            defaultValue={props.inboxTask.actionable_date}
+            suggestedDates={getSuggestedDatesForInboxTaskActionableDate(
+              props.topLevelInfo.today,
+              props.inboxTaskInfo.big_plan,
+              props.inboxTaskInfo.time_plan,
+            )}
           />
 
           <FieldError
@@ -376,17 +377,16 @@ export function InboxTaskPropertiesEditor(
           <InputLabel id="dueDate" shrink margin="dense">
             Due At {corePropertyEditable ? "[Optional]" : ""}
           </InputLabel>
-          <OutlinedInput
-            type="date"
-            notched
-            label="dueDate"
-            readOnly={!props.inputsEnabled || !corePropertyEditable}
-            defaultValue={
-              props.inboxTask.due_date
-                ? aDateToDate(props.inboxTask.due_date).toFormat("yyyy-MM-dd")
-                : undefined
-            }
+          <DateInputWithSuggestions
             name={constructFieldName(props.namePrefix, "dueDate")}
+            label="dueDate"
+            inputsEnabled={props.inputsEnabled && corePropertyEditable}
+            defaultValue={props.inboxTask.due_date}
+            suggestedDates={getSuggestedDatesForInboxTaskDueDate(
+              props.topLevelInfo.today,
+              props.inboxTaskInfo.big_plan,
+              props.inboxTaskInfo.time_plan,
+            )}
           />
 
           <FieldError
