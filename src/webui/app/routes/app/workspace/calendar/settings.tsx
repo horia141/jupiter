@@ -26,7 +26,6 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
@@ -109,8 +108,6 @@ export default function CalendarSettings() {
 
   const inputsEnabled = navigation.state === "idle";
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   const query = useSearchParams();
 
   const scheduleStreamsByRefId = new Map(
@@ -191,7 +188,7 @@ export default function CalendarSettings() {
                 with {entry.entity_records.length}
                 {entry.even_more_entity_records ? "+" : ""} entities synced
                 <TimeDiffTag
-                  today={today}
+                  today={topLevelInfo.today}
                   labelPrefix="from"
                   collectionTime={entry.created_time}
                 />
@@ -228,7 +225,10 @@ export default function CalendarSettings() {
                     <EntityCard
                       key={`entities-${entry.ref_id}-${record.ref_id}`}
                     >
-                      <EntitySummaryLink today={today} summary={record} />
+                      <EntitySummaryLink
+                        today={topLevelInfo.today}
+                        summary={record}
+                      />
                     </EntityCard>
                   ))}
                 </>

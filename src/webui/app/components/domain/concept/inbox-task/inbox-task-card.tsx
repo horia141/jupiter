@@ -72,7 +72,6 @@ export interface InboxTaskShowOptions {
 }
 
 export interface InboxTaskCardProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   compact?: boolean;
   allowSwipe?: boolean;
@@ -170,7 +169,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
         onClick={() => props.onClick && props.onClick(props.inboxTask)}
       >
         <OverdueWarning
-          today={props.today}
+          today={props.topLevelInfo.today}
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
@@ -356,7 +355,7 @@ const TagsContained = styled(Box)({
 });
 
 interface OverdueWarningProps {
-  today: DateTime;
+  today: ADate;
   status: InboxTaskStatus;
   dueDate?: ADate | null;
 }
@@ -372,7 +371,7 @@ function OverdueWarning({ today, status, dueDate }: OverdueWarningProps) {
     return null;
   }
 
-  const theToday = today.startOf("day");
+  const theToday = aDateToDate(today);
   const theDueDate = aDateToDate(dueDate);
 
   return (

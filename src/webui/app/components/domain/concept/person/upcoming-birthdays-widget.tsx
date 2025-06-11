@@ -15,7 +15,7 @@ import { aDateToDate } from "~/logic/domain/adate";
 
 export function UpcomingBirthdaysWidget(props: WidgetProps) {
   const personTasks = props.personTasks!;
-  const today = aDateToDate(props.today).endOf("day");
+  const today = aDateToDate(props.topLevelInfo.today).endOf("day");
   const threeMonthsFromNow = today.plus({ months: 3 }).endOf("day");
   const actionableTime = actionableTimeToDateTime(
     ActionableTime.ONE_WEEK,
@@ -57,7 +57,6 @@ export function UpcomingBirthdaysWidget(props: WidgetProps) {
   return (
     <InboxTaskStack
       key="upcoming-birthdays"
-      today={today}
       topLevelInfo={props.topLevelInfo}
       showOptions={{
         showStatus: true,

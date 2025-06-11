@@ -446,7 +446,6 @@ export default function WorkspaceHome() {
 
   const widgetProps: WidgetProps = {
     rightNow,
-    today,
     timezone: topLevelInfo.user.timezone,
     topLevelInfo,
     motd: loaderData.motd,

@@ -22,7 +22,6 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Form, Link, useOutlet } from "@remix-run/react";
 import { AnimatePresence, useAnimate } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
-import { DateTime } from "luxon";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { CommunityLink } from "~/components/infra/community-link";
@@ -43,7 +42,7 @@ import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";
-import { TopLevelInfoContext } from "~/top-level-context";
+import { TopLevelInfoProvider } from "~/components/infra/top-level-info-provider";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: editorJsTweaks },
@@ -124,20 +123,14 @@ export default function Workspace() {
     };
   }, []);
 
-  const rightNow = DateTime.local({ zone: loaderData.user.timezone });
-  const today = rightNow.toISODate();
-
-  const topLevelInfo = {
-    today,
-    userFeatureFlagControls: loaderData.userFeatureFlagControls,
-    workspaceFeatureFlagControls: loaderData.workspaceFeatureFlagControls,
-    user: loaderData.user,
-    userScoreOverview: loaderData.userScoreOverview,
-    workspace: loaderData.workspace,
-  };
-
   return (
-    <TopLevelInfoContext.Provider value={topLevelInfo}>
+    <TopLevelInfoProvider
+      user={loaderData.user}
+      workspace={loaderData.workspace}
+      userFeatureFlagControls={loaderData.userFeatureFlagControls}
+      workspaceFeatureFlagControls={loaderData.workspaceFeatureFlagControls}
+      userScoreOverview={loaderData.userScoreOverview}
+    >
       <WorkspaceContainer>
         <SmartAppBar>
           <IconButton
@@ -286,7 +279,6 @@ export default function Workspace() {
 
         <Sidebar
           showSidebar={showSidebar}
-          topLevelInfo={topLevelInfo}
           onClickForNavigation={() => {
             if (isBigScreen) return;
             setShowSidebar(false);
@@ -300,7 +292,7 @@ export default function Workspace() {
         <ScoreSnackbarManager scoreAction={scoreAction} />
         <ReleaseUpdateWidget />
       </WorkspaceContainer>
-    </TopLevelInfoContext.Provider>
+    </TopLevelInfoProvider>
   );
 }
 

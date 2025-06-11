@@ -15,7 +15,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -162,8 +161,6 @@ export default function MetricEntry() {
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.metricEntry.archived;
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`metric-${id}/entry-${entryId}`}
@@ -177,7 +174,7 @@ export default function MetricEntry() {
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <TimeDiffTag
-              today={today}
+              today={topLevelInfo.today}
               labelPrefix="Collected"
               collectionTime={loaderData.metricEntry.collection_time}
             />

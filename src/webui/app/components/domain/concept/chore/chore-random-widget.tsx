@@ -19,7 +19,7 @@ import { aDateToDate } from "~/logic/domain/adate";
 
 export function ChoreRandomWidget(props: WidgetProps) {
   const choreTasks = props.choreTasks!;
-  const today = aDateToDate(props.today).endOf("day");
+  const today = aDateToDate(props.topLevelInfo.today).endOf("day");
   const endOfTheMonth = today.endOf("month").endOf("day");
   const actionableTime = actionableTimeToDateTime(
     ActionableTime.ONE_WEEK,
@@ -62,13 +62,12 @@ export function ChoreRandomWidget(props: WidgetProps) {
   }
 
   // Pick a random task
-  const randomTask = getDeterministicRandomElement(allChoreTasks, props.today);
+  const randomTask = getDeterministicRandomElement(allChoreTasks, props.topLevelInfo.today);
 
   return (
     <>
       <InboxTaskStack
         key="random-chore"
-        today={today}
         topLevelInfo={props.topLevelInfo}
         showOptions={{
           showStatus: true,

@@ -19,7 +19,7 @@ import { aDateToDate } from "~/logic/domain/adate";
 
 export function HabitRandomWidget(props: WidgetProps) {
   const habitTasks = props.habitTasks!;
-  const today = aDateToDate(props.today).endOf("day");
+  const today = aDateToDate(props.topLevelInfo.today).endOf("day");
   const endOfTheMonth = today.endOf("month").endOf("day");
   const actionableTime = actionableTimeToDateTime(
     ActionableTime.ONE_WEEK,
@@ -62,12 +62,11 @@ export function HabitRandomWidget(props: WidgetProps) {
   }
 
   // Pick a random task
-  const randomTask = getDeterministicRandomElement(allHabitTasks, props.today);
+  const randomTask = getDeterministicRandomElement(allHabitTasks, props.topLevelInfo.today);
 
   return (
     <InboxTaskStack
       key="random-habit"
-      today={today}
       topLevelInfo={props.topLevelInfo}
       showOptions={{
         showStatus: true,

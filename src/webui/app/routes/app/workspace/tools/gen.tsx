@@ -209,7 +209,6 @@ export default function Gen() {
       refId: p.ref_id,
       label: p.name,
     })) ?? [];
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <ToolPanel>
@@ -227,7 +226,7 @@ export default function Gen() {
                 label="Generation Date"
                 readOnly={!inputsEnabled}
                 disabled={!inputsEnabled}
-                defaultValue={today.toISODate()}
+                defaultValue={topLevelInfo.today}
                 name="today"
               />
 
@@ -488,7 +487,7 @@ export default function Gen() {
                 {entry.entity_updated_records.length} entities updated, and{" "}
                 {entry.entity_removed_records.length} entities removed
                 <TimeDiffTag
-                  today={today}
+                  today={topLevelInfo.today}
                   labelPrefix="from"
                   collectionTime={entry.created_time}
                 />
@@ -578,7 +577,7 @@ export default function Gen() {
 
                   {entry.entity_created_records.map((record) => (
                     <EntityCard key={record.ref_id}>
-                      <EntitySummaryLink today={today} summary={record} />
+                      <EntitySummaryLink today={topLevelInfo.today} summary={record} />
                     </EntityCard>
                   ))}
                 </>
@@ -590,7 +589,7 @@ export default function Gen() {
 
                   {entry.entity_updated_records.map((record) => (
                     <EntityCard key={record.ref_id}>
-                      <EntitySummaryLink today={today} summary={record} />
+                      <EntitySummaryLink today={topLevelInfo.today} summary={record} />
                     </EntityCard>
                   ))}
                 </>
@@ -603,7 +602,7 @@ export default function Gen() {
                   {entry.entity_removed_records.map((record) => (
                     <EntityCard key={record.ref_id}>
                       <EntitySummaryLink
-                        today={today}
+                        today={topLevelInfo.today}
                         summary={record}
                         removed
                       />

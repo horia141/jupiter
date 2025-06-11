@@ -26,7 +26,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
@@ -332,8 +331,6 @@ export default function Chore() {
     setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`chore-{loaderData.chore.ref_id}`}
@@ -525,7 +522,6 @@ export default function Chore() {
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
-          today={today}
           topLevelInfo={topLevelInfo}
           showOptions={{
             showStatus: true,

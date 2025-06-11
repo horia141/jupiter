@@ -1,4 +1,3 @@
-import type { ADate } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
@@ -92,9 +91,6 @@ export default function BigPlans() {
   }
 
   const topLevelInfo = useContext(TopLevelInfoContext);
-
-  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
-  const theRealToday = rightNow.toISODate() as ADate;
 
   const initialView = isWorkspaceFeatureAvailable(
     topLevelInfo.workspace,
@@ -262,7 +258,7 @@ export default function BigPlans() {
                           bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
-                              date: theRealToday,
+                              date: topLevelInfo.today,
                               color: "red",
                               label: "Today",
                             },
@@ -276,7 +272,7 @@ export default function BigPlans() {
                           bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
-                              date: theRealToday,
+                              date: topLevelInfo.today,
                               color: "red",
                               label: "Today",
                             },
@@ -299,7 +295,7 @@ export default function BigPlans() {
                 bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {
-                    date: theRealToday,
+                    date: topLevelInfo.today,
                     color: "red",
                     label: "Today",
                   },
@@ -313,7 +309,7 @@ export default function BigPlans() {
                 bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {
-                    date: theRealToday,
+                    date: topLevelInfo.today,
                     color: "red",
                     label: "Today",
                   },

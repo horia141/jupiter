@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import { Settings } from "@mui/icons-material";
 import {
@@ -14,7 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
-import type { TopLevelInfo } from "~/top-level-context";
+import { TopLevelInfoContext } from "~/top-level-context";
 import { StandardDivider } from "~/components/infra/standard-divider";
 
 const BIG_SCREEN_WIDTH = "240px";
@@ -26,11 +27,14 @@ const SMALL_SCREEN_ANIMATION_END = "0vw";
 
 interface SidebarProps {
   showSidebar: boolean;
-  topLevelInfo: TopLevelInfo;
   onClickForNavigation?: () => void;
 }
 
 export default function Sidebar(props: SidebarProps) {
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
+  console.log(topLevelInfo);
+
   function onClickNavigation() {
     if (!props.onClickForNavigation) {
       return;
@@ -88,7 +92,7 @@ export default function Sidebar(props: SidebarProps) {
             </ListItem>
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.WORKING_MEM,
             ) && (
               <ListItem disablePadding>
@@ -104,7 +108,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.TIME_PLANS,
             ) && (
               <ListItem disablePadding>
@@ -120,7 +124,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.SCHEDULE,
             ) && (
               <ListItem disablePadding>
@@ -136,7 +140,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.HABITS,
             ) && (
               <ListItem disablePadding>
@@ -152,7 +156,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.CHORES,
             ) && (
               <ListItem disablePadding>
@@ -168,7 +172,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.BIG_PLANS,
             ) && (
               <ListItem disablePadding>
@@ -184,7 +188,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.JOURNALS,
             ) && (
               <ListItem disablePadding>
@@ -200,7 +204,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.DOCS,
             ) && (
               <ListItem disablePadding>
@@ -216,7 +220,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.VACATIONS,
             ) && (
               <ListItem disablePadding>
@@ -232,7 +236,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.PROJECTS,
             ) && (
               <ListItem disablePadding>
@@ -248,7 +252,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.SMART_LISTS,
             ) && (
               <ListItem disablePadding>
@@ -264,7 +268,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.METRICS,
             ) && (
               <ListItem disablePadding>
@@ -280,7 +284,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.PERSONS,
             ) && (
               <ListItem disablePadding>
@@ -296,16 +300,16 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {(isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.SLACK_TASKS,
             ) ||
               isWorkspaceFeatureAvailable(
-                props.topLevelInfo.workspace,
+                topLevelInfo.workspace,
                 WorkspaceFeature.EMAIL_TASKS,
               )) && <StandardDivider title="Push Integrations" size="small" />}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.SLACK_TASKS,
             ) && (
               <ListItem disablePadding>
@@ -321,7 +325,7 @@ export default function Sidebar(props: SidebarProps) {
             )}
 
             {isWorkspaceFeatureAvailable(
-              props.topLevelInfo.workspace,
+              topLevelInfo.workspace,
               WorkspaceFeature.EMAIL_TASKS,
             ) && (
               <ListItem disablePadding>

@@ -2,7 +2,6 @@ import type { InboxTask } from "@jupiter/webapi-client";
 import { Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { Link, useLocation, useSearchParams } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { DateTime } from "luxon";
 
 import type {
   InboxTaskOptimisticState,
@@ -20,7 +19,6 @@ interface PagesProps {
 }
 
 interface InboxTaskStackProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   showOptions: InboxTaskShowOptions;
   label?: string;
@@ -77,7 +75,6 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
             <AnimatePresence>
               {props.inboxTasks.map((it) => (
                 <InboxTaskCard
-                  today={props.today}
                   topLevelInfo={props.topLevelInfo}
                   key={it.ref_id}
                   allowSwipe={true}

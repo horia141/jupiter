@@ -33,7 +33,6 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from "@mui/material";
-import { DateTime } from "luxon";
 
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -207,8 +206,6 @@ export default function JournalsSettings() {
   const [approach, setApproach] = useState<JournalGenerationApproach>(
     loaderData.generationApproach,
   );
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const inputsEnabled = navigation.state === "idle";
 
@@ -438,7 +435,6 @@ export default function JournalsSettings() {
             title="Generated Writing Tasks"
           >
             <InboxTaskStack
-              today={today}
               topLevelInfo={topLevelInfo}
               showOptions={{
                 showStatus: true,

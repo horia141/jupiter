@@ -30,7 +30,6 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
@@ -55,6 +54,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { aDateToDate } from "~/logic/domain/adate";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -353,8 +353,6 @@ export default function Habit() {
     setSelectedRepeatsStrategy(loaderData.habit.repeats_strategy || "none");
   }, [loaderData]);
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`habit-${loaderData.habit.ref_id}`}
@@ -498,7 +496,7 @@ export default function Habit() {
         <CardContent>
           <HabitStreakCalendar
             year={loaderData.streakMarkYear}
-            currentYear={today.year}
+            currentYear={aDateToDate(topLevelInfo.today).year}
             habit={loaderData.habit}
             streakMarks={loaderData.streakMarks}
             inboxTasks={sortedInboxTasks}
@@ -542,7 +540,6 @@ export default function Habit() {
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
-          today={today}
           topLevelInfo={topLevelInfo}
           showOptions={{
             showStatus: true,

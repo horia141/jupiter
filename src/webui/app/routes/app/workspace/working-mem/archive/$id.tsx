@@ -19,7 +19,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
@@ -165,13 +164,12 @@ export default function WorkingMem() {
     );
   }
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`working-mem-${loaderData.workingMem.ref_id}`}
       showArchiveAndRemoveButton={
-        aDateToDate(loaderData.workingMem.right_now) < today.minus({ days: 14 })
+        aDateToDate(loaderData.workingMem.right_now) <
+        aDateToDate(topLevelInfo.today).minus({ days: 14 })
       }
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.workingMem.archived}
@@ -230,7 +228,6 @@ export default function WorkingMem() {
 
       {loaderData.cleanupTasks.length > 0 && (
         <InboxTaskStack
-          today={today}
           topLevelInfo={topLevelInfo}
           showOptions={{
             showStatus: true,

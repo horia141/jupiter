@@ -4,15 +4,16 @@ import type { DateTime } from "luxon";
 import { ClientOnly } from "~/components/infra/client-only";
 import { timestampToDate } from "~/logic/domain/timestamp";
 import { FatChip } from "~/components/infra/chips";
+import { aDateToDate } from "~/logic/domain/adate";
 
 interface TimeDiffTagProps {
-  today: DateTime;
+  today: ADate;
   labelPrefix: string;
   collectionTime: ADate | Timestamp;
 }
 
 export function TimeDiffTag(props: TimeDiffTagProps) {
-  const today = props.today.startOf("day");
+  const today = aDateToDate(props.today);
   const collectionTime = timestampToDate(props.collectionTime);
   const diff = today.diff(collectionTime, ["years", "months", "days"]);
 

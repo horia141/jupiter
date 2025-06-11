@@ -31,7 +31,6 @@ import {
   Divider,
   Typography,
 } from "@mui/material";
-import { DateTime } from "luxon";
 
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -206,8 +205,6 @@ export default function TimePlansSettings() {
   const [approach, setApproach] = useState<TimePlanGenerationApproach>(
     loaderData.generationApproach,
   );
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const inputsEnabled = navigation.state === "idle";
 
@@ -403,7 +400,6 @@ export default function TimePlansSettings() {
             title="Generated Planning Tasks"
           >
             <InboxTaskStack
-              today={today}
               topLevelInfo={topLevelInfo}
               showOptions={{
                 showStatus: true,

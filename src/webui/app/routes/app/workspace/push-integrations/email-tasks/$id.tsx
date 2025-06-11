@@ -24,7 +24,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -207,8 +206,6 @@ export default function EmailTask() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.emailTask.archived;
@@ -456,7 +453,6 @@ export default function EmailTask() {
 
       {loaderData.inboxTask && (
         <InboxTaskStack
-          today={today}
           topLevelInfo={topLevelInfo}
           showOptions={{
             showStatus: true,

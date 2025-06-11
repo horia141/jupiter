@@ -1,4 +1,4 @@
-import type { EntitySummary } from "@jupiter/webapi-client";
+import type { ADate, EntitySummary } from "@jupiter/webapi-client";
 import { NamedEntityTag } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 
@@ -7,7 +7,7 @@ import { EntityFakeLink, EntityLink } from "~/components/infra/entity-card";
 import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 
 interface EntitySummaryLinkProps {
-  today: DateTime;
+  today: ADate;
   summary: EntitySummary;
   removed?: boolean;
 }

@@ -14,14 +14,12 @@ import {
   actionableTimeToDateTime,
 } from "~/rendering/actionable-time";
 import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
-import {
-  WidgetProps,
-} from "~/components/domain/application/home/common";
+import { WidgetProps } from "~/components/domain/application/home/common";
 import { aDateToDate } from "~/logic/domain/adate";
 
 export function HabitInboxTasksWidget(props: WidgetProps) {
   const habitTasks = props.habitTasks!;
-  const today = aDateToDate(props.today).endOf("day");
+  const today = aDateToDate(props.topLevelInfo.today).endOf("day");
   const endOfTheWeek = today.endOf("week").endOf("day");
   const actionableTime = actionableTimeToDateTime(
     ActionableTime.ONE_WEEK,
@@ -74,7 +72,6 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
     <>
       <InboxTaskStack
         key="habit-due-today"
-        today={today}
         topLevelInfo={props.topLevelInfo}
         showOptions={{
           showStatus: true,
@@ -94,7 +91,6 @@ export function HabitInboxTasksWidget(props: WidgetProps) {
       />
 
       <InboxTaskStack
-        today={today}
         topLevelInfo={props.topLevelInfo}
         key="habit-due-this-week"
         showOptions={{

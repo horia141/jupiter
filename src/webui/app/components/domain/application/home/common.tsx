@@ -57,7 +57,6 @@ interface BigPlanStatsEntry {
 
 export interface WidgetProps {
   rightNow: DateTime;
-  today: ADate;
   timezone: Timezone;
   topLevelInfo: TopLevelInfo;
   motd?: MOTD;

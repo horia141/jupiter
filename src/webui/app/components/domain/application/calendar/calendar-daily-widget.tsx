@@ -6,7 +6,7 @@ export function CalendarDailyWidget(props: WidgetProps) {
   return (
     <ViewAsCalendarDaily
       rightNow={props.rightNow}
-      today={props.today}
+      today={props.topLevelInfo.today}
       timezone={props.timezone}
       period={calendar.period}
       periodStartDate={calendar.periodStartDate}

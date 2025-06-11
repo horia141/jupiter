@@ -22,7 +22,6 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
@@ -230,8 +229,6 @@ export default function Search() {
   }, [loaderData]);
 
   const inputsEnabled = navigation.state === "idle";
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <ToolPanel method="get">
@@ -497,7 +494,7 @@ export default function Search() {
                 showAsArchived={match.summary.archived}
                 key={`${match.summary.entity_tag}:${match.summary.ref_id}`}
               >
-                <EntitySummaryLink today={today} summary={match.summary} />
+                <EntitySummaryLink today={topLevelInfo.today} summary={match.summary} />
               </EntityCard>
             );
           })}

@@ -19,7 +19,7 @@ import { aDateToDate } from "~/logic/domain/adate";
 
 export function ChoreInboxTasksWidget(props: WidgetProps) {
   const choreTasks = props.choreTasks!;
-  const today = aDateToDate(props.today).endOf("day");
+  const today = aDateToDate(props.topLevelInfo.today).endOf("day");
   const endOfTheWeek = today.endOf("week").endOf("day");
   const actionableTime = actionableTimeToDateTime(
     ActionableTime.ONE_WEEK,
@@ -72,7 +72,6 @@ export function ChoreInboxTasksWidget(props: WidgetProps) {
     <>
       <InboxTaskStack
         key="chore-due-today"
-        today={today}
         topLevelInfo={props.topLevelInfo}
         showOptions={{
           showStatus: true,
@@ -92,7 +91,6 @@ export function ChoreInboxTasksWidget(props: WidgetProps) {
       />
 
       <InboxTaskStack
-        today={today}
         topLevelInfo={props.topLevelInfo}
         key="chore-due-this-week"
         showOptions={{

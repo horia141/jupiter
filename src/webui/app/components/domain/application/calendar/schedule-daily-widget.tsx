@@ -6,7 +6,7 @@ export function ScheduleDailyWidget(props: WidgetProps) {
   return (
     <ViewAsScheduleDailyAndWeekly
       rightNow={props.rightNow}
-      today={props.today}
+      today={props.topLevelInfo.today}
       timezone={props.timezone}
       period={calendar.period}
       periodStartDate={calendar.periodStartDate}

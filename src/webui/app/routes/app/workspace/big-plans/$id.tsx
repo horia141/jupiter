@@ -36,7 +36,6 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
@@ -68,7 +67,10 @@ import {
 } from "~/components/infra/section-actions";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
-import { getSuggestedDatesForBigPlanActionableDate, getSuggestedDatesForBigPlanDueDate } from "~/logic/domain/suggested-date";
+import {
+  getSuggestedDatesForBigPlanActionableDate,
+  getSuggestedDatesForBigPlanDueDate,
+} from "~/logic/domain/suggested-date";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -388,8 +390,6 @@ export default function BigPlan() {
     setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`big-plan-${loaderData.bigPlan.ref_id}`}
@@ -501,9 +501,7 @@ export default function BigPlan() {
               name="actionableDate"
               label="actionableDate"
               inputsEnabled={inputsEnabled}
-              defaultValue={
-                loaderData.bigPlan.actionable_date
-              }
+              defaultValue={loaderData.bigPlan.actionable_date}
               suggestedDates={getSuggestedDatesForBigPlanActionableDate(
                 topLevelInfo.today,
               )}
@@ -722,7 +720,6 @@ export default function BigPlan() {
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
-          today={today}
           topLevelInfo={topLevelInfo}
           showOptions={{
             showStatus: true,

@@ -24,7 +24,6 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -202,8 +201,6 @@ export default function SlackTask() {
     navigation.state === "idle" && !loaderData.slackTask.archived;
 
   const cardActionFetcher = useFetcher();
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
@@ -448,7 +445,6 @@ export default function SlackTask() {
 
       {loaderData.inboxTask && (
         <InboxTaskStack
-          today={today}
           topLevelInfo={topLevelInfo}
           showOptions={{
             showStatus: true,

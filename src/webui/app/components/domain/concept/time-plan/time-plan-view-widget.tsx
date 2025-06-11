@@ -14,7 +14,6 @@ import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
 import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/time-plan-merged-activities";
 import {
-  WidgetContainer,
   WidgetProps,
 } from "~/components/domain/application/home/common";
 

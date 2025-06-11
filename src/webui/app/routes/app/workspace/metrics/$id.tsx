@@ -9,7 +9,6 @@ import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -131,8 +130,6 @@ export default function Metric() {
     return -compareADate(e1.collection_time, e2.collection_time);
   });
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   const isBigScreen = useBigScreen();
 
   return (
@@ -188,7 +185,7 @@ export default function Metric() {
               >
                 <EntityNameComponent name={metricEntryName(entry)} />
                 <TimeDiffTag
-                  today={today}
+                  today={topLevelInfo.today}
                   labelPrefix="Collected"
                   collectionTime={entry.collection_time}
                 />

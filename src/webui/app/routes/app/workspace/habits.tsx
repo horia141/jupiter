@@ -110,11 +110,9 @@ export default function Habits() {
   }
 
   const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
-  const today = rightNow.toISODate();
 
   const widgetProps: WidgetProps = {
     rightNow,
-    today,
     timezone: topLevelInfo.user.timezone,
     topLevelInfo,
     habitStreak: {
