@@ -5,6 +5,7 @@ export enum DisplayType {
   TRUNK,
   BRANCH,
   LEAF,
+  LEAFLET,
   TOOL,
 }
 
@@ -53,4 +54,15 @@ export function useTrunkNeedsToShowBranch() {
 
 export function useTrunkNeedsToShowLeaf() {
   return useBranchNeedsToShowLeaf();
+}
+
+export function useLeafNeedsToShowLeaflet() {
+  const matches = useMatches();
+  const lastMatch = matches[matches.length - 1];
+
+  if (checkMatchIs(lastMatch, DisplayType.LEAFLET)) {
+    return true;
+  }
+  
+  return false;
 }

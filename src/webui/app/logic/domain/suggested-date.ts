@@ -146,3 +146,9 @@ export function getSuggestedDatesForBigPlanDueDate(
 
   return suggestedDates;
 }
+
+export function getSuggestedDatesForBigPlanMilestoneDate(
+  today: ADate,
+): SuggestedDate[] {
+  return getSuggestedDatesForBigPlanDueDate(today, timePlan);
+}

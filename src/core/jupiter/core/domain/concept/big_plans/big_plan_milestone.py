@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     LeafEntity,
@@ -19,7 +20,7 @@ class BigPlanMilestone(LeafEntity):
 
     big_plan: ParentLink
     date: ADate
-    description: str
+    name: EntityName
 
     @staticmethod
     @create_entity_action
@@ -27,14 +28,14 @@ class BigPlanMilestone(LeafEntity):
         ctx: DomainContext,
         big_plan_ref_id: EntityId,
         date: ADate,
-        description: str,
+        name: EntityName,
     ) -> "BigPlanMilestone":
         """Create a big plan milestone."""
         return BigPlanMilestone._create(
             ctx,
+            name=name,
             big_plan=ParentLink(big_plan_ref_id),
             date=date,
-            description=description,
         )
 
     @update_entity_action
@@ -42,11 +43,11 @@ class BigPlanMilestone(LeafEntity):
         self,
         ctx: DomainContext,
         date: UpdateAction[ADate],
-        description: UpdateAction[str],
+        name: UpdateAction[EntityName],
     ) -> "BigPlanMilestone":
         """Update the big plan milestone."""
         return self._new_version(
             ctx,
             date=date.or_else(self.date),
-            description=description.or_else(self.description),
+            name=name.or_else(self.name),
         )

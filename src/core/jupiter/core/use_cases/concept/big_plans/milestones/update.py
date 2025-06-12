@@ -6,6 +6,7 @@ from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter
@@ -28,8 +29,7 @@ class BigPlanMilestoneUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     date: UpdateAction[ADate]
-    description: UpdateAction[str]
-
+    name: UpdateAction[EntityName]
 
 
 @mutation_use_case(WorkspaceFeature.BIG_PLANS)
@@ -66,7 +66,7 @@ class BigPlanMilestoneUpdateUseCase(
         updated_milestone = milestone.update(
             context.domain_context,
             date=args.date,
-            description=args.description,
+            name=args.name,
         )
         await uow.get_for(BigPlanMilestone).save(updated_milestone)
         await progress_reporter.mark_updated(updated_milestone)

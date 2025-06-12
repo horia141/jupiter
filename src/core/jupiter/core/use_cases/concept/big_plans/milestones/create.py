@@ -7,6 +7,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_creator import generic_creator
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.framework.use_case_io import (
@@ -28,7 +29,7 @@ class BigPlanMilestoneCreateArgs(UseCaseArgsBase):
 
     big_plan_ref_id: EntityId
     date: ADate
-    description: str
+    name: EntityName
 
 
 @use_case_result
@@ -71,7 +72,7 @@ class BigPlanMilestoneCreateUseCase(
             context.domain_context,
             big_plan_ref_id=args.big_plan_ref_id,
             date=args.date,
-            description=args.description,
+            name=args.name,
         )
         new_big_plan_milestone = await generic_creator(
             uow, progress_reporter, new_big_plan_milestone
