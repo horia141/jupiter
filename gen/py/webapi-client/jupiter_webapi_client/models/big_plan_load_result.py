@@ -8,6 +8,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.big_plan import BigPlan
+    from ..models.big_plan_milestone import BigPlanMilestone
     from ..models.big_plan_stats import BigPlanStats
     from ..models.inbox_task import InboxTask
     from ..models.note import Note
@@ -24,6 +25,7 @@ class BigPlanLoadResult:
     Attributes:
         big_plan (BigPlan): A big plan.
         project (Project): The project.
+        milestones (list['BigPlanMilestone']):
         inbox_tasks (list['InboxTask']):
         stats (BigPlanStats): Stats about a big plan.
         note (Union['Note', None, Unset]):
@@ -31,6 +33,7 @@ class BigPlanLoadResult:
 
     big_plan: "BigPlan"
     project: "Project"
+    milestones: list["BigPlanMilestone"]
     inbox_tasks: list["InboxTask"]
     stats: "BigPlanStats"
     note: Union["Note", None, Unset] = UNSET
@@ -42,6 +45,11 @@ class BigPlanLoadResult:
         big_plan = self.big_plan.to_dict()
 
         project = self.project.to_dict()
+
+        milestones = []
+        for milestones_item_data in self.milestones:
+            milestones_item = milestones_item_data.to_dict()
+            milestones.append(milestones_item)
 
         inbox_tasks = []
         for inbox_tasks_item_data in self.inbox_tasks:
@@ -64,6 +72,7 @@ class BigPlanLoadResult:
             {
                 "big_plan": big_plan,
                 "project": project,
+                "milestones": milestones,
                 "inbox_tasks": inbox_tasks,
                 "stats": stats,
             }
@@ -76,6 +85,7 @@ class BigPlanLoadResult:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
+        from ..models.big_plan_milestone import BigPlanMilestone
         from ..models.big_plan_stats import BigPlanStats
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
@@ -85,6 +95,13 @@ class BigPlanLoadResult:
         big_plan = BigPlan.from_dict(d.pop("big_plan"))
 
         project = Project.from_dict(d.pop("project"))
+
+        milestones = []
+        _milestones = d.pop("milestones")
+        for milestones_item_data in _milestones:
+            milestones_item = BigPlanMilestone.from_dict(milestones_item_data)
+
+            milestones.append(milestones_item)
 
         inbox_tasks = []
         _inbox_tasks = d.pop("inbox_tasks")
@@ -115,6 +132,7 @@ class BigPlanLoadResult:
         big_plan_load_result = cls(
             big_plan=big_plan,
             project=project,
+            milestones=milestones,
             inbox_tasks=inbox_tasks,
             stats=stats,
             note=note,

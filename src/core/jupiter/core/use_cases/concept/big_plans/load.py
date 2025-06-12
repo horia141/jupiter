@@ -1,6 +1,7 @@
 """Use case for loading big plans."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
 from jupiter.core.domain.concept.big_plans.big_plan_stats import (
     BigPlanStats,
     BigPlanStatsRepository,
@@ -46,6 +47,7 @@ class BigPlanLoadResult(UseCaseResultBase):
 
     big_plan: BigPlan
     project: Project
+    milestones: list[BigPlanMilestone]
     inbox_tasks: list[InboxTask]
     note: Note | None
     stats: BigPlanStats
@@ -70,6 +72,11 @@ class BigPlanLoadUseCase(
             args.ref_id, allow_archived=args.allow_archived
         )
         project = await uow.get_for(Project).load_by_id(big_plan.project_ref_id)
+
+        milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
+            parent_ref_id=big_plan.ref_id,
+            allow_archived=False,
+        )
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -96,6 +103,7 @@ class BigPlanLoadUseCase(
         return BigPlanLoadResult(
             big_plan=big_plan,
             project=project,
+            milestones=milestones,
             inbox_tasks=inbox_tasks,
             note=note,
             stats=stats,

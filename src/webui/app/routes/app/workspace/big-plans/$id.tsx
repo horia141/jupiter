@@ -64,6 +64,7 @@ import { DifficultySelect } from "~/components/domain/core/difficulty-select";
 import {
   SectionActions,
   ActionSingle,
+  NavSingle,
 } from "~/components/infra/section-actions";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
@@ -71,6 +72,7 @@ import {
   getSuggestedDatesForBigPlanActionableDate,
   getSuggestedDatesForBigPlanDueDate,
 } from "~/logic/domain/suggested-date";
+import { BigPlanMilestoneStack } from "~/components/domain/concept/big-plan/big-plan-milestone-stack";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -168,6 +170,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return json({
       bigPlan: result.big_plan,
       project: result.project,
+      milestones: result.milestones,
       inboxTasks: result.inbox_tasks,
       note: result.note,
       timePlanEntries: timePlanEntries,
@@ -707,18 +710,46 @@ export default function BigPlan() {
         )}
       </Card>
 
-      <EntityActionHeader>
-        <Button
-          variant="contained"
-          disabled={loaderData.bigPlan.archived}
-          to={`/app/workspace/inbox-tasks/new?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`}
-          component={Link}
-        >
-          New Task
-        </Button>
-      </EntityActionHeader>
+      <SectionCardNew
+        id="big-plan-milestones"
+        title="Milestones"
+        actions={
+          <SectionActions
+            id="big-plan-milestones"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              NavSingle({
+                text: "New Milestone",
+                link: `/app/workspace/big-plans/${loaderData.bigPlan.ref_id}/milestones/new`,
+              }),
+            ]}
+          />
+        }
+      >
+        <BigPlanMilestoneStack
+          milestones={loaderData.milestones}
+        />
+      </SectionCardNew>
 
-      {sortedInboxTasks.length > 0 && (
+      <SectionCardNew
+        id="big-plan-inbox-tasks"
+        title="Inbox Tasks"
+        actions={
+          <SectionActions
+            id="big-plan-inbox-tasks"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              NavSingle({
+                text: "New Task",
+                link: `/app/workspace/inbox-tasks/new?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`,
+              }),
+            ]}
+          />
+        }
+      >
+        {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
           topLevelInfo={topLevelInfo}
           showOptions={{
@@ -730,12 +761,13 @@ export default function BigPlan() {
             showHandleMarkDone: true,
             showHandleMarkNotDone: true,
           }}
-          label="Inbox Tasks"
           inboxTasks={sortedInboxTasks}
           onCardMarkDone={handleCardMarkDone}
           onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+          />
+        )}
+      </SectionCardNew>
+      
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
