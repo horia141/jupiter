@@ -33,8 +33,6 @@ interface SidebarProps {
 export default function Sidebar(props: SidebarProps) {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  console.log(topLevelInfo);
-
   function onClickNavigation() {
     if (!props.onClickForNavigation) {
       return;

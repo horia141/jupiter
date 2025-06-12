@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
@@ -49,6 +50,16 @@ class BigPlanArchiveService:
         big_plan_collection = await uow.get_for(BigPlanCollection).load_by_id(
             big_plan.big_plan_collection.ref_id,
         )
+
+        milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
+            parent_ref_id=big_plan.ref_id,
+            allow_archived=False,
+        )
+
+        for milestone in milestones:
+            milestone = milestone.mark_archived(ctx, archival_reason)
+            await uow.get_for(BigPlanMilestone).save(milestone)
+            await progress_reporter.mark_updated(milestone)
 
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             big_plan_collection.workspace.ref_id,

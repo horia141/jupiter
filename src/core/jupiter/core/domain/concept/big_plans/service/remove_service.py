@@ -1,6 +1,7 @@
 """Shared module for removing a big plan."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
 from jupiter.core.domain.concept.big_plans.big_plan_stats import BigPlanStatsRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
@@ -41,6 +42,13 @@ class BigPlanRemoveService:
             ref_id,
             allow_archived=True,
         )
+
+        milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
+            parent_ref_id=big_plan.ref_id,
+            allow_archived=False,
+        )
+        for milestone in milestones:
+            await uow.get_for(BigPlanMilestone).remove(milestone.ref_id)
 
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
