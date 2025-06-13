@@ -56,6 +56,7 @@ interface LeafPanelProps {
   returnLocationDiscriminator?: string;
   initialExpansionState?: LeafPanelExpansionState;
   allowedExpansionStates?: LeafPanelExpansionState[];
+  shouldShowALeaflet?: boolean;
 }
 
 export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
@@ -66,7 +67,9 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState<
     LeafPanelExpansionState | "shrunk" | "exit"
-  >(props.initialExpansionState ?? LeafPanelExpansionState.SMALL);
+  >(
+    props.shouldShowALeaflet ? LeafPanelExpansionState.FULL : (props.initialExpansionState ?? LeafPanelExpansionState.SMALL)
+  );
   const [previousExpansionState, setPreviousExpansionState] =
     useState<LeafPanelExpansionState | null>(null);
   const [expansionFullRight, setExpansionFullRight] = useState(0);
@@ -134,6 +137,10 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   }, []);
 
   function handleExpansion() {
+    if (isBigScreen && props.shouldShowALeaflet) {
+      return;
+    }
+
     setExpansionState((e) =>
       cycleExpansionState(e, props.allowedExpansionStates),
     );
@@ -162,6 +169,24 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       setPreviousExpansionState(null);
     }
   }
+
+  // useEffect(() => {
+  //   if (!isBigScreen) {
+  //     return;
+  //   }
+
+  //   if (expansionState === "shrunk" || expansionState === "exit") {
+  //     return;
+  //   }
+
+  //   if (props.shouldShowALeaflet) {
+  //     setPreviousExpansionState(expansionState);
+  //     setExpansionState(LeafPanelExpansionState.FULL);
+  //   } else {
+  //     setExpansionState(previousExpansionState as LeafPanelExpansionState);
+  //     setPreviousExpansionState(null);
+  //   }
+  // }, [isBigScreen, props.shouldShowALeaflet, expansionState, previousExpansionState]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
@@ -253,12 +278,12 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
             {isBigScreen && (
               <>
                 <IconButton
-                  disabled={expansionState === "shrunk"}
+                  disabled={expansionState === "shrunk" || props.shouldShowALeaflet}
                   onClick={handleExpansion}
                 >
                   <SwitchLeftIcon />
                 </IconButton>
-                <IconButton onClick={handleShrunk}>
+                <IconButton disabled={props.shouldShowALeaflet} onClick={handleShrunk}>
                   <PictureInPictureAltIcon />
                 </IconButton>
               </>

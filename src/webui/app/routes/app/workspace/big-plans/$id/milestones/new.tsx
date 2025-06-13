@@ -45,6 +45,7 @@ export const handle = {
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
+  console.log("action");
   const { id: bigPlanId } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, CreateFormSchema);
 
@@ -107,10 +108,10 @@ export default function BigPlanMilestoneNew() {
           <FormControl fullWidth>
             <InputLabel id="name">Name</InputLabel>
             <OutlinedInput
-              label="Name"
-              name="name"
-              readOnly={!inputsEnabled}
-            />
+            label="Name"
+            name="name"
+            readOnly={!inputsEnabled}
+          />
             <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 

@@ -50,7 +50,7 @@ export function DateInputWithSuggestions(props: DateInputWithSuggestionsProps) {
         readOnly={!props.inputsEnabled}
         name={props.name}
         notched
-        value={date}
+        value={date || ""}
         onChange={(e) => {
           const newDate = strToADate(e.target.value as ADate);
           setDate(newDate);

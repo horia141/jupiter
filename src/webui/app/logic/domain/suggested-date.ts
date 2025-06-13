@@ -150,5 +150,5 @@ export function getSuggestedDatesForBigPlanDueDate(
 export function getSuggestedDatesForBigPlanMilestoneDate(
   today: ADate,
 ): SuggestedDate[] {
-  return getSuggestedDatesForBigPlanDueDate(today, timePlan);
+  return getSuggestedDatesForBigPlanDueDate(today, null);
 }

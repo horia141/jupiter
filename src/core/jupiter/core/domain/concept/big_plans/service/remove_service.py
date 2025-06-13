@@ -45,7 +45,7 @@ class BigPlanRemoveService:
 
         milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
             parent_ref_id=big_plan.ref_id,
-            allow_archived=False,
+            allow_archived=True,
         )
         for milestone in milestones:
             await uow.get_for(BigPlanMilestone).remove(milestone.ref_id)

@@ -30,6 +30,7 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
 import { getSuggestedDatesForBigPlanMilestoneDate } from "~/logic/domain/suggested-date";
+import { BigPlanMilestoneSourceLink } from "~/components/domain/concept/big-plan/big-plan-milestone-source-link";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -168,16 +169,19 @@ export default function BigPlanMilestoneView() {
       >
         <GlobalError actionResult={actionData} />
         <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
+          <Stack direction="row" spacing={2}>
+            <FormControl sx={{ flexGrow: 3 }}>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
               label="Name"
               name="name"
               readOnly={!inputsEnabled}
               defaultValue={milestone.name}
             />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+            <BigPlanMilestoneSourceLink bigPlanId={milestone.big_plan_ref_id} />
+          </Stack>
 
           <FormControl fullWidth>
             <InputLabel id="date" shrink margin="dense">

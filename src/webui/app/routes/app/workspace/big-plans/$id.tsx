@@ -31,6 +31,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
   Link,
+  Outlet,
   useActionData,
   useFetcher,
   useNavigation,
@@ -57,7 +58,7 @@ import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { DisplayType } from "~/rendering/use-nested-entities";
+import { DisplayType, useLeafNeedsToShowLeaflet } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
 import { DifficultySelect } from "~/components/domain/core/difficulty-select";
@@ -73,6 +74,7 @@ import {
   getSuggestedDatesForBigPlanDueDate,
 } from "~/logic/domain/suggested-date";
 import { BigPlanMilestoneStack } from "~/components/domain/concept/big-plan/big-plan-milestone-stack";
+import { AnimatePresence } from "framer-motion";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -329,6 +331,7 @@ export default function BigPlan() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -400,6 +403,7 @@ export default function BigPlan() {
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.bigPlan.archived}
       returnLocation={"/app/workspace/big-plans"}
+      shouldShowALeaflet={shouldShowALeaflet}
     >
       <SectionCardNew
         id="big-plan-properties"
@@ -790,6 +794,10 @@ export default function BigPlan() {
             />
           </SectionCardNew>
         )}
+
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
     </LeafPanel>
   );
 }
