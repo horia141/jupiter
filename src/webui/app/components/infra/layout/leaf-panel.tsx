@@ -70,10 +70,14 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const [expansionState, setExpansionState] = useState<
     LeafPanelExpansionState | "shrunk" | "exit"
   >(
-    props.shouldShowALeaflet ? LeafPanelExpansionState.FULL : (props.initialExpansionState ?? LeafPanelExpansionState.SMALL)
+    props.shouldShowALeaflet ? LeafPanelExpansionState.FULL : 
+    props.isLeaflet ? LeafPanelExpansionState.SMALL : 
+    (props.initialExpansionState ?? LeafPanelExpansionState.SMALL)
   );
   const [previousExpansionState, setPreviousExpansionState] =
     useState<LeafPanelExpansionState | null>(null);
+  const [previousLeafletExpansionState, setPreviousLeafletExpansionState] =
+    useState<LeafPanelExpansionState | "shrunk" | null>(null);
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
     BIG_SCREEN_WIDTH_FULL_INT,
@@ -153,6 +157,10 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   }
 
   useEffect(() => {
+    if (props.isLeaflet) {
+      return;
+    }
+
     const savedExpansionState = loadLeafPanelExpansion(
       `${props.fakeKey ?? props.returnLocation}/${props.returnLocationDiscriminator}`,
     );
@@ -160,7 +168,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       return;
     }
     setExpansionState(savedExpansionState);
-  }, [props.fakeKey, props.returnLocation, props.returnLocationDiscriminator]);
+  }, [props.fakeKey, props.returnLocation, props.returnLocationDiscriminator, props.isLeaflet]);
 
   function handleShrunk() {
     if (expansionState !== "shrunk" && expansionState !== "exit") {
@@ -177,7 +185,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       return;
     }
 
-    if (expansionState === "shrunk" || expansionState === "exit") {
+    if (expansionState === "exit") {
       return;
     }
 
@@ -185,14 +193,14 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       // This check here is mostly to prevent the expansion state from being set to LARGE
       // when double rendering in React dev mode.
       if (expansionState !== LeafPanelExpansionState.LARGE) {
-        setPreviousExpansionState(expansionState);
+        setPreviousLeafletExpansionState(expansionState);
         setExpansionState(LeafPanelExpansionState.LARGE);
       }
-    } else if (previousExpansionState !== null) {
-      setExpansionState(previousExpansionState as LeafPanelExpansionState);
-      setPreviousExpansionState(null);
+    } else if (previousLeafletExpansionState !== null) {
+      setExpansionState(previousLeafletExpansionState as LeafPanelExpansionState);
+      setPreviousLeafletExpansionState(null);
     }
-  }, [isBigScreen, props.shouldShowALeaflet, expansionState, previousExpansionState]);
+  }, [isBigScreen, props.shouldShowALeaflet, expansionState, previousLeafletExpansionState]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
