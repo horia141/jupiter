@@ -17,10 +17,10 @@ import {
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useHydrated } from "~/rendering/use-hidrated";
 import {
+  useLeafNeedsToShowLeaflet,
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
@@ -37,6 +37,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   const isHydrated = useHydrated();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
   const shouldShowABranch = useTrunkNeedsToShowBranch();
 
@@ -87,7 +88,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       handleScroll(
         theRef,
         extractTrunkFromPath(location.pathname),
-        shouldShowABranch || shouldShowALeaf,
+        shouldShowABranch || shouldShowALeaf || shouldShowALeaflet,
       );
     }
 
@@ -105,6 +106,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     handleScroll,
     shouldShowABranch,
     shouldShowALeaf,
+    shouldShowALeaflet,
   ]);
 
   function handleScrollTop() {
@@ -143,7 +145,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       }}
       transition={{ duration: 0.5 }}
     >
-      {!shouldShowABranch && (isBigScreen || !shouldShowALeaf) && (
+      {!shouldShowABranch && (isBigScreen || !(shouldShowALeaf || shouldShowALeaflet)) && (
         <TrunkPanelControls id="trunk-panel-controls">
           <TrunkPanelControlsInner isbigscreen={isBigScreen ? "true" : "false"}>
             <ButtonGroup size="small">
@@ -189,7 +191,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
         ref={containerRef}
         isbigscreen={isBigScreen ? "true" : "false"}
         hasbranch={shouldShowABranch ? "true" : "false"}
-        hasleaf={shouldShowALeaf ? "true" : "false"}
+        hasleaf={shouldShowALeaf || shouldShowALeaflet ? "true" : "false"}
       >
         {props.children}
       </TrunkPanelContent>

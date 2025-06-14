@@ -25,7 +25,6 @@ export function NestingAwareBlock(
     <Stack
       spacing={2}
       useFlexGap
-      sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
     >
       {props.children}
       <Box sx={{ height: "4rem" }}></Box>

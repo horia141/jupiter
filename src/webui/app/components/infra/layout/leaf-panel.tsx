@@ -287,7 +287,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       transition={{ duration: 0.5 }}
       isBigScreen={isBigScreen}
     >
-      <Form method="post">
+      {(isBigScreen && !props.shouldShowALeaflet) && <Form method="post">
         <LeafPanelControls id="leaf-panel-controls">
           <ButtonGroup size="small">
             {isBigScreen && (
@@ -376,7 +376,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           )}
         </LeafPanelControls>
 
-      </Form>
+      </Form>}
 
         <LeafPanelContent
           id="leaf-panel-content"

@@ -75,6 +75,7 @@ import {
 } from "~/logic/domain/suggested-date";
 import { BigPlanMilestoneStack } from "~/components/domain/concept/big-plan/big-plan-milestone-stack";
 import { AnimatePresence } from "framer-motion";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -406,6 +407,7 @@ export default function BigPlan() {
       returnLocation={"/app/workspace/big-plans"}
       shouldShowALeaflet={shouldShowALeaflet}
     >
+      <NestingAwareBlock shouldHide={shouldShowALeaflet}>
       <SectionCardNew
         id="big-plan-properties"
         title="Properties"
@@ -795,6 +797,7 @@ export default function BigPlan() {
             />
           </SectionCardNew>
         )}
+      </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />

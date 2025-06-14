@@ -42,6 +42,7 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
+  useLeafNeedsToShowLeaflet,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -81,6 +82,7 @@ export default function BigPlans() {
   const isBigScreen = useBigScreen();
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
 
   const sortedBigPlans = sortBigPlansNaturally(
     loaderData.bigPlans.map((b) => b.big_plan),
@@ -215,7 +217,7 @@ export default function BigPlans() {
         </DialogActions>
       </Dialog>
 
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+      <NestingAwareBlock shouldHide={shouldShowALeaf || shouldShowALeaflet}>
         {sortedBigPlans.length === 0 && (
           <EntityNoNothingCard
             title="You Have To Start Somewhere"
