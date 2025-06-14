@@ -48,7 +48,9 @@ const BIG_SCREEN_WIDTH_FULL_INT = 1200;
 const SMALL_SCREEN_WIDTH = "100%";
 
 interface LeafPanelProps {
+  isLeaflet?: boolean;
   showArchiveAndRemoveButton?: boolean;
+  fakeKey?: string;
   inputsEnabled: boolean;
   entityNotEditable?: boolean;
   entityArchived?: boolean;
@@ -104,16 +106,16 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     }
 
     function handleScrollSpecial() {
-      handleScroll(theRef, location.pathname);
+      handleScroll(theRef, props.fakeKey ?? location.pathname);
     }
 
-    restoreScrollPosition(theRef, location.pathname);
+    restoreScrollPosition(theRef, props.fakeKey ?? location.pathname);
     theRef.addEventListener("scroll", handleScrollSpecial);
 
     return () => {
       theRef.removeEventListener("scroll", handleScrollSpecial);
     };
-  }, [containerRef, handleScroll, isPresent, location]);
+  }, [containerRef, handleScroll, isPresent, location, props.fakeKey]);
 
   // setting right to calc((100vw - BIG_SCREEN_WIDTH_FULL_INT / 2)) doesn't work with framer
   // motion. It seems to be a bug with framer motion. So we have to calculate the right
@@ -145,20 +147,20 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       cycleExpansionState(e, props.allowedExpansionStates),
     );
     saveLeafPanelExpansion(
-      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
+      `${props.fakeKey ?? props.returnLocation}/${props.returnLocationDiscriminator}`,
       cycleExpansionState(expansionState, props.allowedExpansionStates),
     );
   }
 
   useEffect(() => {
     const savedExpansionState = loadLeafPanelExpansion(
-      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
+      `${props.fakeKey ?? props.returnLocation}/${props.returnLocationDiscriminator}`,
     );
     if (!savedExpansionState) {
       return;
     }
     setExpansionState(savedExpansionState);
-  }, [props.returnLocation, props.returnLocationDiscriminator]);
+  }, [props.fakeKey, props.returnLocation, props.returnLocationDiscriminator]);
 
   function handleShrunk() {
     if (expansionState !== "shrunk" && expansionState !== "exit") {
@@ -170,23 +172,27 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
     }
   }
 
-  // useEffect(() => {
-  //   if (!isBigScreen) {
-  //     return;
-  //   }
+  useEffect(() => {
+    if (!isBigScreen) {
+      return;
+    }
 
-  //   if (expansionState === "shrunk" || expansionState === "exit") {
-  //     return;
-  //   }
+    if (expansionState === "shrunk" || expansionState === "exit") {
+      return;
+    }
 
-  //   if (props.shouldShowALeaflet) {
-  //     setPreviousExpansionState(expansionState);
-  //     setExpansionState(LeafPanelExpansionState.FULL);
-  //   } else {
-  //     setExpansionState(previousExpansionState as LeafPanelExpansionState);
-  //     setPreviousExpansionState(null);
-  //   }
-  // }, [isBigScreen, props.shouldShowALeaflet, expansionState, previousExpansionState]);
+    if (props.shouldShowALeaflet) {
+      // This check here is mostly to prevent the expansion state from being set to LARGE
+      // when double rendering in React dev mode.
+      if (expansionState !== LeafPanelExpansionState.LARGE) {
+        setPreviousExpansionState(expansionState);
+        setExpansionState(LeafPanelExpansionState.LARGE);
+      }
+    } else if (previousExpansionState !== null) {
+      setExpansionState(previousExpansionState as LeafPanelExpansionState);
+      setPreviousExpansionState(null);
+    }
+  }, [isBigScreen, props.shouldShowALeaflet, expansionState, previousExpansionState]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
@@ -263,11 +269,12 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
 
   return (
     <LeafPanelFrame
-      id="leaf-panel"
-      key={location.pathname}
+      id={props.isLeaflet ? "leaflet-panel" : "leaf-panel"}
+      key={props.fakeKey ?? location.pathname}
       initial="initial"
       animate={isBigScreen ? expansionState : "smallScreen"}
       exit="exit"
+      isLeaflet={props.isLeaflet ?? false}
       variants={formVariants}
       transition={{ duration: 0.5 }}
       isBigScreen={isBigScreen}
@@ -278,12 +285,12 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
             {isBigScreen && (
               <>
                 <IconButton
-                  disabled={expansionState === "shrunk" || props.shouldShowALeaflet}
+                  disabled={expansionState === "shrunk" || props.shouldShowALeaflet || props.isLeaflet}
                   onClick={handleExpansion}
                 >
                   <SwitchLeftIcon />
                 </IconButton>
-                <IconButton disabled={props.shouldShowALeaflet} onClick={handleShrunk}>
+                <IconButton disabled={props.shouldShowALeaflet || props.isLeaflet} onClick={handleShrunk}>
                   <PictureInPictureAltIcon />
                 </IconButton>
               </>
@@ -361,6 +368,8 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           )}
         </LeafPanelControls>
 
+      </Form>
+
         <LeafPanelContent
           id="leaf-panel-content"
           ref={containerRef}
@@ -369,22 +378,22 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           <Stack spacing={2}>{props.children}</Stack>
           <Box sx={{ height: "4rem" }}></Box>
         </LeafPanelContent>
-      </Form>
     </LeafPanelFrame>
   );
 }
 
 interface LeafPanelFrameProps {
+  isLeaflet: boolean;
   isBigScreen: boolean;
 }
 
 const LeafPanelFrame = styled(motion.div)<LeafPanelFrameProps>(
-  ({ theme, isBigScreen }) => `
+  ({ theme, isLeaflet, isBigScreen }) => `
       position: ${isBigScreen ? "fixed" : "static"};
       left: ${isBigScreen ? "unset" : "0px"};
       right: 0px;
       bottom: 0px;
-      z-index: ${theme.zIndex.appBar + 200};
+      z-index: ${theme.zIndex.appBar + (isLeaflet ? 300 : 200)};
       background-color: ${theme.palette.background.paper};
       border-left: 1px solid rgba(0, 0, 0, 0.12);
     `,

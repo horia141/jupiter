@@ -1,4 +1,5 @@
 import { Card, CardContent, Chip, styled } from "@mui/material";
+import { Form } from "@remix-run/react";
 import type { PropsWithChildren } from "react";
 
 interface SectionCardNewProps {
@@ -10,11 +11,13 @@ interface SectionCardNewProps {
 export function SectionCardNew(props: PropsWithChildren<SectionCardNewProps>) {
   return (
     <StyledCard id={props.id}>
-      <SectionHeader>
-        <SectionTitle label={props.title} />
-        {props.actions}
-      </SectionHeader>
-      <CardContent>{props.children}</CardContent>
+      <Form method="post">
+        <SectionHeader>
+          <SectionTitle label={props.title} />
+          {props.actions}
+        </SectionHeader>
+        <CardContent>{props.children}</CardContent>
+      </Form>
     </StyledCard>
   );
 }

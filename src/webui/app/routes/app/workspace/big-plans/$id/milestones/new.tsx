@@ -8,7 +8,7 @@ import {
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams } from "@remix-run/react";
+import { Form, useActionData, useNavigation, useParams } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -23,7 +23,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { aGlobalError, validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -65,6 +65,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       return json(validationErrorToUIErrorInfo(error.body));
     }
 
+    if (error instanceof ApiError && error.status === StatusCodes.CONFLICT) {
+      return json(aGlobalError(error.body));
+    }
+
     throw error;
   }
 }
@@ -81,6 +85,7 @@ export default function BigPlanMilestoneNew() {
 
   return (
     <LeafPanel
+      isLeaflet
       key="big-plan-milestones/new"
       returnLocation={`/app/workspace/big-plans/${bigPlanId}`}
       inputsEnabled={inputsEnabled}

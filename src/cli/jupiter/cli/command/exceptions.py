@@ -2,6 +2,8 @@
 
 import sys
 
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestoneAlreadyExistsForDateError
+
 from jupiter.cli.command.command import CliApp, CliExceptionHandler
 from jupiter.cli.session_storage import SessionInfoNotFoundError
 from jupiter.core.domain.concept.auth.auth_token import (
@@ -146,6 +148,22 @@ class TimePlanExistsForDatePeriodCombinationHandler(
     ) -> None:
         """Handle time plans already existing."""
         print("A time plan for that particular day and period already exists")
+        sys.exit(1)
+
+
+class BigPlanMilestoneAlreadyExistsForDateHandler(
+    CliExceptionHandler[BigPlanMilestoneAlreadyExistsForDateError]
+):
+    """Handle big plan milestone already exists for date errors."""
+
+    def handle(
+        self,
+        app: CliApp,
+        console: Console,
+        exception: BigPlanMilestoneAlreadyExistsForDateError,
+    ) -> None:
+        """Handle big plan milestone already exists for date errors."""
+        print("A big plan milestone for that particular date already exists")
         sys.exit(1)
 
 

@@ -23,7 +23,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { aGlobalError, validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -127,6 +127,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       return json(validationErrorToUIErrorInfo(error.body));
     }
 
+    if (error instanceof ApiError && error.status === StatusCodes.CONFLICT) {
+      return json(aGlobalError(error.body));
+    }
+
     throw error;
   }
 }
@@ -143,6 +147,7 @@ export default function BigPlanMilestoneView() {
 
   return (
     <LeafPanel
+      isLeaflet
       key={`big-plan-milestone-${milestone.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}

@@ -1,5 +1,6 @@
 """A milestone for a big plan."""
 
+import abc
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
@@ -11,7 +12,12 @@ from jupiter.core.framework.entity import (
     entity,
     update_entity_action,
 )
+from jupiter.core.framework.repository import EntityAlreadyExistsError, LeafEntityRepository
 from jupiter.core.framework.update_action import UpdateAction
+
+
+class BigPlanMilestoneAlreadyExistsForDateError(EntityAlreadyExistsError):
+    """A big plan milestone already exists for the given date."""
 
 
 @entity
@@ -51,3 +57,7 @@ class BigPlanMilestone(LeafEntity):
             date=date.or_else(self.date),
             name=name.or_else(self.name),
         )
+
+
+class BigPlanMilestoneRepository(LeafEntityRepository[BigPlanMilestone], abc.ABC):
+    """The repository for big plan milestones."""

@@ -8,6 +8,11 @@ from jupiter.core.domain.concept.big_plans.big_plan import (
     BigPlan,
     BigPlanRepository,
 )
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import (
+    BigPlanMilestone,
+    BigPlanMilestoneAlreadyExistsForDateError,
+    BigPlanMilestoneRepository,
+)
 from jupiter.core.domain.concept.big_plans.big_plan_stats import (
     BigPlanStats,
     BigPlanStatsRepository,
@@ -297,4 +302,22 @@ class SqliteBigPlanStatsRepository(
     def _row_to_entity(self, row: RowType) -> BigPlanStats:
         return self._realm_codec_registry.db_decode(
             BigPlanStats, cast(Mapping[str, RealmThing], row._mapping)
+        )
+
+
+class SqliteBigPlanMilestoneRepository(SqliteLeafEntityRepository[BigPlanMilestone], BigPlanMilestoneRepository):
+    """The big plan milestone repository."""
+
+    def __init__(
+        self,
+        realm_codec_registry: RealmCodecRegistry,
+        connection: AsyncConnection,
+        metadata: MetaData,
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            realm_codec_registry,
+            connection,
+            metadata,
+            already_exists_err_cls=BigPlanMilestoneAlreadyExistsForDateError,
         )
