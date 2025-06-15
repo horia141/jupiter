@@ -5,6 +5,7 @@ from jupiter.core.domain.application.gamification.service.record_score_service i
     RecordScoreService,
 )
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
@@ -21,6 +22,7 @@ from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -76,6 +78,27 @@ class BigPlanUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
         big_plan = await uow.get_for(BigPlan).load_by_id(args.ref_id)
+
+        # Check each milestone is within the new date bounds
+        if args.actionable_date.should_change or args.due_date.should_change:
+            # Get the new dates, falling back to existing ones if not changing
+            new_actionable = args.actionable_date.or_else(big_plan.actionable_date)
+            new_due = args.due_date.or_else(big_plan.due_date)
+
+            milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
+                big_plan_ref_id=big_plan.ref_id,
+                allow_archived=False,
+            )
+
+            for m in milestones:
+                if new_actionable and m.date < new_actionable:
+                    raise InputValidationError(
+                        f"Milestone {m.name} date {m.date} is before new actionable date {new_actionable}"
+                    )
+                if new_due and m.date > new_due:
+                    raise InputValidationError(
+                        f"Milestone {m.name} date {m.date} is after new due date {new_due}"
+                    )
 
         big_plan = big_plan.update(
             context.domain_context,

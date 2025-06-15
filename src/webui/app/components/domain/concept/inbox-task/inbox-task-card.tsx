@@ -27,7 +27,6 @@ import {
 } from "@mui/material";
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import type { DateTime } from "luxon";
 import { useContext, useState } from "react";
 
 import { ClientOnly } from "~/components/infra/client-only";

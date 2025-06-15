@@ -363,7 +363,7 @@ export default function InboxTask() {
 
   return (
     <LeafPanel
-      key={`inbox-task-${inboxTask.ref_id}`}
+      fakeKey={`inbox-task-${inboxTask.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={inboxTask.archived}

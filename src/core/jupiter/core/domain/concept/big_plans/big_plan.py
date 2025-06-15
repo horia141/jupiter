@@ -3,6 +3,7 @@
 import abc
 from typing import Iterable
 
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.concept.big_plans.big_plan_stats import BigPlanStats
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
@@ -18,6 +19,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
+    ContainsMany,
     IsRefId,
     LeafEntity,
     OwnsAtMostOne,
@@ -49,6 +51,7 @@ class BigPlan(LeafEntity):
     working_time: Timestamp | None
     completed_time: Timestamp | None
 
+    milestones = ContainsMany(BigPlanMilestone, big_plan_ref_id=IsRefId())
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.BIG_PLAN, source_entity_ref_id=IsRefId()
     )

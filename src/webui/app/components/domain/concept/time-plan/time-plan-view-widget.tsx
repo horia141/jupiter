@@ -13,9 +13,7 @@ import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
 import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/time-plan-merged-activities";
-import {
-  WidgetProps,
-} from "~/components/domain/application/home/common";
+import { WidgetProps } from "~/components/domain/application/home/common";
 
 export function TimePlanViewWidget(props: WidgetProps) {
   const timePlans = props.timePlans!;

@@ -312,7 +312,7 @@ export default function MetricDetails() {
 
   return (
     <LeafPanel
-      key={`metric-${id}/details`}
+      fakeKey={`metric-${id}/details`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.metric.archived}

@@ -240,7 +240,7 @@ export default function EmailTask() {
 
   return (
     <LeafPanel
-      key={`email-tasks-${loaderData.emailTask.ref_id}`}
+      fakeKey={`email-tasks-${loaderData.emailTask.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.emailTask.archived}

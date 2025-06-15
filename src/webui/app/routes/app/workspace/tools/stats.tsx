@@ -334,7 +334,10 @@ export default function Stats() {
 
               {entry.entity_records.map((record) => (
                 <EntityCard key={record.ref_id}>
-                  <EntitySummaryLink today={topLevelInfo.today} summary={record} />
+                  <EntitySummaryLink
+                    today={topLevelInfo.today}
+                    summary={record}
+                  />
                 </EntityCard>
               ))}
             </AccordionDetails>

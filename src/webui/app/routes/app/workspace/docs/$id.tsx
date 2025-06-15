@@ -106,7 +106,7 @@ export default function Doc() {
 
   return (
     <LeafPanel
-      key={`doc-${loaderData.doc.ref_id}`}
+      fakeKey={`doc-${loaderData.doc.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.doc.archived}

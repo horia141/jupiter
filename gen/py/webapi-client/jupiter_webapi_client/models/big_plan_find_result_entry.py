@@ -8,6 +8,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.big_plan import BigPlan
+    from ..models.big_plan_milestone import BigPlanMilestone
     from ..models.big_plan_stats import BigPlanStats
     from ..models.inbox_task import InboxTask
     from ..models.note import Note
@@ -24,6 +25,7 @@ class BigPlanFindResultEntry:
     Attributes:
         big_plan (BigPlan): A big plan.
         note (Union['Note', None, Unset]):
+        milestones (Union[None, Unset, list['BigPlanMilestone']]):
         stats (Union['BigPlanStats', None, Unset]):
         project (Union['Project', None, Unset]):
         inbox_tasks (Union[None, Unset, list['InboxTask']]):
@@ -31,6 +33,7 @@ class BigPlanFindResultEntry:
 
     big_plan: "BigPlan"
     note: Union["Note", None, Unset] = UNSET
+    milestones: Union[None, Unset, list["BigPlanMilestone"]] = UNSET
     stats: Union["BigPlanStats", None, Unset] = UNSET
     project: Union["Project", None, Unset] = UNSET
     inbox_tasks: Union[None, Unset, list["InboxTask"]] = UNSET
@@ -50,6 +53,18 @@ class BigPlanFindResultEntry:
             note = self.note.to_dict()
         else:
             note = self.note
+
+        milestones: Union[None, Unset, list[dict[str, Any]]]
+        if isinstance(self.milestones, Unset):
+            milestones = UNSET
+        elif isinstance(self.milestones, list):
+            milestones = []
+            for milestones_type_0_item_data in self.milestones:
+                milestones_type_0_item = milestones_type_0_item_data.to_dict()
+                milestones.append(milestones_type_0_item)
+
+        else:
+            milestones = self.milestones
 
         stats: Union[None, Unset, dict[str, Any]]
         if isinstance(self.stats, Unset):
@@ -88,6 +103,8 @@ class BigPlanFindResultEntry:
         )
         if note is not UNSET:
             field_dict["note"] = note
+        if milestones is not UNSET:
+            field_dict["milestones"] = milestones
         if stats is not UNSET:
             field_dict["stats"] = stats
         if project is not UNSET:
@@ -100,6 +117,7 @@ class BigPlanFindResultEntry:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan import BigPlan
+        from ..models.big_plan_milestone import BigPlanMilestone
         from ..models.big_plan_stats import BigPlanStats
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
@@ -124,6 +142,28 @@ class BigPlanFindResultEntry:
             return cast(Union["Note", None, Unset], data)
 
         note = _parse_note(d.pop("note", UNSET))
+
+        def _parse_milestones(data: object) -> Union[None, Unset, list["BigPlanMilestone"]]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                milestones_type_0 = []
+                _milestones_type_0 = data
+                for milestones_type_0_item_data in _milestones_type_0:
+                    milestones_type_0_item = BigPlanMilestone.from_dict(milestones_type_0_item_data)
+
+                    milestones_type_0.append(milestones_type_0_item)
+
+                return milestones_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, Unset, list["BigPlanMilestone"]], data)
+
+        milestones = _parse_milestones(d.pop("milestones", UNSET))
 
         def _parse_stats(data: object) -> Union["BigPlanStats", None, Unset]:
             if data is None:
@@ -184,6 +224,7 @@ class BigPlanFindResultEntry:
         big_plan_find_result_entry = cls(
             big_plan=big_plan,
             note=note,
+            milestones=milestones,
             stats=stats,
             project=project,
             inbox_tasks=inbox_tasks,

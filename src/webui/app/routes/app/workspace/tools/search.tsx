@@ -494,7 +494,10 @@ export default function Search() {
                 showAsArchived={match.summary.archived}
                 key={`${match.summary.entity_tag}:${match.summary.ref_id}`}
               >
-                <EntitySummaryLink today={topLevelInfo.today} summary={match.summary} />
+                <EntitySummaryLink
+                  today={topLevelInfo.today}
+                  summary={match.summary}
+                />
               </EntityCard>
             );
           })}

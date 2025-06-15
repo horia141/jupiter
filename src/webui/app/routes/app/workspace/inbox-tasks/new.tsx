@@ -334,7 +334,7 @@ export default function NewInboxTask() {
 
   return (
     <LeafPanel
-      key={"inbox-tasks/new"}
+      fakeKey={"inbox-tasks/new"}
       returnLocation="/app/workspace/inbox-tasks"
       inputsEnabled={inputsEnabled}
     >

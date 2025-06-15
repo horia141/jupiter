@@ -230,7 +230,7 @@ export default function SlackTask() {
 
   return (
     <LeafPanel
-      key={`slack-tasks/${loaderData.slackTask.ref_id}`}
+      fakeKey={`slack-tasks/${loaderData.slackTask.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.slackTask.archived}

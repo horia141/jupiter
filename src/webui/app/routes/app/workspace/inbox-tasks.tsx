@@ -682,10 +682,18 @@ interface SwiftViewProps {
 }
 
 function SwiftView(props: SwiftViewProps) {
-  const endOfTheWeek = aDateToDate(props.topLevelInfo.today).endOf("week").endOf("day");
-  const endOfTheMonth = aDateToDate(props.topLevelInfo.today).endOf("month").endOf("day");
-  const endOfTheQuarter = aDateToDate(props.topLevelInfo.today).endOf("quarter").endOf("day");
-  const endOfTheYear = aDateToDate(props.topLevelInfo.today).endOf("year").endOf("day");
+  const endOfTheWeek = aDateToDate(props.topLevelInfo.today)
+    .endOf("week")
+    .endOf("day");
+  const endOfTheMonth = aDateToDate(props.topLevelInfo.today)
+    .endOf("month")
+    .endOf("day");
+  const endOfTheQuarter = aDateToDate(props.topLevelInfo.today)
+    .endOf("quarter")
+    .endOf("day");
+  const endOfTheYear = aDateToDate(props.topLevelInfo.today)
+    .endOf("year")
+    .endOf("day");
   const actionableTime = actionableTimeToDateTime(
     props.actionableTime,
     props.topLevelInfo.user.timezone,

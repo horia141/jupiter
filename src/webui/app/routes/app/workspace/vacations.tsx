@@ -1,4 +1,8 @@
-import type { ADate, Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
+import type {
+  ADate,
+  Vacation,
+  VacationFindResultEntry,
+} from "@jupiter/webapi-client";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Box, IconButton, Typography, styled } from "@mui/material";

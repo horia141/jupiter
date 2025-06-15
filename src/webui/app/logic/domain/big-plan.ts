@@ -4,6 +4,7 @@ import {
   type BigPlan,
   type BigPlanFindResultEntry,
   type Project,
+  type BigPlanMilestone,
 } from "@jupiter/webapi-client";
 
 import { compareADate } from "~/logic/domain/adate";
@@ -70,4 +71,12 @@ export function bigPlanDonePct(
   }
 
   return pct;
+}
+
+export function sortBigPlanMilestones(
+  milestones: Array<BigPlanMilestone>,
+): Array<BigPlanMilestone> {
+  return [...milestones].sort((m1, m2) => {
+    return compareADate(m1.date, m2.date);
+  });
 }

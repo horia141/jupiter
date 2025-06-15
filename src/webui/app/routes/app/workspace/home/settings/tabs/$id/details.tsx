@@ -122,7 +122,7 @@ export default function HomeTabDetails() {
 
   return (
     <LeafPanel
-      key={`home-tab-details-${loaderData.tab.ref_id}`}
+      fakeKey={`home-tab-details-${loaderData.tab.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.tab.archived}

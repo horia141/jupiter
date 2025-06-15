@@ -577,7 +577,10 @@ export default function Gen() {
 
                   {entry.entity_created_records.map((record) => (
                     <EntityCard key={record.ref_id}>
-                      <EntitySummaryLink today={topLevelInfo.today} summary={record} />
+                      <EntitySummaryLink
+                        today={topLevelInfo.today}
+                        summary={record}
+                      />
                     </EntityCard>
                   ))}
                 </>
@@ -589,7 +592,10 @@ export default function Gen() {
 
                   {entry.entity_updated_records.map((record) => (
                     <EntityCard key={record.ref_id}>
-                      <EntitySummaryLink today={topLevelInfo.today} summary={record} />
+                      <EntitySummaryLink
+                        today={topLevelInfo.today}
+                        summary={record}
+                      />
                     </EntityCard>
                   ))}
                 </>

@@ -3,6 +3,7 @@ from enum import Enum
 
 class NamedEntityTag(str, Enum):
     BIGPLAN = "BigPlan"
+    BIGPLANMILESTONE = "BigPlanMilestone"
     CHORE = "Chore"
     DOC = "Doc"
     EMAILTASK = "EmailTask"

@@ -42,6 +42,7 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
+  useLeafNeedsToShowLeaflet,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -58,6 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const response = await apiClient.bigPlans.bigPlanFind({
     allow_archived: false,
     include_project: true,
+    include_milestones: true,
     include_stats: true,
     include_inbox_tasks: false,
     include_notes: false,
@@ -81,6 +83,7 @@ export default function BigPlans() {
   const isBigScreen = useBigScreen();
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
 
   const sortedBigPlans = sortBigPlansNaturally(
     loaderData.bigPlans.map((b) => b.big_plan),
@@ -158,6 +161,9 @@ export default function BigPlans() {
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
+  const bigPlanMilestonesByRefId = new Map(
+    loaderData.bigPlans.map((b) => [b.big_plan.ref_id, b.milestones!]),
+  );
   const bigPlanStatsByRefId = new Map(
     loaderData.bigPlans.map((b) => [b.big_plan.ref_id, b.stats!]),
   );
@@ -215,7 +221,7 @@ export default function BigPlans() {
         </DialogActions>
       </Dialog>
 
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+      <NestingAwareBlock shouldHide={shouldShowALeaf || shouldShowALeaflet}>
         {sortedBigPlans.length === 0 && (
           <EntityNoNothingCard
             title="You Have To Start Somewhere"
@@ -255,6 +261,7 @@ export default function BigPlans() {
                         <BigPlanTimelineBigScreen
                           thisYear={thisYear}
                           bigPlans={theBigPlans}
+                          bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
                           bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
@@ -269,6 +276,7 @@ export default function BigPlans() {
                         <BigPlanTimelineSmallScreen
                           thisYear={thisYear}
                           bigPlans={theBigPlans}
+                          bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
                           bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
@@ -292,6 +300,7 @@ export default function BigPlans() {
               <BigPlanTimelineBigScreen
                 thisYear={thisYear}
                 bigPlans={sortedBigPlans}
+                bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
                 bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {
@@ -306,6 +315,7 @@ export default function BigPlans() {
               <BigPlanTimelineSmallScreen
                 thisYear={thisYear}
                 bigPlans={sortedBigPlans}
+                bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
                 bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {

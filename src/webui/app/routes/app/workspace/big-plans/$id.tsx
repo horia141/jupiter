@@ -30,7 +30,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  Link,
+  Outlet,
   useActionData,
   useFetcher,
   useNavigation,
@@ -39,12 +39,12 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
+import { AnimatePresence } from "framer-motion";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { BigPlanStatusBigTag } from "~/components/domain/concept/big-plan/big-plan-status-big-tag";
 import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
-import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -57,13 +57,17 @@ import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { DisplayType } from "~/rendering/use-nested-entities";
+import {
+  DisplayType,
+  useLeafNeedsToShowLeaflet,
+} from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
 import { DifficultySelect } from "~/components/domain/core/difficulty-select";
 import {
   SectionActions,
   ActionSingle,
+  NavSingle,
 } from "~/components/infra/section-actions";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { DateInputWithSuggestions } from "~/components/domain/core/date-input-with-suggestions";
@@ -71,6 +75,8 @@ import {
   getSuggestedDatesForBigPlanActionableDate,
   getSuggestedDatesForBigPlanDueDate,
 } from "~/logic/domain/suggested-date";
+import { BigPlanMilestoneStack } from "~/components/domain/concept/big-plan/big-plan-milestone-stack";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -168,6 +174,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return json({
       bigPlan: result.big_plan,
       project: result.project,
+      milestones: result.milestones,
       inboxTasks: result.inbox_tasks,
       note: result.note,
       timePlanEntries: timePlanEntries,
@@ -326,6 +333,7 @@ export default function BigPlan() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -392,372 +400,405 @@ export default function BigPlan() {
 
   return (
     <LeafPanel
-      key={`big-plan-${loaderData.bigPlan.ref_id}`}
+      fakeKey={`big-plan-${loaderData.bigPlan.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.bigPlan.archived}
       returnLocation={"/app/workspace/big-plans"}
+      shouldShowALeaflet={shouldShowALeaflet}
     >
-      <SectionCardNew
-        id="big-plan-properties"
-        title="Properties"
-        actions={
-          <SectionActions
-            id="big-plan-properties"
-            topLevelInfo={topLevelInfo}
-            inputsEnabled={inputsEnabled}
-            actions={[
-              ActionSingle({
-                text: "Save",
-                value: "update",
-                highlight: true,
-              }),
-              ActionSingle({
-                text: "Refresh Stats",
-                value: "refresh-stats",
-              }),
-            ]}
-          />
-        }
-      >
-        <GlobalError actionResult={actionData} />
-        <Stack spacing={2} useFlexGap>
-          <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
-            <FormControl sx={{ flexGrow: 3 }}>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.bigPlan.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-            <FormControl sx={{ flexGrow: 1 }}>
-              <IsKeySelect
-                name="isKey"
-                defaultValue={loaderData.bigPlan.is_key}
-                inputsEnabled={inputsEnabled}
-              />
-            </FormControl>
-            <FormControl sx={{ flexGrow: 1 }}>
-              <BigPlanStatusBigTag status={loaderData.bigPlan.status} />
-              <input
-                type="hidden"
-                name="status"
-                value={loaderData.bigPlan.status}
-              />
-              <FieldError actionResult={actionData} fieldName="/status" />
-            </FormControl>
-          </Box>
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                value={selectedProject}
-                onChange={setSelectedProject}
-              />
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
-          )}
-          {!isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && <input type="hidden" name="project" value={selectedProject} />}
-
-          <FormControl fullWidth>
-            <FormLabel id="eisen">Eisenhower</FormLabel>
-            <EisenhowerSelect
-              name="eisen"
-              defaultValue={loaderData.bigPlan.eisen}
-              inputsEnabled={inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/eisen" />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <FormLabel id="difficulty">Difficulty</FormLabel>
-            <DifficultySelect
-              name="difficulty"
-              defaultValue={loaderData.bigPlan.difficulty}
-              inputsEnabled={inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/difficulty" />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="actionableDate" shrink>
-              Actionable From [Optional]
-            </InputLabel>
-            <DateInputWithSuggestions
-              name="actionableDate"
-              label="actionableDate"
-              inputsEnabled={inputsEnabled}
-              defaultValue={loaderData.bigPlan.actionable_date}
-              suggestedDates={getSuggestedDatesForBigPlanActionableDate(
-                topLevelInfo.today,
-              )}
-            />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="dueDate" shrink>
-              Due At [Optional]
-            </InputLabel>
-            <DateInputWithSuggestions
-              name="dueDate"
-              label="dueDate"
-              inputsEnabled={inputsEnabled}
-              defaultValue={loaderData.bigPlan.due_date}
-              suggestedDates={getSuggestedDatesForBigPlanDueDate(
-                topLevelInfo.today,
-              )}
-            />
-          </FormControl>
-        </Stack>
-
-        <CardActions>
-          <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
-            {loaderData.bigPlan.status === BigPlanStatus.NOT_STARTED && (
-              <ButtonGroup fullWidth>
-                <Button
-                  size="small"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="mark-done"
-                >
-                  Mark Done
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="mark-not-done"
-                >
-                  Mark Not Done
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="start"
-                >
-                  Start
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="block"
-                >
-                  Block
-                </Button>
-              </ButtonGroup>
-            )}
-
-            {loaderData.bigPlan.status === BigPlanStatus.IN_PROGRESS && (
-              <ButtonGroup fullWidth>
-                <Button
-                  size="small"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="mark-done"
-                >
-                  Mark Done
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="mark-not-done"
-                >
-                  Mark Not Done
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="block"
-                >
-                  Block
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="stop"
-                >
-                  Stop
-                </Button>
-              </ButtonGroup>
-            )}
-
-            {loaderData.bigPlan.status === BigPlanStatus.BLOCKED && (
-              <ButtonGroup fullWidth>
-                <Button
-                  size="small"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="mark-done"
-                >
-                  Mark Done
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="mark-not-done"
-                >
-                  Mark Not Done
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="restart"
-                >
-                  Restart
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="stop"
-                >
-                  Stop
-                </Button>
-              </ButtonGroup>
-            )}
-
-            {(loaderData.bigPlan.status === BigPlanStatus.DONE ||
-              loaderData.bigPlan.status === BigPlanStatus.NOT_DONE) && (
-              <ButtonGroup fullWidth>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="reactivate"
-                >
-                  Reactivate
-                </Button>
-              </ButtonGroup>
-            )}
-          </Stack>
-        </CardActions>
-      </SectionCardNew>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
-        {loaderData.note && (
-          <>
-            <EntityNoteEditor
-              initialNote={loaderData.note}
-              inputsEnabled={inputsEnabled}
-            />
-          </>
-        )}
-      </Card>
-
-      <EntityActionHeader>
-        <Button
-          variant="contained"
-          disabled={loaderData.bigPlan.archived}
-          to={`/app/workspace/inbox-tasks/new?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`}
-          component={Link}
-        >
-          New Task
-        </Button>
-      </EntityActionHeader>
-
-      {sortedInboxTasks.length > 0 && (
-        <InboxTaskStack
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showEisen: true,
-            showDifficulty: true,
-            showActionableDate: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Inbox Tasks"
-          inboxTasks={sortedInboxTasks}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
-
-      {isWorkspaceFeatureAvailable(
-        topLevelInfo.workspace,
-        WorkspaceFeature.TIME_PLANS,
-      ) &&
-        timePlanActivities && (
-          <SectionCardNew
-            id="big-plan-time-plan-activities"
-            title="Time Plan Activities"
-          >
-            <TimePlanActivityList
+      <NestingAwareBlock shouldHide={shouldShowALeaflet}>
+        <SectionCardNew
+          id="big-plan-properties"
+          title="Properties"
+          actions={
+            <SectionActions
+              id="big-plan-properties"
               topLevelInfo={topLevelInfo}
-              activities={timePlanActivities}
-              timePlansByRefId={timePlansByRefId}
-              inboxTasksByRefId={new Map()}
-              bigPlansByRefId={bigPlansByRefId}
-              activityDoneness={{}}
-              timeEventsByRefId={timeEventsByRefId}
-              fullInfo={false}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Save",
+                  value: "update",
+                  highlight: true,
+                }),
+                ActionSingle({
+                  text: "Refresh Stats",
+                  value: "refresh-stats",
+                }),
+              ]}
             />
-          </SectionCardNew>
-        )}
+          }
+        >
+          <GlobalError actionResult={actionData} />
+          <Stack spacing={2} useFlexGap>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+              <FormControl sx={{ flexGrow: 3 }}>
+                <InputLabel id="name">Name</InputLabel>
+                <OutlinedInput
+                  label="Name"
+                  name="name"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.bigPlan.name}
+                />
+                <FieldError actionResult={actionData} fieldName="/name" />
+              </FormControl>
+              <FormControl sx={{ flexGrow: 1 }}>
+                <IsKeySelect
+                  name="isKey"
+                  defaultValue={loaderData.bigPlan.is_key}
+                  inputsEnabled={inputsEnabled}
+                />
+              </FormControl>
+              <FormControl sx={{ flexGrow: 1 }}>
+                <BigPlanStatusBigTag status={loaderData.bigPlan.status} />
+                <input
+                  type="hidden"
+                  name="status"
+                  value={loaderData.bigPlan.status}
+                />
+                <FieldError actionResult={actionData} fieldName="/status" />
+              </FormControl>
+            </Box>
+
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS,
+            ) && (
+              <FormControl fullWidth>
+                <ProjectSelect
+                  name="project"
+                  label="Project"
+                  inputsEnabled={inputsEnabled}
+                  disabled={false}
+                  allProjects={loaderData.allProjects}
+                  value={selectedProject}
+                  onChange={setSelectedProject}
+                />
+                <FieldError actionResult={actionData} fieldName="/project" />
+              </FormControl>
+            )}
+            {!isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS,
+            ) && <input type="hidden" name="project" value={selectedProject} />}
+
+            <FormControl fullWidth>
+              <FormLabel id="eisen">Eisenhower</FormLabel>
+              <EisenhowerSelect
+                name="eisen"
+                defaultValue={loaderData.bigPlan.eisen}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/eisen" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <FormLabel id="difficulty">Difficulty</FormLabel>
+              <DifficultySelect
+                name="difficulty"
+                defaultValue={loaderData.bigPlan.difficulty}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/difficulty" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="actionableDate" shrink>
+                Actionable From [Optional]
+              </InputLabel>
+              <DateInputWithSuggestions
+                name="actionableDate"
+                label="actionableDate"
+                inputsEnabled={inputsEnabled}
+                defaultValue={loaderData.bigPlan.actionable_date}
+                suggestedDates={getSuggestedDatesForBigPlanActionableDate(
+                  topLevelInfo.today,
+                )}
+              />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="dueDate" shrink>
+                Due At [Optional]
+              </InputLabel>
+              <DateInputWithSuggestions
+                name="dueDate"
+                label="dueDate"
+                inputsEnabled={inputsEnabled}
+                defaultValue={loaderData.bigPlan.due_date}
+                suggestedDates={getSuggestedDatesForBigPlanDueDate(
+                  topLevelInfo.today,
+                )}
+              />
+            </FormControl>
+          </Stack>
+
+          <CardActions>
+            <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
+              {loaderData.bigPlan.status === BigPlanStatus.NOT_STARTED && (
+                <ButtonGroup fullWidth>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="mark-done"
+                  >
+                    Mark Done
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="mark-not-done"
+                  >
+                    Mark Not Done
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="start"
+                  >
+                    Start
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="block"
+                  >
+                    Block
+                  </Button>
+                </ButtonGroup>
+              )}
+
+              {loaderData.bigPlan.status === BigPlanStatus.IN_PROGRESS && (
+                <ButtonGroup fullWidth>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="mark-done"
+                  >
+                    Mark Done
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="mark-not-done"
+                  >
+                    Mark Not Done
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="block"
+                  >
+                    Block
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="stop"
+                  >
+                    Stop
+                  </Button>
+                </ButtonGroup>
+              )}
+
+              {loaderData.bigPlan.status === BigPlanStatus.BLOCKED && (
+                <ButtonGroup fullWidth>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="mark-done"
+                  >
+                    Mark Done
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="mark-not-done"
+                  >
+                    Mark Not Done
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="restart"
+                  >
+                    Restart
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="stop"
+                  >
+                    Stop
+                  </Button>
+                </ButtonGroup>
+              )}
+
+              {(loaderData.bigPlan.status === BigPlanStatus.DONE ||
+                loaderData.bigPlan.status === BigPlanStatus.NOT_DONE) && (
+                <ButtonGroup fullWidth>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="reactivate"
+                  >
+                    Reactivate
+                  </Button>
+                </ButtonGroup>
+              )}
+            </Stack>
+          </CardActions>
+        </SectionCardNew>
+
+        <Card>
+          {!loaderData.note && (
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="create-note"
+                >
+                  Create Note
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          )}
+
+          {loaderData.note && (
+            <>
+              <EntityNoteEditor
+                initialNote={loaderData.note}
+                inputsEnabled={inputsEnabled}
+              />
+            </>
+          )}
+        </Card>
+
+        <SectionCardNew
+          id="big-plan-milestones"
+          title="Milestones"
+          actions={
+            <SectionActions
+              id="big-plan-milestones"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                NavSingle({
+                  text: "New Milestone",
+                  link: `/app/workspace/big-plans/${loaderData.bigPlan.ref_id}/milestones/new`,
+                }),
+              ]}
+            />
+          }
+        >
+          <BigPlanMilestoneStack milestones={loaderData.milestones} />
+        </SectionCardNew>
+
+        <SectionCardNew
+          id="big-plan-inbox-tasks"
+          title="Inbox Tasks"
+          actions={
+            <SectionActions
+              id="big-plan-inbox-tasks"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                NavSingle({
+                  text: "New Task",
+                  link: `/app/workspace/inbox-tasks/new?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`,
+                }),
+              ]}
+            />
+          }
+        >
+          {sortedInboxTasks.length > 0 && (
+            <InboxTaskStack
+              topLevelInfo={topLevelInfo}
+              showOptions={{
+                showStatus: true,
+                showEisen: true,
+                showDifficulty: true,
+                showActionableDate: true,
+                showDueDate: true,
+                showHandleMarkDone: true,
+                showHandleMarkNotDone: true,
+              }}
+              inboxTasks={sortedInboxTasks}
+              onCardMarkDone={handleCardMarkDone}
+              onCardMarkNotDone={handleCardMarkNotDone}
+            />
+          )}
+        </SectionCardNew>
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.TIME_PLANS,
+        ) &&
+          timePlanActivities && (
+            <SectionCardNew
+              id="big-plan-time-plan-activities"
+              title="Time Plan Activities"
+            >
+              <TimePlanActivityList
+                topLevelInfo={topLevelInfo}
+                activities={timePlanActivities}
+                timePlansByRefId={timePlansByRefId}
+                inboxTasksByRefId={new Map()}
+                bigPlansByRefId={bigPlansByRefId}
+                activityDoneness={{}}
+                timeEventsByRefId={timeEventsByRefId}
+                fullInfo={false}
+              />
+            </SectionCardNew>
+          )}
+      </NestingAwareBlock>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
     </LeafPanel>
   );
 }

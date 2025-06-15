@@ -179,7 +179,7 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
 
   return (
     <LeafPanel
-      key="time-event-in-day-block/new"
+      fakeKey="time-event-in-day-block/new"
       returnLocation={`/app/workspace/calendar?${query}`}
       inputsEnabled={inputsEnabled}
     >

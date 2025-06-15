@@ -74,7 +74,7 @@ export default function NewTab() {
 
   return (
     <LeafPanel
-      key={"home/settings/tab/new"}
+      fakeKey={"home/settings/tab/new"}
       returnLocation="/app/workspace/home/settings"
       inputsEnabled={inputsEnabled}
     >

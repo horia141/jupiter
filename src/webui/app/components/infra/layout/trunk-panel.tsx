@@ -17,10 +17,10 @@ import {
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useHydrated } from "~/rendering/use-hidrated";
 import {
+  useLeafNeedsToShowLeaflet,
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
@@ -37,6 +37,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   const isHydrated = useHydrated();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
   const shouldShowABranch = useTrunkNeedsToShowBranch();
 
@@ -87,7 +88,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       handleScroll(
         theRef,
         extractTrunkFromPath(location.pathname),
-        shouldShowABranch || shouldShowALeaf,
+        shouldShowABranch || shouldShowALeaf || shouldShowALeaflet,
       );
     }
 
@@ -105,6 +106,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     handleScroll,
     shouldShowABranch,
     shouldShowALeaf,
+    shouldShowALeaflet,
   ]);
 
   function handleScrollTop() {
@@ -143,53 +145,56 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       }}
       transition={{ duration: 0.5 }}
     >
-      {!shouldShowABranch && (isBigScreen || !shouldShowALeaf) && (
-        <TrunkPanelControls id="trunk-panel-controls">
-          <TrunkPanelControlsInner isbigscreen={isBigScreen ? "true" : "false"}>
-            <ButtonGroup size="small">
-              <IconButton onClick={handleScrollTop}>
-                <ArrowUpwardIcon />
+      {!shouldShowABranch &&
+        (isBigScreen || !(shouldShowALeaf || shouldShowALeaflet)) && (
+          <TrunkPanelControls id="trunk-panel-controls">
+            <TrunkPanelControlsInner
+              isbigscreen={isBigScreen ? "true" : "false"}
+            >
+              <ButtonGroup size="small">
+                <IconButton onClick={handleScrollTop}>
+                  <ArrowUpwardIcon />
+                </IconButton>
+                <IconButton onClick={handleScrollBottom}>
+                  <ArrowDownwardIcon />
+                </IconButton>
+              </ButtonGroup>
+
+              {props.createLocation && (
+                <Button
+                  id="trunk-new-leaf-entity"
+                  variant="contained"
+                  to={props.createLocation}
+                  component={Link}
+                >
+                  <AddIcon />
+                </Button>
+              )}
+
+              {props.extraControls && (
+                <TrunkPanelExtraControls
+                  isBigScreen={isBigScreen}
+                  controls={props.extraControls}
+                />
+              )}
+
+              {props.actions}
+
+              <IconButton sx={{ marginLeft: "auto" }}>
+                <Link to={props.returnLocation}>
+                  <CloseIcon />
+                </Link>
               </IconButton>
-              <IconButton onClick={handleScrollBottom}>
-                <ArrowDownwardIcon />
-              </IconButton>
-            </ButtonGroup>
-
-            {props.createLocation && (
-              <Button
-                id="trunk-new-leaf-entity"
-                variant="contained"
-                to={props.createLocation}
-                component={Link}
-              >
-                <AddIcon />
-              </Button>
-            )}
-
-            {props.extraControls && (
-              <TrunkPanelExtraControls
-                isBigScreen={isBigScreen}
-                controls={props.extraControls}
-              />
-            )}
-
-            {props.actions}
-
-            <IconButton sx={{ marginLeft: "auto" }}>
-              <Link to={props.returnLocation}>
-                <CloseIcon />
-              </Link>
-            </IconButton>
-          </TrunkPanelControlsInner>
-        </TrunkPanelControls>
-      )}
+            </TrunkPanelControlsInner>
+          </TrunkPanelControls>
+        )}
 
       <TrunkPanelContent
         id="trunk-panel-content"
         ref={containerRef}
         isbigscreen={isBigScreen ? "true" : "false"}
         hasbranch={shouldShowABranch ? "true" : "false"}
-        hasleaf={shouldShowALeaf ? "true" : "false"}
+        hasleaf={shouldShowALeaf || shouldShowALeaflet ? "true" : "false"}
       >
         {props.children}
       </TrunkPanelContent>

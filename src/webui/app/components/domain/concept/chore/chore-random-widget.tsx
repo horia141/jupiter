@@ -62,7 +62,10 @@ export function ChoreRandomWidget(props: WidgetProps) {
   }
 
   // Pick a random task
-  const randomTask = getDeterministicRandomElement(allChoreTasks, props.topLevelInfo.today);
+  const randomTask = getDeterministicRandomElement(
+    allChoreTasks,
+    props.topLevelInfo.today,
+  );
 
   return (
     <>

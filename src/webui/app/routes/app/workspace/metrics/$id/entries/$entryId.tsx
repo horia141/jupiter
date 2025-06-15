@@ -163,7 +163,7 @@ export default function MetricEntry() {
 
   return (
     <LeafPanel
-      key={`metric-${id}/entry-${entryId}`}
+      fakeKey={`metric-${id}/entry-${entryId}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.metricEntry.archived}

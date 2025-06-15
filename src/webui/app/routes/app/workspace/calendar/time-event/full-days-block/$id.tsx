@@ -126,7 +126,7 @@ export default function TimeEventFullDaysBlockViewOne() {
 
   return (
     <LeafPanel
-      key={`time-event-full-days-block-${loaderData.fullDaysBlock.ref_id}`}
+      fakeKey={`time-event-full-days-block-${loaderData.fullDaysBlock.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityNotEditable={!corePropertyEditable}

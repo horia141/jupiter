@@ -148,7 +148,7 @@ export default function NewMetric() {
 
   return (
     <LeafPanel
-      key={"metrics/new"}
+      fakeKey={"metrics/new"}
       returnLocation="/app/workspace/metrics"
       inputsEnabled={inputsEnabled}
     >

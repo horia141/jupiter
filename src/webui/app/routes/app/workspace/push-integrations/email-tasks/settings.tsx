@@ -97,7 +97,7 @@ export default function EmailTasksSettings() {
 
   return (
     <LeafPanel
-      key={"email-tasks/settings"}
+      fakeKey={"email-tasks/settings"}
       returnLocation="/app/workspace/push-integrations/email-tasks"
       inputsEnabled={inputsEnabled}
     >

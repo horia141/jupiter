@@ -62,7 +62,10 @@ export function HabitRandomWidget(props: WidgetProps) {
   }
 
   // Pick a random task
-  const randomTask = getDeterministicRandomElement(allHabitTasks, props.topLevelInfo.today);
+  const randomTask = getDeterministicRandomElement(
+    allHabitTasks,
+    props.topLevelInfo.today,
+  );
 
   return (
     <InboxTaskStack

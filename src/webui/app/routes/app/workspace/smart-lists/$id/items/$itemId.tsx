@@ -177,7 +177,7 @@ export default function SmartListItem() {
 
   return (
     <LeafPanel
-      key={`smart-list-${id}/item-${loaderData.item.ref_id}`}
+      fakeKey={`smart-list-${id}/item-${loaderData.item.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.item.archived}

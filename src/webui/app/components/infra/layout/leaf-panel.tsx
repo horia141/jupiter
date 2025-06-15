@@ -18,7 +18,7 @@ import {
   Stack,
   styled,
 } from "@mui/material";
-import { Form, useLocation, useNavigate } from "@remix-run/react";
+import { Form, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -48,7 +48,9 @@ const BIG_SCREEN_WIDTH_FULL_INT = 1200;
 const SMALL_SCREEN_WIDTH = "100%";
 
 interface LeafPanelProps {
+  isLeaflet?: boolean;
   showArchiveAndRemoveButton?: boolean;
+  fakeKey: string;
   inputsEnabled: boolean;
   entityNotEditable?: boolean;
   entityArchived?: boolean;
@@ -56,19 +58,27 @@ interface LeafPanelProps {
   returnLocationDiscriminator?: string;
   initialExpansionState?: LeafPanelExpansionState;
   allowedExpansionStates?: LeafPanelExpansionState[];
+  shouldShowALeaflet?: boolean;
 }
 
 export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
-  const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState<
     LeafPanelExpansionState | "shrunk" | "exit"
-  >(props.initialExpansionState ?? LeafPanelExpansionState.SMALL);
+  >(
+    props.shouldShowALeaflet
+      ? LeafPanelExpansionState.FULL
+      : props.isLeaflet
+        ? LeafPanelExpansionState.SMALL
+        : (props.initialExpansionState ?? LeafPanelExpansionState.SMALL),
+  );
   const [previousExpansionState, setPreviousExpansionState] =
     useState<LeafPanelExpansionState | null>(null);
+  const [previousLeafletExpansionState, setPreviousLeafletExpansionState] =
+    useState<LeafPanelExpansionState | "shrunk" | null>(null);
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
     BIG_SCREEN_WIDTH_FULL_INT,
@@ -96,21 +106,21 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       return;
     }
 
-    if (location.pathname.endsWith("/new")) {
+    if (props.fakeKey.endsWith("/new")) {
       return;
     }
 
     function handleScrollSpecial() {
-      handleScroll(theRef, location.pathname);
+      handleScroll(theRef, props.fakeKey);
     }
 
-    restoreScrollPosition(theRef, location.pathname);
+    restoreScrollPosition(theRef, props.fakeKey);
     theRef.addEventListener("scroll", handleScrollSpecial);
 
     return () => {
       theRef.removeEventListener("scroll", handleScrollSpecial);
     };
-  }, [containerRef, handleScroll, isPresent, location]);
+  }, [containerRef, handleScroll, isPresent, props.fakeKey]);
 
   // setting right to calc((100vw - BIG_SCREEN_WIDTH_FULL_INT / 2)) doesn't work with framer
   // motion. It seems to be a bug with framer motion. So we have to calculate the right
@@ -134,24 +144,37 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   }, []);
 
   function handleExpansion() {
+    if (isBigScreen && props.shouldShowALeaflet) {
+      return;
+    }
+
     setExpansionState((e) =>
       cycleExpansionState(e, props.allowedExpansionStates),
     );
     saveLeafPanelExpansion(
-      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
+      `${props.fakeKey}/${props.returnLocationDiscriminator}`,
       cycleExpansionState(expansionState, props.allowedExpansionStates),
     );
   }
 
   useEffect(() => {
+    if (props.isLeaflet) {
+      return;
+    }
+
     const savedExpansionState = loadLeafPanelExpansion(
-      `${props.returnLocation}/${props.returnLocationDiscriminator}`,
+      `${props.fakeKey}/${props.returnLocationDiscriminator}`,
     );
     if (!savedExpansionState) {
       return;
     }
     setExpansionState(savedExpansionState);
-  }, [props.returnLocation, props.returnLocationDiscriminator]);
+  }, [
+    props.fakeKey,
+    props.returnLocation,
+    props.returnLocationDiscriminator,
+    props.isLeaflet,
+  ]);
 
   function handleShrunk() {
     if (expansionState !== "shrunk" && expansionState !== "exit") {
@@ -162,6 +185,35 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
       setPreviousExpansionState(null);
     }
   }
+
+  useEffect(() => {
+    if (!isBigScreen) {
+      return;
+    }
+
+    if (expansionState === "exit") {
+      return;
+    }
+
+    if (props.shouldShowALeaflet) {
+      // This check here is mostly to prevent the expansion state from being set to LARGE
+      // when double rendering in React dev mode.
+      if (expansionState !== LeafPanelExpansionState.LARGE) {
+        setPreviousLeafletExpansionState(expansionState);
+        setExpansionState(LeafPanelExpansionState.LARGE);
+      }
+    } else if (previousLeafletExpansionState !== null) {
+      setExpansionState(
+        previousLeafletExpansionState as LeafPanelExpansionState,
+      );
+      setPreviousLeafletExpansionState(null);
+    }
+  }, [
+    isBigScreen,
+    props.shouldShowALeaflet,
+    expansionState,
+    previousLeafletExpansionState,
+  ]);
 
   function handleScrollTop() {
     containerRef.current?.scrollTo({
@@ -238,104 +290,124 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
 
   return (
     <LeafPanelFrame
-      id="leaf-panel"
-      key={location.pathname}
+      id={props.isLeaflet ? "leaflet-panel" : "leaf-panel"}
+      key={props.fakeKey}
       initial="initial"
       animate={isBigScreen ? expansionState : "smallScreen"}
       exit="exit"
+      isLeaflet={props.isLeaflet ?? false}
       variants={formVariants}
       transition={{ duration: 0.5 }}
       isBigScreen={isBigScreen}
     >
-      <Form method="post">
-        <LeafPanelControls id="leaf-panel-controls">
-          <ButtonGroup size="small">
-            {isBigScreen && (
+      {(isBigScreen || !props.shouldShowALeaflet) && (
+        <Form method="post">
+          <LeafPanelControls id="leaf-panel-controls">
+            <ButtonGroup size="small">
+              {isBigScreen && (
+                <>
+                  <IconButton
+                    disabled={
+                      expansionState === "shrunk" ||
+                      props.shouldShowALeaflet ||
+                      props.isLeaflet
+                    }
+                    onClick={handleExpansion}
+                  >
+                    <SwitchLeftIcon />
+                  </IconButton>
+                  <IconButton
+                    disabled={props.shouldShowALeaflet || props.isLeaflet}
+                    onClick={handleShrunk}
+                  >
+                    <PictureInPictureAltIcon />
+                  </IconButton>
+                </>
+              )}
+              <IconButton onClick={handleScrollTop}>
+                <ArrowUpwardIcon />
+              </IconButton>
+              <IconButton onClick={handleScrollBottom}>
+                <ArrowDownwardIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setExpansionState("exit");
+                  const returnLocation = props.returnLocation;
+                  setTimeout(() => navigation(returnLocation), 500);
+                }}
+              >
+                <KeyboardDoubleArrowRightIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setExpansionState("exit");
+                  setTimeout(() => navigation(-1), 500);
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </ButtonGroup>
+
+            {props.showArchiveAndRemoveButton && (
               <>
                 <IconButton
-                  disabled={expansionState === "shrunk"}
-                  onClick={handleExpansion}
+                  id="leaf-entity-archive"
+                  sx={{ marginLeft: "auto" }}
+                  disabled={
+                    props.entityNotEditable ||
+                    (!props.entityArchived && !props.inputsEnabled)
+                  }
+                  type="button"
+                  onClick={() => setShowArchiveDialog(true)}
                 >
-                  <SwitchLeftIcon />
+                  {props.entityArchived ? (
+                    <DeleteForeverIcon />
+                  ) : (
+                    <DeleteIcon />
+                  )}
                 </IconButton>
-                <IconButton onClick={handleShrunk}>
-                  <PictureInPictureAltIcon />
-                </IconButton>
+                <Dialog
+                  onClose={() => setShowArchiveDialog(false)}
+                  open={showArchiveDialog}
+                  disablePortal
+                >
+                  <DialogTitle>Careful!</DialogTitle>
+                  <DialogContent>
+                    Are you sure you want to{" "}
+                    {props.entityArchived ? "remove" : "archive"} this entity?
+                    {props.entityArchived
+                      ? " This action cannot be undone."
+                      : ""}
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      id="leaf-entity-archive-confirm"
+                      sx={{ marginLeft: "auto" }}
+                      disabled={
+                        props.entityNotEditable ||
+                        (!props.entityArchived && !props.inputsEnabled)
+                      }
+                      type="submit"
+                      name="intent"
+                      value={props.entityArchived ? "remove" : "archive"}
+                    >
+                      Yes
+                    </Button>
+                    <Button onClick={() => setShowArchiveDialog(false)}>
+                      No
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </>
             )}
-            <IconButton onClick={handleScrollTop}>
-              <ArrowUpwardIcon />
-            </IconButton>
-            <IconButton onClick={handleScrollBottom}>
-              <ArrowDownwardIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => {
-                setExpansionState("exit");
-                const returnLocation = props.returnLocation;
-                setTimeout(() => navigation(returnLocation), 500);
-              }}
-            >
-              <KeyboardDoubleArrowRightIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => {
-                setExpansionState("exit");
-                setTimeout(() => navigation(-1), 500);
-              }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-          </ButtonGroup>
+          </LeafPanelControls>
+        </Form>
+      )}
 
-          {props.showArchiveAndRemoveButton && (
-            <>
-              <IconButton
-                id="leaf-entity-archive"
-                sx={{ marginLeft: "auto" }}
-                disabled={
-                  props.entityNotEditable ||
-                  (!props.entityArchived && !props.inputsEnabled)
-                }
-                type="button"
-                onClick={() => setShowArchiveDialog(true)}
-              >
-                {props.entityArchived ? <DeleteForeverIcon /> : <DeleteIcon />}
-              </IconButton>
-              <Dialog
-                onClose={() => setShowArchiveDialog(false)}
-                open={showArchiveDialog}
-                disablePortal
-              >
-                <DialogTitle>Careful!</DialogTitle>
-                <DialogContent>
-                  Are you sure you want to{" "}
-                  {props.entityArchived ? "remove" : "archive"} this entity?
-                  {props.entityArchived ? " This action cannot be undone." : ""}
-                </DialogContent>
-                <DialogActions>
-                  <Button
-                    id="leaf-entity-archive-confirm"
-                    sx={{ marginLeft: "auto" }}
-                    disabled={
-                      props.entityNotEditable ||
-                      (!props.entityArchived && !props.inputsEnabled)
-                    }
-                    type="submit"
-                    name="intent"
-                    value={props.entityArchived ? "remove" : "archive"}
-                  >
-                    Yes
-                  </Button>
-                  <Button onClick={() => setShowArchiveDialog(false)}>
-                    No
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </>
-          )}
-        </LeafPanelControls>
+      {/* Ugly hhandling here! */}
 
+      {(isBigScreen || !props.shouldShowALeaflet) && (
         <LeafPanelContent
           id="leaf-panel-content"
           ref={containerRef}
@@ -344,22 +416,25 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           <Stack spacing={2}>{props.children}</Stack>
           <Box sx={{ height: "4rem" }}></Box>
         </LeafPanelContent>
-      </Form>
+      )}
+
+      {!isBigScreen && props.shouldShowALeaflet && <>{props.children}</>}
     </LeafPanelFrame>
   );
 }
 
 interface LeafPanelFrameProps {
+  isLeaflet: boolean;
   isBigScreen: boolean;
 }
 
 const LeafPanelFrame = styled(motion.div)<LeafPanelFrameProps>(
-  ({ theme, isBigScreen }) => `
+  ({ theme, isLeaflet, isBigScreen }) => `
       position: ${isBigScreen ? "fixed" : "static"};
       left: ${isBigScreen ? "unset" : "0px"};
       right: 0px;
       bottom: 0px;
-      z-index: ${theme.zIndex.appBar + 200};
+      z-index: ${theme.zIndex.appBar + (isLeaflet ? 300 : 200)};
       background-color: ${theme.palette.background.paper};
       border-left: 1px solid rgba(0, 0, 0, 0.12);
     `,

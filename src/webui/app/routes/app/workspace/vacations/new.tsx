@@ -73,7 +73,7 @@ export default function NewVacation() {
 
   return (
     <LeafPanel
-      key={"vacations/new"}
+      fakeKey={"vacations/new"}
       returnLocation="/app/workspace/vacations"
       inputsEnabled={inputsEnabled}
     >

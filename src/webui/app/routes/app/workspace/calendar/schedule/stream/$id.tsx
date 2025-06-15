@@ -200,7 +200,7 @@ export default function ScheduleStreamViewOne() {
 
   return (
     <LeafPanel
-      key={`schedule-stream-${loaderData.scheduleStream.ref_id}`}
+      fakeKey={`schedule-stream-${loaderData.scheduleStream.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityNotEditable={!corePropertyEditable}

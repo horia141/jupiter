@@ -73,7 +73,7 @@ export default function NewSmartList() {
 
   return (
     <LeafPanel
-      key={"smart-lists/new"}
+      fakeKey={"smart-lists/new"}
       returnLocation="/app/workspace/smart-lists"
       inputsEnabled={inputsEnabled}
     >

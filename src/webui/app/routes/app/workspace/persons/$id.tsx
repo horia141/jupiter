@@ -358,7 +358,7 @@ export default function Person() {
 
   return (
     <LeafPanel
-      key={`person-${person.ref_id}`}
+      fakeKey={`person-${person.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={person.archived}

@@ -1,4 +1,9 @@
-import type { ADate, BigPlan, BigPlanStats } from "@jupiter/webapi-client";
+import type {
+  ADate,
+  BigPlan,
+  BigPlanMilestone,
+  BigPlanStats,
+} from "@jupiter/webapi-client";
 import {
   Box,
   Stack,
@@ -33,6 +38,7 @@ interface DateMarker {
 interface BigPlanTimelineBigScreenProps {
   thisYear: DateTime;
   bigPlans: Array<BigPlan>;
+  bigPlanMilestonesByRefId: Map<string, Array<BigPlanMilestone>>;
   bigPlanStatsByRefId: Map<string, BigPlanStats>;
   dateMarkers?: Array<DateMarker>;
   selectedPredicate?: (it: BigPlan) => boolean;
@@ -43,6 +49,7 @@ interface BigPlanTimelineBigScreenProps {
 export function BigPlanTimelineBigScreen({
   thisYear,
   bigPlans,
+  bigPlanMilestonesByRefId,
   bigPlanStatsByRefId,
   dateMarkers,
   selectedPredicate,
@@ -84,6 +91,8 @@ export function BigPlanTimelineBigScreen({
               thisYear,
               entry,
             );
+
+            const milestones = bigPlanMilestonesByRefId.get(entry.ref_id) ?? [];
 
             return (
               <TableRow key={entry.ref_id}>
@@ -130,9 +139,23 @@ export function BigPlanTimelineBigScreen({
                     );
                     return (
                       <Tooltip key={idx} title={marker.label} placement="top">
-                        <TimelineMarker
+                        <DateMarker
                           leftmargin={markerPosition}
                           color={marker.color}
+                        />
+                      </Tooltip>
+                    );
+                  })}
+                  {milestones.map((milestone, idx) => {
+                    const markerPosition = computeMarkerPosition(
+                      thisYear,
+                      milestone.date,
+                    );
+                    return (
+                      <Tooltip key={idx} title={milestone.name} placement="top">
+                        <MilestoneMarker
+                          leftmargin={markerPosition}
+                          color="blue"
                         />
                       </Tooltip>
                     );
@@ -172,16 +195,32 @@ const TimelineGnattBlob = styled("div")<TimelineGnattBlobProps>(
   }),
 );
 
-interface TimelineMarkerProps {
+interface DateMarkerProps {
   leftmargin: number;
   color: string;
 }
 
-const TimelineMarker = styled("div")<TimelineMarkerProps>(
+const DateMarker = styled("div")<DateMarkerProps>(({ leftmargin, color }) => ({
+  position: "absolute",
+  top: 0,
+  bottom: "-1px",
+  width: "2px",
+  backgroundColor: color,
+  left: `calc(${leftmargin * 100}% - 0.5rem)`,
+  zIndex: 1,
+  cursor: "pointer",
+}));
+
+interface MilestoneMarkerProps {
+  leftmargin: number;
+  color: string;
+}
+
+const MilestoneMarker = styled("div")<MilestoneMarkerProps>(
   ({ leftmargin, color }) => ({
     position: "absolute",
-    top: 0,
-    bottom: "-1px",
+    top: "1rem",
+    bottom: "1rem",
     width: "2px",
     backgroundColor: color,
     left: `calc(${leftmargin * 100}% - 0.5rem)`,

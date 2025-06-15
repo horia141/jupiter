@@ -84,7 +84,7 @@ export default function NewJournal() {
 
   return (
     <LeafPanel
-      key={"journasl/new"}
+      fakeKey={"journasl/new"}
       returnLocation="/app/workspace/journals"
       inputsEnabled={inputsEnabled}
     >

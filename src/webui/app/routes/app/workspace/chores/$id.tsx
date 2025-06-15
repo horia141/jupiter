@@ -333,7 +333,7 @@ export default function Chore() {
 
   return (
     <LeafPanel
-      key={`chore-{loaderData.chore.ref_id}`}
+      fakeKey={`chore-{loaderData.chore.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.chore.archived}

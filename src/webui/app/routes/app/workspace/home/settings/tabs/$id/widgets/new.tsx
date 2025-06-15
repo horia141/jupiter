@@ -119,7 +119,7 @@ export default function NewWidget() {
 
   return (
     <LeafPanel
-      key={`home/settings/tabs/${id}/widgets/new`}
+      fakeKey={`home/settings/tabs/${id}/widgets/new`}
       returnLocation={`/app/workspace/home/settings/tabs/${id}`}
       inputsEnabled={inputsEnabled}
     >

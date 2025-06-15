@@ -99,7 +99,7 @@ export default function NewMetricEntry() {
 
   return (
     <LeafPanel
-      key={`metric-${id}/entries/new`}
+      fakeKey={`metric-${id}/entries/new`}
       returnLocation={`/app/workspace/metrics/${loaderData.metric.ref_id}`}
       inputsEnabled={inputsEnabled}
     >

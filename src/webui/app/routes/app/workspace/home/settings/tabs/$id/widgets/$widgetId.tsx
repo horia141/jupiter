@@ -150,7 +150,7 @@ export default function Widget() {
 
   return (
     <LeafPanel
-      key={`home/settings/tabs/${id}/widgets/${loaderData.widget.ref_id}`}
+      fakeKey={`home/settings/tabs/${id}/widgets/${loaderData.widget.ref_id}`}
       returnLocation={`/app/workspace/home/settings/tabs/${id}`}
       inputsEnabled={inputsEnabled}
       showArchiveAndRemoveButton

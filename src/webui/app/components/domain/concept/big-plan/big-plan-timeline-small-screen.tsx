@@ -1,4 +1,9 @@
-import type { ADate, BigPlan, BigPlanStats } from "@jupiter/webapi-client";
+import type {
+  ADate,
+  BigPlan,
+  BigPlanMilestone,
+  BigPlanStats,
+} from "@jupiter/webapi-client";
 import { Tooltip, styled } from "@mui/material";
 import { Link } from "@remix-run/react";
 import type { DateTime } from "luxon";
@@ -19,6 +24,7 @@ interface DateMarker {
 interface BigPlanTimelineSmallScreenProps {
   thisYear: DateTime;
   bigPlans: Array<BigPlan>;
+  bigPlanMilestonesByRefId: Map<string, Array<BigPlanMilestone>>;
   bigPlanStatsByRefId: Map<string, BigPlanStats>;
   dateMarkers?: Array<DateMarker>;
   selectedPredicate?: (it: BigPlan) => boolean;
@@ -29,6 +35,7 @@ interface BigPlanTimelineSmallScreenProps {
 export function BigPlanTimelineSmallScreen({
   thisYear,
   bigPlans,
+  bigPlanMilestonesByRefId,
   bigPlanStatsByRefId,
   dateMarkers,
   selectedPredicate,
@@ -67,7 +74,6 @@ export function BigPlanTimelineSmallScreen({
                 <MarkerLabel
                   key={idx}
                   leftmargin={markerPosition}
-                  color={marker.color}
                 >
                   {marker.label}
                 </MarkerLabel>
@@ -79,6 +85,8 @@ export function BigPlanTimelineSmallScreen({
         {bigPlans.map((bigPlan) => {
           const { leftMargin, width, betterWidth, betterLeftMargin } =
             computeBigPlanGnattPosition(thisYear, bigPlan);
+
+          const milestones = bigPlanMilestonesByRefId.get(bigPlan.ref_id) || [];
 
           return (
             <SmallScreenTimelineLine
@@ -100,9 +108,23 @@ export function BigPlanTimelineSmallScreen({
                 );
                 return (
                   <Tooltip key={idx} title={marker.label} placement="top">
-                    <TimelineMarker
+                    <DateMarker
                       leftmargin={markerPosition}
                       color={marker.color}
+                    />
+                  </Tooltip>
+                );
+              })}
+              {milestones.map((milestone, idx) => {
+                const markerPosition = computeMarkerPosition(
+                  thisYear,
+                  milestone.date,
+                );
+                return (
+                  <Tooltip key={idx} title={milestone.name} placement="top">
+                    <MilestoneMarker
+                      leftmargin={markerPosition}
+                      color={"blue"}
                     />
                   </Tooltip>
                 );
@@ -139,7 +161,6 @@ export function BigPlanTimelineSmallScreen({
                 <MarkerLabel
                   key={idx}
                   leftmargin={markerPosition}
-                  color={marker.color}
                 >
                   {marker.label}
                 </MarkerLabel>
@@ -222,17 +243,33 @@ const TimelineLink = styled(Link)<TimelineLinkProps>(
   }),
 );
 
-interface TimelineMarkerProps {
+interface DateMarkerProps {
   leftmargin: number;
   color: string;
 }
 
-const TimelineMarker = styled("div")<TimelineMarkerProps>(
+const DateMarker = styled("div")<DateMarkerProps>(({ leftmargin, color }) => ({
+  position: "absolute",
+  bottom: 0,
+  top: "-0.5rem",
+  height: "calc(100% + 1rem)",
+  width: "2px",
+  backgroundColor: color,
+  left: `${leftmargin * 100}%`,
+  zIndex: 1,
+  cursor: "pointer",
+}));
+
+interface MilestoneMarkerProps {
+  leftmargin: number;
+  color: string;
+}
+
+const MilestoneMarker = styled("div")<MilestoneMarkerProps>(
   ({ leftmargin, color }) => ({
     position: "absolute",
-    bottom: 0,
-    top: "-0.5rem",
-    height: "calc(100% + 1rem)",
+    top: "0px",
+    bottom: "0px",
     width: "2px",
     backgroundColor: color,
     left: `${leftmargin * 100}%`,
@@ -243,16 +280,13 @@ const TimelineMarker = styled("div")<TimelineMarkerProps>(
 
 interface MarkerLabelProps {
   leftmargin: number;
-  color: string;
 }
 
 const MarkerLabel = styled("div")<MarkerLabelProps>(
-  ({ leftmargin, color }) => ({
+  ({ leftmargin }) => ({
     position: "absolute",
     transform: "translateX(-50%)",
     left: `${leftmargin * 100}%`,
-    color: color,
-    fontSize: "0.75rem",
     whiteSpace: "nowrap",
     fontWeight: "bold",
   }),

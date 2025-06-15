@@ -27,6 +27,7 @@ class NamedEntityTag(EnumValue):
     HABIT = "Habit"  # Habit.__name__
     CHORE = "Chore"  # Chore.__name__
     BIG_PLAN = "BigPlan"  # BigPlan.__name__
+    BIG_PLAN_MILESTONE = "BigPlanMilestone"  # BigPlanMilestone.__name__
     DOC = "Doc"  # Doc.__name__
     JOURNAL = "Journal"  # Journal.__name__
     VACATION = "Vacation"  # Vacation.__name__
