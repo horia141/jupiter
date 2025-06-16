@@ -28,7 +28,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { PeriodSelect } from "~/components/domain/core/period-select";
 import {
   aGlobalError,
@@ -106,7 +106,7 @@ export default function NewTimePlan() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         title="Properties"
         actions={
           <SectionActions
@@ -154,7 +154,7 @@ export default function NewTimePlan() {
             <FieldError actionResult={actionData} fieldName="/period" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

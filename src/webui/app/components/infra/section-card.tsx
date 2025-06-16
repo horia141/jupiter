@@ -1,22 +1,35 @@
-import { Card, CardContent, Chip, styled } from "@mui/material";
+import { Card, CardActions, CardContent, Chip, styled } from "@mui/material";
 import { Form } from "@remix-run/react";
 import type { PropsWithChildren } from "react";
 
-interface SectionCardNewProps {
+export enum ActionsPosition {
+  ABOVE,
+  BELOW
+}
+
+interface SectionCardProps {
   id?: string;
   title: string;
   actions?: JSX.Element;
+  actionsPosition?: ActionsPosition;
 }
 
-export function SectionCardNew(props: PropsWithChildren<SectionCardNewProps>) {
+export function SectionCard(props: PropsWithChildren<SectionCardProps>) {
+  const actionsPosition = props.actionsPosition ?? ActionsPosition.ABOVE;
+
   return (
     <StyledCard id={props.id}>
       <Form method="post">
         <SectionHeader>
           <SectionTitle label={props.title} />
-          {props.actions}
+          {actionsPosition === ActionsPosition.ABOVE && props.actions}
         </SectionHeader>
         <CardContent>{props.children}</CardContent>
+        {actionsPosition === ActionsPosition.BELOW && (
+          <CardActions>
+            {props.actions}
+          </CardActions>
+        )}
       </Form>
     </StyledCard>
   );

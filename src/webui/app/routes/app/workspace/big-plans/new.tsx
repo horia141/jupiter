@@ -29,7 +29,7 @@ import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -182,7 +182,7 @@ export default function NewBigPlan() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="big-plan-properties"
         title="Properties"
         actions={
@@ -338,7 +338,7 @@ export default function NewBigPlan() {
             </>
           )}
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

@@ -50,7 +50,7 @@ import { selectZod, fixSelectOutputToEnumStrict } from "~/logic/select";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { TimePlanGenerationApproachSelect } from "~/components/domain/concept/time-plan/time-plan-generation-approach-select";
 import { periodName } from "~/logic/domain/period";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -224,7 +224,7 @@ export default function TimePlansSettings() {
         WorkspaceFeature.TIME_PLANS,
       ) && (
         <Form method="post">
-          <SectionCardNew
+          <SectionCard
             id="time-plans-settings"
             title="Settings"
             actions={
@@ -393,9 +393,9 @@ export default function TimePlansSettings() {
                 </>
               )}
             </Stack>
-          </SectionCardNew>
+          </SectionCard>
 
-          <SectionCardNew
+          <SectionCard
             id="time-plans-generated-time-plans-and-planning-tasks"
             title="Generated Planning Tasks"
           >
@@ -409,7 +409,7 @@ export default function TimePlansSettings() {
               }}
               inboxTasks={loaderData.planningTasks}
             />
-          </SectionCardNew>
+          </SectionCard>
         </Form>
       )}
     </BranchPanel>

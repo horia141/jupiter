@@ -41,6 +41,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({});
 
@@ -137,9 +139,25 @@ export default function NewChore() {
       returnLocation="/app/workspace/chores"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+        <SectionCard
+          title="New Chore"
+          actions={
+            <SectionActions
+                id="chore-create"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    id: "chore-create",
+                    text: "Create",
+                    value: "create",
+                    highlight: true
+                  }),
+                ]}
+          />
+              }
+        >
           <Stack spacing={2} useFlexGap>
             <Stack direction="row" useFlexGap spacing={1}>
               <FormControl fullWidth sx={{ flexGrow: 3 }}>
@@ -233,21 +251,7 @@ export default function NewChore() {
               <FieldError actionResult={actionData} fieldName="/end_at_date" />
             </FormControl>
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="chore-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        </SectionCard>
     </LeafPanel>
   );
 }

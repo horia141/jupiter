@@ -30,6 +30,10 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { useContext } from "react";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -171,6 +175,7 @@ export default function SmartListItem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.item.archived;
@@ -183,9 +188,22 @@ export default function SmartListItem() {
       entityArchived={loaderData.item.archived}
       returnLocation={`/app/workspace/smart-lists/${id}/items`}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="email-task-actions"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
@@ -234,40 +252,24 @@ export default function SmartListItem() {
               <FieldError actionResult={actionData} fieldName="/url" />
             </FormControl>
           </Stack>
-        </CardContent>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="smart-list-item-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]} />
+          }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -276,7 +278,7 @@ export default function SmartListItem() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

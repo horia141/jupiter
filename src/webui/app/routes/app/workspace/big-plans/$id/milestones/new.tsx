@@ -13,7 +13,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -92,7 +92,7 @@ export default function BigPlanMilestoneNew() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="big-plan-milestone-properties"
         title="Properties"
         actions={
@@ -133,7 +133,7 @@ export default function BigPlanMilestoneNew() {
             <FieldError actionResult={actionData} fieldName="/date" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

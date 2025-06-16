@@ -18,7 +18,7 @@ export interface TopLevelInfo {
   workspace: Workspace;
 }
 
-export const TopLevelInfoContext = createContext<TopLevelInfo>({
+export const EMPTY_CONTEXT = {
   today: "2025-01-01",
   userFeatureFlagControls: {
     controls: {},
@@ -51,4 +51,6 @@ export const TopLevelInfoContext = createContext<TopLevelInfo>({
     name: "food",
     feature_flags: {},
   },
-});
+};
+
+export const TopLevelInfoContext = createContext<TopLevelInfo>(EMPTY_CONTEXT);

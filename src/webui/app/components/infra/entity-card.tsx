@@ -170,14 +170,14 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
         to={props.to}
         inline={props.inline === true ? "true" : "false"}
         light={props.light === true ? "true" : "false"}
-        singleline={props.singleLine === true ? "true" : "false"}
+        singleline={props.singleLine ? "true" : "false"}
       >
         {props.children}
       </StandardLink>
     );
   } else {
     return (
-      <EntityFakeLink inline={props.inline} light={props.light}>
+      <EntityFakeLink inline={props.inline} light={props.light} singleLine={props.singleLine}>
         {props.children}
       </EntityFakeLink>
     );

@@ -17,7 +17,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useFetcher, useNavigation } from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -39,6 +39,8 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import { GlobalError } from "~/components/infra/errors";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -128,6 +130,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function WorkingMem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.workingMem.archived;
@@ -175,14 +178,8 @@ export default function WorkingMem() {
       entityArchived={loaderData.workingMem.archived}
       returnLocation="/app/workspace/working-mem/archive"
     >
-      <Card
-        sx={{
-          marginBottom: "1rem",
-          display: "flex",
-          flexDirection: isBigScreen ? "row" : "column",
-        }}
-      >
-        <CardContent sx={{ flexGrow: "1" }}>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties">
           <Stack direction={"row"} spacing={2} useFlexGap>
             <FormControl fullWidth>
               <InputLabel id="rightNow" shrink margin="dense">
@@ -215,17 +212,16 @@ export default function WorkingMem() {
               </Select>
             </FormControl>
           </Stack>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent>
+      </SectionCard>
+
+      <SectionCard title="Content">
           <EntityNoteEditor
             initialNote={loaderData.note}
             inputsEnabled={inputsEnabled}
           />
-        </CardContent>
-      </Card>
+      </SectionCard>
 
+      <SectionCard title="Cleanup Tasks">
       {loaderData.cleanupTasks.length > 0 && (
         <InboxTaskStack
           topLevelInfo={topLevelInfo}
@@ -235,7 +231,6 @@ export default function WorkingMem() {
             showHandleMarkDone: true,
             showHandleMarkNotDone: true,
           }}
-          label="Cleanup Tasks"
           inboxTasks={loaderData.cleanupTasks}
           withPages={{
             retrieveOffsetParamName: "cleanupTasksRetrieveOffset",
@@ -246,6 +241,7 @@ export default function WorkingMem() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
+      </SectionCard>
     </LeafPanel>
   );
 }

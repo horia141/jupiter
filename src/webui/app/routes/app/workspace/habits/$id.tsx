@@ -55,6 +55,8 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { aDateToDate } from "~/logic/domain/adate";
+import { SectionActions, ActionSingle } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -362,9 +364,27 @@ export default function Habit() {
       returnLocation="/app/workspace/habits"
       initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
         <GlobalError actionResult={actionData} />
-        <CardContent>
+        <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="habit-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+              ActionSingle({
+                text: "Regen",
+                value: "regen",
+              }),
+            ]}
+          />
+        }
+      >
           <Stack spacing={2} useFlexGap>
             <Stack direction="row" useFlexGap spacing={1}>
               <FormControl sx={{ flexGrow: 3 }}>
@@ -466,34 +486,10 @@ export default function Habit() {
               </Stack>
             )}
           </Stack>
-        </CardContent>
+        </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="regen"
-            >
-              Regen
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        <CardContent>
+      <SectionCard title="Streak"
+      >
           <HabitStreakCalendar
             year={loaderData.streakMarkYear}
             currentYear={aDateToDate(topLevelInfo.today).year}
@@ -508,26 +504,24 @@ export default function Habit() {
               )}`
             }
           />
-        </CardContent>
-      </Card>
+        </SectionCard>
 
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="habit-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]} />
+          }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -536,7 +530,10 @@ export default function Habit() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
+
+      <SectionCard
+        title="Inbox Tasks">
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
@@ -547,7 +544,6 @@ export default function Habit() {
             showHandleMarkDone: true,
             showHandleMarkNotDone: true,
           }}
-          label="Inbox Tasks"
           inboxTasks={sortedInboxTasks}
           withPages={{
             retrieveOffsetParamName: "inboxTasksRetrieveOffset",
@@ -558,6 +554,7 @@ export default function Habit() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
+      </SectionCard>
     </LeafPanel>
   );
 }

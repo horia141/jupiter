@@ -32,6 +32,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -180,9 +182,22 @@ export default function Vacation() {
       entityArchived={vacation.archived}
       returnLocation="/app/workspace/vacations"
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="vacation-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
@@ -231,42 +246,24 @@ export default function Vacation() {
               <FieldError actionResult={actionData} fieldName="/end_date" />
             </FormControl>
           </Stack>
-        </CardContent>
+        </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="vacation-update"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                id="vacation-create-note"
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="chore-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: note !== null,
+              }),
+            ]} />
+          }
+      >
         {note && (
           <>
             <EntityNoteEditor
@@ -275,7 +272,7 @@ export default function Vacation() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,

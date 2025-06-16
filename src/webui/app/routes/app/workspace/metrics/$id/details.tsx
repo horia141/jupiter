@@ -48,7 +48,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
-
+import { SectionCard } from "~/components/infra/section-card";
+import { SectionActions, ActionSingle } from "~/components/infra/section-actions";
 const ParamsSchema = z.object({
   id: z.string(),
 });
@@ -318,12 +319,31 @@ export default function MetricDetails() {
       entityArchived={loaderData.metric.archived}
       returnLocation={`/app/workspace/metrics/${id}`}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <Stack direction="row" spacing={2}>
-              <FormControl fullWidth sx={{ flexGrow: 3 }}>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="metric-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+              ActionSingle({
+                text: "Regen",
+                value: "regen",
+                highlight: false,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <Stack direction="row" spacing={2}>
+            <FormControl fullWidth sx={{ flexGrow: 3 }}>
                 <InputLabel id="name">Name</InputLabel>
                 <OutlinedInput
                   label="Name"
@@ -374,49 +394,24 @@ export default function MetricDetails() {
               actionData={actionData}
             />
           </Stack>
-        </CardContent>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="regen"
-            >
-              Regen
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="chore-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]} />
+          }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -425,8 +420,9 @@ export default function MetricDetails() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
+      <SectionCard title="Collection Tasks">
       {sortedCollectionTasks && (
         <InboxTaskStack
           topLevelInfo={topLevelInfo}
@@ -436,7 +432,6 @@ export default function MetricDetails() {
             showHandleMarkDone: true,
             showHandleMarkNotDone: true,
           }}
-          label="Collection Tasks"
           inboxTasks={sortedCollectionTasks}
           withPages={{
             retrieveOffsetParamName: "collectionTasksRetrieveOffset",
@@ -444,9 +439,10 @@ export default function MetricDetails() {
             pageSize: loaderData.collectionTasksPageSize,
           }}
           onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

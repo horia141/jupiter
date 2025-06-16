@@ -17,7 +17,7 @@ import {
   SectionActions,
   ActionSingle,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -128,7 +128,7 @@ export default function HomeTabDetails() {
       entityArchived={loaderData.tab.archived}
       returnLocation={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}`}
     >
-      <SectionCardNew
+      <SectionCard
         id="home-tab-details"
         title="Tab Details"
         actions={
@@ -169,7 +169,7 @@ export default function HomeTabDetails() {
             <FieldError actionResult={actionData} fieldName="/icon" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

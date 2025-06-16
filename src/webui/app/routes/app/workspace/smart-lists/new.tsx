@@ -26,6 +26,10 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
+import { useContext } from "react";
 
 const ParamsSchema = z.object({});
 
@@ -69,6 +73,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewSmartList() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
 
   return (
@@ -77,19 +82,36 @@ export default function NewSmartList() {
       returnLocation="/app/workspace/smart-lists"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
         <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+         <SectionCard
+          title="New Smart List"
+          actions={
+            <SectionActions
+              id="smart-list-create"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  id: "smart-list-create",
+                  text: "Create",
+                  value: "create",
+                  highlight: true
+                }),
+              ]}
+            />
+          }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
             <FormControl fullWidth>
               <InputLabel id="icon">Icon</InputLabel>
@@ -97,23 +119,9 @@ export default function NewSmartList() {
               <FieldError actionResult={actionData} fieldName="/icon" />
             </FormControl>
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="smart-list-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-    </LeafPanel>
-  );
+        </SectionCard>
+      </LeafPanel>
+    );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -121,7 +129,6 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   ParamsSchema,
   {
     notFound: () => `Could not find the smart list!`,
-    error: () =>
-      `There was an error creating the smart list! Please try again!`,
+    error: () => `There was an error creating the smart list! Please try again!`,
   },
 );

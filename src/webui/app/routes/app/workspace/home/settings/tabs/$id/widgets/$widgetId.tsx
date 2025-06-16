@@ -27,7 +27,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { WidgetTypeSelector } from "~/components/home/widget-type-selector";
 import { WidgetDimensionSelector } from "~/components/home/widget-dimension-selector";
 import { RowAndColSelector } from "~/components/home/row-and-col-selector";
@@ -155,7 +155,7 @@ export default function Widget() {
       inputsEnabled={inputsEnabled}
       showArchiveAndRemoveButton
     >
-      <SectionCardNew
+      <SectionCard
         title="Widget Settings"
         actions={
           <SectionActions
@@ -216,7 +216,7 @@ export default function Widget() {
             <FieldError actionResult={actionData} fieldName={"/dimension"} />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

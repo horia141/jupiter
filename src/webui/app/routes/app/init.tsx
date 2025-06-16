@@ -56,6 +56,9 @@ import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { commitSession, getSession } from "~/sessions";
+import { ActionsExpansion, ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
+import { EMPTY_CONTEXT } from "~/top-level-context";
 
 const WorkspaceInitFormSchema = z.object({
   userEmailAddress: z.string(),
@@ -157,11 +160,24 @@ export default function WorkspaceInit() {
       </SmartAppBar>
 
       <LifecyclePanel>
-        <Form method="post">
-          <Card>
-            <GlobalError actionResult={actionData} />
-            <CardHeader title="New Account & Workspace" />
-            <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="New Account & Workspace" actionsPosition={ActionsPosition.BELOW}
+      actions={
+        <SectionActions
+            id="init"
+            topLevelInfo={EMPTY_CONTEXT}
+            inputsEnabled={inputsEnabled}
+            expansion={ActionsExpansion.ALWAYS_SHOW}
+            actions={[
+              ActionSingle({
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+      }
+      >
               <Stack spacing={2} useFlexGap>
                 <FormControl fullWidth>
                   <InputLabel id="userEmailAddress">
@@ -329,21 +345,7 @@ export default function WorkspaceInit() {
                   </AccordionDetails>
                 </Accordion>
               </Stack>
-            </CardContent>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                >
-                  Create
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
-        </Form>
+          </SectionCard>
 
         <EntityActionHeader>
           <ButtonGroup>

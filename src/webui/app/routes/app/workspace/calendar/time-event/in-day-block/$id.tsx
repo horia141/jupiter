@@ -39,7 +39,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { TimeEventParamsSource } from "~/components/domain/application/calendar/time-event-params-source";
 import { TimeEventSourceLink } from "~/components/domain/application/calendar/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -422,7 +422,7 @@ export default function TimeEventInDayBlockViewOne() {
         durationMins={durationMins}
       />
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-event-in-day-block-properties"
         title="Properties"
         actions={
@@ -557,7 +557,7 @@ export default function TimeEventInDayBlockViewOne() {
             </FormControl>
           </Stack>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
 
       {loaderData.inboxTask && (
         <InboxTaskPropertiesEditor

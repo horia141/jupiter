@@ -39,7 +39,7 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import {
@@ -172,7 +172,7 @@ export function InboxTaskPropertiesEditor(
   }, [props.inboxTaskInfo]);
 
   return (
-    <SectionCardNew
+    <SectionCard
       title={props.title}
       actions={
         <SectionActions
@@ -551,7 +551,7 @@ export function InboxTaskPropertiesEditor(
           )}
         </Stack>
       </CardActions>
-    </SectionCardNew>
+    </SectionCard>
   );
 }
 

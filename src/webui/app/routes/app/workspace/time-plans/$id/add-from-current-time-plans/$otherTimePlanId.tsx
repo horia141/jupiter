@@ -32,7 +32,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import { TimePlanActivityCard } from "~/components/domain/concept/time-plan/time-plan-activity-card";
 import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
@@ -270,7 +270,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
       initialExpansionState={LeafPanelExpansionState.LARGE}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-plan-current-activities"
         title="Current Activities"
         actions={
@@ -365,10 +365,10 @@ export default function TimePlanAddFromCurrentTimePlans() {
           type="hidden"
           value={Array.from(targetActivitiesRefIds).join(",")}
         />
-      </SectionCardNew>
+      </SectionCard>
 
       {loaderData.otherHigherTimePlan && (
-        <SectionCardNew
+        <SectionCard
           id="time-plan-higher-time-plan"
           title="Higher Time Plan"
         >
@@ -381,11 +381,11 @@ export default function TimePlanAddFromCurrentTimePlans() {
               showPeriod: true,
             }}
           />
-        </SectionCardNew>
+        </SectionCard>
       )}
 
       {loaderData.otherPreviousTimePlan && (
-        <SectionCardNew
+        <SectionCard
           id="time-plan-previous-time-plan"
           title="Previous Time Plan"
         >
@@ -398,11 +398,11 @@ export default function TimePlanAddFromCurrentTimePlans() {
               showPeriod: true,
             }}
           />
-        </SectionCardNew>
+        </SectionCard>
       )}
 
       {loaderData.otherHigherTimePlanSubTimePlans && (
-        <SectionCardNew
+        <SectionCard
           id="time-plan-other-higher-time-plan"
           title="Sub Time Plans"
         >
@@ -411,7 +411,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
             timePlans={loaderData.otherHigherTimePlanSubTimePlans}
             relativeToTimePlan={loaderData.mainTimePlan}
           />
-        </SectionCardNew>
+        </SectionCard>
       )}
     </LeafPanel>
   );

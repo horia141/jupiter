@@ -48,7 +48,7 @@ import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-tas
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { TimePlanActivityList } from "~/components/domain/concept/time-plan/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -408,7 +408,8 @@ export default function BigPlan() {
       shouldShowALeaflet={shouldShowALeaflet}
     >
       <NestingAwareBlock shouldHide={shouldShowALeaflet}>
-        <SectionCardNew
+        <GlobalError actionResult={actionData} />
+        <SectionCard
           id="big-plan-properties"
           title="Properties"
           actions={
@@ -430,7 +431,6 @@ export default function BigPlan() {
             />
           }
         >
-          <GlobalError actionResult={actionData} />
           <Stack spacing={2} useFlexGap>
             <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
               <FormControl sx={{ flexGrow: 3 }}>
@@ -688,7 +688,7 @@ export default function BigPlan() {
               )}
             </Stack>
           </CardActions>
-        </SectionCardNew>
+        </SectionCard>
 
         <Card>
           {!loaderData.note && (
@@ -717,7 +717,7 @@ export default function BigPlan() {
           )}
         </Card>
 
-        <SectionCardNew
+        <SectionCard
           id="big-plan-milestones"
           title="Milestones"
           actions={
@@ -735,9 +735,9 @@ export default function BigPlan() {
           }
         >
           <BigPlanMilestoneStack milestones={loaderData.milestones} />
-        </SectionCardNew>
+        </SectionCard>
 
-        <SectionCardNew
+        <SectionCard
           id="big-plan-inbox-tasks"
           title="Inbox Tasks"
           actions={
@@ -771,14 +771,14 @@ export default function BigPlan() {
               onCardMarkNotDone={handleCardMarkNotDone}
             />
           )}
-        </SectionCardNew>
+        </SectionCard>
 
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
           WorkspaceFeature.TIME_PLANS,
         ) &&
           timePlanActivities && (
-            <SectionCardNew
+            <SectionCard
               id="big-plan-time-plan-activities"
               title="Time Plan Activities"
             >
@@ -792,7 +792,7 @@ export default function BigPlan() {
                 timeEventsByRefId={timeEventsByRefId}
                 fullInfo={false}
               />
-            </SectionCardNew>
+            </SectionCard>
           )}
       </NestingAwareBlock>
 

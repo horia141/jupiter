@@ -33,7 +33,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { ScheduleStreamSelect } from "~/components/domain/concept/schedule/schedule-stream-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isCorePropertyEditable } from "~/logic/domain/schedule-event-full-days";
@@ -220,7 +220,7 @@ export default function ScheduleEventFullDaysViewOne() {
       returnLocation={`/app/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="schedule-event-full-days-properties"
         title="Properties"
         actions={
@@ -343,7 +343,7 @@ export default function ScheduleEventFullDaysViewOne() {
             </FormControl>
           </Stack>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
 
       <Card>
         {!loaderData.note && (

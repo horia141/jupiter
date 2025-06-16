@@ -36,6 +36,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { ActionsExpansion, ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -121,11 +123,30 @@ export default function MetricsSettings() {
       returnLocation="/app/workspace/working-mem"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
+      <GlobalError actionResult={actionData} />
 
-        <CardHeader title="Clean Up Project" />
-        <CardContent>
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="working-mem-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            expansion={ActionsExpansion.ALWAYS_COMPACT}
+            actions={[
+              ActionSingle({
+                text: "Change Generation Period",
+                value: "change-generation-period",
+                highlight: false,
+              }),
+              ActionSingle({
+                text: "Change Clean Up Project",
+                value: "change-cleanup-projec",
+                highlight: false,
+                gatedOn: WorkspaceFeature.PROJECTS
+              }),
+            ]}
+          />
+        }>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <FormLabel id="generationPeriod">Generation Period</FormLabel>
@@ -166,37 +187,7 @@ export default function MetricsSettings() {
               </FormControl>
             )}
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="change-generation-period"
-            >
-              Change Generation Period
-            </Button>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="change-cleanup-project"
-              >
-                Change Cleanup Project
-              </Button>
-            )}
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        </SectionCard>
     </LeafPanel>
   );
 }

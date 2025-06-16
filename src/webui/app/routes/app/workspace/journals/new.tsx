@@ -33,6 +33,8 @@ import {
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -89,8 +91,24 @@ export default function NewJournal() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <Card>
-        <CardContent>
+      <SectionCard
+        title="New Journal"
+        actions={
+          <SectionActions
+                id="journal-create"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    id: "journal-create",
+                    text: "Create",
+                    value: "create",
+                    highlight: true
+                  }),
+                ]}
+          />
+        }
+      >
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <InputLabel id="rightNow" shrink margin="dense">
@@ -122,22 +140,7 @@ export default function NewJournal() {
               <FieldError actionResult={actionData} fieldName="/period" />
             </FormControl>
           </Stack>
-        </CardContent>
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="journal-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="create"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

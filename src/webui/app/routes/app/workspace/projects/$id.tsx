@@ -16,7 +16,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
@@ -31,6 +31,10 @@ import { isRootProject } from "~/logic/domain/project";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation as useLoaderDataForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
+import { SectionActions } from "~/components/infra/section-actions";
+import { ActionSingle } from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -167,6 +171,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Project() {
   const loaderData = useLoaderDataForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const navigation = useNavigation();
 
   const inputsEnabled =
@@ -200,9 +205,27 @@ export default function Project() {
       entityArchived={loaderData.project.archived}
       returnLocation="/app/workspace/projects"
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="project-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+              ActionSingle({
+                text: "Change Parent",
+                value: "change-parent",
+                highlight: false,
+              }),
+            ]} />
+        }
+      >
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <ProjectSelect
@@ -232,52 +255,26 @@ export default function Project() {
                 defaultValue={loaderData.project.name}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-          </Stack>
-        </CardContent>
+          </FormControl>
+        </Stack>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled || isRootProject(loaderData.project)}
-              type="submit"
-              name="intent"
-              value="change-parent"
-            >
-              Change Parent
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="project-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]} />
+          }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -286,7 +283,7 @@ export default function Project() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

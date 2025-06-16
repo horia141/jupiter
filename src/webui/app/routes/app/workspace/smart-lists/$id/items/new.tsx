@@ -29,6 +29,11 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { ActionSingle } from "~/components/infra/section-actions";
+import { SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
+import { useContext } from "react";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -104,7 +109,7 @@ export default function NewSmartListItem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
 
   return (
@@ -113,17 +118,34 @@ export default function NewSmartListItem() {
       returnLocation={`/app/workspace/smart-lists/${id}/items`}
       inputsEnabled={inputsEnabled}
     >
-      <Card>
         <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-              />
+        <SectionCard
+          title="New Smart List Item"
+          actions={
+            <SectionActions
+              id="smart-list-item-create"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  id: "smart-list-item-create",
+                  text: "Create",
+                  value: "create",
+                  highlight: true
+                }),
+              ]}
+            />
+          }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
 
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
@@ -151,30 +173,16 @@ export default function NewSmartListItem() {
               <FieldError actionResult={actionData} fieldName="/url" />
             </FormControl>
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="smart-list-item-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-    </LeafPanel>
-  );
+        </SectionCard>
+      </LeafPanel>
+    );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
   (params) => `/app/workspace/smart-lists/${params.id}/items`,
   ParamsSchema,
   {
-    error: () =>
-      `There was an error creating the smart list item! Please try again!`,
+    notFound: () => `Could not find the smart list item!`,
+    error: () => `There was an error creating the smart list item! Please try again!`,
   },
 );

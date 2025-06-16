@@ -48,6 +48,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -241,7 +243,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
           content: [],
         });
 
-        return redirect(`/app/workspace/chore/${id}`);
+        return redirect(`/app/workspace/chores/${id}`);
       }
 
       case "archive": {
@@ -339,9 +341,28 @@ export default function Chore() {
       entityArchived={loaderData.chore.archived}
       returnLocation="/app/workspace/chores"
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+      actions={
+        <SectionActions
+          id="chore-properties"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            ActionSingle({
+              text: "Save",
+              value: "update",
+              highlight: true,
+            }),
+            ActionSingle({
+              text: "Regen",
+              value: "regen",
+              highlight: false,
+            }),
+          ]}
+        />
+      }
+      >
           <Stack spacing={2} useFlexGap>
             <Stack direction="row" useFlexGap spacing={1}>
               <FormControl fullWidth sx={{ flexGrow: 3 }}>
@@ -467,49 +488,24 @@ export default function Chore() {
               </FormControl>
             </Stack>
           </Stack>
-        </CardContent>
+        </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="regen"
-            >
-              Regen
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="chore-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]} />
+          }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -518,8 +514,9 @@ export default function Chore() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
+      <SectionCard title="Inbox Tasks">
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
           topLevelInfo={topLevelInfo}
@@ -529,7 +526,6 @@ export default function Chore() {
             showHandleMarkDone: true,
             showHandleMarkNotDone: true,
           }}
-          label="Inbox Tasks"
           inboxTasks={sortedInboxTasks}
           withPages={{
             retrieveOffsetParamName: "inboxTasksRetrieveOffset",
@@ -537,9 +533,10 @@ export default function Chore() {
             pageSize: loaderData.inboxTasksPageSize,
           }}
           onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

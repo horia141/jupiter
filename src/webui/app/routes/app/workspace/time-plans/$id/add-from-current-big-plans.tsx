@@ -1,5 +1,6 @@
 import type {
   BigPlan,
+  BigPlanMilestone,
   BigPlanStats,
   TimePlan,
   Workspace,
@@ -38,7 +39,7 @@ import {
   FilterFewOptionsCompact,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
@@ -116,6 +117,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const bigPlansResult = await apiClient.bigPlans.bigPlanFind({
       allow_archived: false,
       include_notes: false,
+      include_milestones: true,
       include_stats: true,
       filter_just_workable: true,
       include_project: true,
@@ -222,6 +224,10 @@ export default function TimePlanAddFromCurrentBigPlans() {
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
+  const bigPlanMilestonesByRefId = new Map<string, BigPlanMilestone[]>(
+    loaderData.bigPlans.map((bp) => [bp.big_plan.ref_id, bp.milestones || []])
+  );
+
   const bigPlanStatsByRefId = new Map(
     loaderData.bigPlans.map((b) => [b.big_plan.ref_id, b.stats!]),
   );
@@ -250,7 +256,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
     >
       <GlobalError actionResult={actionData} />
 
-      <SectionCardNew
+      <SectionCard
         id="time-plan-current-big-plans"
         title="Current Big Plans"
         actions={
@@ -398,6 +404,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
             thisYear={thisYear}
             timePlan={loaderData.timePlan}
             bigPlanStatsByRefId={bigPlanStatsByRefId}
+            bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
             alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
@@ -438,6 +445,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
                     timePlan={loaderData.timePlan}
                     topLevelInfo={topLevelInfo}
                     bigPlans={theBigPlans}
+                    bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
                     bigPlanStatsByRefId={bigPlanStatsByRefId}
                     alreadyIncludedBigPlanRefIds={alreadyIncludedBigPlanRefIds}
                     targetBigPlanRefIds={targetBigPlanRefIds}
@@ -461,7 +469,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
           type="hidden"
           value={Array.from(targetBigPlanRefIds).join(",")}
         />
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }
@@ -513,6 +521,7 @@ interface BigPlanTimelineProps {
   timePlan: TimePlan;
   topLevelInfo: TopLevelInfo;
   bigPlans: Array<BigPlan>;
+  bigPlanMilestonesByRefId: Map<string, BigPlanMilestone[]>;
   bigPlanStatsByRefId: Map<string, BigPlanStats>;
   alreadyIncludedBigPlanRefIds: Set<string>;
   targetBigPlanRefIds: Set<string>;
@@ -527,6 +536,7 @@ function BigPlanTimeline(props: BigPlanTimelineProps) {
       <BigPlanTimelineBigScreen
         thisYear={props.thisYear}
         bigPlans={props.bigPlans}
+        bigPlanMilestonesByRefId={props.bigPlanMilestonesByRefId}
         bigPlanStatsByRefId={props.bigPlanStatsByRefId}
         dateMarkers={[
           {
@@ -555,6 +565,7 @@ function BigPlanTimeline(props: BigPlanTimelineProps) {
       <BigPlanTimelineSmallScreen
         thisYear={props.thisYear}
         bigPlans={props.bigPlans}
+        bigPlanMilestonesByRefId={props.bigPlanMilestonesByRefId}
         bigPlanStatsByRefId={props.bigPlanStatsByRefId}
         dateMarkers={[
           {

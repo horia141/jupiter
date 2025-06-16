@@ -31,6 +31,9 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { ActionSingle } from "~/components/infra/section-actions";
+import { SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -169,9 +172,23 @@ export default function MetricEntry() {
       entityArchived={loaderData.metricEntry.archived}
       returnLocation={`/app/workspace/metrics/${id}`}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="metric-entry-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
           <Stack spacing={2} useFlexGap>
             <TimeDiffTag
               today={topLevelInfo.today}
@@ -214,42 +231,26 @@ export default function MetricEntry() {
                 defaultValue={loaderData.metricEntry.value}
               />
               <FieldError actionResult={actionData} fieldName="/value" />
-            </FormControl>
-          </Stack>
-        </CardContent>
+          </FormControl>
+        </Stack>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="metric-entry-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]} />
+          }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -258,7 +259,7 @@ export default function MetricEntry() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

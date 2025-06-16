@@ -41,7 +41,7 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { TimeEventInDayBlockStack } from "~/components/domain/application/calendar/time-event-in-day-block-stack";
 import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
@@ -398,7 +398,7 @@ export default function TimePlanActivity() {
       initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-plan-activity-properties"
         title="Properties"
         actions={
@@ -441,7 +441,7 @@ export default function TimePlanActivity() {
             <FieldError actionResult={actionData} fieldName="/feasability" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
 
       {loaderData.targetInboxTask && (
         <>
@@ -480,7 +480,7 @@ export default function TimePlanActivity() {
         WorkspaceFeature.BIG_PLANS,
       ) &&
         loaderData.targetBigPlan && (
-          <SectionCardNew
+          <SectionCard
             id="target"
             title="Big Plan"
             actions={
@@ -521,7 +521,7 @@ export default function TimePlanActivity() {
               }}
               bigPlans={[loaderData.targetBigPlan]}
             />
-          </SectionCardNew>
+          </SectionCard>
         )}
     </LeafPanel>
   );

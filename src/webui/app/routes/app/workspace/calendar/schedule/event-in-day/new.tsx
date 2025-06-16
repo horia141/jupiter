@@ -30,7 +30,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { ScheduleStreamSelect } from "~/components/domain/concept/schedule/schedule-stream-select";
 import { TimeEventParamsSource } from "~/components/domain/application/calendar/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -157,7 +157,7 @@ export default function ScheduleEventInDayNew() {
         durationMins={durationMins}
       />
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="schedule-event-in-day-properties"
         title="Properties"
         actions={
@@ -291,7 +291,7 @@ export default function ScheduleEventInDayNew() {
             </FormControl>
           </Stack>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

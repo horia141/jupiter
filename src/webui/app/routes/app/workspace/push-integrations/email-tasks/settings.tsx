@@ -30,6 +30,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({});
 
@@ -101,14 +103,27 @@ export default function EmailTasksSettings() {
       returnLocation="/app/workspace/push-integrations/email-tasks"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
+      
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
       ) && (
-        <Card>
-          <GlobalError actionResult={actionData} />
-          <CardHeader title="Generation Project" />
-          <CardContent>
+        <SectionCard title="Generation Project"
+        actions={
+          <SectionActions
+            id="email-task-actions"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Change Generation Project",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+          }>
             <Stack spacing={2} useFlexGap>
               <FormControl fullWidth>
                 <ProjectSelect
@@ -125,20 +140,7 @@ export default function EmailTasksSettings() {
                 />
               </FormControl>
             </Stack>
-          </CardContent>
-
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-              >
-                Change Generation Project
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
+          </SectionCard>
       )}
     </LeafPanel>
   );

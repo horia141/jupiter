@@ -33,7 +33,7 @@ import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { TimeEventInDayBlockStack } from "~/components/domain/application/calendar/time-event-in-day-block-stack";
 import { TimePlanActivityList } from "~/components/domain/concept/time-plan/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -49,6 +49,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionActions, ActionSingle } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -383,23 +384,22 @@ export default function InboxTask() {
         actionData={actionData}
       />
 
-      <Card>
-        {!loaderData.info.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+    <SectionCard title="Note"
+        actions={
+          <SectionActions
+            id="inbox-task-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.info.note !== null,
+              }),
+            ]} />
+          }
+      >
         {loaderData.info.note && (
           <>
             <EntityNoteEditor
@@ -408,7 +408,7 @@ export default function InboxTask() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
@@ -428,7 +428,7 @@ export default function InboxTask() {
         WorkspaceFeature.TIME_PLANS,
       ) &&
         timePlanActivities && (
-          <SectionCardNew
+          <SectionCard
             id="inbox-task-time-plan-activities"
             title="Time Plan Activities"
           >
@@ -442,7 +442,7 @@ export default function InboxTask() {
               timeEventsByRefId={timeEventsByRefId}
               fullInfo={false}
             />
-          </SectionCardNew>
+          </SectionCard>
         )}
     </LeafPanel>
   );

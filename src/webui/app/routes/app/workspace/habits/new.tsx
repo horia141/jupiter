@@ -41,6 +41,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -151,9 +153,25 @@ export default function NewHabit() {
       returnLocation="/app/workspace/habits"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Habit"
+        actions={
+          <SectionActions
+              id="habit-create"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  id: "habit-create",
+                  text: "Create",
+                  value: "create",
+                  highlight: true
+                }),
+              ]}
+        />
+            }
+      >
           <Stack spacing={2} useFlexGap>
             <Stack direction="row" useFlexGap spacing={1}>
               <FormControl sx={{ flexGrow: 3 }}>
@@ -248,21 +266,7 @@ export default function NewHabit() {
               </Stack>
             )}
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="habit-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

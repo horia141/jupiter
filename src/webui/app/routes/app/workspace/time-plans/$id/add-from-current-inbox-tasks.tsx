@@ -30,7 +30,7 @@ import {
   FilterFewOptionsCompact,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
 import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
@@ -294,7 +294,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
       ]}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-plan-current-inbox-tasks"
         title="Current Inbox Tasks"
         actions={
@@ -443,7 +443,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           type="hidden"
           value={Array.from(targetInboxTaskRefIds).join(",")}
         />
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

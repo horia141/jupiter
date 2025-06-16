@@ -24,7 +24,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 
@@ -41,6 +41,10 @@ import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle } from "~/components/infra/section-actions";
+import { SectionActions } from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
 
@@ -134,6 +138,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewMetric() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
 
   const [showCollectionParams, setShowCollectionParams] = useState(false);
@@ -152,11 +157,27 @@ export default function NewMetric() {
       returnLocation="/app/workspace/metrics"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <Stack direction="row" spacing={2}>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Metric"
+        actions={
+          <SectionActions
+            id="metric-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "metric-create",
+                text: "Create",
+                value: "create",
+                highlight: true
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <Stack direction="row" spacing={2}>
               <FormControl fullWidth sx={{ flexGrow: 3 }}>
                 <InputLabel id="name">Name</InputLabel>
                 <OutlinedInput
@@ -306,21 +327,7 @@ export default function NewMetric() {
               </>
             )}
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="metric-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

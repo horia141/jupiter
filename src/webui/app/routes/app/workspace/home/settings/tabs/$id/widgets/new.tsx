@@ -26,7 +26,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -123,7 +123,7 @@ export default function NewWidget() {
       returnLocation={`/app/workspace/home/settings/tabs/${id}`}
       inputsEnabled={inputsEnabled}
     >
-      <SectionCardNew
+      <SectionCard
         title="New Widget"
         actions={
           <SectionActions
@@ -187,7 +187,7 @@ export default function NewWidget() {
             />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

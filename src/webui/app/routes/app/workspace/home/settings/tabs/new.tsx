@@ -19,7 +19,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -78,7 +78,7 @@ export default function NewTab() {
       returnLocation="/app/workspace/home/settings"
       inputsEnabled={inputsEnabled}
     >
-      <SectionCardNew
+      <SectionCard
         title="New Tab"
         actions={
           <SectionActions
@@ -123,7 +123,7 @@ export default function NewTab() {
             <FieldError actionResult={actionData} fieldName="/icon" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

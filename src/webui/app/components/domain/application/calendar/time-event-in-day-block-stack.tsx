@@ -1,7 +1,7 @@
 import type { CombinedTimeEventInDayEntry } from "~/logic/domain/time-event";
 import type { TopLevelInfo } from "~/top-level-context";
 import { NavSingle, SectionActions } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { TimeEventInDayBlockCard } from "~/components/domain/application/calendar/time-event-in-day-block-card";
 
 interface TimeEventInDayBlockStackProps {
@@ -32,7 +32,7 @@ export function TimeEventInDayBlockStack(props: TimeEventInDayBlockStackProps) {
   }
 
   return (
-    <SectionCardNew
+    <SectionCard
       id="time-event-in-day-block-stack"
       title={props.title}
       actions={actions}
@@ -44,6 +44,6 @@ export function TimeEventInDayBlockStack(props: TimeEventInDayBlockStackProps) {
           userTimezone={props.topLevelInfo.user.timezone}
         />
       ))}
-    </SectionCardNew>
+    </SectionCard>
   );
 }

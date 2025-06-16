@@ -60,7 +60,7 @@ import {
   getSuggestedDatesForInboxTaskActionableDate,
   getSuggestedDatesForInboxTaskDueDate,
 } from "~/logic/domain/suggested-date";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
@@ -341,7 +341,7 @@ export default function NewInboxTask() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew 
+      <SectionCard 
         title="New Inbox Task"
         actions={
           <SectionActions
@@ -553,7 +553,7 @@ export default function NewInboxTask() {
                 </>
               )}
           </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

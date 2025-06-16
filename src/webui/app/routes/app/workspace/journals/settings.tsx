@@ -51,7 +51,7 @@ import { DifficultySelect } from "~/components/domain/core/difficulty-select";
 import { selectZod, fixSelectOutputToEnumStrict } from "~/logic/select";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { periodName } from "~/logic/domain/period";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -225,7 +225,7 @@ export default function JournalsSettings() {
         WorkspaceFeature.JOURNALS,
       ) && (
         <Form method="post">
-          <SectionCardNew
+          <SectionCard
             id="journals-settings"
             title="Settings"
             actions={
@@ -428,9 +428,9 @@ export default function JournalsSettings() {
                 </>
               )}
             </Stack>
-          </SectionCardNew>
+          </SectionCard>
 
-          <SectionCardNew
+          <SectionCard
             id="journals-generated-journals-and-writing-tasks"
             title="Generated Writing Tasks"
           >
@@ -444,7 +444,7 @@ export default function JournalsSettings() {
               }}
               inboxTasks={loaderData.writingTasks}
             />
-          </SectionCardNew>
+          </SectionCard>
         </Form>
       )}
     </BranchPanel>

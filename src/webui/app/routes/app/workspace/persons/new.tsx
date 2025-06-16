@@ -37,6 +37,11 @@ import { birthdayFromParts } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { ActionSingle } from "~/components/infra/section-actions";
+import { SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
+import { useContext } from "react";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
 
@@ -133,6 +138,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewPerson() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
 
   return (
@@ -141,11 +147,27 @@ export default function NewPerson() {
       returnLocation="/app/workspace/persons"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
+      <GlobalError actionResult={actionData} /> 
+      <SectionCard
+        title="New Person"
+        actions={
+          <SectionActions
+            id="person-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "person-create",
+                text: "Create",
+                value: "create",
+                highlight: true
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
                 label="Name"
@@ -268,25 +290,9 @@ export default function NewPerson() {
               actionData={actionData}
             />
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="person-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="create"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-    </LeafPanel>
-  );
+        </SectionCard>
+      </LeafPanel>
+    );  
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(

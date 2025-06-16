@@ -28,6 +28,10 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
+import { useContext } from "react";
 
 const ParamsSchema = z.object({});
 
@@ -81,6 +85,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewProject() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const navigation = useNavigation();
 
   const inputsEnabled = navigation.state === "idle";
@@ -91,16 +96,32 @@ export default function NewProject() {
       returnLocation="/app/workspace/projects"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="parentProjectRefId"
-                label="Parent Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Project"
+        actions={
+          <SectionActions
+            id="project-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "project-create",
+                text: "Create",
+                value: "create",
+                highlight: true
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="parentProjectRefId"
+              label="Parent Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
                 allProjects={loaderData.allProjects}
                 defaultValue={loaderData.rootProject.ref_id}
               />
@@ -122,25 +143,9 @@ export default function NewProject() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="project-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="create"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-    </LeafPanel>
-  );
+        </SectionCard>
+      </LeafPanel>
+    );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(

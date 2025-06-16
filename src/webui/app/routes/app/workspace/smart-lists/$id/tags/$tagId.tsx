@@ -15,6 +15,7 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
@@ -22,10 +23,13 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -132,6 +136,7 @@ export default function SmartListTag() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.smartListTag.archived;
@@ -144,9 +149,22 @@ export default function SmartListTag() {
       entityArchived={loaderData.smartListTag.archived}
       returnLocation={`/app/workspace/smart-lists/${id}/tags`}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="smart-list-tag-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <InputLabel id="name">Name</InputLabel>
@@ -160,21 +178,7 @@ export default function SmartListTag() {
               <FieldError actionResult={actionData} fieldName="/tag_name" />
             </FormControl>
           </Stack>
-        </CardContent>
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+          </SectionCard>
     </LeafPanel>
   );
 }

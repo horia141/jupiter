@@ -42,6 +42,9 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import { ActionSingle } from "~/components/infra/section-actions";
+import { SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -246,9 +249,23 @@ export default function EmailTask() {
       entityArchived={loaderData.emailTask.archived}
       returnLocation="/app/workspace/push-integrations/email-tasks"
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties"
+        actions={
+          <SectionActions
+            id="email-task-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }>
+        
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
               <InputLabel id="fromAddress">From Address</InputLabel>
@@ -434,23 +451,9 @@ export default function EmailTask() {
               />
             </FormControl>
           </Stack>
-        </CardContent>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
+      <SectionCard title="Inbox Task">
       {loaderData.inboxTask && (
         <InboxTaskStack
           topLevelInfo={topLevelInfo}
@@ -460,12 +463,12 @@ export default function EmailTask() {
             showHandleMarkDone: true,
             showHandleMarkNotDone: true,
           }}
-          label="Inbox Task"
           inboxTasks={[loaderData.inboxTask]}
           onCardMarkDone={handleCardMarkDone}
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
+      </SectionCard>
     </LeafPanel>
   );
 }

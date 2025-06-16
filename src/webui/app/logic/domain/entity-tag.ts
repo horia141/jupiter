@@ -30,6 +30,8 @@ export function entityTagName(entityTag: NamedEntityTag): string {
       return "Chore";
     case NamedEntityTag.BIG_PLAN:
       return "Big Plan";
+    case NamedEntityTag.BIG_PLAN_MILESTONE:
+      return "Big Plan Milestone";
     case NamedEntityTag.JOURNAL:
       return "Journal";
     case NamedEntityTag.DOC:

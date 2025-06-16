@@ -21,7 +21,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { ScheduleStreamColorInput } from "~/components/domain/concept/schedule/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -83,7 +83,7 @@ export default function ScheduleStreamNew() {
       returnLocation={`/app/workspace/calendar/schedule/stream?${query}`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="schedule-stream-properties"
         title="Properties"
         actions={
@@ -120,7 +120,7 @@ export default function ScheduleStreamNew() {
             <FieldError actionResult={actionData} fieldName="/color" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

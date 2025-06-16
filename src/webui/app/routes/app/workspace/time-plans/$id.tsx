@@ -45,7 +45,7 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { JournalStack } from "~/components/domain/concept/journal/journal-stack";
 import { PeriodSelect } from "~/components/domain/core/period-select";
 import {
@@ -329,7 +329,7 @@ export default function TimePlanView() {
       <Form method="post">
         <NestingAwareBlock shouldHide={shouldShowALeaf}>
           <GlobalError actionResult={actionData} />
-          <SectionCardNew
+          <SectionCard
             title="Properties"
             actions={
               <SectionActions
@@ -381,15 +381,15 @@ export default function TimePlanView() {
                 <FieldError actionResult={actionData} fieldName="/status" />
               </FormControl>
             </Stack>
-          </SectionCardNew>
-          <SectionCardNew title="Notes">
+          </SectionCard>
+          <SectionCard title="Notes">
             <EntityNoteEditor
               initialNote={loaderData.note}
               inputsEnabled={inputsEnabled}
             />
-          </SectionCardNew>
+          </SectionCard>
 
-          <SectionCardNew
+          <SectionCard
             id="time-plan-activities"
             title="Activities"
             actions={
@@ -530,10 +530,10 @@ export default function TimePlanView() {
                 />
               )}
             </Stack>
-          </SectionCardNew>
+          </SectionCard>
 
           {loaderData.completedNontargetInboxTasks.length > 0 && (
-            <SectionCardNew
+            <SectionCard
               id="time-plan-untracked-inbox-tasks"
               title="Completed & Untracked Inbox Tasks"
             >
@@ -546,12 +546,12 @@ export default function TimePlanView() {
                 }}
                 inboxTasks={loaderData.completedNontargetInboxTasks}
               />
-            </SectionCardNew>
+            </SectionCard>
           )}
 
           {loaderData.completedNontargetBigPlans &&
             loaderData.completedNontargetBigPlans.length > 0 && (
-              <SectionCardNew
+              <SectionCard
                 id="time-plan-untracked-big-plans"
                 title="Completed & Untracked Big Plans"
               >
@@ -570,34 +570,34 @@ export default function TimePlanView() {
                   }}
                   bigPlans={loaderData.completedNontargetBigPlans}
                 />
-              </SectionCardNew>
+              </SectionCard>
             )}
 
           {sortedSubTimePlans.length > 0 && (
-            <SectionCardNew id="time-plan-lower" title="Lower Time Plans">
+            <SectionCard id="time-plan-lower" title="Lower Time Plans">
               <TimePlanStack
                 topLevelInfo={topLevelInfo}
                 timePlans={sortedSubTimePlans}
               />
-            </SectionCardNew>
+            </SectionCard>
           )}
 
           {loaderData.higherTimePlan && (
-            <SectionCardNew id="time-plan-higher" title="Higher Time Plan">
+            <SectionCard id="time-plan-higher" title="Higher Time Plan">
               <TimePlanStack
                 topLevelInfo={topLevelInfo}
                 timePlans={[loaderData.higherTimePlan]}
               />
-            </SectionCardNew>
+            </SectionCard>
           )}
 
           {loaderData.previousTimePlan && (
-            <SectionCardNew id="time-plan-previous" title="Previous Time Plan">
+            <SectionCard id="time-plan-previous" title="Previous Time Plan">
               <TimePlanStack
                 topLevelInfo={topLevelInfo}
                 timePlans={[loaderData.previousTimePlan]}
               />
-            </SectionCardNew>
+            </SectionCard>
           )}
 
           {isWorkspaceFeatureAvailable(
@@ -605,7 +605,7 @@ export default function TimePlanView() {
             WorkspaceFeature.JOURNALS,
           ) &&
             (loaderData.journal || sortedSubJournals.length > 0) && (
-              <SectionCardNew
+              <SectionCard
                 id="time-plan-journal"
                 title="Journal For This Plan"
               >
@@ -622,7 +622,7 @@ export default function TimePlanView() {
                     journals={sortedSubJournals}
                   />
                 )}
-              </SectionCardNew>
+              </SectionCard>
             )}
         </NestingAwareBlock>
       </Form>

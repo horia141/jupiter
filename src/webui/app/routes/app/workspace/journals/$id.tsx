@@ -22,7 +22,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { JournalStack } from "~/components/domain/concept/journal/journal-stack";
 import { PeriodSelect } from "~/components/domain/core/period-select";
 import { ShowReport } from "~/components/domain/application/search/show-report";
@@ -204,7 +204,7 @@ export default function Journal() {
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         title="Properties"
         actions={
           <SectionActions
@@ -257,29 +257,29 @@ export default function Journal() {
             <FieldError actionResult={actionData} fieldName="/status" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
 
-      <SectionCardNew id="journal-note" title="Note">
+      <SectionCard id="journal-note" title="Note">
         <EntityNoteEditor
           initialNote={loaderData.note}
           inputsEnabled={inputsEnabled}
         />
-      </SectionCardNew>
+      </SectionCard>
 
-      <SectionCardNew id="journal-report" title="Report">
+      <SectionCard id="journal-report" title="Report">
         <ShowReport
           topLevelInfo={topLevelInfo}
           allProjects={loaderData.allProjects || []}
           report={loaderData.journalStats.report}
         />
-      </SectionCardNew>
+      </SectionCard>
 
-      <SectionCardNew id="sub-journals" title="Other Journals in this Period">
+      <SectionCard id="sub-journals" title="Other Journals in this Period">
         <JournalStack
           topLevelInfo={topLevelInfo}
           journals={sortedSubJournals}
         />
-      </SectionCardNew>
+      </SectionCard>
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
@@ -287,7 +287,7 @@ export default function Journal() {
       ) &&
         loaderData.timePlan &&
         sortedTimePlans.length > 0 && (
-          <SectionCardNew id="sub-time-plans" title="Time Plans in this Period">
+          <SectionCard id="sub-time-plans" title="Time Plans in this Period">
             {loaderData.timePlan && (
               <TimePlanStack
                 topLevelInfo={topLevelInfo}
@@ -300,7 +300,7 @@ export default function Journal() {
                 timePlans={sortedTimePlans}
               />
             )}
-          </SectionCardNew>
+          </SectionCard>
         )}
     </LeafPanel>
   );

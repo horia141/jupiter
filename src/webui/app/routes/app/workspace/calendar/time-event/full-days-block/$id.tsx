@@ -30,7 +30,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
+import { SectionCard } from "~/components/infra/section-card";
 import { TimeEventSourceLink } from "~/components/domain/application/calendar/time-event-source-link";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -134,7 +134,7 @@ export default function TimeEventFullDaysBlockViewOne() {
       returnLocation={`/app/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-event-full-days-block-properties"
         title="Properties"
         actions={
@@ -233,7 +233,7 @@ export default function TimeEventFullDaysBlockViewOne() {
             </FormControl>
           </Stack>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }
