@@ -60,6 +60,8 @@ import {
   getSuggestedDatesForInboxTaskActionableDate,
   getSuggestedDatesForInboxTaskDueDate,
 } from "~/logic/domain/suggested-date";
+import { SectionCardNew } from "~/components/infra/section-card-new";
+import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -338,12 +340,28 @@ export default function NewInboxTask() {
       returnLocation="/app/workspace/inbox-tasks"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <Stack direction="row" spacing={2}>
-              <FormControl fullWidth>
+      <GlobalError actionResult={actionData} />
+      <SectionCardNew 
+        title="New Inbox Task"
+        actions={
+          <SectionActions
+            id="inbox-task-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "inbox-task-create",
+                text: "Create",
+                value: "create",
+                highlight: true
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <Stack direction="row" spacing={2}>
+            <FormControl fullWidth>
                 <InputLabel id="name">Name</InputLabel>
                 <OutlinedInput
                   label="Name"
@@ -535,20 +553,7 @@ export default function NewInboxTask() {
                 </>
               )}
           </Stack>
-        </CardContent>
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="inbox-task-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      </SectionCardNew>
     </LeafPanel>
   );
 }
