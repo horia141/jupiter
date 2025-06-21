@@ -1532,7 +1532,7 @@ class GenService:
                         project_ref_id=project.ref_id,
                         eisen=gen_params.eisen,
                         difficulty=gen_params.difficulty,
-                        due_date=cast(Journal, found_journal).right_now,
+                        due_date=schedule.due_date
                     )
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -1549,10 +1549,10 @@ class GenService:
                         name=schedule.full_name,
                         eisen=gen_params.eisen,
                         difficulty=gen_params.difficulty,
-                        actionable_date=schedule.end_day.add_days(
+                        actionable_date=schedule.due_date.add_days(
                             -journal_collection.generation_in_advance_days[period]
                         ),
-                        due_date=cast(Journal, found_journal).right_now,
+                        due_date=schedule.due_date,
                         project_ref_id=project.ref_id,
                         journal_ref_id=cast(Journal, found_journal).ref_id,
                         recurring_task_timeline=schedule.timeline,

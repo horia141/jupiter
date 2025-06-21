@@ -16,7 +16,6 @@ import {
 import { parseForm } from "zodix";
 import { StatusCodes } from "http-status-codes";
 import {
-  Form,
   ShouldRevalidateFunction,
   useActionData,
   useNavigation,
@@ -224,7 +223,8 @@ export default function JournalsSettings() {
         topLevelInfo.workspace,
         WorkspaceFeature.JOURNALS,
       ) && (
-        <Form method="post">
+        <Stack spacing={2}>
+          <GlobalError actionResult={actionData} />
           <SectionCard
             id="journals-settings"
             title="Settings"
@@ -249,7 +249,6 @@ export default function JournalsSettings() {
               />
             }
           >
-            <GlobalError actionResult={actionData} />
             <Stack spacing={2} useFlexGap>
               <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
                 <FormControl fullWidth>
@@ -445,7 +444,7 @@ export default function JournalsSettings() {
               inboxTasks={loaderData.writingTasks}
             />
           </SectionCard>
-        </Form>
+        </Stack>
       )}
     </BranchPanel>
   );

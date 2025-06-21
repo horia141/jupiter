@@ -16,7 +16,6 @@ import {
 import { parseForm } from "zodix";
 import { StatusCodes } from "http-status-codes";
 import {
-  Form,
   ShouldRevalidateFunction,
   useActionData,
   useNavigation,
@@ -223,7 +222,8 @@ export default function TimePlansSettings() {
         topLevelInfo.workspace,
         WorkspaceFeature.TIME_PLANS,
       ) && (
-        <Form method="post">
+        <Stack spacing={2}>
+          <GlobalError actionResult={actionData} />
           <SectionCard
             id="time-plans-settings"
             title="Settings"
@@ -248,7 +248,6 @@ export default function TimePlansSettings() {
               />
             }
           >
-            <GlobalError actionResult={actionData} />
             <Stack spacing={2} useFlexGap>
               <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
                 <FormControl fullWidth>
@@ -410,7 +409,7 @@ export default function TimePlansSettings() {
               inboxTasks={loaderData.planningTasks}
             />
           </SectionCard>
-        </Form>
+        </Stack>
       )}
     </BranchPanel>
   );
