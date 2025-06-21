@@ -368,10 +368,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
       </SectionCard>
 
       {loaderData.otherHigherTimePlan && (
-        <SectionCard
-          id="time-plan-higher-time-plan"
-          title="Higher Time Plan"
-        >
+        <SectionCard id="time-plan-higher-time-plan" title="Higher Time Plan">
           <TimePlanCard
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.otherHigherTimePlan}

@@ -5,8 +5,6 @@ import {
   RecurringTaskPeriod,
 } from "@jupiter/webapi-client";
 import {
-  Card,
-  CardContent,
   FormControl,
   InputLabel,
   MenuItem,
@@ -35,7 +33,6 @@ import {
 import { aDateToDate } from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -137,8 +134,6 @@ export default function WorkingMem() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const isBigScreen = useBigScreen();
-
   const cardActionFetcher = useFetcher();
 
   function handleCardMarkDone(it: InboxTask) {
@@ -180,67 +175,67 @@ export default function WorkingMem() {
     >
       <GlobalError actionResult={actionData} />
       <SectionCard title="Properties">
-          <Stack direction={"row"} spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="rightNow" shrink margin="dense">
-                The Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="rightNow"
-                name="rightNow"
-                readOnly={true}
-                defaultValue={loaderData.workingMem.right_now}
-              />
-            </FormControl>
+        <Stack direction={"row"} spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="rightNow" shrink margin="dense">
+              The Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="rightNow"
+              name="rightNow"
+              readOnly={true}
+              defaultValue={loaderData.workingMem.right_now}
+            />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="period">Period</InputLabel>
-              <Select
-                labelId="status"
-                name="period"
-                readOnly={true}
-                defaultValue={loaderData.workingMem.period}
-                label="Period"
-              >
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <InputLabel id="period">Period</InputLabel>
+            <Select
+              labelId="status"
+              name="period"
+              readOnly={true}
+              defaultValue={loaderData.workingMem.period}
+              label="Period"
+            >
+              {Object.values(RecurringTaskPeriod).map((s) => (
+                <MenuItem key={s} value={s}>
+                  {periodName(s)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
       </SectionCard>
 
       <SectionCard title="Content">
-          <EntityNoteEditor
-            initialNote={loaderData.note}
-            inputsEnabled={inputsEnabled}
-          />
+        <EntityNoteEditor
+          initialNote={loaderData.note}
+          inputsEnabled={inputsEnabled}
+        />
       </SectionCard>
 
       <SectionCard title="Cleanup Tasks">
-      {loaderData.cleanupTasks.length > 0 && (
-        <InboxTaskStack
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          inboxTasks={loaderData.cleanupTasks}
-          withPages={{
-            retrieveOffsetParamName: "cleanupTasksRetrieveOffset",
-            totalCnt: loaderData.cleanupTasksTotalCnt,
-            pageSize: loaderData.cleanupTasksPageSize,
-          }}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+        {loaderData.cleanupTasks.length > 0 && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={loaderData.cleanupTasks}
+            withPages={{
+              retrieveOffsetParamName: "cleanupTasksRetrieveOffset",
+              totalCnt: loaderData.cleanupTasksTotalCnt,
+              pageSize: loaderData.cleanupTasksPageSize,
+            }}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
       </SectionCard>
     </LeafPanel>
   );

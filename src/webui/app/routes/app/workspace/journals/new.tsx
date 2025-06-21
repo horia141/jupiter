@@ -1,10 +1,5 @@
 import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormLabel,
   InputLabel,
@@ -34,7 +29,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -95,51 +93,51 @@ export default function NewJournal() {
         title="New Journal"
         actions={
           <SectionActions
-                id="journal-create"
-                topLevelInfo={topLevelInfo}
-                inputsEnabled={inputsEnabled}
-                actions={[
-                  ActionSingle({
-                    id: "journal-create",
-                    text: "Create",
-                    value: "create",
-                    highlight: true
-                  }),
-                ]}
+            id="journal-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "journal-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
           />
         }
       >
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="rightNow" shrink margin="dense">
-                The Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="rightNow"
-                name="rightNow"
-                readOnly={!inputsEnabled}
-                defaultValue={DateTime.local({
-                  zone: topLevelInfo.user.timezone,
-                }).toISODate()}
-              />
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="rightNow" shrink margin="dense">
+              The Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="rightNow"
+              name="rightNow"
+              readOnly={!inputsEnabled}
+              defaultValue={DateTime.local({
+                zone: topLevelInfo.user.timezone,
+              }).toISODate()}
+            />
 
-              <FieldError actionResult={actionData} fieldName="/right_now" />
-            </FormControl>
+            <FieldError actionResult={actionData} fieldName="/right_now" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <FormLabel id="period">Period</FormLabel>
-              <PeriodSelect
-                labelId="period"
-                label="Period"
-                name="period"
-                inputsEnabled={inputsEnabled}
-                defaultValue={RecurringTaskPeriod.WEEKLY}
-              />
-              <FieldError actionResult={actionData} fieldName="/period" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <FormLabel id="period">Period</FormLabel>
+            <PeriodSelect
+              labelId="period"
+              label="Period"
+              name="period"
+              inputsEnabled={inputsEnabled}
+              defaultValue={RecurringTaskPeriod.WEEKLY}
+            />
+            <FieldError actionResult={actionData} fieldName="/period" />
+          </FormControl>
+        </Stack>
       </SectionCard>
     </LeafPanel>
   );

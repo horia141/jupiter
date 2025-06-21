@@ -198,7 +198,7 @@ export function FilterManyOptions<K>(
 export enum ActionsExpansion {
   ALWAYS_SHOW,
   ALWAYS_COMPACT,
-  ADAPT
+  ADAPT,
 }
 
 interface SectionActionsProps {
@@ -214,8 +214,10 @@ export function SectionActions(props: SectionActionsProps) {
   const isBigScreen = useBigScreen();
   const expansion = props.expansion ?? ActionsExpansion.ADAPT;
 
-  if ((expansion === ActionsExpansion.ADAPT && !isBigScreen) 
-    || expansion === ActionsExpansion.ALWAYS_COMPACT) {
+  if (
+    (expansion === ActionsExpansion.ADAPT && !isBigScreen) ||
+    expansion === ActionsExpansion.ALWAYS_COMPACT
+  ) {
     const allActions = props.actions.concat(props.extraActions ?? []);
     return (
       <SectionActionsWithDialog

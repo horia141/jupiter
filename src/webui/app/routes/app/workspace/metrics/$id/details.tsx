@@ -7,17 +7,7 @@ import {
   NoteDomain,
   RecurringTaskPeriod,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -49,7 +39,10 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { SectionCard } from "~/components/infra/section-card";
-import { SectionActions, ActionSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 const ParamsSchema = z.object({
   id: z.string(),
 });
@@ -320,7 +313,8 @@ export default function MetricDetails() {
       returnLocation={`/app/workspace/metrics/${id}`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard title="Properties"
+      <SectionCard
+        title="Properties"
         actions={
           <SectionActions
             id="metric-properties"
@@ -344,59 +338,60 @@ export default function MetricDetails() {
         <Stack spacing={2} useFlexGap>
           <Stack direction="row" spacing={2}>
             <FormControl fullWidth sx={{ flexGrow: 3 }}>
-                <InputLabel id="name">Name</InputLabel>
-                <OutlinedInput
-                  label="Name"
-                  name="name"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.metric.name}
-                />
-                <FieldError actionResult={actionData} fieldName="/name" />
-              </FormControl>
-
-              <FormControl sx={{ flexGrow: 1 }}>
-                <IsKeySelect
-                  name="isKey"
-                  defaultValue={loaderData.metric.is_key}
-                  inputsEnabled={inputsEnabled}
-                />
-                <FieldError actionResult={actionData} fieldName="/is_key" />
-              </FormControl>
-            </Stack>
-
-            <FormControl fullWidth>
-              <InputLabel id="icon">Icon</InputLabel>
-              <IconSelector
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="Name"
+                name="name"
                 readOnly={!inputsEnabled}
-                defaultIcon={loaderData.metric.icon}
+                defaultValue={loaderData.metric.name}
               />
-              <FieldError actionResult={actionData} fieldName="/icon" />
+              <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            <StandardDivider title="Collection" size="large" />
-
-            <RecurringTaskGenParamsBlock
-              namePrefix="collection"
-              fieldsPrefix="collection"
-              allowNonePeriod
-              period={loaderData.metric.collection_params?.period || "none"}
-              eisen={loaderData.metric.collection_params?.eisen}
-              difficulty={loaderData.metric.collection_params?.difficulty}
-              actionableFromDay={
-                loaderData.metric.collection_params?.actionable_from_day
-              }
-              actionableFromMonth={
-                loaderData.metric.collection_params?.actionable_from_month
-              }
-              dueAtDay={loaderData.metric.collection_params?.due_at_day}
-              dueAtMonth={loaderData.metric.collection_params?.due_at_month}
-              inputsEnabled={inputsEnabled}
-              actionData={actionData}
-            />
+            <FormControl sx={{ flexGrow: 1 }}>
+              <IsKeySelect
+                name="isKey"
+                defaultValue={loaderData.metric.is_key}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/is_key" />
+            </FormControl>
           </Stack>
+
+          <FormControl fullWidth>
+            <InputLabel id="icon">Icon</InputLabel>
+            <IconSelector
+              readOnly={!inputsEnabled}
+              defaultIcon={loaderData.metric.icon}
+            />
+            <FieldError actionResult={actionData} fieldName="/icon" />
+          </FormControl>
+
+          <StandardDivider title="Collection" size="large" />
+
+          <RecurringTaskGenParamsBlock
+            namePrefix="collection"
+            fieldsPrefix="collection"
+            allowNonePeriod
+            period={loaderData.metric.collection_params?.period || "none"}
+            eisen={loaderData.metric.collection_params?.eisen}
+            difficulty={loaderData.metric.collection_params?.difficulty}
+            actionableFromDay={
+              loaderData.metric.collection_params?.actionable_from_day
+            }
+            actionableFromMonth={
+              loaderData.metric.collection_params?.actionable_from_month
+            }
+            dueAtDay={loaderData.metric.collection_params?.due_at_day}
+            dueAtMonth={loaderData.metric.collection_params?.due_at_month}
+            inputsEnabled={inputsEnabled}
+            actionData={actionData}
+          />
+        </Stack>
       </SectionCard>
 
-      <SectionCard title="Note"
+      <SectionCard
+        title="Note"
         actions={
           <SectionActions
             id="chore-note"
@@ -409,8 +404,9 @@ export default function MetricDetails() {
                 highlight: false,
                 disabled: loaderData.note !== null,
               }),
-            ]} />
-          }
+            ]}
+          />
+        }
       >
         {loaderData.note && (
           <>
@@ -423,22 +419,22 @@ export default function MetricDetails() {
       </SectionCard>
 
       <SectionCard title="Collection Tasks">
-      {sortedCollectionTasks && (
-        <InboxTaskStack
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          inboxTasks={sortedCollectionTasks}
-          withPages={{
-            retrieveOffsetParamName: "collectionTasksRetrieveOffset",
-            totalCnt: loaderData.collectionTasksTotalCnt,
-            pageSize: loaderData.collectionTasksPageSize,
-          }}
-          onCardMarkDone={handleCardMarkDone}
+        {sortedCollectionTasks && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={sortedCollectionTasks}
+            withPages={{
+              retrieveOffsetParamName: "collectionTasksRetrieveOffset",
+              totalCnt: loaderData.collectionTasksTotalCnt,
+              pageSize: loaderData.collectionTasksPageSize,
+            }}
+            onCardMarkDone={handleCardMarkDone}
             onCardMarkNotDone={handleCardMarkNotDone}
           />
         )}

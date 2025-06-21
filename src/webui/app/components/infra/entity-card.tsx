@@ -177,7 +177,11 @@ export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
     );
   } else {
     return (
-      <EntityFakeLink inline={props.inline} light={props.light} singleLine={props.singleLine}>
+      <EntityFakeLink
+        inline={props.inline}
+        light={props.light}
+        singleLine={props.singleLine}
+      >
         {props.children}
       </EntityFakeLink>
     );

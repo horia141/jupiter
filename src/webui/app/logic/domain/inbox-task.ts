@@ -172,7 +172,7 @@ export function filterInboxTasksForDisplay(
     if (options.dueDateEnd !== undefined) {
       if (
         inboxTask.due_date &&
-        aDateToDate(inboxTask.due_date) >= options.dueDateEnd
+        aDateToDate(inboxTask.due_date) > options.dueDateEnd
       ) {
         return false;
       }

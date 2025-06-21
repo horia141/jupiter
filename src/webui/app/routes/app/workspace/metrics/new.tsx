@@ -6,11 +6,6 @@ import {
 } from "@jupiter/webapi-client";
 import type { SelectChangeEvent } from "@mui/material";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormLabel,
   InputLabel,
@@ -42,8 +37,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle } from "~/components/infra/section-actions";
-import { SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
@@ -170,7 +167,7 @@ export default function NewMetric() {
                 id: "metric-create",
                 text: "Create",
                 value: "create",
-                highlight: true
+                highlight: true,
               }),
             ]}
           />
@@ -178,155 +175,155 @@ export default function NewMetric() {
       >
         <Stack spacing={2} useFlexGap>
           <Stack direction="row" spacing={2}>
-              <FormControl fullWidth sx={{ flexGrow: 3 }}>
-                <InputLabel id="name">Name</InputLabel>
-                <OutlinedInput
-                  label="Name"
-                  name="name"
-                  readOnly={!inputsEnabled}
-                />
-                <FieldError actionResult={actionData} fieldName="/name" />
-              </FormControl>
+            <FormControl fullWidth sx={{ flexGrow: 3 }}>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="Name"
+                name="name"
+                readOnly={!inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
 
-              <FormControl sx={{ flexGrow: 1 }}>
-                <IsKeySelect
-                  name="isKey"
-                  defaultValue={false}
+            <FormControl sx={{ flexGrow: 1 }}>
+              <IsKeySelect
+                name="isKey"
+                defaultValue={false}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/is_key" />
+            </FormControl>
+          </Stack>
+
+          <FormControl fullWidth>
+            <InputLabel id="icon">Icon</InputLabel>
+            <IconSelector readOnly={!inputsEnabled} />
+            <FieldError actionResult={actionData} fieldName="/icon" />
+          </FormControl>
+
+          <StandardDivider title="Collection" size="large" />
+
+          <FormControl fullWidth>
+            <InputLabel id="collectionPeriod">Collection Period</InputLabel>
+            <Select
+              labelId="collectionPeriod"
+              name="collectionPeriod"
+              readOnly={!inputsEnabled}
+              onChange={handleChangeCollectionPeriod}
+              defaultValue={"none"}
+              label="Collection Period"
+            >
+              <MenuItem value={"none"}>None</MenuItem>
+              {Object.values(RecurringTaskPeriod).map((period) => (
+                <MenuItem key={period} value={period}>
+                  {periodName(period)}
+                </MenuItem>
+              ))}
+            </Select>
+            <FieldError
+              actionResult={actionData}
+              fieldName="/collection_period"
+            />
+          </FormControl>
+
+          {showCollectionParams && (
+            <>
+              <FormControl fullWidth>
+                <FormLabel id="collectionEisen">Eisenhower</FormLabel>
+                <EisenhowerSelect
+                  name="collectionEisen"
+                  defaultValue={Eisen.REGULAR}
                   inputsEnabled={inputsEnabled}
                 />
-                <FieldError actionResult={actionData} fieldName="/is_key" />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/collection_eisen"
+                />
               </FormControl>
-            </Stack>
 
-            <FormControl fullWidth>
-              <InputLabel id="icon">Icon</InputLabel>
-              <IconSelector readOnly={!inputsEnabled} />
-              <FieldError actionResult={actionData} fieldName="/icon" />
-            </FormControl>
+              <FormControl fullWidth>
+                <FormLabel id="collectionDifficulty">Difficulty</FormLabel>
+                <DifficultySelect
+                  name="collectionDifficulty"
+                  defaultValue={Difficulty.EASY}
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/collection_difficulty"
+                />
+              </FormControl>
 
-            <StandardDivider title="Collection" size="large" />
+              <FormControl fullWidth>
+                <InputLabel id="collectionActionableFromDay">
+                  Actionable From Day [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  type="number"
+                  label="Actionable From Day"
+                  name="collectionActionableFromDay"
+                  readOnly={!inputsEnabled}
+                  defaultValue={""}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/collection_actionable_from_day"
+                />
+              </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="collectionPeriod">Collection Period</InputLabel>
-              <Select
-                labelId="collectionPeriod"
-                name="collectionPeriod"
-                readOnly={!inputsEnabled}
-                onChange={handleChangeCollectionPeriod}
-                defaultValue={"none"}
-                label="Collection Period"
-              >
-                <MenuItem value={"none"}>None</MenuItem>
-                {Object.values(RecurringTaskPeriod).map((period) => (
-                  <MenuItem key={period} value={period}>
-                    {periodName(period)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError
-                actionResult={actionData}
-                fieldName="/collection_period"
-              />
-            </FormControl>
+              <FormControl fullWidth>
+                <InputLabel id="collectionActionableFromMonth">
+                  Actionable From Month [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  type="number"
+                  label="Actionable From Month"
+                  name="collectionActionableFromMonth"
+                  readOnly={!inputsEnabled}
+                  defaultValue={""}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/collection_actionable_from_month"
+                />
+              </FormControl>
 
-            {showCollectionParams && (
-              <>
-                <FormControl fullWidth>
-                  <FormLabel id="collectionEisen">Eisenhower</FormLabel>
-                  <EisenhowerSelect
-                    name="collectionEisen"
-                    defaultValue={Eisen.REGULAR}
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_eisen"
-                  />
-                </FormControl>
+              <FormControl fullWidth>
+                <InputLabel id="collectionDueAtDay">
+                  Due At Day [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  type="number"
+                  label="Due At Day"
+                  name="collectionDueAtDay"
+                  readOnly={!inputsEnabled}
+                  defaultValue={""}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/collection_due_at_day"
+                />
+              </FormControl>
 
-                <FormControl fullWidth>
-                  <FormLabel id="collectionDifficulty">Difficulty</FormLabel>
-                  <DifficultySelect
-                    name="collectionDifficulty"
-                    defaultValue={Difficulty.EASY}
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_difficulty"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionActionableFromDay">
-                    Actionable From Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Day"
-                    name="collectionActionableFromDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_actionable_from_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionActionableFromMonth">
-                    Actionable From Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Actionable From Month"
-                    name="collectionActionableFromMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_actionable_from_month"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtDay">
-                    Due At Day [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Day"
-                    name="collectionDueAtDay"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_day"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="collectionDueAtMonth">
-                    Due At Month [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    type="number"
-                    label="Due At Month"
-                    name="collectionDueAtMonth"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/collection_due_at_month"
-                  />
-                </FormControl>
-              </>
-            )}
-          </Stack>
+              <FormControl fullWidth>
+                <InputLabel id="collectionDueAtMonth">
+                  Due At Month [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  type="number"
+                  label="Due At Month"
+                  name="collectionDueAtMonth"
+                  readOnly={!inputsEnabled}
+                  defaultValue={""}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/collection_due_at_month"
+                />
+              </FormControl>
+            </>
+          )}
+        </Stack>
       </SectionCard>
     </LeafPanel>
   );

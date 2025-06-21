@@ -13,7 +13,6 @@ import {
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import { Button, ButtonGroup, Card, CardActions } from "@mui/material";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
@@ -49,7 +48,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { SectionActions, ActionSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -384,7 +386,8 @@ export default function InboxTask() {
         actionData={actionData}
       />
 
-    <SectionCard title="Note"
+      <SectionCard
+        title="Note"
         actions={
           <SectionActions
             id="inbox-task-note"
@@ -397,8 +400,9 @@ export default function InboxTask() {
                 highlight: false,
                 disabled: loaderData.info.note !== null,
               }),
-            ]} />
-          }
+            ]}
+          />
+        }
       >
         {loaderData.info.note && (
           <>

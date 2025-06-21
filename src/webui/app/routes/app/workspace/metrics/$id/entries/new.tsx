@@ -1,15 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -24,7 +14,10 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -118,7 +111,7 @@ export default function NewMetricEntry() {
                 id: "metric-entry-create",
                 text: "Create",
                 value: "create",
-                highlight: true
+                highlight: true,
               }),
             ]}
           />
@@ -127,40 +120,40 @@ export default function NewMetricEntry() {
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <InputLabel id="collectionTime" shrink>
-                Collection Time
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="collectionTime"
-                defaultValue={DateTime.local({
-                  zone: topLevelInfo.user.timezone,
-                }).toFormat("yyyy-MM-dd")}
-                name="collectionTime"
-                readOnly={!inputsEnabled}
-              />
+              Collection Time
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="collectionTime"
+              defaultValue={DateTime.local({
+                zone: topLevelInfo.user.timezone,
+              }).toFormat("yyyy-MM-dd")}
+              name="collectionTime"
+              readOnly={!inputsEnabled}
+            />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/collection_time"
-              />
-            </FormControl>
+            <FieldError
+              actionResult={actionData}
+              fieldName="/collection_time"
+            />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="value">Value</InputLabel>
-              <OutlinedInput
-                type="number"
-                inputProps={{ step: "any" }}
-                label="Value"
-                name="value"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/value" />
-            </FormControl>
-          </Stack>
-        </SectionCard>
-      </LeafPanel>
-    );
+          <FormControl fullWidth>
+            <InputLabel id="value">Value</InputLabel>
+            <OutlinedInput
+              type="number"
+              inputProps={{ step: "any" }}
+              label="Value"
+              name="value"
+              readOnly={!inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/value" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
+    </LeafPanel>
+  );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(

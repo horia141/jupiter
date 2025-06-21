@@ -1,5 +1,4 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { Card, CardContent, FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -114,11 +113,11 @@ export default function Doc() {
       returnLocation="/app/workspace/docs"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
-        <GlobalError actionResult={actionData} />
-        <SectionCard title="Doc">
-            <DocEditor
-              initialDoc={loaderData.doc}
-              initialNote={loaderData.note}
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Doc">
+        <DocEditor
+          initialDoc={loaderData.doc}
+          initialNote={loaderData.note}
           inputsEnabled={inputsEnabled}
         />
       </SectionCard>

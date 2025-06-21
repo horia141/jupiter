@@ -225,7 +225,7 @@ export default function TimePlanAddFromCurrentBigPlans() {
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
   const bigPlanMilestonesByRefId = new Map<string, BigPlanMilestone[]>(
-    loaderData.bigPlans.map((bp) => [bp.big_plan.ref_id, bp.milestones || []])
+    loaderData.bigPlans.map((bp) => [bp.big_plan.ref_id, bp.milestones || []]),
   );
 
   const bigPlanStatsByRefId = new Map(

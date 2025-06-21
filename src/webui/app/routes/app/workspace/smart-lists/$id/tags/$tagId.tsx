@@ -1,15 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -23,7 +13,10 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -150,7 +143,8 @@ export default function SmartListTag() {
       returnLocation={`/app/workspace/smart-lists/${id}/tags`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard title="Properties"
+      <SectionCard
+        title="Properties"
         actions={
           <SectionActions
             id="smart-list-tag-properties"
@@ -164,21 +158,22 @@ export default function SmartListTag() {
               }),
             ]}
           />
-        }>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                defaultValue={loaderData.smartListTag.tag_name}
-                name="name"
-                readOnly={!inputsEnabled}
-              />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              defaultValue={loaderData.smartListTag.tag_name}
+              name="name"
+              readOnly={!inputsEnabled}
+            />
 
-              <FieldError actionResult={actionData} fieldName="/tag_name" />
-            </FormControl>
-          </Stack>
-          </SectionCard>
+            <FieldError actionResult={actionData} fieldName="/tag_name" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
     </LeafPanel>
   );
 }

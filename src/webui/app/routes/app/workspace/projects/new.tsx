@@ -1,16 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -18,6 +8,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
@@ -29,9 +20,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { useContext } from "react";
 
 const ParamsSchema = z.object({});
 
@@ -109,7 +102,7 @@ export default function NewProject() {
                 id: "project-create",
                 text: "Create",
                 value: "create",
-                highlight: true
+                highlight: true,
               }),
             ]}
           />
@@ -122,30 +115,30 @@ export default function NewProject() {
               label="Parent Project"
               inputsEnabled={inputsEnabled}
               disabled={false}
-                allProjects={loaderData.allProjects}
-                defaultValue={loaderData.rootProject.ref_id}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/parent_project_ref_id"
-              />
-            </FormControl>
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.rootProject.ref_id}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/parent_project_ref_id"
+            />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                type="text"
-                placeholder="Project name"
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-          </Stack>
-        </SectionCard>
-      </LeafPanel>
-    );
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              type="text"
+              placeholder="Project name"
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
+    </LeafPanel>
+  );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(

@@ -9,17 +9,7 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -55,7 +45,10 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
 import { aDateToDate } from "~/logic/domain/adate";
-import { SectionActions, ActionSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({
@@ -364,8 +357,9 @@ export default function Habit() {
       returnLocation="/app/workspace/habits"
       initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
-        <GlobalError actionResult={actionData} />
-        <SectionCard title="Properties"
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
         actions={
           <SectionActions
             id="habit-properties"
@@ -385,128 +379,126 @@ export default function Habit() {
           />
         }
       >
-          <Stack spacing={2} useFlexGap>
-            <Stack direction="row" useFlexGap spacing={1}>
+        <Stack spacing={2} useFlexGap>
+          <Stack direction="row" useFlexGap spacing={1}>
+            <FormControl sx={{ flexGrow: 3 }}>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="Name"
+                name="name"
+                readOnly={!inputsEnabled}
+                defaultValue={loaderData.habit.name}
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+
+            <FormControl sx={{ flexGrow: 1 }}>
+              <IsKeySelect
+                name="isKey"
+                defaultValue={loaderData.habit.is_key}
+                inputsEnabled={inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/is_key" />
+            </FormControl>
+          </Stack>
+
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS,
+          ) && (
+            <FormControl fullWidth>
+              <ProjectSelect
+                name="project"
+                label="Project"
+                inputsEnabled={inputsEnabled}
+                disabled={!inputsEnabled}
+                allProjects={loaderData.allProjects}
+                value={selectedProject}
+                onChange={setSelectedProject}
+              />
+              <FieldError actionResult={actionData} fieldName="/project" />
+            </FormControl>
+          )}
+
+          <RecurringTaskGenParamsBlock
+            allowSkipRule
+            inputsEnabled={inputsEnabled}
+            period={selectedPeriod}
+            onChangePeriod={(newPeriod) => {
+              if (newPeriod === "none") {
+                setSelectedPeriod(RecurringTaskPeriod.DAILY);
+              } else {
+                setSelectedPeriod(newPeriod);
+              }
+            }}
+            eisen={loaderData.habit.gen_params.eisen}
+            difficulty={loaderData.habit.gen_params.difficulty}
+            actionableFromDay={loaderData.habit.gen_params.actionable_from_day}
+            actionableFromMonth={
+              loaderData.habit.gen_params.actionable_from_month
+            }
+            dueAtDay={loaderData.habit.gen_params.due_at_day}
+            dueAtMonth={loaderData.habit.gen_params.due_at_month}
+            skipRule={loaderData.habit.gen_params.skip_rule}
+            actionData={actionData}
+          />
+
+          {selectedPeriod !== RecurringTaskPeriod.DAILY && (
+            <Stack direction="row" spacing={2}>
               <FormControl sx={{ flexGrow: 3 }}>
-                <InputLabel id="name">Name</InputLabel>
-                <OutlinedInput
-                  label="Name"
-                  name="name"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.habit.name}
-                />
-                <FieldError actionResult={actionData} fieldName="/name" />
-              </FormControl>
-
-              <FormControl sx={{ flexGrow: 1 }}>
-                <IsKeySelect
-                  name="isKey"
-                  defaultValue={loaderData.habit.is_key}
+                <HabitRepeatStrategySelect
+                  name="repeatsStrategy"
                   inputsEnabled={inputsEnabled}
+                  allowNone
+                  value={selectedRepeatsStrategy}
+                  onChange={(newStrategy) =>
+                    setSelectedRepeatsStrategy(newStrategy)
+                  }
                 />
-                <FieldError actionResult={actionData} fieldName="/is_key" />
               </FormControl>
-            </Stack>
 
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={!inputsEnabled}
-                  allProjects={loaderData.allProjects}
-                  value={selectedProject}
-                  onChange={setSelectedProject}
-                />
-                <FieldError actionResult={actionData} fieldName="/project" />
-              </FormControl>
-            )}
-
-            <RecurringTaskGenParamsBlock
-              allowSkipRule
-              inputsEnabled={inputsEnabled}
-              period={selectedPeriod}
-              onChangePeriod={(newPeriod) => {
-                if (newPeriod === "none") {
-                  setSelectedPeriod(RecurringTaskPeriod.DAILY);
-                } else {
-                  setSelectedPeriod(newPeriod);
-                }
-              }}
-              eisen={loaderData.habit.gen_params.eisen}
-              difficulty={loaderData.habit.gen_params.difficulty}
-              actionableFromDay={
-                loaderData.habit.gen_params.actionable_from_day
-              }
-              actionableFromMonth={
-                loaderData.habit.gen_params.actionable_from_month
-              }
-              dueAtDay={loaderData.habit.gen_params.due_at_day}
-              dueAtMonth={loaderData.habit.gen_params.due_at_month}
-              skipRule={loaderData.habit.gen_params.skip_rule}
-              actionData={actionData}
-            />
-
-            {selectedPeriod !== RecurringTaskPeriod.DAILY && (
-              <Stack direction="row" spacing={2}>
-                <FormControl sx={{ flexGrow: 3 }}>
-                  <HabitRepeatStrategySelect
-                    name="repeatsStrategy"
-                    inputsEnabled={inputsEnabled}
-                    allowNone
-                    value={selectedRepeatsStrategy}
-                    onChange={(newStrategy) =>
-                      setSelectedRepeatsStrategy(newStrategy)
-                    }
+              {selectedRepeatsStrategy !== "none" && (
+                <FormControl sx={{ flexGrow: 1 }}>
+                  <InputLabel id="repeatsInPeriodCount">
+                    Repeats In Period [Optional]
+                  </InputLabel>
+                  <OutlinedInput
+                    label="Repeats In Period"
+                    name="repeatsInPeriodCount"
+                    readOnly={!inputsEnabled}
+                    defaultValue={loaderData.habit.repeats_in_period_count}
+                    sx={{ height: "100%" }}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/repeats_in_period_count"
                   />
                 </FormControl>
+              )}
+            </Stack>
+          )}
+        </Stack>
+      </SectionCard>
 
-                {selectedRepeatsStrategy !== "none" && (
-                  <FormControl sx={{ flexGrow: 1 }}>
-                    <InputLabel id="repeatsInPeriodCount">
-                      Repeats In Period [Optional]
-                    </InputLabel>
-                    <OutlinedInput
-                      label="Repeats In Period"
-                      name="repeatsInPeriodCount"
-                      readOnly={!inputsEnabled}
-                      defaultValue={loaderData.habit.repeats_in_period_count}
-                      sx={{ height: "100%" }}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/repeats_in_period_count"
-                    />
-                  </FormControl>
-                )}
-              </Stack>
-            )}
-          </Stack>
-        </SectionCard>
+      <SectionCard title="Streak">
+        <HabitStreakCalendar
+          year={loaderData.streakMarkYear}
+          currentYear={aDateToDate(topLevelInfo.today).year}
+          habit={loaderData.habit}
+          streakMarks={loaderData.streakMarks}
+          inboxTasks={sortedInboxTasks}
+          getYearUrl={(year) =>
+            `/app/workspace/habits/${loaderData.habit.ref_id}?${newURLParams(
+              query,
+              "includeStreakMarksForYear",
+              year.toString(),
+            )}`
+          }
+        />
+      </SectionCard>
 
-      <SectionCard title="Streak"
-      >
-          <HabitStreakCalendar
-            year={loaderData.streakMarkYear}
-            currentYear={aDateToDate(topLevelInfo.today).year}
-            habit={loaderData.habit}
-            streakMarks={loaderData.streakMarks}
-            inboxTasks={sortedInboxTasks}
-            getYearUrl={(year) =>
-              `/app/workspace/habits/${loaderData.habit.ref_id}?${newURLParams(
-                query,
-                "includeStreakMarksForYear",
-                year.toString(),
-              )}`
-            }
-          />
-        </SectionCard>
-
-      <SectionCard title="Note"
+      <SectionCard
+        title="Note"
         actions={
           <SectionActions
             id="habit-note"
@@ -519,8 +511,9 @@ export default function Habit() {
                 highlight: false,
                 disabled: loaderData.note !== null,
               }),
-            ]} />
-          }
+            ]}
+          />
+        }
       >
         {loaderData.note && (
           <>
@@ -532,28 +525,26 @@ export default function Habit() {
         )}
       </SectionCard>
 
-      <SectionCard
-        title="Inbox Tasks">
-
-      {sortedInboxTasks.length > 0 && (
-        <InboxTaskStack
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          inboxTasks={sortedInboxTasks}
-          withPages={{
-            retrieveOffsetParamName: "inboxTasksRetrieveOffset",
-            totalCnt: loaderData.inboxTasksTotalCnt,
-            pageSize: loaderData.inboxTasksPageSize,
-          }}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+      <SectionCard title="Inbox Tasks">
+        {sortedInboxTasks.length > 0 && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={sortedInboxTasks}
+            withPages={{
+              retrieveOffsetParamName: "inboxTasksRetrieveOffset",
+              totalCnt: loaderData.inboxTasksTotalCnt,
+              pageSize: loaderData.inboxTasksPageSize,
+            }}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
       </SectionCard>
     </LeafPanel>
   );

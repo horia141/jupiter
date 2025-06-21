@@ -138,7 +138,7 @@ class BigPlanFindUseCase(
         else:
             stats_by_ref_id = None
 
-        milestones_by_ref_id: dict[EntityId, list[BigPlanMilestone]] = {}
+        milestones_by_ref_id: dict[EntityId, list[BigPlanMilestone]] | None = None
         if args.include_milestones:
             milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
                 big_plan_ref_id=[bp.ref_id for bp in big_plans],

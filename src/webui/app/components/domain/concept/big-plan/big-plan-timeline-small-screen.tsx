@@ -71,10 +71,7 @@ export function BigPlanTimelineSmallScreen({
                 marker.date,
               );
               return (
-                <MarkerLabel
-                  key={idx}
-                  leftmargin={markerPosition}
-                >
+                <MarkerLabel key={idx} leftmargin={markerPosition}>
                   {marker.label}
                 </MarkerLabel>
               );
@@ -158,10 +155,7 @@ export function BigPlanTimelineSmallScreen({
                 marker.date,
               );
               return (
-                <MarkerLabel
-                  key={idx}
-                  leftmargin={markerPosition}
-                >
+                <MarkerLabel key={idx} leftmargin={markerPosition}>
                   {marker.label}
                 </MarkerLabel>
               );
@@ -282,15 +276,13 @@ interface MarkerLabelProps {
   leftmargin: number;
 }
 
-const MarkerLabel = styled("div")<MarkerLabelProps>(
-  ({ leftmargin }) => ({
-    position: "absolute",
-    transform: "translateX(-50%)",
-    left: `${leftmargin * 100}%`,
-    whiteSpace: "nowrap",
-    fontWeight: "bold",
-  }),
-);
+const MarkerLabel = styled("div")<MarkerLabelProps>(({ leftmargin }) => ({
+  position: "absolute",
+  transform: "translateX(-50%)",
+  left: `${leftmargin * 100}%`,
+  whiteSpace: "nowrap",
+  fontWeight: "bold",
+}));
 
 function computeBigPlanGnattPosition(thisYear: DateTime, entry: BigPlan) {
   const startOfYear = thisYear.startOf("year");

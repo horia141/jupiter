@@ -1,15 +1,5 @@
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -17,6 +7,7 @@ import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
@@ -29,8 +20,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
-import { useContext } from "react";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
@@ -172,7 +165,8 @@ export default function SmartListDetails() {
       returnLocation={`/app/workspace/smart-lists/${id}/items`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard title="Properties"
+      <SectionCard
+        title="Properties"
         actions={
           <SectionActions
             id="smart-list-properties"
@@ -186,31 +180,33 @@ export default function SmartListDetails() {
               }),
             ]}
           />
-        }>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.smartList.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.smartList.name}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="icon">Icon</InputLabel>
-              <IconSelector
-                readOnly={!inputsEnabled}
-                defaultIcon={loaderData.smartList.icon}
-              />
-              <FieldError actionResult={actionData} fieldName="/icon" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <InputLabel id="icon">Icon</InputLabel>
+            <IconSelector
+              readOnly={!inputsEnabled}
+              defaultIcon={loaderData.smartList.icon}
+            />
+            <FieldError actionResult={actionData} fieldName="/icon" />
+          </FormControl>
+        </Stack>
       </SectionCard>
 
-      <SectionCard title="Note"
+      <SectionCard
+        title="Note"
         actions={
           <SectionActions
             id="smart-list-note"
@@ -223,8 +219,9 @@ export default function SmartListDetails() {
                 highlight: false,
                 disabled: loaderData.note !== null,
               }),
-            ]} />
-          }
+            ]}
+          />
+        }
       >
         {loaderData.note && (
           <>

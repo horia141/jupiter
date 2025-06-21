@@ -1,6 +1,5 @@
 import type { ADate, EntitySummary } from "@jupiter/webapi-client";
 import { NamedEntityTag } from "@jupiter/webapi-client";
-import type { DateTime } from "luxon";
 
 import { SlimChip } from "~/components/infra/chips";
 import { EntityFakeLink, EntityLink } from "~/components/infra/entity-card";

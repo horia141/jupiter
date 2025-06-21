@@ -1,10 +1,5 @@
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -19,6 +14,7 @@ import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
@@ -31,8 +27,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
-import { useContext } from "react";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
@@ -189,7 +187,8 @@ export default function SmartListItem() {
       returnLocation={`/app/workspace/smart-lists/${id}/items`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard title="Properties"
+      <SectionCard
+        title="Properties"
         actions={
           <SectionActions
             id="email-task-actions"
@@ -203,58 +202,60 @@ export default function SmartListItem() {
               }),
             ]}
           />
-        }>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                defaultValue={loaderData.item.name}
-                name="name"
-                readOnly={!inputsEnabled}
-              />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              defaultValue={loaderData.item.name}
+              name="name"
+              readOnly={!inputsEnabled}
+            />
 
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name="isDone"
-                    readOnly={!inputsEnabled}
-                    disabled={!inputsEnabled}
-                    defaultChecked={loaderData.item.is_done}
-                  />
-                }
-                label="Is Done"
-              />
-              <FieldError actionResult={actionData} fieldName="/is_done" />
-            </FormControl>
+          <FormControl fullWidth>
+            <FormControlLabel
+              control={
+                <Switch
+                  name="isDone"
+                  readOnly={!inputsEnabled}
+                  disabled={!inputsEnabled}
+                  defaultChecked={loaderData.item.is_done}
+                />
+              }
+              label="Is Done"
+            />
+            <FieldError actionResult={actionData} fieldName="/is_done" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <TagsEditor
-                allTags={loaderData.tags}
-                defaultTags={loaderData.item.tags_ref_id}
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/tags" />
-            </FormControl>
+          <FormControl fullWidth>
+            <TagsEditor
+              allTags={loaderData.tags}
+              defaultTags={loaderData.item.tags_ref_id}
+              readOnly={!inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/tags" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="url">Url [Optional]</InputLabel>
-              <OutlinedInput
-                label="Url"
-                name="url"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.item.url}
-              />
-              <FieldError actionResult={actionData} fieldName="/url" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <InputLabel id="url">Url [Optional]</InputLabel>
+            <OutlinedInput
+              label="Url"
+              name="url"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.item.url}
+            />
+            <FieldError actionResult={actionData} fieldName="/url" />
+          </FormControl>
+        </Stack>
       </SectionCard>
 
-      <SectionCard title="Note"
+      <SectionCard
+        title="Note"
         actions={
           <SectionActions
             id="smart-list-item-note"
@@ -267,8 +268,9 @@ export default function SmartListItem() {
                 highlight: false,
                 disabled: loaderData.note !== null,
               }),
-            ]} />
-          }
+            ]}
+          />
+        }
       >
         {loaderData.note && (
           <>

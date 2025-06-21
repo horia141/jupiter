@@ -4,7 +4,7 @@ import type { PropsWithChildren } from "react";
 
 export enum ActionsPosition {
   ABOVE,
-  BELOW
+  BELOW,
 }
 
 interface SectionCardProps {
@@ -26,9 +26,7 @@ export function SectionCard(props: PropsWithChildren<SectionCardProps>) {
         </SectionHeader>
         <CardContent>{props.children}</CardContent>
         {actionsPosition === ActionsPosition.BELOW && (
-          <CardActions>
-            {props.actions}
-          </CardActions>
+          <CardActions>{props.actions}</CardActions>
         )}
       </Form>
     </StyledCard>

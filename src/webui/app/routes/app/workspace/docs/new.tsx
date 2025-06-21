@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { Card, CardContent, FormControl } from "@mui/material";
+import { FormControl } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -68,10 +68,11 @@ export default function NewDoc() {
       inputsEnabled={inputsEnabled}
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
+      <GlobalError actionResult={actionData} />
       <SectionCard title="New Doc">
-          <FormControl fullWidth>
-            <DocEditor inputsEnabled={inputsEnabled} />
-          </FormControl>
+        <FormControl fullWidth>
+          <DocEditor inputsEnabled={inputsEnabled} />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

@@ -1,15 +1,5 @@
 import { ApiError, NoteDomain, WorkspaceFeature } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -33,7 +23,10 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -183,7 +176,8 @@ export default function Vacation() {
       returnLocation="/app/workspace/vacations"
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard title="Properties"
+      <SectionCard
+        title="Properties"
         actions={
           <SectionActions
             id="vacation-properties"
@@ -197,58 +191,60 @@ export default function Vacation() {
               }),
             ]}
           />
-        }>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={vacation.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={vacation.name}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="startDate" shrink>
-                Start Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="startDate"
-                defaultValue={aDateToDate(vacation.start_date).toFormat(
-                  "yyyy-MM-dd",
-                )}
-                name="startDate"
-                readOnly={!inputsEnabled}
-              />
+          <FormControl fullWidth>
+            <InputLabel id="startDate" shrink>
+              Start Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="startDate"
+              defaultValue={aDateToDate(vacation.start_date).toFormat(
+                "yyyy-MM-dd",
+              )}
+              name="startDate"
+              readOnly={!inputsEnabled}
+            />
 
-              <FieldError actionResult={actionData} fieldName="/start_date" />
-            </FormControl>
+            <FieldError actionResult={actionData} fieldName="/start_date" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="endDate" shrink>
-                End Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="endDate"
-                defaultValue={aDateToDate(vacation.end_date).toFormat(
-                  "yyyy-MM-dd",
-                )}
-                name="endDate"
-                readOnly={!inputsEnabled}
-              />
+          <FormControl fullWidth>
+            <InputLabel id="endDate" shrink>
+              End Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="endDate"
+              defaultValue={aDateToDate(vacation.end_date).toFormat(
+                "yyyy-MM-dd",
+              )}
+              name="endDate"
+              readOnly={!inputsEnabled}
+            />
 
-              <FieldError actionResult={actionData} fieldName="/end_date" />
-            </FormControl>
-          </Stack>
-        </SectionCard>
+            <FieldError actionResult={actionData} fieldName="/end_date" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
 
-      <SectionCard title="Note"
+      <SectionCard
+        title="Note"
         actions={
           <SectionActions
             id="chore-note"
@@ -261,8 +257,9 @@ export default function Vacation() {
                 highlight: false,
                 disabled: note !== null,
               }),
-            ]} />
-          }
+            ]}
+          />
+        }
       >
         {note && (
           <>

@@ -1,10 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -19,6 +14,7 @@ import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
@@ -29,10 +25,11 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { ActionSingle } from "~/components/infra/section-actions";
-import { SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
-import { useContext } from "react";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
@@ -118,24 +115,24 @@ export default function NewSmartListItem() {
       returnLocation={`/app/workspace/smart-lists/${id}/items`}
       inputsEnabled={inputsEnabled}
     >
-        <GlobalError actionResult={actionData} />
-        <SectionCard
-          title="New Smart List Item"
-          actions={
-            <SectionActions
-              id="smart-list-item-create"
-              topLevelInfo={topLevelInfo}
-              inputsEnabled={inputsEnabled}
-              actions={[
-                ActionSingle({
-                  id: "smart-list-item-create",
-                  text: "Create",
-                  value: "create",
-                  highlight: true
-                }),
-              ]}
-            />
-          }
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Smart List Item"
+        actions={
+          <SectionActions
+            id="smart-list-item-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "smart-list-item-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
       >
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
@@ -147,35 +144,35 @@ export default function NewSmartListItem() {
               defaultValue={""}
             />
 
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <FormControlLabel
-                control={<Switch name="isDone" readOnly={!inputsEnabled} />}
-                label="Is Done"
-              />
-              <FieldError actionResult={actionData} fieldName="/is_done" />
-            </FormControl>
+          <FormControl fullWidth>
+            <FormControlLabel
+              control={<Switch name="isDone" readOnly={!inputsEnabled} />}
+              label="Is Done"
+            />
+            <FieldError actionResult={actionData} fieldName="/is_done" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <TagsEditor
-                allTags={loaderData.smartListTags}
-                defaultTags={[]}
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/tag_names" />
-            </FormControl>
+          <FormControl fullWidth>
+            <TagsEditor
+              allTags={loaderData.smartListTags}
+              defaultTags={[]}
+              readOnly={!inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/tag_names" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="url">Url [Optional]</InputLabel>
-              <OutlinedInput label="Url" name="url" readOnly={!inputsEnabled} />
-              <FieldError actionResult={actionData} fieldName="/url" />
-            </FormControl>
-          </Stack>
-        </SectionCard>
-      </LeafPanel>
-    );
+          <FormControl fullWidth>
+            <InputLabel id="url">Url [Optional]</InputLabel>
+            <OutlinedInput label="Url" name="url" readOnly={!inputsEnabled} />
+            <FieldError actionResult={actionData} fieldName="/url" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
+    </LeafPanel>
+  );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -183,6 +180,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   ParamsSchema,
   {
     notFound: () => `Could not find the smart list item!`,
-    error: () => `There was an error creating the smart list item! Please try again!`,
+    error: () =>
+      `There was an error creating the smart list item! Please try again!`,
   },
 );

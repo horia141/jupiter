@@ -342,13 +342,13 @@ const TrunkPanelContent = styled("div")<TrunkPanelContentProps>(
       hasbranch === "false"
         ? isbigscreen === "true"
           ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
-          : "0px"
+          : "0.25rem"
         : "0px",
     paddingRight:
       hasbranch === "false"
         ? isbigscreen === "true"
           ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
-          : "0px"
+          : "0.25rem"
         : "0px",
     height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"

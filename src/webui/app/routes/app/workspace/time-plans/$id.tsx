@@ -605,10 +605,7 @@ export default function TimePlanView() {
             WorkspaceFeature.JOURNALS,
           ) &&
             (loaderData.journal || sortedSubJournals.length > 0) && (
-              <SectionCard
-                id="time-plan-journal"
-                title="Journal For This Plan"
-              >
+              <SectionCard id="time-plan-journal" title="Journal For This Plan">
                 {loaderData.journal && (
                   <JournalStack
                     topLevelInfo={topLevelInfo}

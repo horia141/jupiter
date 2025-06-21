@@ -1,15 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -17,17 +7,20 @@ import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { useContext } from "react";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
@@ -113,7 +106,7 @@ export default function NewSmartListTag() {
                 id: "smart-list-tag-create",
                 text: "Create",
                 value: "create",
-                highlight: true
+                highlight: true,
               }),
             ]}
           />
@@ -122,11 +115,7 @@ export default function NewSmartListTag() {
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
             <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-              />
+            <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
 
             <FieldError actionResult={actionData} fieldName="/tag_name" />
           </FormControl>

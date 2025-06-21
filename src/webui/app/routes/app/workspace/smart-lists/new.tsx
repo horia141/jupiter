@@ -1,15 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -17,6 +7,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { IconSelector } from "~/components/infra/icon-selector";
@@ -27,9 +18,11 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { useContext } from "react";
 
 const ParamsSchema = z.object({});
 
@@ -82,24 +75,24 @@ export default function NewSmartList() {
       returnLocation="/app/workspace/smart-lists"
       inputsEnabled={inputsEnabled}
     >
-        <GlobalError actionResult={actionData} />
-         <SectionCard
-          title="New Smart List"
-          actions={
-            <SectionActions
-              id="smart-list-create"
-              topLevelInfo={topLevelInfo}
-              inputsEnabled={inputsEnabled}
-              actions={[
-                ActionSingle({
-                  id: "smart-list-create",
-                  text: "Create",
-                  value: "create",
-                  highlight: true
-                }),
-              ]}
-            />
-          }
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Smart List"
+        actions={
+          <SectionActions
+            id="smart-list-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "smart-list-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
       >
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
@@ -113,15 +106,15 @@ export default function NewSmartList() {
             <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="icon">Icon</InputLabel>
-              <IconSelector readOnly={!inputsEnabled} />
-              <FieldError actionResult={actionData} fieldName="/icon" />
-            </FormControl>
-          </Stack>
-        </SectionCard>
-      </LeafPanel>
-    );
+          <FormControl fullWidth>
+            <InputLabel id="icon">Icon</InputLabel>
+            <IconSelector readOnly={!inputsEnabled} />
+            <FieldError actionResult={actionData} fieldName="/icon" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
+    </LeafPanel>
+  );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(
@@ -129,6 +122,7 @@ export const ErrorBoundary = makeLeafErrorBoundary(
   ParamsSchema,
   {
     notFound: () => `Could not find the smart list!`,
-    error: () => `There was an error creating the smart list! Please try again!`,
+    error: () =>
+      `There was an error creating the smart list! Please try again!`,
   },
 );

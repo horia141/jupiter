@@ -43,6 +43,7 @@ import {
   widgetTypeName,
 } from "~/logic/widget";
 import { workspaceFeatureName, userFeatureName } from "~/logic/domain/feature";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface HabitStreakEntry {
   habit: Habit;
@@ -124,6 +125,7 @@ interface WidgetContainerProps {
 export function WidgetContainer(
   props: PropsWithChildren<WidgetContainerProps>,
 ) {
+  const isBigScreen = useBigScreen();
   let heightInRem;
   if (isWidgetDimensionKSized(props.geometry.dimension)) {
     heightInRem = undefined;
@@ -133,7 +135,7 @@ export function WidgetContainer(
   return (
     <Box
       sx={{
-        width: "100%",
+        width: isBigScreen ? "100%" : "calc(100% - 2 * 0.4rem)",
         height: heightInRem,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",

@@ -1,15 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  FormControl,
-  Stack,
-} from "@mui/material";
+import { FormControl, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -30,7 +21,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { ActionSingle, SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({});
@@ -104,43 +98,45 @@ export default function EmailTasksSettings() {
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      
+
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
       ) && (
-        <SectionCard title="Generation Project"
-        actions={
-          <SectionActions
-            id="email-task-actions"
-            topLevelInfo={topLevelInfo}
-            inputsEnabled={inputsEnabled}
-            actions={[
-              ActionSingle({
-                text: "Change Generation Project",
-                value: "update",
-                highlight: true,
-              }),
-            ]}
-          />
-          }>
-            <Stack spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.generationProject.ref_id}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/generation_project_ref_id"
-                />
-              </FormControl>
-            </Stack>
-          </SectionCard>
+        <SectionCard
+          title="Generation Project"
+          actions={
+            <SectionActions
+              id="email-task-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Change Generation Project",
+                  value: "update",
+                  highlight: true,
+                }),
+              ]}
+            />
+          }
+        >
+          <Stack spacing={2} useFlexGap>
+            <FormControl fullWidth>
+              <ProjectSelect
+                name="project"
+                label="Project"
+                inputsEnabled={inputsEnabled}
+                disabled={false}
+                allProjects={loaderData.allProjects}
+                defaultValue={loaderData.generationProject.ref_id}
+              />
+              <FieldError
+                actionResult={actionData}
+                fieldName="/generation_project_ref_id"
+              />
+            </FormControl>
+          </Stack>
+        </SectionCard>
       )}
     </LeafPanel>
   );

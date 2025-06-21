@@ -6,11 +6,6 @@ import {
   PersonRelationship,
 } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   InputLabel,
   MenuItem,
@@ -25,6 +20,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
@@ -37,10 +33,11 @@ import { birthdayFromParts } from "~/logic/domain/person-birthday";
 import { personRelationshipName } from "~/logic/domain/person-relationship";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { ActionSingle } from "~/components/infra/section-actions";
-import { SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
-import { useContext } from "react";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
@@ -147,7 +144,7 @@ export default function NewPerson() {
       returnLocation="/app/workspace/persons"
       inputsEnabled={inputsEnabled}
     >
-      <GlobalError actionResult={actionData} /> 
+      <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Person"
         actions={
@@ -160,7 +157,7 @@ export default function NewPerson() {
                 id: "person-create",
                 text: "Create",
                 value: "create",
-                highlight: true
+                highlight: true,
               }),
             ]}
           />
@@ -168,131 +165,125 @@ export default function NewPerson() {
       >
         <Stack spacing={2} useFlexGap>
           <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="relationship">Relationship</InputLabel>
+            <Select
+              labelId="relationship"
+              name="relationship"
+              readOnly={!inputsEnabled}
+              defaultValue={PersonRelationship.FAMILY}
+              label="Relationship"
+            >
+              {Object.values(PersonRelationship).map((relationship) => (
+                <MenuItem key={relationship} value={relationship}>
+                  {personRelationshipName(relationship)}
+                </MenuItem>
+              ))}
+            </Select>
+            <FieldError actionResult={actionData} fieldName="/relationship" />
+          </FormControl>
+
+          <Stack spacing={2} useFlexGap direction="row">
+            <FormControl fullWidth>
+              <InputLabel id="birthdayDay">Birthday Day [Optional]</InputLabel>
+              <Select
+                labelId="birthdayDay"
+                name="birthdayDay"
                 readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
+                defaultValue={"N/A"}
+                label="Birthday Day"
+              >
+                <MenuItem value={"N/A"}>N/A</MenuItem>
+                <MenuItem value={1}>1st</MenuItem>
+                <MenuItem value={2}>2nd</MenuItem>
+                <MenuItem value={3}>3rd</MenuItem>
+                <MenuItem value={4}>4th</MenuItem>
+                <MenuItem value={5}>5th</MenuItem>
+                <MenuItem value={6}>6th</MenuItem>
+                <MenuItem value={7}>7th</MenuItem>
+                <MenuItem value={8}>8th</MenuItem>
+                <MenuItem value={9}>9th</MenuItem>
+                <MenuItem value={10}>10th</MenuItem>
+                <MenuItem value={11}>11th</MenuItem>
+                <MenuItem value={12}>12th</MenuItem>
+                <MenuItem value={13}>13th</MenuItem>
+                <MenuItem value={14}>14th</MenuItem>
+                <MenuItem value={15}>15th</MenuItem>
+                <MenuItem value={16}>16th</MenuItem>
+                <MenuItem value={17}>17th</MenuItem>
+                <MenuItem value={18}>18th</MenuItem>
+                <MenuItem value={19}>19th</MenuItem>
+                <MenuItem value={20}>20th</MenuItem>
+                <MenuItem value={21}>21st</MenuItem>
+                <MenuItem value={22}>22nd</MenuItem>
+                <MenuItem value={23}>23rd</MenuItem>
+                <MenuItem value={24}>24th</MenuItem>
+                <MenuItem value={25}>25th</MenuItem>
+                <MenuItem value={26}>26th</MenuItem>
+                <MenuItem value={27}>27th</MenuItem>
+                <MenuItem value={28}>28th</MenuItem>
+                <MenuItem value={29}>29th</MenuItem>
+                <MenuItem value={30}>30th</MenuItem>
+                <MenuItem value={31}>31st</MenuItem>
+              </Select>
+
+              <FieldError actionResult={actionData} fieldName="/birthday" />
             </FormControl>
 
             <FormControl fullWidth>
-              <InputLabel id="relationship">Relationship</InputLabel>
+              <InputLabel id="birthdayMonth">
+                Birthday Month [Optional]
+              </InputLabel>
               <Select
-                labelId="relationship"
-                name="relationship"
+                labelId="birthdayMonth"
+                name="birthdayMonth"
                 readOnly={!inputsEnabled}
-                defaultValue={PersonRelationship.FAMILY}
-                label="Relationship"
+                defaultValue={"N/A"}
+                label="Birthday Month"
               >
-                {Object.values(PersonRelationship).map((relationship) => (
-                  <MenuItem key={relationship} value={relationship}>
-                    {personRelationshipName(relationship)}
-                  </MenuItem>
-                ))}
+                <MenuItem value={"N/A"}>N/A</MenuItem>
+                <MenuItem value={1}>January</MenuItem>
+                <MenuItem value={2}>February</MenuItem>
+                <MenuItem value={3}>March</MenuItem>
+                <MenuItem value={4}>April</MenuItem>
+                <MenuItem value={5}>May</MenuItem>
+                <MenuItem value={6}>June</MenuItem>
+                <MenuItem value={7}>July</MenuItem>
+                <MenuItem value={8}>August</MenuItem>
+                <MenuItem value={9}>September</MenuItem>
+                <MenuItem value={10}>October</MenuItem>
+                <MenuItem value={11}>November</MenuItem>
+                <MenuItem value={12}>December</MenuItem>
               </Select>
-              <FieldError actionResult={actionData} fieldName="/relationship" />
+              <FieldError actionResult={actionData} fieldName="/birthday" />
             </FormControl>
-
-            <Stack spacing={2} useFlexGap direction="row">
-              <FormControl fullWidth>
-                <InputLabel id="birthdayDay">
-                  Birthday Day [Optional]
-                </InputLabel>
-                <Select
-                  labelId="birthdayDay"
-                  name="birthdayDay"
-                  readOnly={!inputsEnabled}
-                  defaultValue={"N/A"}
-                  label="Birthday Day"
-                >
-                  <MenuItem value={"N/A"}>N/A</MenuItem>
-                  <MenuItem value={1}>1st</MenuItem>
-                  <MenuItem value={2}>2nd</MenuItem>
-                  <MenuItem value={3}>3rd</MenuItem>
-                  <MenuItem value={4}>4th</MenuItem>
-                  <MenuItem value={5}>5th</MenuItem>
-                  <MenuItem value={6}>6th</MenuItem>
-                  <MenuItem value={7}>7th</MenuItem>
-                  <MenuItem value={8}>8th</MenuItem>
-                  <MenuItem value={9}>9th</MenuItem>
-                  <MenuItem value={10}>10th</MenuItem>
-                  <MenuItem value={11}>11th</MenuItem>
-                  <MenuItem value={12}>12th</MenuItem>
-                  <MenuItem value={13}>13th</MenuItem>
-                  <MenuItem value={14}>14th</MenuItem>
-                  <MenuItem value={15}>15th</MenuItem>
-                  <MenuItem value={16}>16th</MenuItem>
-                  <MenuItem value={17}>17th</MenuItem>
-                  <MenuItem value={18}>18th</MenuItem>
-                  <MenuItem value={19}>19th</MenuItem>
-                  <MenuItem value={20}>20th</MenuItem>
-                  <MenuItem value={21}>21st</MenuItem>
-                  <MenuItem value={22}>22nd</MenuItem>
-                  <MenuItem value={23}>23rd</MenuItem>
-                  <MenuItem value={24}>24th</MenuItem>
-                  <MenuItem value={25}>25th</MenuItem>
-                  <MenuItem value={26}>26th</MenuItem>
-                  <MenuItem value={27}>27th</MenuItem>
-                  <MenuItem value={28}>28th</MenuItem>
-                  <MenuItem value={29}>29th</MenuItem>
-                  <MenuItem value={30}>30th</MenuItem>
-                  <MenuItem value={31}>31st</MenuItem>
-                </Select>
-
-                <FieldError actionResult={actionData} fieldName="/birthday" />
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel id="birthdayMonth">
-                  Birthday Month [Optional]
-                </InputLabel>
-                <Select
-                  labelId="birthdayMonth"
-                  name="birthdayMonth"
-                  readOnly={!inputsEnabled}
-                  defaultValue={"N/A"}
-                  label="Birthday Month"
-                >
-                  <MenuItem value={"N/A"}>N/A</MenuItem>
-                  <MenuItem value={1}>January</MenuItem>
-                  <MenuItem value={2}>February</MenuItem>
-                  <MenuItem value={3}>March</MenuItem>
-                  <MenuItem value={4}>April</MenuItem>
-                  <MenuItem value={5}>May</MenuItem>
-                  <MenuItem value={6}>June</MenuItem>
-                  <MenuItem value={7}>July</MenuItem>
-                  <MenuItem value={8}>August</MenuItem>
-                  <MenuItem value={9}>September</MenuItem>
-                  <MenuItem value={10}>October</MenuItem>
-                  <MenuItem value={11}>November</MenuItem>
-                  <MenuItem value={12}>December</MenuItem>
-                </Select>
-                <FieldError actionResult={actionData} fieldName="/birthday" />
-              </FormControl>
-            </Stack>
-
-            <StandardDivider title="Catch Up" size="small" />
-
-            <RecurringTaskGenParamsBlock
-              namePrefix="catchUp"
-              fieldsPrefix="catch_up"
-              allowNonePeriod
-              period={"none"}
-              eisen={null}
-              difficulty={null}
-              actionableFromDay={null}
-              actionableFromMonth={null}
-              dueAtDay={null}
-              dueAtMonth={null}
-              inputsEnabled={inputsEnabled}
-              actionData={actionData}
-            />
           </Stack>
-        </SectionCard>
-      </LeafPanel>
-    );  
+
+          <StandardDivider title="Catch Up" size="small" />
+
+          <RecurringTaskGenParamsBlock
+            namePrefix="catchUp"
+            fieldsPrefix="catch_up"
+            allowNonePeriod
+            period={"none"}
+            eisen={null}
+            difficulty={null}
+            actionableFromDay={null}
+            actionableFromMonth={null}
+            dueAtDay={null}
+            dueAtMonth={null}
+            inputsEnabled={inputsEnabled}
+            actionData={actionData}
+          />
+        </Stack>
+      </SectionCard>
+    </LeafPanel>
+  );
 }
 
 export const ErrorBoundary = makeLeafErrorBoundary(

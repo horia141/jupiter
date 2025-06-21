@@ -1,16 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -32,8 +22,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation as useLoaderDataForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { SectionCard } from "~/components/infra/section-card";
-import { SectionActions } from "~/components/infra/section-actions";
-import { ActionSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
@@ -206,7 +198,8 @@ export default function Project() {
       returnLocation="/app/workspace/projects"
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard title="Properties"
+      <SectionCard
+        title="Properties"
         actions={
           <SectionActions
             id="project-properties"
@@ -223,43 +216,45 @@ export default function Project() {
                 value: "change-parent",
                 highlight: false,
               }),
-            ]} />
+            ]}
+          />
         }
       >
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="parentProjectRefId"
-                label="Parent Project"
-                inputsEnabled={
-                  inputsEnabled && !isRootProject(loaderData.project)
-                }
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                value={selectedProject}
-                onChange={setSelectedProject}
-              />
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="parentProjectRefId"
+              label="Parent Project"
+              inputsEnabled={
+                inputsEnabled && !isRootProject(loaderData.project)
+              }
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              value={selectedProject}
+              onChange={setSelectedProject}
+            />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/parent_project_ref_id"
-              />
-            </FormControl>
+            <FieldError
+              actionResult={actionData}
+              fieldName="/parent_project_ref_id"
+            />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.project.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.project.name}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
         </Stack>
       </SectionCard>
 
-      <SectionCard title="Note"
+      <SectionCard
+        title="Note"
         actions={
           <SectionActions
             id="project-note"
@@ -272,8 +267,9 @@ export default function Project() {
                 highlight: false,
                 disabled: loaderData.note !== null,
               }),
-            ]} />
-          }
+            ]}
+          />
+        }
       >
         {loaderData.note && (
           <>
