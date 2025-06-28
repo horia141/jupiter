@@ -1,14 +1,6 @@
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
-import {
-  Button,
-  ButtonGroup,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -26,6 +18,10 @@ import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import {
+  FilterFewOptionsSpread,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import {
@@ -103,57 +99,6 @@ export default function BigPlans() {
     : View.TIMELINE;
   const [selectedView, setSelectedView] = useState(initialView);
 
-  const [showFilterDialog, setShowFilterDialog] = useState(false);
-
-  let extraControls = [];
-  if (isBigScreen) {
-    extraControls = [
-      <ButtonGroup key="1">
-        {isWorkspaceFeatureAvailable(
-          topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS,
-        ) && (
-          <Button
-            variant={
-              selectedView === View.TIMELINE_BY_PROJECT
-                ? "contained"
-                : "outlined"
-            }
-            startIcon={<ViewTimelineIcon />}
-            onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-          >
-            Timeline by Project
-          </Button>
-        )}
-        <Button
-          variant={selectedView === View.TIMELINE ? "contained" : "outlined"}
-          startIcon={<ViewTimelineIcon />}
-          onClick={() => setSelectedView(View.TIMELINE)}
-        >
-          Timeline
-        </Button>
-        <Button
-          variant={selectedView === View.LIST ? "contained" : "outlined"}
-          startIcon={<ViewListIcon />}
-          onClick={() => setSelectedView(View.LIST)}
-        >
-          List
-        </Button>
-      </ButtonGroup>,
-    ];
-  } else {
-    extraControls = [
-      <Button
-        key="1"
-        variant="outlined"
-        startIcon={<ViewTimelineIcon />}
-        onClick={() => setShowFilterDialog(true)}
-      >
-        Views
-      </Button>,
-    ];
-  }
-
   const thisYear = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
     "year",
   );
@@ -172,55 +117,36 @@ export default function BigPlans() {
     <TrunkPanel
       key={"big-plans"}
       createLocation="/app/workspace/big-plans/new"
-      extraControls={extraControls}
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="big-plans-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            FilterFewOptionsSpread(
+              "View",
+              selectedView,
+              [
+                {
+                  value: View.TIMELINE_BY_PROJECT,
+                  text: "Timeline by Project",
+                  icon: <ViewTimelineIcon />,
+                  gatedOn: WorkspaceFeature.PROJECTS,
+                },
+                {
+                  value: View.TIMELINE,
+                  text: "Timeline",
+                  icon: <ViewTimelineIcon />,
+                },
+                { value: View.LIST, text: "List", icon: <ViewListIcon /> },
+              ],
+              (selected) => setSelectedView(selected),
+            ),
+          ]}
+        />
+      }
     >
-      <Dialog
-        onClose={() => setShowFilterDialog(false)}
-        open={showFilterDialog}
-      >
-        <DialogTitle>Filters</DialogTitle>
-        <DialogContent>
-          <ButtonGroup orientation="vertical">
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <Button
-                variant={
-                  selectedView === View.TIMELINE_BY_PROJECT
-                    ? "contained"
-                    : "outlined"
-                }
-                startIcon={<ViewTimelineIcon />}
-                onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-              >
-                Timeline by Project
-              </Button>
-            )}
-            <Button
-              variant={
-                selectedView === View.TIMELINE ? "contained" : "outlined"
-              }
-              startIcon={<ViewTimelineIcon />}
-              onClick={() => setSelectedView(View.TIMELINE)}
-            >
-              Timeline
-            </Button>
-            <Button
-              variant={selectedView === View.LIST ? "contained" : "outlined"}
-              startIcon={<ViewListIcon />}
-              onClick={() => setSelectedView(View.LIST)}
-            >
-              List
-            </Button>
-          </ButtonGroup>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
       <NestingAwareBlock shouldHide={shouldShowALeaf || shouldShowALeaflet}>
         {sortedBigPlans.length === 0 && (
           <EntityNoNothingCard

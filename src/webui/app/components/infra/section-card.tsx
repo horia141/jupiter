@@ -12,6 +12,7 @@ interface SectionCardProps {
   title: string;
   actions?: JSX.Element;
   actionsPosition?: ActionsPosition;
+  method?: "get" | "post";
 }
 
 export function SectionCard(props: PropsWithChildren<SectionCardProps>) {
@@ -19,7 +20,7 @@ export function SectionCard(props: PropsWithChildren<SectionCardProps>) {
 
   return (
     <StyledCard id={props.id}>
-      <Form method="post">
+      <Form method={props.method ?? "post"}>
         <SectionHeader>
           <SectionTitle label={props.title} />
           {actionsPosition === ActionsPosition.ABOVE && props.actions}

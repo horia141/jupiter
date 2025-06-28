@@ -1,10 +1,6 @@
 import {
   Button,
-  ButtonGroup,
-  Card,
-  CardActions,
   CardContent,
-  CardHeader,
   Typography,
   styled,
 } from "@mui/material";
@@ -15,7 +11,10 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { ClientOnly } from "~/components/infra/client-only";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
+import { SectionActions , ButtonSingle } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { TopLevelInfoContext } from "~/top-level-context";
 import { isDevelopment } from "~/logic/domain/env";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -36,6 +35,7 @@ export default function Pomodoro() {
   const actualDuration = isDevelopment(globalProperties.env)
     ? DEFAULT_DEV_DURATION
     : DEFAULT_PROD_DURATION;
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const [timerValue, setTimerValue] = useState(actualDuration);
   const [timerStarted, setTimerStarted] = useState(false);
   const [timerFinished, setTimerFinished] = useState(false);
@@ -97,39 +97,39 @@ export default function Pomodoro() {
 
   return (
     <ToolPanel>
-      <Card>
-        <CardHeader title="Pomodoro Timer" />
+      <SectionCard
+        title="Pomodoro Timer"
+        actions={
+          <SectionActions
+            id="pomodoro-actions"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={true}
+            actions={[
+              ButtonSingle({
+                text: "Start",
+                highlight: true,
+                disabled: timerStarted,
+                onClick: () => startTimer(),
+              }),
+              ButtonSingle({
+                text: "Reset",
+                disabled: !timerStarted,
+                onClick: () => resetTimer(),
+              }),
+            ]}
+          />
+        }
+      >
         <PomodoroCard finished={timerFinished.toString()}>
           <Typography variant="h2">
             {timerValue.toFormat("mm'm'ss's'")}
           </Typography>
         </PomodoroCard>
 
-        <CardActions sx={{ justifyContent: "space-between" }}>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              onClick={() => startTimer()}
-              disabled={timerStarted}
-            >
-              Start
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => resetTimer()}
-              disabled={!timerStarted}
-            >
-              Reset
-            </Button>
-          </ButtonGroup>
-
-          <ButtonGroup>
-            <ClientOnly fallback={<></>}>
-              {() => "Notification" in window && <NotificationControl />}
-            </ClientOnly>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        <ClientOnly fallback={<></>}>
+          {() => "Notification" in window && <NotificationControl />}
+        </ClientOnly>
+      </SectionCard>
     </ToolPanel>
   );
 }

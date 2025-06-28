@@ -15,27 +15,10 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  FormGroup,
-  Stack,
-  Tab,
-  Tabs,
-  Typography,
-  styled,
-} from "@mui/material";
+import { Box, Stack, Tab, Tabs, Typography, styled } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -56,6 +39,10 @@ import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import {
+  FilterFewOptionsCompact,
+  SectionActions,
+ FilterFewOptionsSpread } from "~/components/infra/section-actions";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import { TabPanel } from "~/components/infra/tab-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -113,15 +100,6 @@ const EISENS = [
   Eisen.URGENT,
   Eisen.IMPORTANT,
   Eisen.REGULAR,
-];
-
-const INBOX_TASK_STATUSES = [
-  InboxTaskStatus.NOT_STARTED,
-  InboxTaskStatus.NOT_STARTED_GEN,
-  InboxTaskStatus.IN_PROGRESS,
-  InboxTaskStatus.BLOCKED,
-  InboxTaskStatus.NOT_DONE,
-  InboxTaskStatus.DONE,
 ];
 
 export const handle = {
@@ -286,26 +264,9 @@ export default function InboxTasks() {
     }, 0);
   }
 
-  const [showViewsDialog, setShowViewsDialog] = useState(false);
-  const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [selectedActionableTime, setSelectedActionableTime] = useState(
     ActionableTime.NOW,
   );
-  const [showEisenBoard, setShowEisenBoard] = useState({
-    [Eisen.IMPORTANT_AND_URGENT]: true,
-    [Eisen.URGENT]: true,
-    [Eisen.IMPORTANT]: true,
-    [Eisen.REGULAR]: true,
-  });
-  const [collapseInboxTaskStatusColumn, setCollapseInboxTaskStatusColumn] =
-    useState({
-      [InboxTaskStatus.NOT_STARTED]: false,
-      [InboxTaskStatus.NOT_STARTED_GEN]: false,
-      [InboxTaskStatus.IN_PROGRESS]: false,
-      [InboxTaskStatus.BLOCKED]: false,
-      [InboxTaskStatus.NOT_DONE]: false,
-      [InboxTaskStatus.DONE]: false,
-    });
 
   const shouldDoAGc = figureOutIfGcIsRecommended(
     entries,
@@ -313,77 +274,66 @@ export default function InboxTasks() {
     globalProperties.inboxTasksToAskForGC,
   );
 
-  let extraControls = [];
-  if (isBigScreen) {
-    extraControls = [
-      <ButtonGroup key="first">
-        <Button
-          variant={selectedView === View.SWIFTVIEW ? "contained" : "outlined"}
-          startIcon={<FlareIcon />}
-          onClick={() => setSelectedView(View.SWIFTVIEW)}
-        >
-          SwiftView
-        </Button>
-        <Button
-          variant={
-            selectedView === View.KANBAN_BY_EISEN ? "contained" : "outlined"
-          }
-          startIcon={<ViewKanbanIcon />}
-          onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-        >
-          Kanban by Eisen
-        </Button>
-        <Button
-          variant={selectedView === View.KANBAN ? "contained" : "outlined"}
-          startIcon={<ViewKanbanIcon />}
-          onClick={() => setSelectedView(View.KANBAN)}
-        >
-          Kanban
-        </Button>
-        <Button
-          variant={selectedView === View.LIST ? "contained" : "outlined"}
-          startIcon={<ViewListIcon />}
-          onClick={() => setSelectedView(View.LIST)}
-        >
-          List
-        </Button>
-      </ButtonGroup>,
-      <Button
-        key="first"
-        variant="outlined"
-        startIcon={<FilterAltIcon />}
-        onClick={() => setShowFilterDialog(true)}
-      >
-        Filters
-      </Button>,
-    ];
-  } else {
-    extraControls = [
-      <Button
-        key="first"
-        variant="outlined"
-        startIcon={<ViewKanbanIcon />}
-        onClick={() => setShowViewsDialog(true)}
-      >
-        Views
-      </Button>,
-      <Button
-        key="first"
-        variant="outlined"
-        startIcon={<FilterAltIcon />}
-        onClick={() => setShowFilterDialog(true)}
-      >
-        Filters
-      </Button>,
-    ];
-  }
-
   return (
     <TrunkPanel
       key={"inbox-tasks"}
       createLocation="/app/workspace/inbox-tasks/new"
-      extraControls={extraControls}
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="inbox-tasks-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            FilterFewOptionsSpread(
+              "View",
+              selectedView,
+              [
+                {
+                  value: View.SWIFTVIEW,
+                  text: "SwiftView",
+                  icon: <FlareIcon />,
+                },
+                {
+                  value: View.KANBAN_BY_EISEN,
+                  text: "Kanban by Eisen",
+                  icon: <ViewKanbanIcon />,
+                  gatedOn: WorkspaceFeature.PROJECTS,
+                },
+                {
+                  value: View.KANBAN,
+                  text: "Kanban",
+                  icon: <ViewKanbanIcon />,
+                },
+                { value: View.LIST, text: "List", icon: <ViewListIcon /> },
+              ],
+              (selected) => setSelectedView(selected),
+            ),
+            FilterFewOptionsCompact(
+              "Actionable",
+              selectedActionableTime,
+              [
+                {
+                  value: ActionableTime.NOW,
+                  text: "From Now",
+                  icon: <FlareIcon />,
+                },
+                {
+                  value: ActionableTime.ONE_WEEK,
+                  text: "From One Week",
+                  icon: <FlareIcon />,
+                },
+                {
+                  value: ActionableTime.ONE_MONTH,
+                  text: "From One Month",
+                  icon: <FlareIcon />,
+                },
+              ],
+              (selected) => setSelectedActionableTime(selected),
+            ),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         {shouldDoAGc && (
@@ -405,162 +355,6 @@ export default function InboxTasks() {
             fieldName="/eisen"
           />
         </>
-
-        <Dialog
-          onClose={() => setShowViewsDialog(false)}
-          open={showViewsDialog}
-        >
-          <DialogTitle>Views</DialogTitle>
-          <DialogContent>
-            <Stack spacing={1} useFlexGap>
-              <ButtonGroup orientation="vertical">
-                <Button
-                  variant={
-                    selectedView === View.SWIFTVIEW ? "contained" : "outlined"
-                  }
-                  startIcon={<FlareIcon />}
-                  onClick={() => setSelectedView(View.SWIFTVIEW)}
-                >
-                  SwiftView
-                </Button>
-                <Button
-                  variant={
-                    selectedView === View.KANBAN_BY_EISEN
-                      ? "contained"
-                      : "outlined"
-                  }
-                  startIcon={<ViewKanbanIcon />}
-                  onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-                >
-                  Kanban by Eisen
-                </Button>
-                <Button
-                  variant={
-                    selectedView === View.KANBAN ? "contained" : "outlined"
-                  }
-                  startIcon={<ViewKanbanIcon />}
-                  onClick={() => setSelectedView(View.KANBAN)}
-                >
-                  Kanban
-                </Button>
-                <Button
-                  variant={
-                    selectedView === View.LIST ? "contained" : "outlined"
-                  }
-                  startIcon={<ViewListIcon />}
-                  onClick={() => setSelectedView(View.LIST)}
-                >
-                  List
-                </Button>
-              </ButtonGroup>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowViewsDialog(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-          onClose={() => setShowFilterDialog(false)}
-          open={showFilterDialog}
-        >
-          <DialogTitle>Filters</DialogTitle>
-          <DialogContent>
-            <Stack spacing={1} useFlexGap>
-              <StandardDivider title="Actionable From" size="large" />
-              <ButtonGroup
-                orientation={isBigScreen ? "horizontal" : "vertical"}
-              >
-                <Button
-                  variant={
-                    selectedActionableTime === ActionableTime.NOW
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() => setSelectedActionableTime(ActionableTime.NOW)}
-                >
-                  From Now
-                </Button>
-                <Button
-                  variant={
-                    selectedActionableTime === ActionableTime.ONE_WEEK
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() =>
-                    setSelectedActionableTime(ActionableTime.ONE_WEEK)
-                  }
-                >
-                  From One Week
-                </Button>
-                <Button
-                  variant={
-                    selectedActionableTime === ActionableTime.ONE_MONTH
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() =>
-                    setSelectedActionableTime(ActionableTime.ONE_MONTH)
-                  }
-                >
-                  From One Month
-                </Button>
-              </ButtonGroup>
-              {selectedView === View.KANBAN_BY_EISEN && (
-                <>
-                  <StandardDivider title="Show Eisen" size="large" />
-                  <FormGroup>
-                    {EISENS.map((eisen) => (
-                      <FormControlLabel
-                        key={eisen}
-                        label={eisenName(eisen)}
-                        control={
-                          <Checkbox
-                            checked={showEisenBoard[eisen]}
-                            onChange={(e) =>
-                              setShowEisenBoard((c) => ({
-                                ...c,
-                                [eisen]: e.target.checked,
-                              }))
-                            }
-                          />
-                        }
-                      />
-                    ))}
-                  </FormGroup>
-                </>
-              )}
-              {(selectedView === View.KANBAN_BY_EISEN ||
-                selectedView === View.KANBAN) && (
-                <>
-                  <StandardDivider title="Collapse Columns" size="large" />
-                  <FormGroup>
-                    {INBOX_TASK_STATUSES.map((status) => (
-                      <FormControlLabel
-                        key={status}
-                        label={inboxTaskStatusName(status)}
-                        control={
-                          <Checkbox
-                            checked={collapseInboxTaskStatusColumn[status]}
-                            onChange={(e) =>
-                              setCollapseInboxTaskStatusColumn((c) => ({
-                                ...c,
-                                [status]: e.target.checked,
-                              }))
-                            }
-                          />
-                        }
-                      />
-                    ))}
-                  </FormGroup>
-                </>
-              )}
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
 
         {selectedView === View.SWIFTVIEW && (
           <SwiftView
@@ -587,8 +381,6 @@ export default function InboxTasks() {
                   moreInfoByRefId={entriesByRefId}
                   actionableTime={selectedActionableTime}
                   draggedInboxTaskId={draggedInboxTaskId}
-                  showEisenBoard={showEisenBoard}
-                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
               </DragDropContext>
             )}
@@ -600,8 +392,6 @@ export default function InboxTasks() {
                 optimisticUpdates={optimisticUpdates}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                showEisenBoard={showEisenBoard}
-                collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 onCardMarkDone={handleCardMarkDone}
                 onCardMarkNotDone={handleCardMarkNotDone}
               />
@@ -621,7 +411,6 @@ export default function InboxTasks() {
                   moreInfoByRefId={entriesByRefId}
                   actionableTime={selectedActionableTime}
                   draggedInboxTaskId={draggedInboxTaskId}
-                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
               </DragDropContext>
             )}
@@ -633,7 +422,6 @@ export default function InboxTasks() {
                 optimisticUpdates={optimisticUpdates}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 onCardMarkDone={handleCardMarkDone}
                 onCardMarkNotDone={handleCardMarkNotDone}
               />
@@ -1511,8 +1299,6 @@ interface BigScreenKanbanByEisenProps {
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   actionableTime: ActionableTime;
   draggedInboxTaskId?: string;
-  showEisenBoard: { [key in Eisen]: boolean };
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
 }
 
 function BigScreenKanbanByEisen({
@@ -1523,8 +1309,6 @@ function BigScreenKanbanByEisen({
   moreInfoByRefId,
   actionableTime,
   draggedInboxTaskId,
-  showEisenBoard,
-  collapseInboxTaskStatusColumn,
 }: BigScreenKanbanByEisenProps) {
   return (
     <>
@@ -1537,7 +1321,7 @@ function BigScreenKanbanByEisen({
       )}
       {inboxTasks.length > 0 && (
         <>
-          {EISENS.filter((e) => showEisenBoard[e]).map((e) => {
+          {EISENS.map((e) => {
             return (
               <Fragment key={e}>
                 <StandardDivider
@@ -1553,7 +1337,6 @@ function BigScreenKanbanByEisen({
                   actionableTime={actionableTime}
                   allowEisen={e}
                   draggedInboxTaskId={draggedInboxTaskId}
-                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
               </Fragment>
             );
@@ -1573,7 +1356,6 @@ interface BigScreenKanbanProps {
   actionableTime: ActionableTime;
   allowEisen?: Eisen;
   draggedInboxTaskId?: string;
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
 }
 
 function BigScreenKanban({
@@ -1585,7 +1367,6 @@ function BigScreenKanban({
   actionableTime,
   allowEisen,
   draggedInboxTaskId,
-  collapseInboxTaskStatusColumn,
 }: BigScreenKanbanProps) {
   return (
     <>
@@ -1606,7 +1387,6 @@ function BigScreenKanban({
           actionableTime={actionableTime}
           allowEisen={allowEisen}
           draggedInboxTaskId={draggedInboxTaskId}
-          collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
         />
       )}
     </>
@@ -1622,7 +1402,6 @@ interface KanbanBoardProps {
   actionableTime: ActionableTime;
   allowEisen?: Eisen;
   draggedInboxTaskId?: string;
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
 }
 
 function KanbanBoard({
@@ -1634,7 +1413,6 @@ function KanbanBoard({
   allowEisen,
   optimisticUpdates,
   draggedInboxTaskId,
-  collapseInboxTaskStatusColumn,
 }: KanbanBoardProps) {
   return (
     <Grid container spacing={2}>
@@ -1646,7 +1424,6 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED]}
           allowStatus={InboxTaskStatus.NOT_STARTED}
           allowEisen={allowEisen}
           showOptions={{
@@ -1668,9 +1445,6 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={
-            collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED_GEN]
-          }
           allowStatus={InboxTaskStatus.NOT_STARTED_GEN}
           allowEisen={allowEisen}
           showOptions={{
@@ -1692,7 +1466,6 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.IN_PROGRESS]}
           allowStatus={InboxTaskStatus.IN_PROGRESS}
           allowEisen={allowEisen}
           showOptions={{
@@ -1714,7 +1487,6 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.BLOCKED]}
           allowStatus={InboxTaskStatus.BLOCKED}
           allowEisen={allowEisen}
           showOptions={{
@@ -1736,7 +1508,6 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_DONE]}
           allowStatus={InboxTaskStatus.NOT_DONE}
           allowEisen={allowEisen}
           showOptions={{
@@ -1758,7 +1529,6 @@ function KanbanBoard({
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.DONE]}
           allowStatus={InboxTaskStatus.DONE}
           allowEisen={allowEisen}
           showOptions={{
@@ -1781,8 +1551,6 @@ interface SmallScreenKanbanByEisenProps {
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   actionableTime: ActionableTime;
-  showEisenBoard: { [key in Eisen]: boolean };
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
   onCardMarkDone?: (it: InboxTask) => void;
   onCardMarkNotDone?: (it: InboxTask) => void;
 }
@@ -1863,21 +1631,13 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
         variant="fullWidth"
         onChange={(_, newValue) => setSmallScreenSelectedTab(newValue)}
       >
-        {props.showEisenBoard[Eisen.IMPORTANT_AND_URGENT] && (
           <Tab
             sx={{ minWidth: "25%" }}
             icon={eisenIcon(Eisen.IMPORTANT_AND_URGENT)}
           />
-        )}
-        {props.showEisenBoard[Eisen.URGENT] && (
           <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.URGENT)} />
-        )}
-        {props.showEisenBoard[Eisen.IMPORTANT] && (
-          <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.IMPORTANT)} />
-        )}
-        {props.showEisenBoard[Eisen.REGULAR] && (
+        <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.IMPORTANT)} />
           <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.REGULAR)} />
-        )}
       </Tabs>
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
@@ -1888,7 +1648,6 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.IMPORTANT_AND_URGENT}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1902,7 +1661,6 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.URGENT}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1916,7 +1674,6 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.IMPORTANT}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1930,7 +1687,6 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.REGULAR}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1946,7 +1702,6 @@ interface SmallScreenKanbanProps {
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   allowEisen?: Eisen;
   actionableTime: ActionableTime;
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
   onCardMarkDone?: (it: InboxTask) => void;
   onCardMarkNotDone?: (it: InboxTask) => void;
 }
@@ -2055,50 +1810,36 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         variant="scrollable"
         onChange={(_, newValue) => setSmallScreenSelectedTab(newValue)}
       >
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED] && (
           <Tab
             icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED)}</p>}
             iconPosition="top"
             label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED)}
           />
-        )}
-        {!props.collapseInboxTaskStatusColumn[
-          InboxTaskStatus.NOT_STARTED_GEN
-        ] && (
           <Tab
             icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED_GEN)}</p>}
             iconPosition="top"
             label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED_GEN)}
           />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.IN_PROGRESS] && (
           <Tab
             icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.IN_PROGRESS)}</p>}
             iconPosition="top"
             label={inboxTaskStatusName(InboxTaskStatus.IN_PROGRESS)}
           />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.BLOCKED] && (
           <Tab
             icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.BLOCKED)}</p>}
             iconPosition="top"
             label={inboxTaskStatusName(InboxTaskStatus.BLOCKED)}
           />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_DONE] && (
           <Tab
             icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_DONE)}</p>}
             iconPosition="top"
             label={inboxTaskStatusName(InboxTaskStatus.NOT_DONE)}
           />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.DONE] && (
           <Tab
             icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.DONE)}</p>}
             iconPosition="top"
             label={inboxTaskStatusName(InboxTaskStatus.DONE)}
           />
-        )}
       </Tabs>
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
@@ -2323,7 +2064,7 @@ interface InboxTasksColumnProps {
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   actionableTime: ActionableTime;
-  collapsed: boolean;
+  collapsed?: boolean;
   allowStatus: InboxTaskStatus;
   allowEisen?: Eisen;
   showOptions: InboxTaskShowOptions;

@@ -1,15 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  FormControl,
-  InputLabel,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -17,6 +7,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -28,6 +19,9 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
+import { SectionActions , ActionSingle } from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -87,77 +81,77 @@ export default function Security() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const inputsEnabled = navigation.state === "idle";
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   return (
     <TrunkPanel key={"security"} returnLocation="/app/workspace">
       <ToolPanel>
+        <GlobalError actionResult={actionData} />
         <Stack useFlexGap gap={2}>
-          <Card>
-            <GlobalError actionResult={actionData} />
-            <CardHeader title="Security" />
-            <CardContent>
-              <Stack spacing={2} useFlexGap>
-                <FormControl fullWidth>
-                  <InputLabel id="currentPassword">Current Password</InputLabel>
-                  <Password
-                    label="Current Password"
-                    name="currentPassword"
-                    autoComplete="current-password"
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/current_password"
-                  />
-                </FormControl>
+          <SectionCard
+            id="security"
+            title="Security"
+            actions={
+              <SectionActions
+                id="security-actions"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    text: "Change Password",
+                    value: "change-password",
+                    highlight: true,
+                  }),
+                ]}
+              />
+            }
+          >
+            <Stack spacing={2} useFlexGap>
+              <FormControl fullWidth>
+                <InputLabel id="currentPassword">Current Password</InputLabel>
+                <Password
+                  label="Current Password"
+                  name="currentPassword"
+                  autoComplete="current-password"
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/current_password"
+                />
+              </FormControl>
 
-                <FormControl fullWidth>
-                  <InputLabel id="newPassword">New Password</InputLabel>
-                  <Password
-                    label="newPassword"
-                    name="newPassword"
-                    autoComplete="new-password"
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/new_password"
-                  />
-                </FormControl>
+              <FormControl fullWidth>
+                <InputLabel id="newPassword">New Password</InputLabel>
+                <Password
+                  label="newPassword"
+                  name="newPassword"
+                  autoComplete="new-password"
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/new_password"
+                />
+              </FormControl>
 
-                <FormControl fullWidth>
-                  <InputLabel id="newPasswordRepeat">
-                    New Password Repeat
-                  </InputLabel>
-                  <Password
-                    label="New Password Repeat"
-                    name="newPasswordRepeat"
-                    autoComplete="new-password"
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/new_password_repeat"
-                  />
-                </FormControl>
-              </Stack>
-            </CardContent>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  id="change-password"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="change-password"
-                >
-                  Change Password
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
+              <FormControl fullWidth>
+                <InputLabel id="newPasswordRepeat">
+                  New Password Repeat
+                </InputLabel>
+                <Password
+                  label="New Password Repeat"
+                  name="newPasswordRepeat"
+                  autoComplete="new-password"
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/new_password_repeat"
+                />
+              </FormControl>
+            </Stack>
+          </SectionCard>
         </Stack>
       </ToolPanel>
     </TrunkPanel>

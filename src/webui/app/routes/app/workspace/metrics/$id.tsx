@@ -1,12 +1,12 @@
 import type { MetricEntry } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button, IconButton, styled } from "@mui/material";
+import { styled } from "@mui/material";
 import { ResponsiveLine } from "@nivo/line";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useNavigation } from "@remix-run/react";
+import { Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
@@ -26,7 +26,6 @@ import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -34,6 +33,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -130,8 +130,6 @@ export default function Metric() {
     return -compareADate(e1.collection_time, e2.collection_time);
   });
 
-  const isBigScreen = useBigScreen();
-
   return (
     <BranchPanel
       showArchiveAndRemoveButton
@@ -139,28 +137,21 @@ export default function Metric() {
       entityArchived={loaderData.metric.archived}
       key={`metric-${loaderData.metric.ref_id}`}
       createLocation={`/app/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
-      extraControls={[
-        isBigScreen ? (
-          <Button
-            key={loaderData.metric.ref_id}
-            variant="outlined"
-            to={`/app/workspace/metrics/${loaderData.metric.ref_id}/details`}
-            component={Link}
-            startIcon={<TuneIcon />}
-          >
-            Details
-          </Button>
-        ) : (
-          <IconButton
-            key={loaderData.metric.ref_id}
-            to={`/app/workspace/metrics/${loaderData.metric.ref_id}/details`}
-            component={Link}
-          >
-            <TuneIcon />
-          </IconButton>
-        ),
-      ]}
       returnLocation="/app/workspace/metrics"
+      actions={
+        <SectionActions
+          id={`metric-${loaderData.metric.ref_id}-actions`}
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavSingle({
+              text: "Details",
+              icon: <TuneIcon />,
+              link: `/app/workspace/metrics/${loaderData.metric.ref_id}/details`,
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <MetricGraph sortedMetricEntries={sortedEntries} />

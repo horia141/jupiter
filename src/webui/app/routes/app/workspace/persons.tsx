@@ -1,10 +1,8 @@
-import { WorkspaceFeature } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 
@@ -22,9 +20,7 @@ import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { PeriodTag } from "~/components/domain/core/period-tag";
 import { PersonBirthdayTag } from "~/components/domain/concept/person/person-birthday-tag";
 import { PersonRelationshipTag } from "~/components/domain/concept/person/person-relationship-tag";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -32,6 +28,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -62,32 +59,25 @@ export default function Persons() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const isBigScreen = useBigScreen();
-
   return (
     <TrunkPanel
       key={"persons"}
       createLocation="/app/workspace/persons/new"
-      extraControls={[
-        <>
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <>
-              <Button
-                variant="outlined"
-                to={`/app/workspace/persons/settings`}
-                component={Link}
-                startIcon={<TuneIcon />}
-              >
-                {isBigScreen ? "Settings" : ""}
-              </Button>
-            </>
-          )}
-        </>,
-      ]}
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="persons-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              link: `/app/workspace/persons/settings`,
+              icon: <TuneIcon />,
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock
         branchForceHide={shouldShowABranch}

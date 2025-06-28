@@ -9,8 +9,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button,
-  ButtonGroup,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -19,12 +17,7 @@ import {
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from "@remix-run/react";
+import { useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -37,7 +30,6 @@ import {
   UserFeatureFlagsEditor,
   WorkspaceFeatureFlagsEditor,
 } from "~/components/domain/application/workspace/feature-flags-editor";
-import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
@@ -54,6 +46,8 @@ import { commitSession, getSession } from "~/sessions";
 import {
   ActionsExpansion,
   ActionSingle,
+  NavMultipleCompact,
+  NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
 import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
@@ -174,6 +168,25 @@ export default function WorkspaceInit() {
                   text: "Create",
                   value: "create",
                   highlight: true,
+                }),
+                NavMultipleCompact({
+                  navs: [
+                    NavSingle({
+                      text: "Login",
+                      link: "/app/login",
+                    }),
+                    NavSingle({
+                      text: "Reset Password",
+                      link: "/app/reset-password",
+                    }),
+                    NavSingle({
+                      text: "Pick Server",
+                      link: "/app/pick-server/desktop",
+                      disabled:
+                        globalProperties.frontDoorInfo.appShell !==
+                        AppShell.DESKTOP_ELECTRON,
+                    }),
+                  ],
                 }),
               ]}
             />
@@ -332,41 +345,6 @@ export default function WorkspaceInit() {
             </Accordion>
           </Stack>
         </SectionCard>
-
-        <EntityActionHeader>
-          <ButtonGroup>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/login`}
-              component={Link}
-            >
-              Login
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/reset-password`}
-              component={Link}
-            >
-              Reset Password
-            </Button>
-          </ButtonGroup>
-
-          {globalProperties.frontDoorInfo.appShell ===
-            AppShell.DESKTOP_ELECTRON && (
-            <Button
-              id="pick-another-server"
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/pick-server/desktop`}
-              component={Link}
-              sx={{ marginLeft: "auto" }}
-            >
-              Pick Server
-            </Button>
-          )}
-        </EntityActionHeader>
       </LifecyclePanel>
     </StandaloneContainer>
   );

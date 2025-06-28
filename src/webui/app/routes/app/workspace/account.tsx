@@ -1,11 +1,6 @@
 import { ApiError, UserFeature } from "@jupiter/webapi-client";
 import {
   Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
@@ -39,6 +34,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { ActionSingle , SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -142,100 +139,93 @@ export default function Account() {
   return (
     <TrunkPanel key={"account"} returnLocation="/app/workspace">
       <ToolPanel>
+        <GlobalError actionResult={actionData} />
+
         <Stack useFlexGap gap={2}>
-          <Card>
-            <GlobalError actionResult={actionData} />
+          <SectionCard
+            title="Account"
+            actions={
+              <SectionActions
+                id="account-actions"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    text: "Save",
+                    value: "update",
+                    highlight: true,
+                  }),
+                ]}
+              />
+            }
+          >
+            <Stack spacing={2} useFlexGap>
+              <FormControl fullWidth>
+                <InputLabel id="emailAddress">Your Email Address</InputLabel>
+                <OutlinedInput
+                  type="email"
+                  autoComplete="email"
+                  label="Your Email Address"
+                  name="emailAddress"
+                  disabled={true}
+                  defaultValue={loaderData.user.email_address}
+                />
+              </FormControl>
 
-            <CardHeader title="Account" />
-            <CardContent>
-              <Stack spacing={2} useFlexGap>
-                <FormControl fullWidth>
-                  <InputLabel id="emailAddress">Your Email Address</InputLabel>
-                  <OutlinedInput
-                    type="email"
-                    autoComplete="email"
-                    label="Your Email Address"
-                    name="emailAddress"
-                    disabled={true}
-                    defaultValue={loaderData.user.email_address}
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <TextField
-                    name="name"
-                    label="Your Name"
-                    defaultValue={loaderData.user.name}
-                    disabled={!inputsEnabled}
-                  />
-                  <FieldError actionResult={actionData} fieldName="/name" />
-                </FormControl>
-                <FormControl fullWidth>
-                  <TimezoneSelect
-                    id="timezone"
-                    name="timezone"
-                    inputsEnabled={inputsEnabled}
-                    initialValue={loaderData.user.timezone}
-                  />
-
-                  <FieldError actionResult={actionData} fieldName="/timezone" />
-                </FormControl>
-              </Stack>
-            </CardContent>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
+              <FormControl fullWidth>
+                <TextField
+                  name="name"
+                  label="Your Name"
+                  defaultValue={loaderData.user.name}
                   disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="update"
-                >
-                  Save
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
+                />
+                <FieldError actionResult={actionData} fieldName="/name" />
+              </FormControl>
+              <FormControl fullWidth>
+                <TimezoneSelect
+                  id="timezone"
+                  name="timezone"
+                  inputsEnabled={inputsEnabled}
+                  initialValue={loaderData.user.timezone}
+                />
 
-          <Card>
+                <FieldError actionResult={actionData} fieldName="/timezone" />
+              </FormControl>
+            </Stack>
+          </SectionCard>
+
+          <SectionCard
+            title="Feature Flags"
+            actions={
+              <SectionActions
+                id="feature-flags-actions"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  ActionSingle({
+                    text: "Change Feature Flags",
+                    value: "change-feature-flags",
+                    highlight: true,
+                  }),
+                ]}
+              />
+            }
+          >
             <GlobalError
               intent="change-feature-flags"
               actionResult={actionData}
             />
+            <UserFeatureFlagsEditor
+              name="featureFlags"
+              inputsEnabled={inputsEnabled}
+              featureFlagsControls={topLevelInfo.userFeatureFlagControls}
+              defaultFeatureFlags={loaderData.user.feature_flags}
+              hosting={globalProperties.hosting}
+            />
+          </SectionCard>
 
-            <CardHeader title="Feature Flags" />
-
-            <CardContent>
-              <UserFeatureFlagsEditor
-                name="featureFlags"
-                inputsEnabled={inputsEnabled}
-                featureFlagsControls={topLevelInfo.userFeatureFlagControls}
-                defaultFeatureFlags={loaderData.user.feature_flags}
-                hosting={globalProperties.hosting}
-              />
-            </CardContent>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="change-feature-flags"
-                >
-                  Change Feature Flags
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
-
-          <Card>
+          <SectionCard title="Dangerous">
             <GlobalError intent="close-account" actionResult={actionData} />
-
-            <CardHeader title="Dangerous" />
-
             <Dialog
               onClose={() => setShowCloseAccountDialog(false)}
               open={showCloseAccountDialog}
@@ -263,20 +253,16 @@ export default function Account() {
               </DialogActions>
             </Dialog>
 
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  id="close-account-initialize"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  onClick={() => setShowCloseAccountDialog(true)}
-                  color="error"
-                >
-                  Close Account
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
+            <Button
+              id="close-account-initialize"
+              variant="contained"
+              disabled={!inputsEnabled}
+              onClick={() => setShowCloseAccountDialog(true)}
+              color="error"
+            >
+              Close Account
+            </Button>
+          </SectionCard>
         </Stack>
       </ToolPanel>
     </TrunkPanel>

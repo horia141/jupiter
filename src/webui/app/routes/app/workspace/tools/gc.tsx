@@ -5,13 +5,9 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   InputLabel,
+  Stack,
   styled,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -43,6 +39,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { ActionSingle , SectionActions } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const GCFormSchema = z.object({
   gcTargets: selectZod(z.nativeEnum(SyncTarget)),
@@ -93,9 +91,26 @@ export default function GC() {
 
   return (
     <ToolPanel>
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
+      <GlobalError actionResult={actionData} />
+
+      <SectionCard
+        title="Garbage Collection"
+        actions={
+          <SectionActions
+            id="gc-actions"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Garbage Collect",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2}>
           <FormControl fullWidth>
             <InputLabel id="gcTargets">Garbage Collect Targets</InputLabel>
             <SyncTargetSelect
@@ -107,22 +122,8 @@ export default function GC() {
             />
             <FieldError actionResult={actionData} fieldName="/gc_targets" />
           </FormControl>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Garbage Collect
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        </Stack>
+      </SectionCard>
 
       <StandardDivider title="Garbage Collection" size="large" />
 

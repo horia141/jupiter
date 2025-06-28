@@ -1,5 +1,5 @@
-import { styled } from "@mui/material";
-import { Form, useLocation } from "@remix-run/react";
+import { Box, styled } from "@mui/material";
+import { useLocation } from "@remix-run/react";
 import { motion } from "framer-motion";
 import type { PropsWithChildren } from "react";
 
@@ -8,11 +8,7 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
-interface ToolPanelProps {
-  method?: "get" | "post";
-}
-
-export function ToolPanel(props: PropsWithChildren<ToolPanelProps>) {
+export function ToolPanel(props: PropsWithChildren) {
   const isBigScreen = useBigScreen();
   const location = useLocation();
 
@@ -31,10 +27,7 @@ export function ToolPanel(props: PropsWithChildren<ToolPanelProps>) {
       }}
       transition={{ duration: 0.5 }}
     >
-      <ToolCardContent
-        isbigscreen={isBigScreen ? "true" : "false"}
-        method={props.method || "post"}
-      >
+      <ToolCardContent isbigscreen={isBigScreen ? "true" : "false"}>
         {props.children}
       </ToolCardContent>
     </ToolPanelFrame>
@@ -47,7 +40,7 @@ interface ToolCardContentProps {
   isbigscreen: string;
 }
 
-const ToolCardContent = styled(Form)<ToolCardContentProps>(
+const ToolCardContent = styled(Box)<ToolCardContentProps>(
   ({ isbigscreen }) => ({
     padding: "0.5rem",
     height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - 4rem - ${

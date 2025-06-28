@@ -1,11 +1,11 @@
-import { type SlackTask, WorkspaceFeature } from "@jupiter/webapi-client";
-import { Button } from "@mui/material";
+import { type SlackTask } from "@jupiter/webapi-client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+import TuneIcon from "@mui/icons-material/Tune";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { ADateTag } from "~/components/domain/core/adate-tag";
@@ -18,7 +18,6 @@ import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { slackTaskNiceName } from "~/logic/domain/slack-task";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -26,6 +25,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
+
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -55,22 +56,20 @@ export default function SlackTasks() {
   return (
     <TrunkPanel
       key={"slack-tasks"}
-      extraControls={[
-        <>
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <Button
-              variant="contained"
-              to="/app/workspace/push-integrations/slack-tasks/settings"
-              component={Link}
-            >
-              Setings
-            </Button>
-          )}
-        </>,
-      ]}
+      actions={
+        <SectionActions
+          id="slack-tasks-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              icon: <TuneIcon />,
+              link: "/app/workspace/push-integrations/slack-tasks/settings",
+            }),
+          ]}
+        />
+      }
       returnLocation="/app/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>

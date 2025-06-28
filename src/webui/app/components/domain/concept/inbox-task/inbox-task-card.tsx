@@ -20,7 +20,6 @@ import {
   CardActions,
   CardContent,
   Chip,
-  Divider,
   IconButton,
   styled,
   useTheme,
@@ -172,120 +171,124 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
           status={props.inboxTask.status}
           dueDate={props.inboxTask.due_date}
         />
-        <CardContent sx={{ padding: "0px!important" }}>
+        <CardContent
+          sx={{
+            paddingTop: isBigScreen ? "0.5rem" : "1rem",
+            paddingLeft: "0.5rem",
+            paddingBottom: "0.5rem",
+          }}
+        >
           <EntityLink
             to={`/app/workspace/inbox-tasks/${props.inboxTask.ref_id}`}
             block={props.onClick !== undefined}
+            inline
           >
             <IsKeyTag isKey={props.inboxTask.is_key} />
             <EntityNameComponent
               compact={props.compact}
               name={props.inboxTask.name}
             />
-            <Divider />
-            <TagsContained>
-              {props.showOptions.showStatus && (
-                <InboxTaskStatusTag
-                  status={
-                    props.optimisticState?.status ?? props.inboxTask.status
-                  }
-                />
-              )}
-              {props.showOptions.showSource && (
-                <InboxTaskSourceTag source={props.inboxTask.source} />
-              )}
-              {isWorkspaceFeatureAvailable(
-                props.topLevelInfo.workspace,
-                WorkspaceFeature.PROJECTS,
-              ) &&
-                props.showOptions.showProject &&
-                props.parent?.project && (
-                  <ProjectTag project={props.parent?.project} />
-                )}
-              {props.showOptions.showEisen && (
-                <EisenTag
-                  eisen={props.optimisticState?.eisen ?? props.inboxTask.eisen}
-                />
-              )}
-              {props.showOptions.showDifficulty && (
-                <DifficultyTag difficulty={props.inboxTask.difficulty} />
-              )}
-              {props.showOptions.showActionableDate &&
-                props.inboxTask.actionable_date && (
-                  <ADateTag
-                    label="Actionable from"
-                    date={props.inboxTask.actionable_date}
-                  />
-                )}
-              {props.showOptions.showDueDate && props.inboxTask.due_date && (
-                <ADateTag label="Due at" date={props.inboxTask.due_date} />
-              )}
-              {props.showOptions.showParent && (
-                <>
-                  {isWorkspaceFeatureAvailable(
-                    props.topLevelInfo.workspace,
-                    WorkspaceFeature.BIG_PLANS,
-                  ) &&
-                    props.parent &&
-                    props.parent.bigPlan && (
-                      <BigPlanTag bigPlan={props.parent.bigPlan as BigPlan} />
-                    )}
-                  {isWorkspaceFeatureAvailable(
-                    props.topLevelInfo.workspace,
-                    WorkspaceFeature.HABITS,
-                  ) &&
-                    props.parent &&
-                    props.parent.habit && (
-                      <HabitTag habit={props.parent.habit as Habit} />
-                    )}
-                  {isWorkspaceFeatureAvailable(
-                    props.topLevelInfo.workspace,
-                    WorkspaceFeature.CHORES,
-                  ) &&
-                    props.parent &&
-                    props.parent.chore && (
-                      <ChoreTag chore={props.parent.chore as Chore} />
-                    )}
-                  {isWorkspaceFeatureAvailable(
-                    props.topLevelInfo.workspace,
-                    WorkspaceFeature.METRICS,
-                  ) &&
-                    props.parent &&
-                    props.parent.metric && (
-                      <MetricTag metric={props.parent.metric as Metric} />
-                    )}
-                  {isWorkspaceFeatureAvailable(
-                    props.topLevelInfo.workspace,
-                    WorkspaceFeature.PERSONS,
-                  ) &&
-                    props.parent &&
-                    props.parent.person && (
-                      <PersonTag person={props.parent.person as Person} />
-                    )}
-                  {isWorkspaceFeatureAvailable(
-                    props.topLevelInfo.workspace,
-                    WorkspaceFeature.SLACK_TASKS,
-                  ) &&
-                    props.parent &&
-                    props.parent.slackTask && (
-                      <SlackTaskTag
-                        slackTask={props.parent.slackTask as SlackTask}
-                      />
-                    )}
-                  {isWorkspaceFeatureAvailable(
-                    props.topLevelInfo.workspace,
-                    WorkspaceFeature.EMAIL_TASKS,
-                  ) &&
-                    props.parent &&
-                    props.parent.emailTask && (
-                      <EmailTaskTag
-                        emailTask={props.parent.emailTask as EmailTask}
-                      />
-                    )}
-                </>
-              )}
-            </TagsContained>
           </EntityLink>
+          <TagsContained>
+            {props.showOptions.showStatus && (
+              <InboxTaskStatusTag
+                status={props.optimisticState?.status ?? props.inboxTask.status}
+              />
+            )}
+            {props.showOptions.showSource && (
+              <InboxTaskSourceTag source={props.inboxTask.source} />
+            )}
+            {isWorkspaceFeatureAvailable(
+              props.topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS,
+            ) &&
+              props.showOptions.showProject &&
+              props.parent?.project && (
+                <ProjectTag project={props.parent?.project} />
+              )}
+            {props.showOptions.showEisen && (
+              <EisenTag
+                eisen={props.optimisticState?.eisen ?? props.inboxTask.eisen}
+              />
+            )}
+            {props.showOptions.showDifficulty && (
+              <DifficultyTag difficulty={props.inboxTask.difficulty} />
+            )}
+            {props.showOptions.showActionableDate &&
+              props.inboxTask.actionable_date && (
+                <ADateTag
+                  label="Actionable from"
+                  date={props.inboxTask.actionable_date}
+                />
+              )}
+            {props.showOptions.showDueDate && props.inboxTask.due_date && (
+              <ADateTag label="Due at" date={props.inboxTask.due_date} />
+            )}
+            {props.showOptions.showParent && (
+              <>
+                {isWorkspaceFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  WorkspaceFeature.BIG_PLANS,
+                ) &&
+                  props.parent &&
+                  props.parent.bigPlan && (
+                    <BigPlanTag bigPlan={props.parent.bigPlan as BigPlan} />
+                  )}
+                {isWorkspaceFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  WorkspaceFeature.HABITS,
+                ) &&
+                  props.parent &&
+                  props.parent.habit && (
+                    <HabitTag habit={props.parent.habit as Habit} />
+                  )}
+                {isWorkspaceFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  WorkspaceFeature.CHORES,
+                ) &&
+                  props.parent &&
+                  props.parent.chore && (
+                    <ChoreTag chore={props.parent.chore as Chore} />
+                  )}
+                {isWorkspaceFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  WorkspaceFeature.METRICS,
+                ) &&
+                  props.parent &&
+                  props.parent.metric && (
+                    <MetricTag metric={props.parent.metric as Metric} />
+                  )}
+                {isWorkspaceFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  WorkspaceFeature.PERSONS,
+                ) &&
+                  props.parent &&
+                  props.parent.person && (
+                    <PersonTag person={props.parent.person as Person} />
+                  )}
+                {isWorkspaceFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  WorkspaceFeature.SLACK_TASKS,
+                ) &&
+                  props.parent &&
+                  props.parent.slackTask && (
+                    <SlackTaskTag
+                      slackTask={props.parent.slackTask as SlackTask}
+                    />
+                  )}
+                {isWorkspaceFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  WorkspaceFeature.EMAIL_TASKS,
+                ) &&
+                  props.parent &&
+                  props.parent.emailTask && (
+                    <EmailTaskTag
+                      emailTask={props.parent.emailTask as EmailTask}
+                    />
+                  )}
+              </>
+            )}
+          </TagsContained>
         </CardContent>
         {isBigScreen &&
           (props.showOptions.showHandleMarkDone ||

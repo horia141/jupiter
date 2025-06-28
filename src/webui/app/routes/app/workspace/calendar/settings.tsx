@@ -5,14 +5,10 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormControlLabel,
   InputLabel,
+  Stack,
   Switch,
   styled,
 } from "@mui/material";
@@ -20,7 +16,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  Form,
   useActionData,
   useNavigation,
   useSearchParams,
@@ -35,7 +30,7 @@ import { EntitySummaryLink } from "~/components/infra/entity-summary-link";
 import { EventSourceTag } from "~/components/infra/event-source-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
-import { FieldError } from "~/components/infra/errors";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { ScheduleStreamMultiSelect } from "~/components/domain/concept/schedule/schedule-stream-multi-select";
 import { StandardDivider } from "~/components/infra/standard-divider";
@@ -48,7 +43,13 @@ import { selectZod } from "~/logic/select";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  SectionActions,
+  ActionSingle,
+  ActionsExpansion,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -119,60 +120,63 @@ export default function CalendarSettings() {
       key="calendar-settings"
       returnLocation={`/app/workspace/calendar?${query}`}
     >
-      <Form method="post">
-        <Card>
-          <CardContent>
-            <FormControl fullWidth>
-              <InputLabel id="scheduleStreamRefId">Schedule Streams</InputLabel>
-              <ScheduleStreamMultiSelect
-                labelId="scheduleStreamRefIds"
-                label="Schedule Streams"
-                name="scheduleStreamRefIds"
-                readOnly={!inputsEnabled}
-                allScheduleStreams={loaderData.scheduleStreams.filter(
-                  (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
-                )}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/filter_schedule_stream_ref_id"
-              />
+      <GlobalError actionResult={actionData} />
 
-              <FormControl fullWidth>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      name="syncEvenIfNotModified"
-                      readOnly={!inputsEnabled}
-                      disabled={!inputsEnabled}
-                      defaultChecked={false}
-                    />
-                  }
-                  label="Sync Even If Not Modified"
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/sync_even_if_not_modified"
-                />
-              </FormControl>
-            </FormControl>
-          </CardContent>
+      <SectionCard
+        title="External Calendar Sync"
+        actions={
+          <SectionActions
+            id="calendar-external-sync"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            expansion={ActionsExpansion.ALWAYS_SHOW}
+            actions={[
+              ActionSingle({
+                text: "Sync",
+                value: "sync",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="scheduleStreamRefId">Schedule Streams</InputLabel>
+            <ScheduleStreamMultiSelect
+              labelId="scheduleStreamRefIds"
+              label="Schedule Streams"
+              name="scheduleStreamRefIds"
+              readOnly={!inputsEnabled}
+              allScheduleStreams={loaderData.scheduleStreams.filter(
+                (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
+              )}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/filter_schedule_stream_ref_id"
+            />
+          </FormControl>
 
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="sync"
-              >
-                Sync
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
-      </Form>
+          <FormControl fullWidth>
+            <FormControlLabel
+              control={
+                <Switch
+                  name="syncEvenIfNotModified"
+                  readOnly={!inputsEnabled}
+                  disabled={!inputsEnabled}
+                  defaultChecked={false}
+                />
+              }
+              label="Sync Even If Not Modified"
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/sync_even_if_not_modified"
+            />
+          </FormControl>
+        </Stack>
+      </SectionCard>
 
       <StandardDivider title="Previous Runs" size="large" />
 

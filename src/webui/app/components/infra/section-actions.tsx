@@ -66,6 +66,16 @@ interface ActionMultipleDesc {
   actions: Array<ActionSingleDesc>;
 }
 
+interface ButtonSingleDesc {
+  kind: "button-single";
+  text: string;
+  icon?: JSX.Element;
+  onClick: () => void;
+  highlight?: boolean;
+  gatedOn?: WorkspaceFeature;
+  disabled?: boolean;
+}
+
 interface FilterOption<K> {
   value: K;
   text: string;
@@ -96,6 +106,7 @@ type ActionDesc =
   | NavMultipleDesc // A group of buttons, as a navigation
   | ActionSingleDesc // A single button, as an action
   | ActionMultipleDesc // A group of buttons, as an action
+  | ButtonSingleDesc // A single button, as a button
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | FilterFewOptionsDesc<any> // A group to filter on, can be a navigation or a callback
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,6 +154,15 @@ export function ActionMultipleSpread(
   return {
     kind: "action-multiple",
     approach: "spread",
+    ...desc,
+  };
+}
+
+export function ButtonSingle(
+  desc: Omit<ButtonSingleDesc, "kind">,
+): ButtonSingleDesc {
+  return {
+    kind: "button-single",
     ...desc,
   };
 }
@@ -354,6 +374,15 @@ function ActionView(props: ActionViewProps) {
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
           orientation={props.orientation}
+          action={props.action}
+        />
+      );
+
+    case "button-single":
+      return (
+        <ButtonSingleView
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
           action={props.action}
         />
       );
@@ -735,6 +764,32 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
         )}
       </Popper>
     </>
+  );
+}
+
+interface ButtonSingleViewProps {
+  topLevelInfo: TopLevelInfo;
+  inputsEnabled: boolean;
+  action: ButtonSingleDesc;
+}
+
+function ButtonSingleView(props: ButtonSingleViewProps) {
+  if (props.action.gatedOn) {
+    const workspace = props.topLevelInfo.workspace;
+    if (!isWorkspaceFeatureAvailable(workspace, props.action.gatedOn)) {
+      return <></>;
+    }
+  }
+
+  return (
+    <Button
+      variant={props.action.highlight ? "contained" : "outlined"}
+      disabled={!props.inputsEnabled || props.action.disabled}
+      startIcon={props.action.icon}
+      onClick={props.action.onClick}
+    >
+      {props.action.text}
+    </Button>
   );
 }
 

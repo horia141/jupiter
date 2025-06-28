@@ -219,12 +219,12 @@ export default function JournalsSettings() {
       returnLocation="/app/workspace/journals"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.JOURNALS,
       ) && (
         <Stack spacing={2}>
-          <GlobalError actionResult={actionData} />
           <SectionCard
             id="journals-settings"
             title="Settings"

@@ -218,12 +218,12 @@ export default function TimePlansSettings() {
       returnLocation="/app/workspace/time-plans"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.TIME_PLANS,
       ) && (
         <Stack spacing={2}>
-          <GlobalError actionResult={actionData} />
           <SectionCard
             id="time-plans-settings"
             title="Settings"

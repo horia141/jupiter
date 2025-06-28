@@ -22,7 +22,7 @@ import { z } from "zod";
 import { parseForm, parseParams, parseQuery, parseQuerySafe } from "zodix";
 import TuneIcon from "@mui/icons-material/Tune";
 import { StatusCodes } from "http-status-codes";
-import { Fragment } from "react";
+import { Fragment, useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -45,6 +45,8 @@ import {
 import { newURLParams } from "~/logic/domain/navigation";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { EntityLink } from "~/components/infra/entity-card";
+import { SectionActions, NavSingle } from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 enum Action {
   ADD_WIDGET = "add",
@@ -146,6 +148,7 @@ export default function HomeTab() {
   const inputsEnabled = navigation.state === "idle";
   const [queryRaw] = useSearchParams();
   const query = parseQuery(queryRaw, QuerySchema);
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   return (
     <BranchPanel
@@ -155,17 +158,20 @@ export default function HomeTab() {
       key={`home-tab-${loaderData.tab.ref_id}`}
       createLocation={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}/widgets/new`}
       returnLocation="/app/workspace/home/settings"
-      extraControls={[
-        <Button
-          key="home-tab-details"
-          variant="outlined"
-          to={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}/details`}
-          component={Link}
-          startIcon={<TuneIcon />}
-        >
-          Details
-        </Button>,
-      ]}
+      actions={
+        <SectionActions
+          id="home-tab-details"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavSingle({
+              text: "Details",
+              link: `/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}/details`,
+              icon: <TuneIcon />,
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>

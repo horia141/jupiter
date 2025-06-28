@@ -1,19 +1,13 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
   FormControl,
   Stack,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
@@ -30,6 +24,8 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import { SectionActions , ActionSingle } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -103,42 +99,42 @@ export default function PersonsSettings() {
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
       ) && (
-        <Form method="post">
-          <Card>
-            <GlobalError actionResult={actionData} />
-            <CardHeader title="Catch Up Project" />
-            <CardContent>
-              <Stack spacing={2} useFlexGap>
-                <FormControl fullWidth>
-                  <ProjectSelect
-                    name="project"
-                    label="Catch Up Project"
-                    inputsEnabled={inputsEnabled}
-                    disabled={false}
-                    allProjects={loaderData.allProjects}
-                    defaultValue={loaderData.catchUpProject.ref_id}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/catch_up_project_key"
-                  />
-                </FormControl>
-              </Stack>
-            </CardContent>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                >
-                  Change Catch Up Project
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
-        </Form>
+        <SectionCard
+          id="persons-settings"
+          title="Catch Up Project"
+          actions={
+            <SectionActions
+              id="persons-settings-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Change Catch Up Project",
+                  value: "change",
+                  highlight: true,
+                }),
+              ]}
+            />
+          }
+        >
+          <GlobalError actionResult={actionData} />
+          <Stack spacing={2} useFlexGap>
+            <FormControl fullWidth>
+              <ProjectSelect
+                name="project"
+                label="Catch Up Project"
+                inputsEnabled={inputsEnabled}
+                disabled={false}
+                allProjects={loaderData.allProjects}
+                defaultValue={loaderData.catchUpProject.ref_id}
+              />
+              <FieldError
+                actionResult={actionData}
+                fieldName="/catch_up_project_key"
+              />
+            </FormControl>
+          </Stack>
+        </SectionCard>
       )}
     </BranchPanel>
   );

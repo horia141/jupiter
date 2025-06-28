@@ -1532,7 +1532,7 @@ class GenService:
                         project_ref_id=project.ref_id,
                         eisen=gen_params.eisen,
                         difficulty=gen_params.difficulty,
-                        due_date=schedule.due_date
+                        due_date=schedule.due_date,
                     )
 
                     async with self._domain_storage_engine.get_unit_of_work() as uow:
