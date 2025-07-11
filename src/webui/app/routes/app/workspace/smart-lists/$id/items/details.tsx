@@ -1,5 +1,5 @@
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -182,27 +182,25 @@ export default function SmartListDetails() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              name="name"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.smartList.name}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            name="name"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.smartList.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="icon">Icon</InputLabel>
-            <IconSelector
-              readOnly={!inputsEnabled}
-              defaultIcon={loaderData.smartList.icon}
-            />
-            <FieldError actionResult={actionData} fieldName="/icon" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="icon">Icon</InputLabel>
+          <IconSelector
+            readOnly={!inputsEnabled}
+            defaultIcon={loaderData.smartList.icon}
+          />
+          <FieldError actionResult={actionData} fieldName="/icon" />
+        </FormControl>
       </SectionCard>
 
       <SectionCard

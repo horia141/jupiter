@@ -4,7 +4,6 @@ import {
   FormControlLabel,
   InputLabel,
   OutlinedInput,
-  Stack,
   Switch,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -29,7 +28,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
@@ -118,6 +117,7 @@ export default function NewSmartListItem() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Smart List Item"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="smart-list-item-create"
@@ -134,42 +134,40 @@ export default function NewSmartListItem() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              name="name"
-              readOnly={!inputsEnabled}
-              defaultValue={""}
-            />
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            name="name"
+            readOnly={!inputsEnabled}
+            defaultValue={""}
+          />
 
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <FormControlLabel
-              control={<Switch name="isDone" readOnly={!inputsEnabled} />}
-              label="Is Done"
-            />
-            <FieldError actionResult={actionData} fieldName="/is_done" />
-          </FormControl>
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={<Switch name="isDone" readOnly={!inputsEnabled} />}
+            label="Is Done"
+          />
+          <FieldError actionResult={actionData} fieldName="/is_done" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <TagsEditor
-              allTags={loaderData.smartListTags}
-              defaultTags={[]}
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/tag_names" />
-          </FormControl>
+        <FormControl fullWidth>
+          <TagsEditor
+            allTags={loaderData.smartListTags}
+            defaultTags={[]}
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/tag_names" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="url">Url [Optional]</InputLabel>
-            <OutlinedInput label="Url" name="url" readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/url" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="url">Url [Optional]</InputLabel>
+          <OutlinedInput label="Url" name="url" readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/url" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

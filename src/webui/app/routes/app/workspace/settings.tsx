@@ -1,5 +1,5 @@
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirectDocument } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -16,7 +16,10 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { SectionCard } from "~/components/infra/section-card";
-import { SectionActions , ActionSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -110,73 +113,64 @@ export default function Settings() {
   return (
     <TrunkPanel key={"settings"} returnLocation="/app/workspace">
       <ToolPanel>
-        <Stack useFlexGap gap={2}>
-          <SectionCard
-            id="general"
-            title="General"
-            actions={
-              <SectionActions
-                id="general-actions"
-                topLevelInfo={topLevelInfo}
-                inputsEnabled={inputsEnabled}
-                actions={[
-                  ActionSingle({
-                    text: "Save",
-                    value: "update",
-                    highlight: true,
-                  }),
-                ]}
-              />
-            }
-          >
-            <GlobalError intent="update" actionResult={actionData} />
-            <Stack spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <InputLabel id="name">Name</InputLabel>
-                <OutlinedInput
-                  label="Name"
-                  name="name"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.workspace.name}
-                />
-                <FieldError actionResult={actionData} fieldName="/name" />
-              </FormControl>
-            </Stack>
-          </SectionCard>
-
-          <SectionCard
-            id="feature-flags"
-            title="Feature Flags"
-            actions={
-              <SectionActions
-                id="feature-flags-actions"
-                topLevelInfo={topLevelInfo}
-                inputsEnabled={inputsEnabled}
-                actions={[
-                  ActionSingle({
-                    text: "Change Feature Flags",
-                    value: "change-feature-flags",
-                    highlight: true,
-                  }),
-                ]}
-              />
-            }
-          >
-            <GlobalError
-              intent="change-feature-flags"
-              actionResult={actionData}
+        <GlobalError intent="update" actionResult={actionData} />
+        <SectionCard
+          id="general"
+          title="General"
+          actions={
+            <SectionActions
+              id="general-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Save",
+                  value: "update",
+                  highlight: true,
+                }),
+              ]}
             />
-            <Stack spacing={2} useFlexGap>
-              <WorkspaceFeatureFlagsEditor
-                name="featureFlags"
-                inputsEnabled={inputsEnabled}
-                featureFlagsControls={topLevelInfo.workspaceFeatureFlagControls}
-                defaultFeatureFlags={loaderData.workspace.feature_flags}
-                hosting={globalProperties.hosting}
-              />
-            </Stack>
-          </SectionCard>
-        </Stack>
+          }
+        >
+          <FormControl fullWidth>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.workspace.name}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
+        </SectionCard>
+
+        <GlobalError intent="change-feature-flags" actionResult={actionData} />
+        <SectionCard
+          id="feature-flags"
+          title="Feature Flags"
+          actions={
+            <SectionActions
+              id="feature-flags-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Change Feature Flags",
+                  value: "change-feature-flags",
+                  highlight: true,
+                }),
+              ]}
+            />
+          }
+        >
+          <WorkspaceFeatureFlagsEditor
+            name="featureFlags"
+            inputsEnabled={inputsEnabled}
+            featureFlagsControls={topLevelInfo.workspaceFeatureFlagControls}
+            defaultFeatureFlags={loaderData.workspace.feature_flags}
+            hosting={globalProperties.hosting}
+          />
+        </SectionCard>
       </ToolPanel>
     </TrunkPanel>
   );

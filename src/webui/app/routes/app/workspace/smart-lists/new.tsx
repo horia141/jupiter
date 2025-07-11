@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -17,7 +17,7 @@ import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -78,6 +78,7 @@ export default function NewSmartList() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Smart List"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="smart-list-create"
@@ -94,24 +95,22 @@ export default function NewSmartList() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              name="name"
-              readOnly={!inputsEnabled}
-              defaultValue={""}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            name="name"
+            readOnly={!inputsEnabled}
+            defaultValue={""}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="icon">Icon</InputLabel>
-            <IconSelector readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/icon" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="icon">Icon</InputLabel>
+          <IconSelector readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/icon" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

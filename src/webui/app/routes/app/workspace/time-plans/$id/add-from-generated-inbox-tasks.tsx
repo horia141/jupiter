@@ -367,66 +367,64 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack
-            spacing={2}
-            useFlexGap
-            direction={isBigScreen ? "row" : "column"}
-          >
-            <FormControl fullWidth>
-              <InputLabel id="today" shrink>
-                Generation Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="Generation Date"
-                readOnly={!inputsEnabled}
-                disabled={!inputsEnabled}
-                defaultValue={loaderData.timePlan.start_date}
-                name="today"
-              />
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
+          <FormControl fullWidth>
+            <InputLabel id="today" shrink>
+              Generation Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="Generation Date"
+              readOnly={!inputsEnabled}
+              disabled={!inputsEnabled}
+              defaultValue={loaderData.timePlan.start_date}
+              name="today"
+            />
 
-              <FieldError actionResult={actionData} fieldName="/today" />
-            </FormControl>
+            <FieldError actionResult={actionData} fieldName="/today" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <PeriodSelect
-                labelId="period"
-                label="Generation Period"
-                name="period"
-                inputsEnabled={inputsEnabled}
-                defaultValue={[loaderData.timePlan.period]}
-              />
-              <FieldError actionResult={actionData} fieldName="/period" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <PeriodSelect
+              labelId="period"
+              label="Generation Period"
+              name="period"
+              inputsEnabled={inputsEnabled}
+              defaultValue={[loaderData.timePlan.period]}
+            />
+            <FieldError actionResult={actionData} fieldName="/period" />
+          </FormControl>
+        </Stack>
 
-          <Stack
-            spacing={2}
-            useFlexGap
-            direction={isBigScreen ? "row" : "column"}
-          >
-            <FormControl fullWidth>
-              <FormLabel id="kind">Kind</FormLabel>
-              <TimePlanActivitKindSelect
-                name="kind"
-                defaultValue={TimePlanActivityKind.FINISH}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/kind" />
-            </FormControl>
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
+          <FormControl fullWidth>
+            <FormLabel id="kind">Kind</FormLabel>
+            <TimePlanActivitKindSelect
+              name="kind"
+              defaultValue={TimePlanActivityKind.FINISH}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/kind" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <FormLabel id="feasability">Feasability</FormLabel>
-              <TimePlanActivityFeasabilitySelect
-                name="feasability"
-                defaultValue={TimePlanActivityFeasability.MUST_DO}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/feasability" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <FormLabel id="feasability">Feasability</FormLabel>
+            <TimePlanActivityFeasabilitySelect
+              name="feasability"
+              defaultValue={TimePlanActivityFeasability.MUST_DO}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/feasability" />
+          </FormControl>
         </Stack>
 
         {selectedView === View.MERGED && (

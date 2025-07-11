@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, Stack, TextField } from "@mui/material";
+import { FormControl, InputLabel, TextField } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -128,6 +128,7 @@ export default function HomeTabDetails() {
       entityArchived={loaderData.tab.archived}
       returnLocation={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}`}
     >
+      <GlobalError actionResult={actionData} />
       <SectionCard
         id="home-tab-details"
         title="Tab Details"
@@ -148,27 +149,24 @@ export default function HomeTabDetails() {
           />
         }
       >
-        <GlobalError actionResult={actionData} />
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <TextField
-              name="name"
-              label="Name"
-              defaultValue={loaderData.tab.name}
-              disabled={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <TextField
+            name="name"
+            label="Name"
+            defaultValue={loaderData.tab.name}
+            disabled={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="icon">Icon</InputLabel>
-            <IconSelector
-              readOnly={!inputsEnabled}
-              defaultIcon={loaderData.tab.icon}
-            />
-            <FieldError actionResult={actionData} fieldName="/icon" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="icon">Icon</InputLabel>
+          <IconSelector
+            readOnly={!inputsEnabled}
+            defaultIcon={loaderData.tab.icon}
+          />
+          <FieldError actionResult={actionData} fieldName="/icon" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

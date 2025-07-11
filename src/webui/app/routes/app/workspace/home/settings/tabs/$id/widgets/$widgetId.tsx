@@ -1,5 +1,5 @@
 import { ApiError, WidgetDimension } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, Stack } from "@mui/material";
+import { FormControl, InputLabel } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -155,6 +155,7 @@ export default function Widget() {
       inputsEnabled={inputsEnabled}
       showArchiveAndRemoveButton
     >
+      <GlobalError actionResult={actionData} />
       <SectionCard
         title="Widget Settings"
         actions={
@@ -174,48 +175,45 @@ export default function Widget() {
           />
         }
       >
-        <GlobalError actionResult={actionData} />
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth disabled>
-            <InputLabel id="type">Type</InputLabel>
-            <WidgetTypeSelector
-              user={topLevelInfo.user}
-              workspace={topLevelInfo.workspace}
-              name="type"
-              inputsEnabled={false}
-              defaultValue={loaderData.widget.the_type}
-              target={loaderData.tab.target}
-              widgetConstraints={loaderData.widgetConstraints}
-            />
-          </FormControl>
+        <FormControl fullWidth disabled>
+          <InputLabel id="type">Type</InputLabel>
+          <WidgetTypeSelector
+            user={topLevelInfo.user}
+            workspace={topLevelInfo.workspace}
+            name="type"
+            inputsEnabled={false}
+            defaultValue={loaderData.widget.the_type}
+            target={loaderData.tab.target}
+            widgetConstraints={loaderData.widgetConstraints}
+          />
+        </FormControl>
 
-          <FormControl fullWidth disabled>
-            <RowAndColSelector
-              namePrefix="widget"
-              target={loaderData.tab.target}
-              homeTab={loaderData.tab}
-              widgets={loaderData.widgets}
-              row={query.row ?? loaderData.widget.geometry.row}
-              col={query.col ?? loaderData.widget.geometry.col}
-              inputsEnabled={inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName={"/row"} />
-            <FieldError actionResult={actionData} fieldName={"/col"} />
-          </FormControl>
+        <FormControl fullWidth disabled>
+          <RowAndColSelector
+            namePrefix="widget"
+            target={loaderData.tab.target}
+            homeTab={loaderData.tab}
+            widgets={loaderData.widgets}
+            row={query.row ?? loaderData.widget.geometry.row}
+            col={query.col ?? loaderData.widget.geometry.col}
+            inputsEnabled={inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName={"/row"} />
+          <FieldError actionResult={actionData} fieldName={"/col"} />
+        </FormControl>
 
-          <FormControl fullWidth disabled>
-            <InputLabel id="dimension">Dimension</InputLabel>
-            <WidgetDimensionSelector
-              name="widgetDimension"
-              inputsEnabled={inputsEnabled}
-              defaultValue={loaderData.widget.geometry.dimension}
-              target={loaderData.tab.target}
-              widgetType={loaderData.widget.the_type}
-              widgetConstraints={loaderData.widgetConstraints}
-            />
-            <FieldError actionResult={actionData} fieldName={"/dimension"} />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth disabled>
+          <InputLabel id="dimension">Dimension</InputLabel>
+          <WidgetDimensionSelector
+            name="widgetDimension"
+            inputsEnabled={inputsEnabled}
+            defaultValue={loaderData.widget.geometry.dimension}
+            target={loaderData.tab.target}
+            widgetType={loaderData.widget.the_type}
+            widgetConstraints={loaderData.widgetConstraints}
+          />
+          <FieldError actionResult={actionData} fieldName={"/dimension"} />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

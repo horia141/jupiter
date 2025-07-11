@@ -4,7 +4,6 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Stack,
   Typography,
 } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
@@ -110,36 +109,31 @@ export default function ScheduleStreamNew() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Typography variant="body1">
-            In Google Calendar be sure to use the secret address in iCal format.
-          </Typography>
-          <Divider />
-          <FormControl fullWidth>
-            <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
-            <OutlinedInput
-              label="sourceIcalUrl"
-              name="sourceIcalUrl"
-              readOnly={!inputsEnabled}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/source_ical_url"
-            />
-          </FormControl>
+        <Typography variant="body1">
+          In Google Calendar be sure to use the secret address in iCal format.
+        </Typography>
+        <Divider />
+        <FormControl fullWidth>
+          <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
+          <OutlinedInput
+            label="sourceIcalUrl"
+            name="sourceIcalUrl"
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/source_ical_url" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="color">Color</InputLabel>
-            <ScheduleStreamColorInput
-              labelId="color"
-              label="Color"
-              name="color"
-              value={ScheduleStreamColor.BLUE}
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/color" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="color">Color</InputLabel>
+          <ScheduleStreamColorInput
+            labelId="color"
+            label="Color"
+            name="color"
+            value={ScheduleStreamColor.BLUE}
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/color" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

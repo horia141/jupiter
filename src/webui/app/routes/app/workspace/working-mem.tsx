@@ -18,7 +18,7 @@ import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { SectionActions , NavSingle } from "~/components/infra/section-actions";
+import { SectionActions, NavSingle } from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";

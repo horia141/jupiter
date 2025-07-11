@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Stack,
   styled,
 } from "@mui/material";
 import { Form, Link, useLocation } from "@remix-run/react";
@@ -252,7 +253,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
         isbigscreen={isBigScreen ? "true" : "false"}
         hasleaf={shouldShowALeaf ? "true" : "false"}
       >
-        {props.children}
+        <Stack spacing={2}>{props.children}</Stack>
       </BranchPanelContent>
     </BranchPanelFrame>
   );

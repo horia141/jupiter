@@ -497,38 +497,36 @@ export default function TimePlanView() {
             />
           )}
 
-          <Stack useFlexGap gap={2}>
-            {selectedView === View.MERGED && (
-              <TimePlanMergedActivities
-                mustDoActivities={mustDoActivities}
-                niceToHaveActivities={niceToHaveActivities}
-                stretchActivities={stretchActivities}
-                targetInboxTasksByRefId={targetInboxTasksByRefId}
-                targetBigPlansByRefId={targetBigPlansByRefId}
-                activityDoneness={loaderData.activityDoneness}
-                timeEventsByRefId={timeEventsByRefId}
-                selectedKinds={selectedKinds}
-                selectedFeasabilities={selectedFeasabilities}
-                selectedDoneness={selectedDoneness}
-              />
-            )}
+          {selectedView === View.MERGED && (
+            <TimePlanMergedActivities
+              mustDoActivities={mustDoActivities}
+              niceToHaveActivities={niceToHaveActivities}
+              stretchActivities={stretchActivities}
+              targetInboxTasksByRefId={targetInboxTasksByRefId}
+              targetBigPlansByRefId={targetBigPlansByRefId}
+              activityDoneness={loaderData.activityDoneness}
+              timeEventsByRefId={timeEventsByRefId}
+              selectedKinds={selectedKinds}
+              selectedFeasabilities={selectedFeasabilities}
+              selectedDoneness={selectedDoneness}
+            />
+          )}
 
-            {selectedView === View.BY_PROJECT && (
-              <TimePlanByProjectActivities
-                mustDoActivities={mustDoActivities}
-                otherActivities={otherActivities}
-                targetInboxTasksByRefId={targetInboxTasksByRefId}
-                targetBigPlansByRefId={targetBigPlansByRefId}
-                activityDoneness={loaderData.activityDoneness}
-                timeEventsByRefId={timeEventsByRefId}
-                selectedKinds={selectedKinds}
-                selectedFeasabilities={selectedFeasabilities}
-                selectedDoneness={selectedDoneness}
-                projects={sortedProjects}
-                projectsByRefId={allProjectsByRefId}
-              />
-            )}
-          </Stack>
+          {selectedView === View.BY_PROJECT && (
+            <TimePlanByProjectActivities
+              mustDoActivities={mustDoActivities}
+              otherActivities={otherActivities}
+              targetInboxTasksByRefId={targetInboxTasksByRefId}
+              targetBigPlansByRefId={targetBigPlansByRefId}
+              activityDoneness={loaderData.activityDoneness}
+              timeEventsByRefId={timeEventsByRefId}
+              selectedKinds={selectedKinds}
+              selectedFeasabilities={selectedFeasabilities}
+              selectedDoneness={selectedDoneness}
+              projects={sortedProjects}
+              projectsByRefId={allProjectsByRefId}
+            />
+          )}
         </SectionCard>
 
         {loaderData.completedNontargetInboxTasks.length > 0 && (

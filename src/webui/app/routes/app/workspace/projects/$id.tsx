@@ -1,6 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -220,37 +220,33 @@ export default function Project() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <ProjectSelect
-              name="parentProjectRefId"
-              label="Parent Project"
-              inputsEnabled={
-                inputsEnabled && !isRootProject(loaderData.project)
-              }
-              disabled={false}
-              allProjects={loaderData.allProjects}
-              value={selectedProject}
-              onChange={setSelectedProject}
-            />
+        <FormControl fullWidth>
+          <ProjectSelect
+            name="parentProjectRefId"
+            label="Parent Project"
+            inputsEnabled={inputsEnabled && !isRootProject(loaderData.project)}
+            disabled={false}
+            allProjects={loaderData.allProjects}
+            value={selectedProject}
+            onChange={setSelectedProject}
+          />
 
-            <FieldError
-              actionResult={actionData}
-              fieldName="/parent_project_ref_id"
-            />
-          </FormControl>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/parent_project_ref_id"
+          />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="name"
-              name="name"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.project.name}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="name"
+            name="name"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.project.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
       </SectionCard>
 
       <SectionCard

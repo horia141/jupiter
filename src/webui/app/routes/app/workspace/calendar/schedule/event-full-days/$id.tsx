@@ -3,8 +3,6 @@ import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
-  Card,
-  CardActions,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -248,120 +246,116 @@ export default function ScheduleEventFullDaysViewOne() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
-            <ScheduleStreamSelect
-              labelId="scheduleStreamRefId"
-              label="Schedule Stream"
-              name="scheduleStreamRefId"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              allScheduleStreams={loaderData.allScheduleStreams}
-              defaultValue={
-                allScheduleStreamsByRefId.get(
-                  loaderData.scheduleEventFullDays.schedule_stream_ref_id,
-                )!
-              }
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/schedule_stream_ref_id"
-            />
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="name"
-              name="name"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.scheduleEventFullDays.name}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
+          <ScheduleStreamSelect
+            labelId="scheduleStreamRefId"
+            label="Schedule Stream"
+            name="scheduleStreamRefId"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            allScheduleStreams={loaderData.allScheduleStreams}
+            defaultValue={
+              allScheduleStreamsByRefId.get(
+                loaderData.scheduleEventFullDays.schedule_stream_ref_id,
+              )!
+            }
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/schedule_stream_ref_id"
+          />
+        </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="name"
+            name="name"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            defaultValue={loaderData.scheduleEventFullDays.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            defaultValue={loaderData.timeEventFullDaysBlock.start_date}
+          />
+
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
+
+        <Stack spacing={2} direction="row">
+          <ButtonGroup
+            variant="outlined"
+            disabled={!inputsEnabled || !corePropertyEditable}
+          >
+            <Button
+              disabled={!inputsEnabled || !corePropertyEditable}
+              variant={durationDays === 1 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(1)}
+            >
+              1D
+            </Button>
+            <Button
+              disabled={!inputsEnabled || !corePropertyEditable}
+              variant={durationDays === 3 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(3)}
+            >
+              3d
+            </Button>
+            <Button
+              disabled={!inputsEnabled || !corePropertyEditable}
+              variant={durationDays === 7 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(7)}
+            >
+              7d
+            </Button>
+          </ButtonGroup>
 
           <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
+            <InputLabel id="durationDays" shrink margin="dense">
+              Duration (Days)
             </InputLabel>
             <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
+              type="number"
+              label="Duration (Days)"
+              name="durationDays"
               readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.timeEventFullDaysBlock.start_date}
+              value={durationDays}
+              onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
             />
 
-            <FieldError actionResult={actionData} fieldName="/start_date" />
+            <FieldError actionResult={actionData} fieldName="/duration_days" />
           </FormControl>
-
-          <Stack spacing={2} direction="row">
-            <ButtonGroup
-              variant="outlined"
-              disabled={!inputsEnabled || !corePropertyEditable}
-            >
-              <Button
-                disabled={!inputsEnabled || !corePropertyEditable}
-                variant={durationDays === 1 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(1)}
-              >
-                1D
-              </Button>
-              <Button
-                disabled={!inputsEnabled || !corePropertyEditable}
-                variant={durationDays === 3 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(3)}
-              >
-                3d
-              </Button>
-              <Button
-                disabled={!inputsEnabled || !corePropertyEditable}
-                variant={durationDays === 7 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(7)}
-              >
-                7d
-              </Button>
-            </ButtonGroup>
-
-            <FormControl fullWidth>
-              <InputLabel id="durationDays" shrink margin="dense">
-                Duration (Days)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Days)"
-                name="durationDays"
-                readOnly={!inputsEnabled || !corePropertyEditable}
-                value={durationDays}
-                onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
-              />
-
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_days"
-              />
-            </FormControl>
-          </Stack>
         </Stack>
       </SectionCard>
 
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled || !corePropertyEditable}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="inbox-task-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -370,7 +364,7 @@ export default function ScheduleEventFullDaysViewOne() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

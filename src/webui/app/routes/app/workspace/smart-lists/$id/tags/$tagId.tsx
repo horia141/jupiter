@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -160,19 +160,17 @@ export default function SmartListTag() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              defaultValue={loaderData.smartListTag.tag_name}
-              name="name"
-              readOnly={!inputsEnabled}
-            />
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            defaultValue={loaderData.smartListTag.tag_name}
+            name="name"
+            readOnly={!inputsEnabled}
+          />
 
-            <FieldError actionResult={actionData} fieldName="/tag_name" />
-          </FormControl>
-        </Stack>
+          <FieldError actionResult={actionData} fieldName="/tag_name" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

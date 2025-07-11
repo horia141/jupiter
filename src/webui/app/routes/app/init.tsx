@@ -192,158 +192,151 @@ export default function WorkspaceInit() {
             />
           }
         >
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="userEmailAddress">Your Email Address</InputLabel>
-              <OutlinedInput
-                type="email"
-                autoComplete="email"
-                label="Your Email Address"
-                name="userEmailAddress"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/user_email_address"
-              />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="userEmailAddress">Your Email Address</InputLabel>
+            <OutlinedInput
+              type="email"
+              autoComplete="email"
+              label="Your Email Address"
+              name="userEmailAddress"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/user_email_address"
+            />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="userName">Your Name</InputLabel>
-              <OutlinedInput
-                label="Your Name"
-                name="userName"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError actionResult={actionData} fieldName="/user_name" />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="userName">Your Name</InputLabel>
+            <OutlinedInput
+              label="Your Name"
+              name="userName"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/user_name" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="authPassword">Password</InputLabel>
-              <Password
-                label="Password"
-                name="authPassword"
-                autoComplete="new-password"
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/auth_password"
-              />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="authPassword">Password</InputLabel>
+            <Password
+              label="Password"
+              name="authPassword"
+              autoComplete="new-password"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/auth_password" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="authPasswordRepeat">Password Repeat</InputLabel>
-              <Password
-                label="Password Repeat"
-                name="authPasswordRepeat"
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/auth_password_repeat"
-              />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="authPasswordRepeat">Password Repeat</InputLabel>
+            <Password
+              label="Password Repeat"
+              name="authPasswordRepeat"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/auth_password_repeat"
+            />
+          </FormControl>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Advanced</Typography>
-              </AccordionSummary>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Advanced</Typography>
+            </AccordionSummary>
 
-              <AccordionDetails>
-                <Stack spacing={2} useFlexGap>
-                  <FormControl fullWidth>
-                    <TimezoneSelect
-                      id="userTimezone"
-                      name="userTimezone"
-                      inputsEnabled={inputsEnabled}
-                    />
+            <AccordionDetails>
+              <Stack spacing={2} useFlexGap>
+                <FormControl fullWidth>
+                  <TimezoneSelect
+                    id="userTimezone"
+                    name="userTimezone"
+                    inputsEnabled={inputsEnabled}
+                  />
 
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/user_timezone"
-                    />
-                  </FormControl>
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/user_timezone"
+                  />
+                </FormControl>
 
-                  <FormControl fullWidth>
-                    <InputLabel id="workspaceName">Workspace Name</InputLabel>
-                    <OutlinedInput
-                      label="Workspace Name"
-                      name="workspaceName"
-                      readOnly={!inputsEnabled}
-                      defaultValue={loaderData.defaultWorkspaceName}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/app/workspace_name"
-                    />
-                  </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel id="workspaceName">Workspace Name</InputLabel>
+                  <OutlinedInput
+                    label="Workspace Name"
+                    name="workspaceName"
+                    readOnly={!inputsEnabled}
+                    defaultValue={loaderData.defaultWorkspaceName}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/app/workspace_name"
+                  />
+                </FormControl>
 
-                  <FormControl fullWidth>
-                    <InputLabel id="name">Root Project Name</InputLabel>
-                    <OutlinedInput
-                      label="Root Project Name"
-                      name="workspaceRootProjectName"
-                      readOnly={!inputsEnabled}
-                      defaultValue={loaderData.defaultRootProjectName}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/app/workspace_root_project_name"
-                    />
-                  </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel id="name">Root Project Name</InputLabel>
+                  <OutlinedInput
+                    label="Root Project Name"
+                    name="workspaceRootProjectName"
+                    readOnly={!inputsEnabled}
+                    defaultValue={loaderData.defaultRootProjectName}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/app/workspace_root_project_name"
+                  />
+                </FormControl>
 
-                  <FormControl fullWidth>
-                    <InputLabel id="name">
-                      First Schedule Stream Name
-                    </InputLabel>
-                    <OutlinedInput
-                      label="First Schdule Stream Name"
-                      name="workspaceFirstScheduleStreamName"
-                      readOnly={!inputsEnabled}
-                      defaultValue={loaderData.defaultFirstScheduleStreamName}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/app/workspace_first_schedule_stream_name"
-                    />
-                  </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel id="name">First Schedule Stream Name</InputLabel>
+                  <OutlinedInput
+                    label="First Schdule Stream Name"
+                    name="workspaceFirstScheduleStreamName"
+                    readOnly={!inputsEnabled}
+                    defaultValue={loaderData.defaultFirstScheduleStreamName}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/app/workspace_first_schedule_stream_name"
+                  />
+                </FormControl>
 
-                  {/* <FormControl fullWidth>
+                {/* <FormControl fullWidth>
                         <FormControlLabel
                           control={<Switch name="forAppReview" />}
                           label="For App Review"
                         />
                       </FormControl> */}
-                </Stack>
-              </AccordionDetails>
-            </Accordion>
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Feature Flags</Typography>
-              </AccordionSummary>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Feature Flags</Typography>
+            </AccordionSummary>
 
-              <AccordionDetails>
-                <UserFeatureFlagsEditor
-                  name="userFeatureFlags"
-                  inputsEnabled={inputsEnabled}
-                  featureFlagsControls={loaderData.userFeatureFlagControls}
-                  defaultFeatureFlags={loaderData.defaultUserFeatureFlags}
-                  hosting={globalProperties.hosting}
-                />
-                <WorkspaceFeatureFlagsEditor
-                  name="workspaceFeatureFlags"
-                  inputsEnabled={inputsEnabled}
-                  featureFlagsControls={loaderData.workspaceFeatureFlagControls}
-                  defaultFeatureFlags={loaderData.defaultWorkspaceFeatureFlags}
-                  hosting={globalProperties.hosting}
-                />
-              </AccordionDetails>
-            </Accordion>
-          </Stack>
+            <AccordionDetails>
+              <UserFeatureFlagsEditor
+                name="userFeatureFlags"
+                inputsEnabled={inputsEnabled}
+                featureFlagsControls={loaderData.userFeatureFlagControls}
+                defaultFeatureFlags={loaderData.defaultUserFeatureFlags}
+                hosting={globalProperties.hosting}
+              />
+              <WorkspaceFeatureFlagsEditor
+                name="workspaceFeatureFlags"
+                inputsEnabled={inputsEnabled}
+                featureFlagsControls={loaderData.workspaceFeatureFlagControls}
+                defaultFeatureFlags={loaderData.defaultWorkspaceFeatureFlags}
+                hosting={globalProperties.hosting}
+              />
+            </AccordionDetails>
+          </Accordion>
         </SectionCard>
       </LifecyclePanel>
     </StandaloneContainer>

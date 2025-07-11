@@ -379,105 +379,103 @@ export default function Habit() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack direction="row" useFlexGap spacing={1}>
-            <FormControl sx={{ flexGrow: 3 }}>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+        <Stack direction="row" useFlexGap spacing={1}>
+          <FormControl sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.habit.name}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            <FormControl sx={{ flexGrow: 1 }}>
-              <IsKeySelect
-                name="isKey"
-                defaultValue={loaderData.habit.is_key}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/is_key" />
-            </FormControl>
-          </Stack>
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={loaderData.habit.is_key}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
 
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Project"
-                inputsEnabled={inputsEnabled}
-                disabled={!inputsEnabled}
-                allProjects={loaderData.allProjects}
-                value={selectedProject}
-                onChange={setSelectedProject}
-              />
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
-          )}
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={!inputsEnabled}
+              allProjects={loaderData.allProjects}
+              value={selectedProject}
+              onChange={setSelectedProject}
+            />
+            <FieldError actionResult={actionData} fieldName="/project" />
+          </FormControl>
+        )}
 
-          <RecurringTaskGenParamsBlock
-            allowSkipRule
-            inputsEnabled={inputsEnabled}
-            period={selectedPeriod}
-            onChangePeriod={(newPeriod) => {
-              if (newPeriod === "none") {
-                setSelectedPeriod(RecurringTaskPeriod.DAILY);
-              } else {
-                setSelectedPeriod(newPeriod);
-              }
-            }}
-            eisen={loaderData.habit.gen_params.eisen}
-            difficulty={loaderData.habit.gen_params.difficulty}
-            actionableFromDay={loaderData.habit.gen_params.actionable_from_day}
-            actionableFromMonth={
-              loaderData.habit.gen_params.actionable_from_month
+        <RecurringTaskGenParamsBlock
+          allowSkipRule
+          inputsEnabled={inputsEnabled}
+          period={selectedPeriod}
+          onChangePeriod={(newPeriod) => {
+            if (newPeriod === "none") {
+              setSelectedPeriod(RecurringTaskPeriod.DAILY);
+            } else {
+              setSelectedPeriod(newPeriod);
             }
-            dueAtDay={loaderData.habit.gen_params.due_at_day}
-            dueAtMonth={loaderData.habit.gen_params.due_at_month}
-            skipRule={loaderData.habit.gen_params.skip_rule}
-            actionData={actionData}
-          />
+          }}
+          eisen={loaderData.habit.gen_params.eisen}
+          difficulty={loaderData.habit.gen_params.difficulty}
+          actionableFromDay={loaderData.habit.gen_params.actionable_from_day}
+          actionableFromMonth={
+            loaderData.habit.gen_params.actionable_from_month
+          }
+          dueAtDay={loaderData.habit.gen_params.due_at_day}
+          dueAtMonth={loaderData.habit.gen_params.due_at_month}
+          skipRule={loaderData.habit.gen_params.skip_rule}
+          actionData={actionData}
+        />
 
-          {selectedPeriod !== RecurringTaskPeriod.DAILY && (
-            <Stack direction="row" spacing={2}>
-              <FormControl sx={{ flexGrow: 3 }}>
-                <HabitRepeatStrategySelect
-                  name="repeatsStrategy"
-                  inputsEnabled={inputsEnabled}
-                  allowNone
-                  value={selectedRepeatsStrategy}
-                  onChange={(newStrategy) =>
-                    setSelectedRepeatsStrategy(newStrategy)
-                  }
+        {selectedPeriod !== RecurringTaskPeriod.DAILY && (
+          <Stack direction="row" spacing={2}>
+            <FormControl sx={{ flexGrow: 3 }}>
+              <HabitRepeatStrategySelect
+                name="repeatsStrategy"
+                inputsEnabled={inputsEnabled}
+                allowNone
+                value={selectedRepeatsStrategy}
+                onChange={(newStrategy) =>
+                  setSelectedRepeatsStrategy(newStrategy)
+                }
+              />
+            </FormControl>
+
+            {selectedRepeatsStrategy !== "none" && (
+              <FormControl sx={{ flexGrow: 1 }}>
+                <InputLabel id="repeatsInPeriodCount">
+                  Repeats In Period [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  label="Repeats In Period"
+                  name="repeatsInPeriodCount"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.habit.repeats_in_period_count}
+                  sx={{ height: "100%" }}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/repeats_in_period_count"
                 />
               </FormControl>
-
-              {selectedRepeatsStrategy !== "none" && (
-                <FormControl sx={{ flexGrow: 1 }}>
-                  <InputLabel id="repeatsInPeriodCount">
-                    Repeats In Period [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    label="Repeats In Period"
-                    name="repeatsInPeriodCount"
-                    readOnly={!inputsEnabled}
-                    defaultValue={loaderData.habit.repeats_in_period_count}
-                    sx={{ height: "100%" }}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/repeats_in_period_count"
-                  />
-                </FormControl>
-              )}
-            </Stack>
-          )}
-        </Stack>
+            )}
+          </Stack>
+        )}
       </SectionCard>
 
       <SectionCard title="Streak">

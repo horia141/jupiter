@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -13,7 +13,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -95,6 +95,7 @@ export default function BigPlanMilestoneNew() {
       <SectionCard
         id="big-plan-milestone-properties"
         title="Properties"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="big-plan-milestone-properties"
@@ -110,29 +111,27 @@ export default function BigPlanMilestoneNew() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="date" shrink margin="dense">
-              Date
-            </InputLabel>
-            <DateInputWithSuggestions
-              name="date"
-              label="date"
-              inputsEnabled={inputsEnabled}
-              defaultValue={topLevelInfo.today}
-              suggestedDates={getSuggestedDatesForBigPlanMilestoneDate(
-                topLevelInfo.today,
-              )}
-            />
-            <FieldError actionResult={actionData} fieldName="/date" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="date" shrink margin="dense">
+            Date
+          </InputLabel>
+          <DateInputWithSuggestions
+            name="date"
+            label="date"
+            inputsEnabled={inputsEnabled}
+            defaultValue={topLevelInfo.today}
+            suggestedDates={getSuggestedDatesForBigPlanMilestoneDate(
+              topLevelInfo.today,
+            )}
+          />
+          <FieldError actionResult={actionData} fieldName="/date" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

@@ -25,7 +25,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeyTag } from "~/components/domain/core/is-key-tag";
-import { SectionActions , NavSingle } from "~/components/infra/section-actions";
+import { SectionActions, NavSingle } from "~/components/infra/section-actions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,

@@ -1,6 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
-import { FormControl, Stack } from "@mui/material";
+import { FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -21,7 +21,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { SectionActions , ActionSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 const ParamsSchema = z.object({});
 
@@ -87,6 +90,7 @@ export default function MetricsSettings() {
       returnLocation="/app/workspace/metrics"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
@@ -109,23 +113,20 @@ export default function MetricsSettings() {
             />
           }
         >
-          <GlobalError actionResult={actionData} />
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Collection Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                defaultValue={loaderData.collectionProject.ref_id}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/collection_project_ref_id"
-              />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Collection Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.collectionProject.ref_id}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/collection_project_ref_id"
+            />
+          </FormControl>
         </SectionCard>
       )}
     </BranchPanel>

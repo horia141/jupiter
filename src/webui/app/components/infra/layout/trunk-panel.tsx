@@ -2,7 +2,14 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  IconButton,
+  Stack,
+  styled,
+} from "@mui/material";
 import { Link, useLocation } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
@@ -187,7 +194,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
         hasbranch={shouldShowABranch ? "true" : "false"}
         hasleaf={shouldShowALeaf || shouldShowALeaflet ? "true" : "false"}
       >
-        {props.children}
+        <Stack spacing={2}>{props.children}</Stack>
       </TrunkPanelContent>
     </TrunkPanelFrame>
   );

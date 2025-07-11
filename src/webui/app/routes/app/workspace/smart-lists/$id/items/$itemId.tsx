@@ -4,7 +4,6 @@ import {
   FormControlLabel,
   InputLabel,
   OutlinedInput,
-  Stack,
   Switch,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -204,54 +203,52 @@ export default function SmartListItem() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              defaultValue={loaderData.item.name}
-              name="name"
-              readOnly={!inputsEnabled}
-            />
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            defaultValue={loaderData.item.name}
+            name="name"
+            readOnly={!inputsEnabled}
+          />
 
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <FormControlLabel
-              control={
-                <Switch
-                  name="isDone"
-                  readOnly={!inputsEnabled}
-                  disabled={!inputsEnabled}
-                  defaultChecked={loaderData.item.is_done}
-                />
-              }
-              label="Is Done"
-            />
-            <FieldError actionResult={actionData} fieldName="/is_done" />
-          </FormControl>
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={
+              <Switch
+                name="isDone"
+                readOnly={!inputsEnabled}
+                disabled={!inputsEnabled}
+                defaultChecked={loaderData.item.is_done}
+              />
+            }
+            label="Is Done"
+          />
+          <FieldError actionResult={actionData} fieldName="/is_done" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <TagsEditor
-              allTags={loaderData.tags}
-              defaultTags={loaderData.item.tags_ref_id}
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/tags" />
-          </FormControl>
+        <FormControl fullWidth>
+          <TagsEditor
+            allTags={loaderData.tags}
+            defaultTags={loaderData.item.tags_ref_id}
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/tags" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="url">Url [Optional]</InputLabel>
-            <OutlinedInput
-              label="Url"
-              name="url"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.item.url}
-            />
-            <FieldError actionResult={actionData} fieldName="/url" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="url">Url [Optional]</InputLabel>
+          <OutlinedInput
+            label="Url"
+            name="url"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.item.url}
+          />
+          <FieldError actionResult={actionData} fieldName="/url" />
+        </FormControl>
       </SectionCard>
 
       <SectionCard

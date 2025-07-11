@@ -47,7 +47,10 @@ import {
   noErrorNoData,
 } from "~/logic/action-result";
 import { SectionCard } from "~/components/infra/section-card";
-import { ActionSingle , SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 interface HabitOptions {
   refId: string;
@@ -174,131 +177,129 @@ export default function Stats() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="statsTargets">Stats Targets</InputLabel>
-            <SyncTargetSelect
-              topLevelInfo={topLevelInfo}
-              labelId="statsTargets"
-              label="Stats Targets"
-              name="statsTargets"
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/stats_targets" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="statsTargets">Stats Targets</InputLabel>
+          <SyncTargetSelect
+            topLevelInfo={topLevelInfo}
+            labelId="statsTargets"
+            label="Stats Targets"
+            name="statsTargets"
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/stats_targets" />
+        </FormControl>
 
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <AccordionHeader>Advanced Options & Filtering</AccordionHeader>
-            </AccordionSummary>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <AccordionHeader>Advanced Options & Filtering</AccordionHeader>
+          </AccordionSummary>
 
-            <AccordionDetails>
-              <Stack spacing={2} useFlexGap>
-                {isWorkspaceFeatureAvailable(
-                  topLevelInfo.workspace,
-                  WorkspaceFeature.HABITS,
-                ) && (
-                  <FormControl fullWidth>
-                    <Autocomplete
-                      disablePortal
-                      id="filterHabitRefIds"
-                      options={habitOptions}
-                      readOnly={!inputsEnabled}
-                      disabled={!inputsEnabled}
-                      multiple
-                      onChange={(e, vol) => setSelectedHabits(vol)}
-                      isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          name="filterHabitRefIds"
-                          label="Generate Only For Habits"
-                        />
-                      )}
-                    />
-                    <input
-                      type="hidden"
-                      name="filterHabitRefIds"
-                      value={selectedHabits.map((p) => p.refId).join(",")}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/filter_habit_ref_ids"
-                    />
-                  </FormControl>
-                )}
+          <AccordionDetails>
+            <Stack spacing={2} useFlexGap>
+              {isWorkspaceFeatureAvailable(
+                topLevelInfo.workspace,
+                WorkspaceFeature.HABITS,
+              ) && (
+                <FormControl fullWidth>
+                  <Autocomplete
+                    disablePortal
+                    id="filterHabitRefIds"
+                    options={habitOptions}
+                    readOnly={!inputsEnabled}
+                    disabled={!inputsEnabled}
+                    multiple
+                    onChange={(e, vol) => setSelectedHabits(vol)}
+                    isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        name="filterHabitRefIds"
+                        label="Generate Only For Habits"
+                      />
+                    )}
+                  />
+                  <input
+                    type="hidden"
+                    name="filterHabitRefIds"
+                    value={selectedHabits.map((p) => p.refId).join(",")}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/filter_habit_ref_ids"
+                  />
+                </FormControl>
+              )}
 
-                {isWorkspaceFeatureAvailable(
-                  topLevelInfo.workspace,
-                  WorkspaceFeature.BIG_PLANS,
-                ) && (
-                  <FormControl fullWidth>
-                    <Autocomplete
-                      disablePortal
-                      id="filterBigPlanRefIds"
-                      options={bigPlanOptions}
-                      readOnly={!inputsEnabled}
-                      disabled={!inputsEnabled}
-                      multiple
-                      onChange={(e, vol) => setSelectedBigPlans(vol)}
-                      isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          name="filterBigPlanRefIds"
-                          label="Generate Only For Big Plans"
-                        />
-                      )}
-                    />
-                    <input
-                      type="hidden"
-                      name="filterBigPlanRefIds"
-                      value={selectedBigPlans.map((p) => p.refId).join(",")}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/filter_big_plan_ref_ids"
-                    />
-                  </FormControl>
-                )}
+              {isWorkspaceFeatureAvailable(
+                topLevelInfo.workspace,
+                WorkspaceFeature.BIG_PLANS,
+              ) && (
+                <FormControl fullWidth>
+                  <Autocomplete
+                    disablePortal
+                    id="filterBigPlanRefIds"
+                    options={bigPlanOptions}
+                    readOnly={!inputsEnabled}
+                    disabled={!inputsEnabled}
+                    multiple
+                    onChange={(e, vol) => setSelectedBigPlans(vol)}
+                    isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        name="filterBigPlanRefIds"
+                        label="Generate Only For Big Plans"
+                      />
+                    )}
+                  />
+                  <input
+                    type="hidden"
+                    name="filterBigPlanRefIds"
+                    value={selectedBigPlans.map((p) => p.refId).join(",")}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/filter_big_plan_ref_ids"
+                  />
+                </FormControl>
+              )}
 
-                {isWorkspaceFeatureAvailable(
-                  topLevelInfo.workspace,
-                  WorkspaceFeature.JOURNALS,
-                ) && (
-                  <FormControl fullWidth>
-                    <Autocomplete
-                      disablePortal
-                      id="filterJournalRefIds"
-                      options={journalOptions}
-                      readOnly={!inputsEnabled}
-                      disabled={!inputsEnabled}
-                      multiple
-                      onChange={(e, vol) => setSelectedJournals(vol)}
-                      isOptionEqualToValue={(o, v) => o.refId === v.refId}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          name="filterJournalRefIds"
-                          label="Generate Only For Journals"
-                        />
-                      )}
-                    />
-                    <input
-                      type="hidden"
-                      name="filterJournalRefIds"
-                      value={selectedJournals.map((p) => p.refId).join(",")}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/filter_journal_ref_ids"
-                    />
-                  </FormControl>
-                )}
-              </Stack>
-            </AccordionDetails>
-          </Accordion>
-        </Stack>
+              {isWorkspaceFeatureAvailable(
+                topLevelInfo.workspace,
+                WorkspaceFeature.JOURNALS,
+              ) && (
+                <FormControl fullWidth>
+                  <Autocomplete
+                    disablePortal
+                    id="filterJournalRefIds"
+                    options={journalOptions}
+                    readOnly={!inputsEnabled}
+                    disabled={!inputsEnabled}
+                    multiple
+                    onChange={(e, vol) => setSelectedJournals(vol)}
+                    isOptionEqualToValue={(o, v) => o.refId === v.refId}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        name="filterJournalRefIds"
+                        label="Generate Only For Journals"
+                      />
+                    )}
+                  />
+                  <input
+                    type="hidden"
+                    name="filterJournalRefIds"
+                    value={selectedJournals.map((p) => p.refId).join(",")}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/filter_journal_ref_ids"
+                  />
+                </FormControl>
+              )}
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
       </SectionCard>
 
       <StandardDivider title="Stats Computation" size="large" />

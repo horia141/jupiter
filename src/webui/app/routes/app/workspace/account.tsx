@@ -34,7 +34,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { ActionSingle , SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -159,39 +162,37 @@ export default function Account() {
               />
             }
           >
-            <Stack spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <InputLabel id="emailAddress">Your Email Address</InputLabel>
-                <OutlinedInput
-                  type="email"
-                  autoComplete="email"
-                  label="Your Email Address"
-                  name="emailAddress"
-                  disabled={true}
-                  defaultValue={loaderData.user.email_address}
-                />
-              </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="emailAddress">Your Email Address</InputLabel>
+              <OutlinedInput
+                type="email"
+                autoComplete="email"
+                label="Your Email Address"
+                name="emailAddress"
+                disabled={true}
+                defaultValue={loaderData.user.email_address}
+              />
+            </FormControl>
 
-              <FormControl fullWidth>
-                <TextField
-                  name="name"
-                  label="Your Name"
-                  defaultValue={loaderData.user.name}
-                  disabled={!inputsEnabled}
-                />
-                <FieldError actionResult={actionData} fieldName="/name" />
-              </FormControl>
-              <FormControl fullWidth>
-                <TimezoneSelect
-                  id="timezone"
-                  name="timezone"
-                  inputsEnabled={inputsEnabled}
-                  initialValue={loaderData.user.timezone}
-                />
+            <FormControl fullWidth>
+              <TextField
+                name="name"
+                label="Your Name"
+                defaultValue={loaderData.user.name}
+                disabled={!inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+            <FormControl fullWidth>
+              <TimezoneSelect
+                id="timezone"
+                name="timezone"
+                inputsEnabled={inputsEnabled}
+                initialValue={loaderData.user.timezone}
+              />
 
-                <FieldError actionResult={actionData} fieldName="/timezone" />
-              </FormControl>
-            </Stack>
+              <FieldError actionResult={actionData} fieldName="/timezone" />
+            </FormControl>
           </SectionCard>
 
           <SectionCard

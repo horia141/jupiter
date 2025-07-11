@@ -12,7 +12,6 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
-  Stack,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
@@ -264,191 +263,179 @@ export default function EmailTask() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="fromAddress">From Address</InputLabel>
-            <OutlinedInput
-              label="From Address"
-              name="fromAddress"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.emailTask.from_address}
-            />
-            <FieldError actionResult={actionData} fieldName="/from_address" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="fromAddress">From Address</InputLabel>
+          <OutlinedInput
+            label="From Address"
+            name="fromAddress"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.emailTask.from_address}
+          />
+          <FieldError actionResult={actionData} fieldName="/from_address" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="fromName">From Name</InputLabel>
-            <OutlinedInput
-              label="From Name"
-              name="fromName"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.emailTask.from_name}
-            />
-            <FieldError actionResult={actionData} fieldName="/from_name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="fromName">From Name</InputLabel>
+          <OutlinedInput
+            label="From Name"
+            name="fromName"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.emailTask.from_name}
+          />
+          <FieldError actionResult={actionData} fieldName="/from_name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="toAddress">To Address</InputLabel>
-            <OutlinedInput
-              label="To Address"
-              name="toAddress"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.emailTask.to_address}
-            />
-            <FieldError actionResult={actionData} fieldName="/to_address" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="toAddress">To Address</InputLabel>
+          <OutlinedInput
+            label="To Address"
+            name="toAddress"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.emailTask.to_address}
+          />
+          <FieldError actionResult={actionData} fieldName="/to_address" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="subject">Subject</InputLabel>
-            <OutlinedInput
-              label="Subject"
-              name="subject"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.emailTask.subject}
-            />
-            <FieldError actionResult={actionData} fieldName="/subject" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="subject">Subject</InputLabel>
+          <OutlinedInput
+            label="Subject"
+            name="subject"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.emailTask.subject}
+          />
+          <FieldError actionResult={actionData} fieldName="/subject" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="body">Body</InputLabel>
-            <OutlinedInput
-              multiline
-              minRows={2}
-              maxRows={4}
-              label="Body"
-              name="body"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.emailTask.body}
-            />
-            <FieldError actionResult={actionData} fieldName="/body" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="body">Body</InputLabel>
+          <OutlinedInput
+            multiline
+            minRows={2}
+            maxRows={4}
+            label="Body"
+            name="body"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.emailTask.body}
+          />
+          <FieldError actionResult={actionData} fieldName="/body" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="generationName">Generation Name</InputLabel>
-            <OutlinedInput
-              label="Generation Name"
-              name="generationName"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.emailTask.generation_extra_info?.name}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/generation_name"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="generationName">Generation Name</InputLabel>
+          <OutlinedInput
+            label="Generation Name"
+            name="generationName"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.emailTask.generation_extra_info?.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/generation_name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="generationStatus">Generation Status</InputLabel>
-            <Select
-              labelId="generationStatus"
-              name="generationStatus"
-              readOnly={!inputsEnabled}
-              defaultValue={
-                loaderData.emailTask.generation_extra_info?.status ||
-                InboxTaskStatus.NOT_STARTED
-              }
-              label="Status"
-            >
-              {Object.values(InboxTaskStatus)
-                .filter((s) => {
-                  return s !== InboxTaskStatus.NOT_STARTED_GEN;
-                })
-                .map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {inboxTaskStatusName(s)}
-                  </MenuItem>
-                ))}
-            </Select>
-            <FieldError
-              actionResult={actionData}
-              fieldName="/generation_status"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="generationStatus">Generation Status</InputLabel>
+          <Select
+            labelId="generationStatus"
+            name="generationStatus"
+            readOnly={!inputsEnabled}
+            defaultValue={
+              loaderData.emailTask.generation_extra_info?.status ||
+              InboxTaskStatus.NOT_STARTED
+            }
+            label="Status"
+          >
+            {Object.values(InboxTaskStatus)
+              .filter((s) => {
+                return s !== InboxTaskStatus.NOT_STARTED_GEN;
+              })
+              .map((s) => (
+                <MenuItem key={s} value={s}>
+                  {inboxTaskStatusName(s)}
+                </MenuItem>
+              ))}
+          </Select>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_status"
+          />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <FormLabel id="generationEisen">Generation Eisenhower</FormLabel>
-            <EisenhowerSelect
-              name="generationEisen"
-              inputsEnabled={inputsEnabled}
-              defaultValue={
-                loaderData.emailTask.generation_extra_info?.eisen ||
-                Eisen.REGULAR
-              }
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/generation_eisen"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <FormLabel id="generationEisen">Generation Eisenhower</FormLabel>
+          <EisenhowerSelect
+            name="generationEisen"
+            inputsEnabled={inputsEnabled}
+            defaultValue={
+              loaderData.emailTask.generation_extra_info?.eisen || Eisen.REGULAR
+            }
+          />
+          <FieldError actionResult={actionData} fieldName="/generation_eisen" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <FormLabel id="generationDifficulty">
-              Generation Difficulty
-            </FormLabel>
-            <DifficultySelect
-              name="generationDifficulty"
-              inputsEnabled={inputsEnabled}
-              defaultValue={
-                loaderData.emailTask.generation_extra_info?.difficulty ||
-                Difficulty.EASY
-              }
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/generation_difficulty"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <FormLabel id="generationDifficulty">Generation Difficulty</FormLabel>
+          <DifficultySelect
+            name="generationDifficulty"
+            inputsEnabled={inputsEnabled}
+            defaultValue={
+              loaderData.emailTask.generation_extra_info?.difficulty ||
+              Difficulty.EASY
+            }
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_difficulty"
+          />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="generationActionableDate" shrink>
-              Generation Actionable From
-            </InputLabel>
-            <OutlinedInput
-              type="date"
-              notched
-              label="generationActionableDate"
-              readOnly={!inputsEnabled}
-              defaultValue={
-                loaderData.emailTask.generation_extra_info?.actionable_date
-                  ? aDateToDate(
-                      loaderData.emailTask.generation_extra_info
-                        ?.actionable_date,
-                    ).toFormat("yyyy-MM-dd")
-                  : undefined
-              }
-              name="generationActionableDate"
-            />
+        <FormControl fullWidth>
+          <InputLabel id="generationActionableDate" shrink>
+            Generation Actionable From
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="generationActionableDate"
+            readOnly={!inputsEnabled}
+            defaultValue={
+              loaderData.emailTask.generation_extra_info?.actionable_date
+                ? aDateToDate(
+                    loaderData.emailTask.generation_extra_info?.actionable_date,
+                  ).toFormat("yyyy-MM-dd")
+                : undefined
+            }
+            name="generationActionableDate"
+          />
 
-            <FieldError
-              actionResult={actionData}
-              fieldName="/generation_actionable_date"
-            />
-          </FormControl>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_actionable_date"
+          />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="generationDueDate" shrink>
-              Generation Due At
-            </InputLabel>
-            <OutlinedInput
-              type="date"
-              notched
-              label="generationDueDate"
-              readOnly={!inputsEnabled}
-              defaultValue={
-                loaderData.emailTask.generation_extra_info?.due_date
-                  ? aDateToDate(
-                      loaderData.emailTask.generation_extra_info?.due_date,
-                    ).toFormat("yyyy-MM-dd")
-                  : undefined
-              }
-              name="generationDueDate"
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/generation_due_date"
-            />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="generationDueDate" shrink>
+            Generation Due At
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="generationDueDate"
+            readOnly={!inputsEnabled}
+            defaultValue={
+              loaderData.emailTask.generation_extra_info?.due_date
+                ? aDateToDate(
+                    loaderData.emailTask.generation_extra_info?.due_date,
+                  ).toFormat("yyyy-MM-dd")
+                : undefined
+            }
+            name="generationDueDate"
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_due_date"
+          />
+        </FormControl>
       </SectionCard>
 
       <SectionCard title="Inbox Task">

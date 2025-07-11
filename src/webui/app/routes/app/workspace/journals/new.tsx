@@ -5,7 +5,6 @@ import {
   InputLabel,
   OutlinedInput,
 } from "@mui/material";
-import { Stack } from "@mui/system";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -28,7 +27,7 @@ import {
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -91,6 +90,7 @@ export default function NewJournal() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Journal"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="journal-create"
@@ -107,37 +107,35 @@ export default function NewJournal() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="rightNow" shrink margin="dense">
-              The Date
-            </InputLabel>
-            <OutlinedInput
-              type="date"
-              notched
-              label="rightNow"
-              name="rightNow"
-              readOnly={!inputsEnabled}
-              defaultValue={DateTime.local({
-                zone: topLevelInfo.user.timezone,
-              }).toISODate()}
-            />
+        <FormControl fullWidth>
+          <InputLabel id="rightNow" shrink margin="dense">
+            The Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="rightNow"
+            name="rightNow"
+            readOnly={!inputsEnabled}
+            defaultValue={DateTime.local({
+              zone: topLevelInfo.user.timezone,
+            }).toISODate()}
+          />
 
-            <FieldError actionResult={actionData} fieldName="/right_now" />
-          </FormControl>
+          <FieldError actionResult={actionData} fieldName="/right_now" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <FormLabel id="period">Period</FormLabel>
-            <PeriodSelect
-              labelId="period"
-              label="Period"
-              name="period"
-              inputsEnabled={inputsEnabled}
-              defaultValue={RecurringTaskPeriod.WEEKLY}
-            />
-            <FieldError actionResult={actionData} fieldName="/period" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <FormLabel id="period">Period</FormLabel>
+          <PeriodSelect
+            labelId="period"
+            label="Period"
+            name="period"
+            inputsEnabled={inputsEnabled}
+            defaultValue={RecurringTaskPeriod.WEEKLY}
+          />
+          <FieldError actionResult={actionData} fieldName="/period" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

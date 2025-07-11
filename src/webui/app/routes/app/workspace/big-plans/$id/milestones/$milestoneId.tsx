@@ -172,37 +172,35 @@ export default function BigPlanMilestoneView() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack direction="row" spacing={2}>
-            <FormControl sx={{ flexGrow: 3 }}>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={milestone.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-            <BigPlanMilestoneSourceLink bigPlanId={milestone.big_plan_ref_id} />
-          </Stack>
-
-          <FormControl fullWidth>
-            <InputLabel id="date" shrink margin="dense">
-              Date
-            </InputLabel>
-            <DateInputWithSuggestions
-              name="date"
-              label="date"
-              inputsEnabled={inputsEnabled}
-              defaultValue={milestone.date}
-              suggestedDates={getSuggestedDatesForBigPlanMilestoneDate(
-                topLevelInfo.today,
-              )}
+        <Stack direction="row" spacing={2}>
+          <FormControl sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={milestone.name}
             />
-            <FieldError actionResult={actionData} fieldName="/date" />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
+          <BigPlanMilestoneSourceLink bigPlanId={milestone.big_plan_ref_id} />
         </Stack>
+
+        <FormControl fullWidth>
+          <InputLabel id="date" shrink margin="dense">
+            Date
+          </InputLabel>
+          <DateInputWithSuggestions
+            name="date"
+            label="date"
+            inputsEnabled={inputsEnabled}
+            defaultValue={milestone.date}
+            suggestedDates={getSuggestedDatesForBigPlanMilestoneDate(
+              topLevelInfo.today,
+            )}
+          />
+          <FieldError actionResult={actionData} fieldName="/date" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

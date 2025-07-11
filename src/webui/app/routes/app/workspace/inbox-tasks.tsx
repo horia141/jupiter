@@ -42,7 +42,8 @@ import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import {
   FilterFewOptionsCompact,
   SectionActions,
- FilterFewOptionsSpread } from "~/components/infra/section-actions";
+  FilterFewOptionsSpread,
+} from "~/components/infra/section-actions";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import { TabPanel } from "~/components/infra/tab-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -1631,13 +1632,13 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
         variant="fullWidth"
         onChange={(_, newValue) => setSmallScreenSelectedTab(newValue)}
       >
-          <Tab
-            sx={{ minWidth: "25%" }}
-            icon={eisenIcon(Eisen.IMPORTANT_AND_URGENT)}
-          />
-          <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.URGENT)} />
+        <Tab
+          sx={{ minWidth: "25%" }}
+          icon={eisenIcon(Eisen.IMPORTANT_AND_URGENT)}
+        />
+        <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.URGENT)} />
         <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.IMPORTANT)} />
-          <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.REGULAR)} />
+        <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.REGULAR)} />
       </Tabs>
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
@@ -1810,36 +1811,36 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         variant="scrollable"
         onChange={(_, newValue) => setSmallScreenSelectedTab(newValue)}
       >
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED)}
-          />
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED_GEN)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED_GEN)}
-          />
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.IN_PROGRESS)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.IN_PROGRESS)}
-          />
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.BLOCKED)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.BLOCKED)}
-          />
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_DONE)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.NOT_DONE)}
-          />
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.DONE)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.DONE)}
-          />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED_GEN)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED_GEN)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.IN_PROGRESS)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.IN_PROGRESS)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.BLOCKED)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.BLOCKED)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_DONE)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.NOT_DONE)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.DONE)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.DONE)}
+        />
       </Tabs>
 
       <TabPanel value={smallScreenSelectedTab} index={0}>

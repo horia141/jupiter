@@ -31,7 +31,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -149,6 +149,7 @@ export default function NewHabit() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Habit"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="habit-create"
@@ -165,100 +166,98 @@ export default function NewHabit() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack direction="row" useFlexGap spacing={1}>
+        <Stack direction="row" useFlexGap spacing={1}>
+          <FormControl sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
+
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={false}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.rootProject.ref_id}
+            />
+            <FieldError actionResult={actionData} fieldName="/project" />
+          </FormControl>
+        )}
+
+        <RecurringTaskGenParamsBlock
+          inputsEnabled={inputsEnabled}
+          allowSkipRule
+          period={selectedPeriod}
+          onChangePeriod={(newPeriod) => {
+            if (newPeriod === "none") {
+              setSelectedPeriod(RecurringTaskPeriod.DAILY);
+            } else {
+              setSelectedPeriod(newPeriod);
+            }
+          }}
+          eisen={Eisen.REGULAR}
+          difficulty={Difficulty.EASY}
+          actionableFromDay={null}
+          actionableFromMonth={null}
+          dueAtDay={null}
+          dueAtMonth={null}
+          skipRule={null}
+          actionData={actionData}
+        />
+
+        {selectedPeriod !== RecurringTaskPeriod.DAILY && (
+          <Stack direction="row" spacing={2}>
             <FormControl sx={{ flexGrow: 3 }}>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <FormControl sx={{ flexGrow: 1 }}>
-              <IsKeySelect
-                name="isKey"
-                defaultValue={false}
+              <HabitRepeatStrategySelect
+                name="repeatsStrategy"
                 inputsEnabled={inputsEnabled}
+                allowNone
+                value={selectedRepeatsStrategy}
+                onChange={(newStrategy) =>
+                  setSelectedRepeatsStrategy(newStrategy)
+                }
               />
-              <FieldError actionResult={actionData} fieldName="/is_key" />
             </FormControl>
-          </Stack>
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                defaultValue={loaderData.rootProject.ref_id}
-              />
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
-          )}
-
-          <RecurringTaskGenParamsBlock
-            inputsEnabled={inputsEnabled}
-            allowSkipRule
-            period={selectedPeriod}
-            onChangePeriod={(newPeriod) => {
-              if (newPeriod === "none") {
-                setSelectedPeriod(RecurringTaskPeriod.DAILY);
-              } else {
-                setSelectedPeriod(newPeriod);
-              }
-            }}
-            eisen={Eisen.REGULAR}
-            difficulty={Difficulty.EASY}
-            actionableFromDay={null}
-            actionableFromMonth={null}
-            dueAtDay={null}
-            dueAtMonth={null}
-            skipRule={null}
-            actionData={actionData}
-          />
-
-          {selectedPeriod !== RecurringTaskPeriod.DAILY && (
-            <Stack direction="row" spacing={2}>
-              <FormControl sx={{ flexGrow: 3 }}>
-                <HabitRepeatStrategySelect
-                  name="repeatsStrategy"
-                  inputsEnabled={inputsEnabled}
-                  allowNone
-                  value={selectedRepeatsStrategy}
-                  onChange={(newStrategy) =>
-                    setSelectedRepeatsStrategy(newStrategy)
-                  }
+            {selectedRepeatsStrategy !== "none" && (
+              <FormControl sx={{ flexGrow: 1 }}>
+                <InputLabel id="repeatsInPeriodCount">
+                  Repeats In Period [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  label="Repeats In Period"
+                  name="repeatsInPeriodCount"
+                  readOnly={!inputsEnabled}
+                  sx={{ height: "100%" }}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/repeats_in_period_count"
                 />
               </FormControl>
-              {selectedRepeatsStrategy !== "none" && (
-                <FormControl sx={{ flexGrow: 1 }}>
-                  <InputLabel id="repeatsInPeriodCount">
-                    Repeats In Period [Optional]
-                  </InputLabel>
-                  <OutlinedInput
-                    label="Repeats In Period"
-                    name="repeatsInPeriodCount"
-                    readOnly={!inputsEnabled}
-                    sx={{ height: "100%" }}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/repeats_in_period_count"
-                  />
-                </FormControl>
-              )}
-            </Stack>
-          )}
-        </Stack>
+            )}
+          </Stack>
+        )}
       </SectionCard>
     </LeafPanel>
   );

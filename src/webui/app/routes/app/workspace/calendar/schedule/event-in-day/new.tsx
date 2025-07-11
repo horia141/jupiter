@@ -30,7 +30,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 import { ScheduleStreamSelect } from "~/components/domain/concept/schedule/schedule-stream-select";
 import { TimeEventParamsSource } from "~/components/domain/application/calendar/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -160,6 +160,7 @@ export default function ScheduleEventInDayNew() {
       <SectionCard
         id="schedule-event-in-day-properties"
         title="Properties"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="schedule-event-in-day-properties"
@@ -175,121 +176,116 @@ export default function ScheduleEventInDayNew() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <input
-            type="hidden"
-            name="userTimezone"
-            value={topLevelInfo.user.timezone}
+        <input
+          type="hidden"
+          name="userTimezone"
+          value={topLevelInfo.user.timezone}
+        />
+        <FormControl fullWidth>
+          <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
+          <ScheduleStreamSelect
+            labelId="scheduleStreamRefId"
+            label="Schedule Stream"
+            name="scheduleStreamRefId"
+            readOnly={!inputsEnabled}
+            allScheduleStreams={loaderData.allScheduleStreams}
+            defaultValue={loaderData.allScheduleStreams[0]}
           />
-          <FormControl fullWidth>
-            <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
-            <ScheduleStreamSelect
-              labelId="scheduleStreamRefId"
-              label="Schedule Stream"
-              name="scheduleStreamRefId"
-              readOnly={!inputsEnabled}
-              allScheduleStreams={loaderData.allScheduleStreams}
-              defaultValue={loaderData.allScheduleStreams[0]}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/schedule_stream_ref_id"
-            />
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput label="name" name="name" readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/schedule_stream_ref_id"
+          />
+        </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput label="name" name="name" readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!inputsEnabled}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startTimeInDay" shrink margin="dense">
+            Start Time
+          </InputLabel>
+          <OutlinedInput
+            type="time"
+            label="startTimeInDay"
+            name="startTimeInDay"
+            readOnly={!inputsEnabled}
+            value={startTimeInDay}
+            onChange={(e) => setStartTimeInDay(e.target.value)}
+          />
+
+          <FieldError
+            actionResult={actionData}
+            fieldName="/start_time_in_day"
+          />
+        </FormControl>
+
+        <Stack spacing={2} direction="row">
+          <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 15 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(15)}
+            >
+              15m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 30 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(30)}
+            >
+              30m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 60 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(60)}
+            >
+              60m
+            </Button>
+          </ButtonGroup>
 
           <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
+            <InputLabel id="durationMins" shrink margin="dense">
+              Duration (Mins)
             </InputLabel>
             <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
+              type="number"
+              label="Duration (Mins)"
+              name="durationMins"
               readOnly={!inputsEnabled}
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              value={durationMins}
+              onChange={(e) => {
+                if (Number.isNaN(parseInt(e.target.value, 10))) {
+                  setDurationMins(0);
+                  e.preventDefault();
+                  return;
+                }
+
+                return setDurationMins(parseInt(e.target.value, 10));
+              }}
             />
 
-            <FieldError actionResult={actionData} fieldName="/start_date" />
+            <FieldError actionResult={actionData} fieldName="/duration_mins" />
           </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="startTimeInDay" shrink margin="dense">
-              Start Time
-            </InputLabel>
-            <OutlinedInput
-              type="time"
-              label="startTimeInDay"
-              name="startTimeInDay"
-              readOnly={!inputsEnabled}
-              value={startTimeInDay}
-              onChange={(e) => setStartTimeInDay(e.target.value)}
-            />
-
-            <FieldError
-              actionResult={actionData}
-              fieldName="/start_time_in_day"
-            />
-          </FormControl>
-
-          <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 15 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(15)}
-              >
-                15m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 30 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(30)}
-              >
-                30m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 60 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(60)}
-              >
-                60m
-              </Button>
-            </ButtonGroup>
-
-            <FormControl fullWidth>
-              <InputLabel id="durationMins" shrink margin="dense">
-                Duration (Mins)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Mins)"
-                name="durationMins"
-                readOnly={!inputsEnabled}
-                value={durationMins}
-                onChange={(e) => {
-                  if (Number.isNaN(parseInt(e.target.value, 10))) {
-                    setDurationMins(0);
-                    e.preventDefault();
-                    return;
-                  }
-
-                  return setDurationMins(parseInt(e.target.value, 10));
-                }}
-              />
-
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_mins"
-              />
-            </FormControl>
-          </Stack>
         </Stack>
       </SectionCard>
     </LeafPanel>

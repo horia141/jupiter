@@ -4,7 +4,7 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import { FormControl, FormLabel, Stack } from "@mui/material";
+import { FormControl, FormLabel } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -143,46 +143,44 @@ export default function MetricsSettings() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
+        <FormControl fullWidth>
+          <FormLabel id="generationPeriod">Generation Period</FormLabel>
+          <PeriodSelect
+            labelId="generationPeriod"
+            label="Generation Period"
+            name="generationPeriod"
+            inputsEnabled={inputsEnabled}
+            defaultValue={loaderData.generationPeriod}
+            allowedValues={[
+              RecurringTaskPeriod.DAILY,
+              RecurringTaskPeriod.WEEKLY,
+            ]}
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_period"
+          />
+        </FormControl>
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
           <FormControl fullWidth>
-            <FormLabel id="generationPeriod">Generation Period</FormLabel>
-            <PeriodSelect
-              labelId="generationPeriod"
-              label="Generation Period"
-              name="generationPeriod"
+            <ProjectSelect
+              name="cleanupProject"
+              label="Clean Up Project"
               inputsEnabled={inputsEnabled}
-              defaultValue={loaderData.generationPeriod}
-              allowedValues={[
-                RecurringTaskPeriod.DAILY,
-                RecurringTaskPeriod.WEEKLY,
-              ]}
+              allProjects={loaderData.allProjects}
+              disabled={false}
+              defaultValue={loaderData.cleanupProject.ref_id}
             />
             <FieldError
               actionResult={actionData}
-              fieldName="/generation_period"
+              fieldName="/cleanup_project_ref_id"
             />
           </FormControl>
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="cleanupProject"
-                label="Clean Up Project"
-                inputsEnabled={inputsEnabled}
-                allProjects={loaderData.allProjects}
-                disabled={false}
-                defaultValue={loaderData.cleanupProject.ref_id}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/cleanup_project_ref_id"
-              />
-            </FormControl>
-          )}
-        </Stack>
+        )}
       </SectionCard>
     </LeafPanel>
   );

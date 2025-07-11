@@ -7,7 +7,6 @@ import {
   Box,
   FormControl,
   InputLabel,
-  Stack,
   styled,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -39,7 +38,10 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { ActionSingle , SectionActions } from "~/components/infra/section-actions";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 
 const GCFormSchema = z.object({
@@ -110,19 +112,17 @@ export default function GC() {
           />
         }
       >
-        <Stack spacing={2}>
-          <FormControl fullWidth>
-            <InputLabel id="gcTargets">Garbage Collect Targets</InputLabel>
-            <SyncTargetSelect
-              topLevelInfo={topLevelInfo}
-              labelId="gcTargets"
-              label="Garbage Collect Targets"
-              name="gcTargets"
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/gc_targets" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="gcTargets">Garbage Collect Targets</InputLabel>
+          <SyncTargetSelect
+            topLevelInfo={topLevelInfo}
+            labelId="gcTargets"
+            label="Garbage Collect Targets"
+            name="gcTargets"
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/gc_targets" />
+        </FormControl>
       </SectionCard>
 
       <StandardDivider title="Garbage Collection" size="large" />

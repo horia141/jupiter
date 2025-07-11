@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -17,7 +17,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -96,6 +96,7 @@ export default function NewSmartListTag() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Smart List Tag"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="smart-list-tag-create"
@@ -112,14 +113,12 @@ export default function NewSmartListTag() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
 
-            <FieldError actionResult={actionData} fieldName="/tag_name" />
-          </FormControl>
-        </Stack>
+          <FieldError actionResult={actionData} fieldName="/tag_name" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

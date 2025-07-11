@@ -1,5 +1,5 @@
 import { ApiError, WidgetDimension, WidgetType } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, Stack } from "@mui/material";
+import { FormControl, InputLabel } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -26,7 +26,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -123,8 +123,10 @@ export default function NewWidget() {
       returnLocation={`/app/workspace/home/settings/tabs/${id}`}
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Widget"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="widget-create"
@@ -142,51 +144,48 @@ export default function NewWidget() {
           />
         }
       >
-        <GlobalError actionResult={actionData} />
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="type">Type</InputLabel>
-            <WidgetTypeSelector
-              user={topLevelInfo.user}
-              workspace={topLevelInfo.workspace}
-              name="type"
-              inputsEnabled={inputsEnabled}
-              value={theType}
-              onChange={(type) => setTheType(type)}
-              target={loaderData.tab.target}
-              widgetConstraints={loaderData.widgetConstraints}
-            />
-            <FieldError actionResult={actionData} fieldName="/type" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="type">Type</InputLabel>
+          <WidgetTypeSelector
+            user={topLevelInfo.user}
+            workspace={topLevelInfo.workspace}
+            name="type"
+            inputsEnabled={inputsEnabled}
+            value={theType}
+            onChange={(type) => setTheType(type)}
+            target={loaderData.tab.target}
+            widgetConstraints={loaderData.widgetConstraints}
+          />
+          <FieldError actionResult={actionData} fieldName="/type" />
+        </FormControl>
 
-          <FormControl fullWidth disabled>
-            <RowAndColSelector
-              namePrefix="widget"
-              target={loaderData.tab.target}
-              homeTab={loaderData.tab}
-              widgets={loaderData.widgets}
-              row={query.row ?? 0}
-              col={query.col ?? 0}
-              inputsEnabled={inputsEnabled}
-            />
-          </FormControl>
+        <FormControl fullWidth disabled>
+          <RowAndColSelector
+            namePrefix="widget"
+            target={loaderData.tab.target}
+            homeTab={loaderData.tab}
+            widgets={loaderData.widgets}
+            row={query.row ?? 0}
+            col={query.col ?? 0}
+            inputsEnabled={inputsEnabled}
+          />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="dimension">Dimension</InputLabel>
-            <WidgetDimensionSelector
-              name="dimension"
-              inputsEnabled={inputsEnabled}
-              defaultValue={
-                loaderData.widgetConstraints[theType].allowed_dimensions[
-                  loaderData.tab.target
-                ][0]
-              }
-              target={loaderData.tab.target}
-              widgetType={theType}
-              widgetConstraints={loaderData.widgetConstraints}
-            />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="dimension">Dimension</InputLabel>
+          <WidgetDimensionSelector
+            name="dimension"
+            inputsEnabled={inputsEnabled}
+            defaultValue={
+              loaderData.widgetConstraints[theType].allowed_dimensions[
+                loaderData.tab.target
+              ][0]
+            }
+            target={loaderData.tab.target}
+            widgetType={theType}
+            widgetConstraints={loaderData.widgetConstraints}
+          />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

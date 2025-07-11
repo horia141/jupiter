@@ -1,5 +1,5 @@
 import { ApiError, HomeTabTarget } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -12,14 +12,14 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { HomeTabTargetSelect } from "~/components/domain/application/home/home-tab-target-select";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
-import { FieldError } from "~/components/infra/errors";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { IconSelector } from "~/components/infra/icon-selector";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -78,8 +78,10 @@ export default function NewTab() {
       returnLocation="/app/workspace/home/settings"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Tab"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="tab-create"
@@ -97,32 +99,30 @@ export default function NewTab() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              name="name"
-              readOnly={!inputsEnabled}
-              defaultValue={""}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            name="name"
+            readOnly={!inputsEnabled}
+            defaultValue={""}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <HomeTabTargetSelect
-              name="target"
-              defaultValue={HomeTabTarget.BIG_SCREEN}
-              inputsEnabled={inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/target" />
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="icon">Icon</InputLabel>
-            <IconSelector readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/icon" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <HomeTabTargetSelect
+            name="target"
+            defaultValue={HomeTabTarget.BIG_SCREEN}
+            inputsEnabled={inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/target" />
+        </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="icon">Icon</InputLabel>
+          <IconSelector readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/icon" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

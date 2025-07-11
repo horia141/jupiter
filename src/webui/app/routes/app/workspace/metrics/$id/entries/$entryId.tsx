@@ -1,5 +1,5 @@
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -182,50 +182,45 @@ export default function MetricEntry() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <TimeDiffTag
-            today={topLevelInfo.today}
-            labelPrefix="Collected"
-            collectionTime={loaderData.metricEntry.collection_time}
+        <TimeDiffTag
+          today={topLevelInfo.today}
+          labelPrefix="Collected"
+          collectionTime={loaderData.metricEntry.collection_time}
+        />
+        <FormControl fullWidth>
+          <InputLabel id="collectionTime" shrink>
+            Collection Time
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="collectionTime"
+            defaultValue={
+              loaderData.metricEntry.collection_time
+                ? aDateToDate(loaderData.metricEntry.collection_time).toFormat(
+                    "yyyy-MM-dd",
+                  )
+                : undefined
+            }
+            name="collectionTime"
+            readOnly={!inputsEnabled}
           />
-          <FormControl fullWidth>
-            <InputLabel id="collectionTime" shrink>
-              Collection Time
-            </InputLabel>
-            <OutlinedInput
-              type="date"
-              notched
-              label="collectionTime"
-              defaultValue={
-                loaderData.metricEntry.collection_time
-                  ? aDateToDate(
-                      loaderData.metricEntry.collection_time,
-                    ).toFormat("yyyy-MM-dd")
-                  : undefined
-              }
-              name="collectionTime"
-              readOnly={!inputsEnabled}
-            />
 
-            <FieldError
-              actionResult={actionData}
-              fieldName="/collection_time"
-            />
-          </FormControl>
+          <FieldError actionResult={actionData} fieldName="/collection_time" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="value">Value</InputLabel>
-            <OutlinedInput
-              type="number"
-              inputProps={{ step: "any" }}
-              label="Value"
-              name="value"
-              readOnly={!inputsEnabled}
-              defaultValue={loaderData.metricEntry.value}
-            />
-            <FieldError actionResult={actionData} fieldName="/value" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="value">Value</InputLabel>
+          <OutlinedInput
+            type="number"
+            inputProps={{ step: "any" }}
+            label="Value"
+            name="value"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.metricEntry.value}
+          />
+          <FieldError actionResult={actionData} fieldName="/value" />
+        </FormControl>
       </SectionCard>
 
       <SectionCard

@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
@@ -127,65 +127,57 @@ export default function ResetPassword() {
             />
           }
         >
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel htmlFor="emailAddress">Email Address</InputLabel>
-              <OutlinedInput
-                label="Email Address"
-                name="emailAddress"
-                type="email"
-                autoComplete="email"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/email_address"
-              />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel htmlFor="emailAddress">Email Address</InputLabel>
+            <OutlinedInput
+              label="Email Address"
+              name="emailAddress"
+              type="email"
+              autoComplete="email"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/email_address" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel htmlFor="recoveryToken">Recovery Token</InputLabel>
-              <OutlinedInput
-                label="Recovery Token"
-                name="recoveryToken"
-                type="text"
-                autoComplete="off"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/recovery_token"
-              />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel htmlFor="recoveryToken">Recovery Token</InputLabel>
+            <OutlinedInput
+              label="Recovery Token"
+              name="recoveryToken"
+              type="text"
+              autoComplete="off"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/recovery_token" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel htmlFor="newPassword">New Password</InputLabel>
-              <Password
-                label="New Password"
-                name="newPassword"
-                autoComplete="new-password"
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/new_password" />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel htmlFor="newPassword">New Password</InputLabel>
+            <Password
+              label="New Password"
+              name="newPassword"
+              autoComplete="new-password"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/new_password" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel htmlFor="newPasswordRepeat">
-                Repeat New Password
-              </InputLabel>
-              <Password
-                label="Repeat New Password"
-                name="newPasswordRepeat"
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/new_password_repeat"
-              />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <InputLabel htmlFor="newPasswordRepeat">
+              Repeat New Password
+            </InputLabel>
+            <Password
+              label="Repeat New Password"
+              name="newPasswordRepeat"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/new_password_repeat"
+            />
+          </FormControl>
         </SectionCard>
       </LifecyclePanel>
     </StandaloneContainer>

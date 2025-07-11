@@ -1,5 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -18,7 +18,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -101,6 +101,7 @@ export default function NewMetricEntry() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Metric Entry"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="metric-entry-create"
@@ -117,40 +118,35 @@ export default function NewMetricEntry() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="collectionTime" shrink>
-              Collection Time
-            </InputLabel>
-            <OutlinedInput
-              type="date"
-              notched
-              label="collectionTime"
-              defaultValue={DateTime.local({
-                zone: topLevelInfo.user.timezone,
-              }).toFormat("yyyy-MM-dd")}
-              name="collectionTime"
-              readOnly={!inputsEnabled}
-            />
+        <FormControl fullWidth>
+          <InputLabel id="collectionTime" shrink>
+            Collection Time
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="collectionTime"
+            defaultValue={DateTime.local({
+              zone: topLevelInfo.user.timezone,
+            }).toFormat("yyyy-MM-dd")}
+            name="collectionTime"
+            readOnly={!inputsEnabled}
+          />
 
-            <FieldError
-              actionResult={actionData}
-              fieldName="/collection_time"
-            />
-          </FormControl>
+          <FieldError actionResult={actionData} fieldName="/collection_time" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="value">Value</InputLabel>
-            <OutlinedInput
-              type="number"
-              inputProps={{ step: "any" }}
-              label="Value"
-              name="value"
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/value" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="value">Value</InputLabel>
+          <OutlinedInput
+            type="number"
+            inputProps={{ step: "any" }}
+            label="Value"
+            name="value"
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/value" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

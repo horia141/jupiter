@@ -1,6 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
-import { FormControl, Stack } from "@mui/material";
+import { FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -120,22 +120,20 @@ export default function SlackTasksSettings() {
             />
           }
         >
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                defaultValue={loaderData.generationProject.ref_id}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_project_ref_id"
-              />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.generationProject.ref_id}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/generation_project_ref_id"
+            />
+          </FormControl>
         </SectionCard>
       )}
     </LeafPanel>

@@ -335,59 +335,57 @@ export default function MetricDetails() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack direction="row" spacing={2}>
-            <FormControl fullWidth sx={{ flexGrow: 3 }}>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.metric.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <FormControl sx={{ flexGrow: 1 }}>
-              <IsKeySelect
-                name="isKey"
-                defaultValue={loaderData.metric.is_key}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/is_key" />
-            </FormControl>
-          </Stack>
-
-          <FormControl fullWidth>
-            <InputLabel id="icon">Icon</InputLabel>
-            <IconSelector
+        <Stack direction="row" spacing={2}>
+          <FormControl fullWidth sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
               readOnly={!inputsEnabled}
-              defaultIcon={loaderData.metric.icon}
+              defaultValue={loaderData.metric.name}
             />
-            <FieldError actionResult={actionData} fieldName="/icon" />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 
-          <StandardDivider title="Collection" size="large" />
-
-          <RecurringTaskGenParamsBlock
-            namePrefix="collection"
-            fieldsPrefix="collection"
-            allowNonePeriod
-            period={loaderData.metric.collection_params?.period || "none"}
-            eisen={loaderData.metric.collection_params?.eisen}
-            difficulty={loaderData.metric.collection_params?.difficulty}
-            actionableFromDay={
-              loaderData.metric.collection_params?.actionable_from_day
-            }
-            actionableFromMonth={
-              loaderData.metric.collection_params?.actionable_from_month
-            }
-            dueAtDay={loaderData.metric.collection_params?.due_at_day}
-            dueAtMonth={loaderData.metric.collection_params?.due_at_month}
-            inputsEnabled={inputsEnabled}
-            actionData={actionData}
-          />
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={loaderData.metric.is_key}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
         </Stack>
+
+        <FormControl fullWidth>
+          <InputLabel id="icon">Icon</InputLabel>
+          <IconSelector
+            readOnly={!inputsEnabled}
+            defaultIcon={loaderData.metric.icon}
+          />
+          <FieldError actionResult={actionData} fieldName="/icon" />
+        </FormControl>
+
+        <StandardDivider title="Collection" size="large" />
+
+        <RecurringTaskGenParamsBlock
+          namePrefix="collection"
+          fieldsPrefix="collection"
+          allowNonePeriod
+          period={loaderData.metric.collection_params?.period || "none"}
+          eisen={loaderData.metric.collection_params?.eisen}
+          difficulty={loaderData.metric.collection_params?.difficulty}
+          actionableFromDay={
+            loaderData.metric.collection_params?.actionable_from_day
+          }
+          actionableFromMonth={
+            loaderData.metric.collection_params?.actionable_from_month
+          }
+          dueAtDay={loaderData.metric.collection_params?.due_at_day}
+          dueAtMonth={loaderData.metric.collection_params?.due_at_month}
+          inputsEnabled={inputsEnabled}
+          actionData={actionData}
+        />
       </SectionCard>
 
       <SectionCard

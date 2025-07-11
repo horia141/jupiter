@@ -29,7 +29,7 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCard } from "~/components/infra/section-card";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 import { ScheduleStreamSelect } from "~/components/domain/concept/schedule/schedule-stream-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -124,6 +124,7 @@ export default function ScheduleEventFullDaysNew() {
       <SectionCard
         id="schedule-event-full-days-properties"
         title="Properties"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="schedule-event-full-days-properties"
@@ -139,88 +140,83 @@ export default function ScheduleEventFullDaysNew() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
-            <ScheduleStreamSelect
-              labelId="scheduleStreamRefId"
-              label="Schedule Stream"
-              name="scheduleStreamRefId"
-              readOnly={!inputsEnabled}
-              allScheduleStreams={loaderData.allScheduleStreams}
-              defaultValue={loaderData.allScheduleStreams[0]}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/schedule_stream_ref_id"
-            />
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput label="name" name="name" readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
+          <ScheduleStreamSelect
+            labelId="scheduleStreamRefId"
+            label="Schedule Stream"
+            name="scheduleStreamRefId"
+            readOnly={!inputsEnabled}
+            allScheduleStreams={loaderData.allScheduleStreams}
+            defaultValue={loaderData.allScheduleStreams[0]}
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/schedule_stream_ref_id"
+          />
+        </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput label="name" name="name" readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.date}
+          />
+
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
+
+        <Stack spacing={2} direction="row">
+          <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationDays === 1 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(1)}
+            >
+              1d
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationDays === 3 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(3)}
+            >
+              3d
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationDays === 7 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(7)}
+            >
+              7d
+            </Button>
+          </ButtonGroup>
 
           <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
+            <InputLabel id="durationDays" shrink margin="dense">
+              Duration (Days)
             </InputLabel>
             <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
+              type="number"
+              label="Duration (Days)"
+              name="durationDays"
               readOnly={!inputsEnabled}
-              defaultValue={loaderData.date}
+              value={durationDays}
+              onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
             />
 
-            <FieldError actionResult={actionData} fieldName="/start_date" />
+            <FieldError actionResult={actionData} fieldName="/duration_days" />
           </FormControl>
-
-          <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationDays === 1 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(1)}
-              >
-                1d
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationDays === 3 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(3)}
-              >
-                3d
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationDays === 7 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(7)}
-              >
-                7d
-              </Button>
-            </ButtonGroup>
-
-            <FormControl fullWidth>
-              <InputLabel id="durationDays" shrink margin="dense">
-                Duration (Days)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Days)"
-                name="durationDays"
-                readOnly={!inputsEnabled}
-                value={durationDays}
-                onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
-              />
-
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_days"
-              />
-            </FormControl>
-          </Stack>
         </Stack>
       </SectionCard>
     </LeafPanel>

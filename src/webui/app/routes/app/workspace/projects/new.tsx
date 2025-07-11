@@ -1,6 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -19,7 +19,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -92,6 +92,7 @@ export default function NewProject() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Project"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="project-create"
@@ -108,34 +109,32 @@ export default function NewProject() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <ProjectSelect
-              name="parentProjectRefId"
-              label="Parent Project"
-              inputsEnabled={inputsEnabled}
-              disabled={false}
-              allProjects={loaderData.allProjects}
-              defaultValue={loaderData.rootProject.ref_id}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/parent_project_ref_id"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <ProjectSelect
+            name="parentProjectRefId"
+            label="Parent Project"
+            inputsEnabled={inputsEnabled}
+            disabled={false}
+            allProjects={loaderData.allProjects}
+            defaultValue={loaderData.rootProject.ref_id}
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/parent_project_ref_id"
+          />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              name="name"
-              readOnly={!inputsEnabled}
-              type="text"
-              placeholder="Project name"
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            name="name"
+            readOnly={!inputsEnabled}
+            type="text"
+            placeholder="Project name"
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
       </SectionCard>
     </LeafPanel>
   );

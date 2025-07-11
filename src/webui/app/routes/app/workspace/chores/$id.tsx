@@ -362,125 +362,120 @@ export default function Chore() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack direction="row" useFlexGap spacing={1}>
-            <FormControl fullWidth sx={{ flexGrow: 3 }}>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <FormControl sx={{ flexGrow: 1 }}>
-              <IsKeySelect
-                name="isKey"
-                defaultValue={loaderData.chore.is_key}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/is_key" />
-            </FormControl>
-          </Stack>
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                value={selectedProject}
-                onChange={setSelectedProject}
-              />
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
-          )}
-
-          <RecurringTaskGenParamsBlock
-            inputsEnabled={inputsEnabled}
-            allowSkipRule
-            period={loaderData.chore.gen_params.period}
-            eisen={loaderData.chore.gen_params.eisen}
-            difficulty={loaderData.chore.gen_params.difficulty}
-            actionableFromDay={loaderData.chore.gen_params.actionable_from_day}
-            actionableFromMonth={
-              loaderData.chore.gen_params.actionable_from_month
-            }
-            dueAtDay={loaderData.chore.gen_params.due_at_day}
-            dueAtMonth={loaderData.chore.gen_params.due_at_month}
-            skipRule={loaderData.chore.gen_params.skip_rule}
-            actionData={actionData}
-          />
-
-          <FormControl fullWidth>
-            <FormControlLabel
-              control={
-                <Switch
-                  name="mustDo"
-                  readOnly={!inputsEnabled}
-                  defaultChecked={loaderData.chore.must_do}
-                />
-              }
-              label="Must Do In Vacation"
+        <Stack direction="row" useFlexGap spacing={1}>
+          <FormControl fullWidth sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.chore.name}
             />
-            <FieldError actionResult={actionData} fieldName="/must_do" />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 
-          <Stack spacing={2} direction={isBigScreen ? "row" : "column"}>
-            <FormControl fullWidth>
-              <InputLabel id="startAtDate" shrink>
-                Start At Date [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="startAtDate"
-                defaultValue={
-                  loaderData.chore.start_at_date
-                    ? aDateToDate(loaderData.chore.start_at_date).toFormat(
-                        "yyyy-MM-dd",
-                      )
-                    : undefined
-                }
-                name="startAtDate"
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={loaderData.chore.is_key}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              value={selectedProject}
+              onChange={setSelectedProject}
+            />
+            <FieldError actionResult={actionData} fieldName="/project" />
+          </FormControl>
+        )}
+
+        <RecurringTaskGenParamsBlock
+          inputsEnabled={inputsEnabled}
+          allowSkipRule
+          period={loaderData.chore.gen_params.period}
+          eisen={loaderData.chore.gen_params.eisen}
+          difficulty={loaderData.chore.gen_params.difficulty}
+          actionableFromDay={loaderData.chore.gen_params.actionable_from_day}
+          actionableFromMonth={
+            loaderData.chore.gen_params.actionable_from_month
+          }
+          dueAtDay={loaderData.chore.gen_params.due_at_day}
+          dueAtMonth={loaderData.chore.gen_params.due_at_month}
+          skipRule={loaderData.chore.gen_params.skip_rule}
+          actionData={actionData}
+        />
+
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={
+              <Switch
+                name="mustDo"
                 readOnly={!inputsEnabled}
+                defaultChecked={loaderData.chore.must_do}
               />
+            }
+            label="Must Do In Vacation"
+          />
+          <FieldError actionResult={actionData} fieldName="/must_do" />
+        </FormControl>
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/start_at_date"
-              />
-            </FormControl>
+        <Stack spacing={2} direction={isBigScreen ? "row" : "column"}>
+          <FormControl fullWidth>
+            <InputLabel id="startAtDate" shrink>
+              Start At Date [Optional]
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="startAtDate"
+              defaultValue={
+                loaderData.chore.start_at_date
+                  ? aDateToDate(loaderData.chore.start_at_date).toFormat(
+                      "yyyy-MM-dd",
+                    )
+                  : undefined
+              }
+              name="startAtDate"
+              readOnly={!inputsEnabled}
+            />
 
-            <FormControl fullWidth>
-              <InputLabel id="endAtDate" shrink>
-                End At Date [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="endAtDate"
-                defaultValue={
-                  loaderData.chore.end_at_date
-                    ? aDateToDate(loaderData.chore.end_at_date).toFormat(
-                        "yyyy-MM-dd",
-                      )
-                    : undefined
-                }
-                name="endAtDate"
-                readOnly={!inputsEnabled}
-              />
+            <FieldError actionResult={actionData} fieldName="/start_at_date" />
+          </FormControl>
 
-              <FieldError actionResult={actionData} fieldName="/end_at_date" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <InputLabel id="endAtDate" shrink>
+              End At Date [Optional]
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="endAtDate"
+              defaultValue={
+                loaderData.chore.end_at_date
+                  ? aDateToDate(loaderData.chore.end_at_date).toFormat(
+                      "yyyy-MM-dd",
+                    )
+                  : undefined
+              }
+              name="endAtDate"
+              readOnly={!inputsEnabled}
+            />
+
+            <FieldError actionResult={actionData} fieldName="/end_at_date" />
+          </FormControl>
         </Stack>
       </SectionCard>
 

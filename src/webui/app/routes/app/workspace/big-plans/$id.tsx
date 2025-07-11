@@ -18,7 +18,6 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Card,
   CardActions,
   FormControl,
   FormLabel,
@@ -431,110 +430,107 @@ export default function BigPlan() {
             />
           }
         >
-          <Stack spacing={2} useFlexGap>
-            <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
-              <FormControl sx={{ flexGrow: 3 }}>
-                <InputLabel id="name">Name</InputLabel>
-                <OutlinedInput
-                  label="Name"
-                  name="name"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.bigPlan.name}
-                />
-                <FieldError actionResult={actionData} fieldName="/name" />
-              </FormControl>
-              <FormControl sx={{ flexGrow: 1 }}>
-                <IsKeySelect
-                  name="isKey"
-                  defaultValue={loaderData.bigPlan.is_key}
-                  inputsEnabled={inputsEnabled}
-                />
-              </FormControl>
-              <FormControl sx={{ flexGrow: 1 }}>
-                <BigPlanStatusBigTag status={loaderData.bigPlan.status} />
-                <input
-                  type="hidden"
-                  name="status"
-                  value={loaderData.bigPlan.status}
-                />
-                <FieldError actionResult={actionData} fieldName="/status" />
-              </FormControl>
-            </Box>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  value={selectedProject}
-                  onChange={setSelectedProject}
-                />
-                <FieldError actionResult={actionData} fieldName="/project" />
-              </FormControl>
-            )}
-            {!isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && <input type="hidden" name="project" value={selectedProject} />}
-
-            <FormControl fullWidth>
-              <FormLabel id="eisen">Eisenhower</FormLabel>
-              <EisenhowerSelect
-                name="eisen"
-                defaultValue={loaderData.bigPlan.eisen}
+          <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+            <FormControl sx={{ flexGrow: 3 }}>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="Name"
+                name="name"
+                readOnly={!inputsEnabled}
+                defaultValue={loaderData.bigPlan.name}
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+            <FormControl sx={{ flexGrow: 1 }}>
+              <IsKeySelect
+                name="isKey"
+                defaultValue={loaderData.bigPlan.is_key}
                 inputsEnabled={inputsEnabled}
               />
-              <FieldError actionResult={actionData} fieldName="/eisen" />
             </FormControl>
-
-            <FormControl fullWidth>
-              <FormLabel id="difficulty">Difficulty</FormLabel>
-              <DifficultySelect
-                name="difficulty"
-                defaultValue={loaderData.bigPlan.difficulty}
-                inputsEnabled={inputsEnabled}
+            <FormControl sx={{ flexGrow: 1 }}>
+              <BigPlanStatusBigTag status={loaderData.bigPlan.status} />
+              <input
+                type="hidden"
+                name="status"
+                value={loaderData.bigPlan.status}
               />
-              <FieldError actionResult={actionData} fieldName="/difficulty" />
+              <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
+          </Box>
 
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS,
+          ) && (
             <FormControl fullWidth>
-              <InputLabel id="actionableDate" shrink>
-                Actionable From [Optional]
-              </InputLabel>
-              <DateInputWithSuggestions
-                name="actionableDate"
-                label="actionableDate"
+              <ProjectSelect
+                name="project"
+                label="Project"
                 inputsEnabled={inputsEnabled}
-                defaultValue={loaderData.bigPlan.actionable_date}
-                suggestedDates={getSuggestedDatesForBigPlanActionableDate(
-                  topLevelInfo.today,
-                )}
+                disabled={false}
+                allProjects={loaderData.allProjects}
+                value={selectedProject}
+                onChange={setSelectedProject}
               />
+              <FieldError actionResult={actionData} fieldName="/project" />
             </FormControl>
+          )}
+          {!isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS,
+          ) && <input type="hidden" name="project" value={selectedProject} />}
 
-            <FormControl fullWidth>
-              <InputLabel id="dueDate" shrink>
-                Due At [Optional]
-              </InputLabel>
-              <DateInputWithSuggestions
-                name="dueDate"
-                label="dueDate"
-                inputsEnabled={inputsEnabled}
-                defaultValue={loaderData.bigPlan.due_date}
-                suggestedDates={getSuggestedDatesForBigPlanDueDate(
-                  topLevelInfo.today,
-                )}
-              />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <FormLabel id="eisen">Eisenhower</FormLabel>
+            <EisenhowerSelect
+              name="eisen"
+              defaultValue={loaderData.bigPlan.eisen}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/eisen" />
+          </FormControl>
 
-          <CardActions>
+          <FormControl fullWidth>
+            <FormLabel id="difficulty">Difficulty</FormLabel>
+            <DifficultySelect
+              name="difficulty"
+              defaultValue={loaderData.bigPlan.difficulty}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/difficulty" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="actionableDate" shrink>
+              Actionable From [Optional]
+            </InputLabel>
+            <DateInputWithSuggestions
+              name="actionableDate"
+              label="actionableDate"
+              inputsEnabled={inputsEnabled}
+              defaultValue={loaderData.bigPlan.actionable_date}
+              suggestedDates={getSuggestedDatesForBigPlanActionableDate(
+                topLevelInfo.today,
+              )}
+            />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="dueDate" shrink>
+              Due At [Optional]
+            </InputLabel>
+            <DateInputWithSuggestions
+              name="dueDate"
+              label="dueDate"
+              inputsEnabled={inputsEnabled}
+              defaultValue={loaderData.bigPlan.due_date}
+              suggestedDates={getSuggestedDatesForBigPlanDueDate(
+                topLevelInfo.today,
+              )}
+            />
+          </FormControl>
+
             <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
               {loaderData.bigPlan.status === BigPlanStatus.NOT_STARTED && (
                 <ButtonGroup fullWidth>
@@ -687,35 +683,35 @@ export default function BigPlan() {
                 </ButtonGroup>
               )}
             </Stack>
-          </CardActions>
         </SectionCard>
 
-        <Card>
-          {!loaderData.note && (
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="create-note"
-                >
-                  Create Note
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          )}
-
-          {loaderData.note && (
-            <>
-              <EntityNoteEditor
-                initialNote={loaderData.note}
-                inputsEnabled={inputsEnabled}
-              />
-            </>
-          )}
-        </Card>
+        <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="person-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
+        {loaderData.note && (
+          <>
+            <EntityNoteEditor
+              initialNote={loaderData.note}
+              inputsEnabled={inputsEnabled}
+            />
+          </>
+        )}
+      </SectionCard>
 
         <SectionCard
           id="big-plan-milestones"

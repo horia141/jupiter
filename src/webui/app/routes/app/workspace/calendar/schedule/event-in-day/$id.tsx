@@ -3,8 +3,6 @@ import { ApiError, NoteDomain } from "@jupiter/webapi-client";
 import {
   Button,
   ButtonGroup,
-  Card,
-  CardActions,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -302,162 +300,158 @@ export default function ScheduleEventInDayViewOne() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <input
-            type="hidden"
-            name="userTimezone"
-            value={topLevelInfo.user.timezone}
+        <input
+          type="hidden"
+          name="userTimezone"
+          value={topLevelInfo.user.timezone}
+        />
+        <FormControl fullWidth>
+          <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
+          <ScheduleStreamSelect
+            labelId="scheduleStreamRefId"
+            label="Schedule Stream"
+            name="scheduleStreamRefId"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            allScheduleStreams={loaderData.allScheduleStreams}
+            defaultValue={
+              allScheduleStreamsByRefId.get(
+                loaderData.scheduleEventInDay.schedule_stream_ref_id,
+              )!
+            }
           />
-          <FormControl fullWidth>
-            <InputLabel id="scheduleStreamRefId">Schedule Stream</InputLabel>
-            <ScheduleStreamSelect
-              labelId="scheduleStreamRefId"
-              label="Schedule Stream"
-              name="scheduleStreamRefId"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              allScheduleStreams={loaderData.allScheduleStreams}
-              defaultValue={
-                allScheduleStreamsByRefId.get(
-                  loaderData.scheduleEventInDay.schedule_stream_ref_id,
-                )!
-              }
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/schedule_stream_ref_id"
-            />
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="name"
-              name="name"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.scheduleEventInDay.name}
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/schedule_stream_ref_id"
+          />
+        </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="name"
+            name="name"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            defaultValue={loaderData.scheduleEventInDay.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
-            </InputLabel>
-            <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
 
-            <FieldError actionResult={actionData} fieldName="/start_date" />
-          </FormControl>
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="startTimeInDay" shrink margin="dense">
-              Start Time
-            </InputLabel>
-            <OutlinedInput
-              type="time"
-              label="startTimeInDay"
-              name="startTimeInDay"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              value={startTimeInDay}
-              onChange={(e) => setStartTimeInDay(e.target.value)}
-            />
+        <FormControl fullWidth>
+          <InputLabel id="startTimeInDay" shrink margin="dense">
+            Start Time
+          </InputLabel>
+          <OutlinedInput
+            type="time"
+            label="startTimeInDay"
+            name="startTimeInDay"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            value={startTimeInDay}
+            onChange={(e) => setStartTimeInDay(e.target.value)}
+          />
 
-            <FieldError
-              actionResult={actionData}
-              fieldName="/start_time_in_day"
-            />
-          </FormControl>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/start_time_in_day"
+          />
+        </FormControl>
 
-          <Stack spacing={2} direction="row">
-            <ButtonGroup
-              variant="outlined"
+        <Stack spacing={2} direction="row">
+          <ButtonGroup
+            variant="outlined"
+            disabled={!inputsEnabled || !corePropertyEditable}
+          >
+            <Button
               disabled={!inputsEnabled || !corePropertyEditable}
+              variant={durationMins === 15 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(15)}
             >
-              <Button
-                disabled={!inputsEnabled || !corePropertyEditable}
-                variant={durationMins === 15 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(15)}
-              >
-                15m
-              </Button>
-              <Button
-                disabled={!inputsEnabled || !corePropertyEditable}
-                variant={durationMins === 30 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(30)}
-              >
-                30m
-              </Button>
-              <Button
-                disabled={!inputsEnabled || !corePropertyEditable}
-                variant={durationMins === 60 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(60)}
-              >
-                60m
-              </Button>
-            </ButtonGroup>
+              15m
+            </Button>
+            <Button
+              disabled={!inputsEnabled || !corePropertyEditable}
+              variant={durationMins === 30 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(30)}
+            >
+              30m
+            </Button>
+            <Button
+              disabled={!inputsEnabled || !corePropertyEditable}
+              variant={durationMins === 60 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(60)}
+            >
+              60m
+            </Button>
+          </ButtonGroup>
 
-            <FormControl fullWidth>
-              <InputLabel id="durationMins" shrink margin="dense">
-                Duration (Mins)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Mins)"
-                name="durationMins"
-                readOnly={!inputsEnabled || !corePropertyEditable}
-                value={durationMins}
-                onChange={(e) => {
-                  if (Number.isNaN(parseInt(e.target.value, 10))) {
-                    setDurationMins(0);
-                    e.preventDefault();
-                    return;
-                  }
+          <FormControl fullWidth>
+            <InputLabel id="durationMins" shrink margin="dense">
+              Duration (Mins)
+            </InputLabel>
+            <OutlinedInput
+              type="number"
+              label="Duration (Mins)"
+              name="durationMins"
+              readOnly={!inputsEnabled || !corePropertyEditable}
+              value={durationMins}
+              onChange={(e) => {
+                if (Number.isNaN(parseInt(e.target.value, 10))) {
+                  setDurationMins(0);
+                  e.preventDefault();
+                  return;
+                }
 
-                  return setDurationMins(parseInt(e.target.value, 10));
-                }}
-              />
+                return setDurationMins(parseInt(e.target.value, 10));
+              }}
+            />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_mins"
-              />
-            </FormControl>
-          </Stack>
+            <FieldError actionResult={actionData} fieldName="/duration_mins" />
+          </FormControl>
         </Stack>
       </SectionCard>
 
-      <Card>
-        {!(loaderData.note && !loaderData.note.archived) && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled || !corePropertyEditable}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
-        {loaderData.note && !loaderData.note.archived && (
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="inbox-task-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
+        {loaderData.note && (
           <>
             <EntityNoteEditor
               initialNote={loaderData.note}
-              inputsEnabled={inputsEnabled && corePropertyEditable}
+              inputsEnabled={inputsEnabled}
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

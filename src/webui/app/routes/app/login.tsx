@@ -1,5 +1,5 @@
 import { ApiError, AppShell } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
@@ -29,7 +29,9 @@ import {
   ActionSingle,
   NavSingle,
   NavMultipleCompact,
- ActionsExpansion , SectionActions } from "~/components/infra/section-actions";
+  ActionsExpansion,
+  SectionActions,
+} from "~/components/infra/section-actions";
 import { EMPTY_CONTEXT } from "~/top-level-context";
 
 const LoginFormSchema = z.object({
@@ -149,34 +151,29 @@ export default function Login() {
             />
           }
         >
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="emailAddress">Email Address</InputLabel>
-              <OutlinedInput
-                label="Email Address"
-                name="emailAddress"
-                type="email"
-                autoComplete="email"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/email_address"
-              />
-            </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="emailAddress">Email Address</InputLabel>
+            <OutlinedInput
+              label="Email Address"
+              name="emailAddress"
+              type="email"
+              autoComplete="email"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/email_address" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="password">Password</InputLabel>
-              <Password
-                label="Password"
-                name="password"
-                autoComplete="current-password"
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/password" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <InputLabel id="password">Password</InputLabel>
+            <Password
+              label="Password"
+              name="password"
+              autoComplete="current-password"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/password" />
+          </FormControl>
         </SectionCard>
       </LifecyclePanel>
     </StandaloneContainer>

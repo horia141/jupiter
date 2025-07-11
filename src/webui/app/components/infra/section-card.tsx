@@ -1,4 +1,11 @@
-import { Card, CardActions, CardContent, Chip, styled } from "@mui/material";
+import {
+  Card,
+  CardActions,
+  CardContent,
+  Chip,
+  Stack,
+  styled,
+} from "@mui/material";
 import { Form } from "@remix-run/react";
 import type { PropsWithChildren } from "react";
 
@@ -25,7 +32,9 @@ export function SectionCard(props: PropsWithChildren<SectionCardProps>) {
           <SectionTitle label={props.title} />
           {actionsPosition === ActionsPosition.ABOVE && props.actions}
         </SectionHeader>
-        <CardContent>{props.children}</CardContent>
+        <CardContent>
+          <Stack spacing={2}>{props.children}</Stack>
+        </CardContent>
         {actionsPosition === ActionsPosition.BELOW && (
           <CardActions>{props.actions}</CardActions>
         )}

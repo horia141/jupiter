@@ -27,7 +27,6 @@ import {
 import { TopLevelInfoContext } from "~/top-level-context";
 import { NavSingle, SectionActions } from "~/components/infra/section-actions";
 
-
 export const handle = {
   displayType: DisplayType.TRUNK,
 };

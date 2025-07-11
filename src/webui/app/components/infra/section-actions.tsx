@@ -234,19 +234,21 @@ export function SectionActions(props: SectionActionsProps) {
   const isBigScreen = useBigScreen();
   const expansion = props.expansion ?? ActionsExpansion.ADAPT;
 
-  if (
-    (expansion === ActionsExpansion.ADAPT && !isBigScreen) ||
-    expansion === ActionsExpansion.ALWAYS_COMPACT
-  ) {
-    const allActions = props.actions.concat(props.extraActions ?? []);
-    return (
-      <SectionActionsWithDialog
-        id={props.id}
-        topLevelInfo={props.topLevelInfo}
-        inputsEnabled={props.inputsEnabled}
-        actions={allActions}
-      />
-    );
+  let actions: Array<ActionDesc>;
+  let extraActions: Array<ActionDesc>;
+
+  if (props.actions.length === 1 && props.extraActions?.length === 0) {
+    actions = props.actions;
+    extraActions = [];
+  } else if (expansion === ActionsExpansion.ALWAYS_COMPACT) {
+    actions = [];
+    extraActions = props.actions.concat(props.extraActions ?? []);
+  } else if (expansion === ActionsExpansion.ADAPT && !isBigScreen) {
+    actions = props.actions.slice(0, 1);
+    extraActions = props.actions.concat(props.extraActions ?? []);
+  } else {
+    actions = props.actions;
+    extraActions = props.extraActions ?? [];
   }
 
   return (
@@ -255,7 +257,7 @@ export function SectionActions(props: SectionActionsProps) {
       spacing={1}
       sx={{ padding: "0.25rem", height: "fit-content" }}
     >
-      {props.actions.map((action, index) => (
+      {actions.map((action, index) => (
         <ActionView
           key={`action-${props.id}-${index}`}
           topLevelInfo={props.topLevelInfo}
@@ -265,12 +267,14 @@ export function SectionActions(props: SectionActionsProps) {
         />
       ))}
 
-      <SectionActionsWithDialog
-        id={props.id}
-        topLevelInfo={props.topLevelInfo}
-        inputsEnabled={props.inputsEnabled}
-        actions={props.extraActions ?? []}
-      />
+      {extraActions.length > 0 && (
+        <SectionActionsWithDialog
+          id={props.id}
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
+          actions={extraActions}
+        />
+      )}
     </Stack>
   );
 }

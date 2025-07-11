@@ -444,118 +444,113 @@ export default function TimeEventInDayBlockViewOne() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
-            <input
-              type="hidden"
-              name="userTimezone"
-              value={topLevelInfo.user.timezone}
-            />
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="name"
-                name="name"
-                readOnly={true}
-                defaultValue={name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <TimeEventSourceLink timeEvent={loaderData.inDayBlock} />
-          </Box>
-
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+          <input
+            type="hidden"
+            name="userTimezone"
+            value={topLevelInfo.user.timezone}
+          />
           <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
-            </InputLabel>
+            <InputLabel id="name">Name</InputLabel>
             <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
-              readOnly={!(inputsEnabled && corePropertyEditable)}
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              label="name"
+              name="name"
+              readOnly={true}
+              defaultValue={name}
             />
-
-            <FieldError actionResult={actionData} fieldName="/start_date" />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="startTimeInDay" shrink margin="dense">
-              Start Time
-            </InputLabel>
-            <OutlinedInput
-              type="time"
-              label="startTimeInDay"
-              name="startTimeInDay"
-              readOnly={!(inputsEnabled && corePropertyEditable)}
-              value={startTimeInDay}
-              onChange={(e) => setStartTimeInDay(e.target.value)}
-            />
+          <TimeEventSourceLink timeEvent={loaderData.inDayBlock} />
+        </Box>
 
-            <FieldError
-              actionResult={actionData}
-              fieldName="/start_time_in_day"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!(inputsEnabled && corePropertyEditable)}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
 
-          <Stack spacing={2} direction="row">
-            <ButtonGroup
-              variant="outlined"
-              disabled={!(inputsEnabled && corePropertyEditable)}
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startTimeInDay" shrink margin="dense">
+            Start Time
+          </InputLabel>
+          <OutlinedInput
+            type="time"
+            label="startTimeInDay"
+            name="startTimeInDay"
+            readOnly={!(inputsEnabled && corePropertyEditable)}
+            value={startTimeInDay}
+            onChange={(e) => setStartTimeInDay(e.target.value)}
+          />
+
+          <FieldError
+            actionResult={actionData}
+            fieldName="/start_time_in_day"
+          />
+        </FormControl>
+
+        <Stack spacing={2} direction="row">
+          <ButtonGroup
+            variant="outlined"
+            disabled={!(inputsEnabled && corePropertyEditable)}
+          >
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 15 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(15)}
             >
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 15 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(15)}
-              >
-                15m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 30 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(30)}
-              >
-                30m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 60 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(60)}
-              >
-                60m
-              </Button>
-            </ButtonGroup>
+              15m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 30 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(30)}
+            >
+              30m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 60 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(60)}
+            >
+              60m
+            </Button>
+          </ButtonGroup>
 
-            <FormControl fullWidth>
-              <InputLabel id="durationMins" shrink margin="dense">
-                Duration (Mins)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Mins)"
-                name="durationMins"
-                readOnly={!(inputsEnabled && corePropertyEditable)}
-                value={durationMins}
-                onChange={(e) => {
-                  if (Number.isNaN(parseInt(e.target.value, 10))) {
-                    setDurationMins(0);
-                    e.preventDefault();
-                    return;
-                  }
+          <FormControl fullWidth>
+            <InputLabel id="durationMins" shrink margin="dense">
+              Duration (Mins)
+            </InputLabel>
+            <OutlinedInput
+              type="number"
+              label="Duration (Mins)"
+              name="durationMins"
+              readOnly={!(inputsEnabled && corePropertyEditable)}
+              value={durationMins}
+              onChange={(e) => {
+                if (Number.isNaN(parseInt(e.target.value, 10))) {
+                  setDurationMins(0);
+                  e.preventDefault();
+                  return;
+                }
 
-                  return setDurationMins(parseInt(e.target.value, 10));
-                }}
-              />
+                return setDurationMins(parseInt(e.target.value, 10));
+              }}
+            />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_mins"
-              />
-            </FormControl>
-          </Stack>
+            <FieldError actionResult={actionData} fieldName="/duration_mins" />
+          </FormControl>
         </Stack>
       </SectionCard>
 

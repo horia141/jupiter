@@ -1,9 +1,4 @@
-import {
-  Button,
-  CardContent,
-  Typography,
-  styled,
-} from "@mui/material";
+import { Button, CardContent, Typography, styled } from "@mui/material";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Duration } from "luxon";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -11,7 +6,10 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { ClientOnly } from "~/components/infra/client-only";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
-import { SectionActions , ButtonSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ButtonSingle,
+} from "~/components/infra/section-actions";
 import { SectionCard } from "~/components/infra/section-card";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { TopLevelInfoContext } from "~/top-level-context";

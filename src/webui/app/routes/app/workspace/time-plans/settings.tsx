@@ -223,7 +223,7 @@ export default function TimePlansSettings() {
         topLevelInfo.workspace,
         WorkspaceFeature.TIME_PLANS,
       ) && (
-        <Stack spacing={2}>
+        <>
           <SectionCard
             id="time-plans-settings"
             title="Settings"
@@ -248,150 +248,148 @@ export default function TimePlansSettings() {
               />
             }
           >
-            <Stack spacing={2} useFlexGap>
-              <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
-                <FormControl fullWidth>
-                  <FormLabel id="periods">Periods You Want To Plan</FormLabel>
-                  <PeriodSelect
-                    labelId="periods"
-                    label="Periods"
-                    name="periods"
-                    multiSelect
-                    inputsEnabled={inputsEnabled}
-                    value={periods}
-                    onChange={(newPeriods) => {
-                      setPeriods(newPeriods as RecurringTaskPeriod[]);
-                    }}
-                  />
-                  <FieldError actionResult={actionData} fieldName="/periods" />
-                </FormControl>
+            <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
+              <FormControl fullWidth>
+                <FormLabel id="periods">Periods You Want To Plan</FormLabel>
+                <PeriodSelect
+                  labelId="periods"
+                  label="Periods"
+                  name="periods"
+                  multiSelect
+                  inputsEnabled={inputsEnabled}
+                  value={periods}
+                  onChange={(newPeriods) => {
+                    setPeriods(newPeriods as RecurringTaskPeriod[]);
+                  }}
+                />
+                <FieldError actionResult={actionData} fieldName="/periods" />
+              </FormControl>
 
-                <FormControl fullWidth>
-                  <FormLabel id="generationApproach">
-                    Generation Approach
-                  </FormLabel>
-                  <TimePlanGenerationApproachSelect
-                    name="generationApproach"
-                    inputsEnabled={inputsEnabled}
-                    value={approach}
-                    onChange={setApproach}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/generation_approach"
-                  />
-                </FormControl>
-              </Stack>
+              <FormControl fullWidth>
+                <FormLabel id="generationApproach">
+                  Generation Approach
+                </FormLabel>
+                <TimePlanGenerationApproachSelect
+                  name="generationApproach"
+                  inputsEnabled={inputsEnabled}
+                  value={approach}
+                  onChange={setApproach}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/generation_approach"
+                />
+              </FormControl>
+            </Stack>
 
-              {approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK && (
-                <>
-                  <Divider>
-                    <Typography variant="h6">
-                      Planning Inbox Task Properties
-                    </Typography>
-                  </Divider>
+            {approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK && (
+              <>
+                <Divider>
+                  <Typography variant="h6">
+                    Planning Inbox Task Properties
+                  </Typography>
+                </Divider>
 
-                  <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
-                    {isWorkspaceFeatureAvailable(
-                      topLevelInfo.workspace,
-                      WorkspaceFeature.PROJECTS,
-                    ) && (
-                      <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                        <ProjectSelect
-                          name="planningTaskProject"
-                          label="Planning Task Project"
-                          inputsEnabled={inputsEnabled}
-                          disabled={false}
-                          allProjects={loaderData.allProjects!}
-                          defaultValue={loaderData.planningTaskProject?.ref_id}
+                <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
+                  {isWorkspaceFeatureAvailable(
+                    topLevelInfo.workspace,
+                    WorkspaceFeature.PROJECTS,
+                  ) && (
+                    <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
+                      <ProjectSelect
+                        name="planningTaskProject"
+                        label="Planning Task Project"
+                        inputsEnabled={inputsEnabled}
+                        disabled={false}
+                        allProjects={loaderData.allProjects!}
+                        defaultValue={loaderData.planningTaskProject?.ref_id}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/planning_task_project_ref_id"
+                      />
+                    </FormControl>
+                  )}
+
+                  <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
+                    <FormLabel id="planningTaskEisen">
+                      Planning Task Eisen
+                    </FormLabel>
+                    <EisenhowerSelect
+                      name="planningTaskEisen"
+                      inputsEnabled={inputsEnabled}
+                      defaultValue={
+                        loaderData.planningTaskGenParams?.eisen ??
+                        Eisen.IMPORTANT
+                      }
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/planning_task_eisen"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
+                    <FormLabel id="planningTaskDifficulty">
+                      Planning Task Difficulty
+                    </FormLabel>
+                    <DifficultySelect
+                      name="planningTaskDifficulty"
+                      inputsEnabled={inputsEnabled}
+                      defaultValue={
+                        loaderData.planningTaskGenParams?.difficulty ??
+                        Difficulty.EASY
+                      }
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/planning_task_difficulty"
+                    />
+                  </FormControl>
+                </Stack>
+              </>
+            )}
+
+            {(approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK ||
+              approach === TimePlanGenerationApproach.ONLY_PLAN) && (
+              <>
+                <Divider>
+                  <Typography variant="h6">
+                    Days To Generate In Advance
+                  </Typography>
+                </Divider>
+
+                <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
+                  {Object.values(RecurringTaskPeriod).map((period) => {
+                    if (!periods.includes(period)) {
+                      return null;
+                    }
+
+                    return (
+                      <FormControl fullWidth key={period}>
+                        <InputLabel
+                          id={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
+                        >
+                          For {periodName(period)}
+                        </InputLabel>
+                        <OutlinedInput
+                          name={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
+                          label={`For ${periodName(period)}`}
+                          disabled={!inputsEnabled}
+                          defaultValue={
+                            loaderData.generationInAdvanceDays[period] ?? 1
+                          }
                         />
                         <FieldError
                           actionResult={actionData}
-                          fieldName="/planning_task_project_ref_id"
+                          fieldName={`/generation_in_advance_days`}
                         />
                       </FormControl>
-                    )}
-
-                    <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                      <FormLabel id="planningTaskEisen">
-                        Planning Task Eisen
-                      </FormLabel>
-                      <EisenhowerSelect
-                        name="planningTaskEisen"
-                        inputsEnabled={inputsEnabled}
-                        defaultValue={
-                          loaderData.planningTaskGenParams?.eisen ??
-                          Eisen.IMPORTANT
-                        }
-                      />
-                      <FieldError
-                        actionResult={actionData}
-                        fieldName="/planning_task_eisen"
-                      />
-                    </FormControl>
-
-                    <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                      <FormLabel id="planningTaskDifficulty">
-                        Planning Task Difficulty
-                      </FormLabel>
-                      <DifficultySelect
-                        name="planningTaskDifficulty"
-                        inputsEnabled={inputsEnabled}
-                        defaultValue={
-                          loaderData.planningTaskGenParams?.difficulty ??
-                          Difficulty.EASY
-                        }
-                      />
-                      <FieldError
-                        actionResult={actionData}
-                        fieldName="/planning_task_difficulty"
-                      />
-                    </FormControl>
-                  </Stack>
-                </>
-              )}
-
-              {(approach === TimePlanGenerationApproach.BOTH_PLAN_AND_TASK ||
-                approach === TimePlanGenerationApproach.ONLY_PLAN) && (
-                <>
-                  <Divider>
-                    <Typography variant="h6">
-                      Days To Generate In Advance
-                    </Typography>
-                  </Divider>
-
-                  <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
-                    {Object.values(RecurringTaskPeriod).map((period) => {
-                      if (!periods.includes(period)) {
-                        return null;
-                      }
-
-                      return (
-                        <FormControl fullWidth key={period}>
-                          <InputLabel
-                            id={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
-                          >
-                            For {periodName(period)}
-                          </InputLabel>
-                          <OutlinedInput
-                            name={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
-                            label={`For ${periodName(period)}`}
-                            disabled={!inputsEnabled}
-                            defaultValue={
-                              loaderData.generationInAdvanceDays[period] ?? 1
-                            }
-                          />
-                          <FieldError
-                            actionResult={actionData}
-                            fieldName={`/generation_in_advance_days`}
-                          />
-                        </FormControl>
-                      );
-                    })}
-                  </Stack>
-                </>
-              )}
-            </Stack>
+                    );
+                  })}
+                </Stack>
+              </>
+            )}
           </SectionCard>
 
           <SectionCard
@@ -409,7 +407,7 @@ export default function TimePlansSettings() {
               inboxTasks={loaderData.planningTasks}
             />
           </SectionCard>
-        </Stack>
+        </>
       )}
     </BranchPanel>
   );

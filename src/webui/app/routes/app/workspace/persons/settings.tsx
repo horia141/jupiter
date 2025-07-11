@@ -1,9 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
-import {
-  FormControl,
-  Stack,
-} from "@mui/material";
+import { FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -25,7 +22,10 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { SectionCard } from "~/components/infra/section-card";
-import { SectionActions , ActionSingle } from "~/components/infra/section-actions";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -95,6 +95,7 @@ export default function PersonsSettings() {
       returnLocation="/app/workspace/persons"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
@@ -117,23 +118,20 @@ export default function PersonsSettings() {
             />
           }
         >
-          <GlobalError actionResult={actionData} />
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Catch Up Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                defaultValue={loaderData.catchUpProject.ref_id}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/catch_up_project_key"
-              />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Catch Up Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.catchUpProject.ref_id}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/catch_up_project_key"
+            />
+          </FormControl>
         </SectionCard>
       )}
     </BranchPanel>

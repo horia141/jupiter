@@ -13,7 +13,7 @@ import { DocEditor } from "~/components/domain/concept/doc/doc-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCard } from "~/components/infra/section-card";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -69,7 +69,7 @@ export default function NewDoc() {
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCard title="New Doc">
+      <SectionCard title="New Doc" actionsPosition={ActionsPosition.BELOW}>
         <FormControl fullWidth>
           <DocEditor inputsEnabled={inputsEnabled} />
         </FormControl>

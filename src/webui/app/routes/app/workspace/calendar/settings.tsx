@@ -8,7 +8,6 @@ import {
   FormControl,
   FormControlLabel,
   InputLabel,
-  Stack,
   Switch,
   styled,
 } from "@mui/material";
@@ -140,42 +139,40 @@ export default function CalendarSettings() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="scheduleStreamRefId">Schedule Streams</InputLabel>
-            <ScheduleStreamMultiSelect
-              labelId="scheduleStreamRefIds"
-              label="Schedule Streams"
-              name="scheduleStreamRefIds"
-              readOnly={!inputsEnabled}
-              allScheduleStreams={loaderData.scheduleStreams.filter(
-                (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
-              )}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/filter_schedule_stream_ref_id"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="scheduleStreamRefId">Schedule Streams</InputLabel>
+          <ScheduleStreamMultiSelect
+            labelId="scheduleStreamRefIds"
+            label="Schedule Streams"
+            name="scheduleStreamRefIds"
+            readOnly={!inputsEnabled}
+            allScheduleStreams={loaderData.scheduleStreams.filter(
+              (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
+            )}
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/filter_schedule_stream_ref_id"
+          />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <FormControlLabel
-              control={
-                <Switch
-                  name="syncEvenIfNotModified"
-                  readOnly={!inputsEnabled}
-                  disabled={!inputsEnabled}
-                  defaultChecked={false}
-                />
-              }
-              label="Sync Even If Not Modified"
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/sync_even_if_not_modified"
-            />
-          </FormControl>
-        </Stack>
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={
+              <Switch
+                name="syncEvenIfNotModified"
+                readOnly={!inputsEnabled}
+                disabled={!inputsEnabled}
+                defaultChecked={false}
+              />
+            }
+            label="Sync Even If Not Modified"
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/sync_even_if_not_modified"
+          />
+        </FormControl>
       </SectionCard>
 
       <StandardDivider title="Previous Runs" size="large" />

@@ -5,7 +5,6 @@ import {
   InputAdornment,
   InputLabel,
   OutlinedInput,
-  Stack,
   Typography,
 } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
@@ -98,60 +97,57 @@ export default function PickServer() {
             />
           }
         >
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="server-url">Server URL</InputLabel>
-              <OutlinedInput
-                label="Server URL"
-                name="serverUrl"
-                type="text"
-                readOnly={!inputsEnabled}
-                value={serverUrl}
-                onChange={(event) => setServerUrl(event.target.value)}
-                endAdornment={
-                  <InputAdornment position="end">
-                    <Button
-                      variant="outlined"
-                      disabled={!inputsEnabled}
-                      onClick={() =>
-                        setServerUrl(globalProperties.hostedGlobalDomain)
-                      }
-                    >
-                      Use Global
-                    </Button>
-                  </InputAdornment>
-                }
+          <FormControl fullWidth>
+            <InputLabel id="server-url">Server URL</InputLabel>
+            <OutlinedInput
+              label="Server URL"
+              name="serverUrl"
+              type="text"
+              readOnly={!inputsEnabled}
+              value={serverUrl}
+              onChange={(event) => setServerUrl(event.target.value)}
+              endAdornment={
+                <InputAdornment position="end">
+                  <Button
+                    variant="outlined"
+                    disabled={!inputsEnabled}
+                    onClick={() =>
+                      setServerUrl(globalProperties.hostedGlobalDomain)
+                    }
+                  >
+                    Use Global
+                  </Button>
+                </InputAdornment>
+              }
+            />
+
+            <Typography variant="caption" sx={{ paddingTop: "1rem" }}>
+              Examples:
+              <ul>
+                <li>
+                  <code>thrive-test.com</code> (assumes https)
+                </li>
+                <li>
+                  <code>http://thrive-test.com</code>
+                </li>
+                <li>
+                  <code>https://my-thrive-instance.io</code>
+                </li>
+                <li>
+                  <code>http://32.18.23.128:10000</code>
+                </li>
+              </ul>
+              You can learn more about self-hosting in the docs:
+              <DocsHelp size="small" subject={DocsHelpSubject.SELF_HOSTING} />.
+            </Typography>
+
+            {errorMessage && (
+              <FieldError
+                actionResult={aFieldError("server_url", errorMessage)}
+                fieldName="server_url"
               />
-
-              <Typography variant="caption" sx={{ paddingTop: "1rem" }}>
-                Examples:
-                <ul>
-                  <li>
-                    <code>thrive-test.com</code> (assumes https)
-                  </li>
-                  <li>
-                    <code>http://thrive-test.com</code>
-                  </li>
-                  <li>
-                    <code>https://my-thrive-instance.io</code>
-                  </li>
-                  <li>
-                    <code>http://32.18.23.128:10000</code>
-                  </li>
-                </ul>
-                You can learn more about self-hosting in the docs:
-                <DocsHelp size="small" subject={DocsHelpSubject.SELF_HOSTING} />
-                .
-              </Typography>
-
-              {errorMessage && (
-                <FieldError
-                  actionResult={aFieldError("server_url", errorMessage)}
-                  fieldName="server_url"
-                />
-              )}
-            </FormControl>
-          </Stack>
+            )}
+          </FormControl>
         </SectionCard>
       </LifecyclePanel>
     </StandaloneContainer>

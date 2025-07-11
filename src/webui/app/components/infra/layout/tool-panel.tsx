@@ -1,4 +1,4 @@
-import { Box, styled } from "@mui/material";
+import { Box, Stack, styled } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { motion } from "framer-motion";
 import type { PropsWithChildren } from "react";
@@ -28,7 +28,7 @@ export function ToolPanel(props: PropsWithChildren) {
       transition={{ duration: 0.5 }}
     >
       <ToolCardContent isbigscreen={isBigScreen ? "true" : "false"}>
-        {props.children}
+        <Stack spacing={2}>{props.children}</Stack>
       </ToolCardContent>
     </ToolPanelFrame>
   );

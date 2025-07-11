@@ -55,7 +55,7 @@ import {
   getSuggestedDatesForInboxTaskActionableDate,
   getSuggestedDatesForInboxTaskDueDate,
 } from "~/logic/domain/suggested-date";
-import { SectionCard } from "~/components/infra/section-card";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
 import {
   ActionSingle,
   SectionActions,
@@ -341,6 +341,7 @@ export default function NewInboxTask() {
       <GlobalError actionResult={actionData} />
       <SectionCard
         title="New Inbox Task"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="inbox-task-create"
@@ -357,198 +358,190 @@ export default function NewInboxTask() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack direction="row" spacing={2}>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                {...BetterFieldError({
-                  actionResult: actionData,
-                  fieldName: "/name",
-                })}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <FormControl sx={{ flexGrow: 1 }}>
-              <IsKeySelect
-                name="isKey"
-                defaultValue={false}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/is_key" />
-            </FormControl>
-          </Stack>
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.BIG_PLANS,
-          ) && (
-            <FormControl fullWidth>
-              <Autocomplete
-                disablePortal
-                id="bigPlan"
-                options={allBigPlansAsOptions}
-                readOnly={
-                  !inputsEnabled || loaderData.bigPlanReason !== "standard"
-                }
-                value={selectedBigPlan}
-                disableClearable={true}
-                onChange={handleChangeBigPlan}
-                isOptionEqualToValue={(o, v) => o.big_plan_id === v.big_plan_id}
-                renderInput={(params) => (
-                  <TextField {...params} label="Big Plan" />
-                )}
-              />
-
-              <FieldError
-                actionResult={actionData}
-                fieldName="/big_plan_ref_id"
-              />
-
-              <input
-                type="hidden"
-                name="bigPlan"
-                value={selectedBigPlan.big_plan_id}
-              />
-            </FormControl>
-          )}
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="project"
-                label="Project"
-                inputsEnabled={inputsEnabled && !blockedToSelectProject}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                value={selectedProject}
-                onChange={setSelectedProject}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/project_ref_id"
-              />
-            </FormControl>
-          )}
-
+        <Stack direction="row" spacing={2}>
           <FormControl fullWidth>
-            <FormLabel id="eisen">Eisenhower</FormLabel>
-            <EisenhowerSelect
-              name="eisen"
-              defaultValue={Eisen.REGULAR}
-              inputsEnabled={inputsEnabled}
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              {...BetterFieldError({
+                actionResult: actionData,
+                fieldName: "/name",
+              })}
             />
-            <FieldError actionResult={actionData} fieldName="/eisen" />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 
-          <FormControl fullWidth>
-            <FormLabel id="difficulty">Difficulty</FormLabel>
-            <DifficultySelect
-              name="difficulty"
-              defaultValue={Difficulty.EASY}
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={false}
               inputsEnabled={inputsEnabled}
             />
-            <FieldError actionResult={actionData} fieldName="/difficulty" />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
           </FormControl>
+        </Stack>
 
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.BIG_PLANS,
+        ) && (
           <FormControl fullWidth>
-            <InputLabel id="actionableDate" shrink>
-              Actionable From [Optional]
-            </InputLabel>
-            <DateInputWithSuggestions
-              name="actionableDate"
-              label="actionableDate"
-              inputsEnabled={inputsEnabled}
-              defaultValue={
-                loaderData.timePlanReason === "for-time-plan"
-                  ? (loaderData.associatedTimePlan as TimePlan).start_date
-                  : loaderData.bigPlanReason === "for-big-plan" &&
-                      loaderData.ownerBigPlan?.actionable_date
-                    ? loaderData.ownerBigPlan.actionable_date
-                    : undefined
+            <Autocomplete
+              disablePortal
+              id="bigPlan"
+              options={allBigPlansAsOptions}
+              readOnly={
+                !inputsEnabled || loaderData.bigPlanReason !== "standard"
               }
-              suggestedDates={getSuggestedDatesForInboxTaskActionableDate(
-                topLevelInfo.today,
-                loaderData.ownerBigPlan,
-                loaderData.associatedTimePlan,
+              value={selectedBigPlan}
+              disableClearable={true}
+              onChange={handleChangeBigPlan}
+              isOptionEqualToValue={(o, v) => o.big_plan_id === v.big_plan_id}
+              renderInput={(params) => (
+                <TextField {...params} label="Big Plan" />
               )}
             />
 
             <FieldError
               actionResult={actionData}
-              fieldName="/actionable_date"
+              fieldName="/big_plan_ref_id"
+            />
+
+            <input
+              type="hidden"
+              name="bigPlan"
+              value={selectedBigPlan.big_plan_id}
             />
           </FormControl>
+        )}
 
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
           <FormControl fullWidth>
-            <InputLabel id="dueDate" shrink>
-              Due At [Optional]
-            </InputLabel>
-            <DateInputWithSuggestions
-              name="dueDate"
-              label="dueDate"
-              inputsEnabled={inputsEnabled}
-              defaultValue={
-                loaderData.timePlanReason === "for-time-plan"
-                  ? (loaderData.associatedTimePlan as TimePlan).end_date
-                  : loaderData.bigPlanReason === "for-big-plan" &&
-                      loaderData.ownerBigPlan?.due_date
-                    ? loaderData.ownerBigPlan.due_date
-                    : undefined
-              }
-              suggestedDates={getSuggestedDatesForInboxTaskDueDate(
-                topLevelInfo.today,
-                loaderData.ownerBigPlan,
-                loaderData.associatedTimePlan,
-              )}
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled && !blockedToSelectProject}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              value={selectedProject}
+              onChange={setSelectedProject}
             />
-
-            <FieldError actionResult={actionData} fieldName="/due_date" />
+            <FieldError actionResult={actionData} fieldName="/project_ref_id" />
           </FormControl>
+        )}
 
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.TIME_PLANS,
-          ) &&
-            loaderData.timePlanReason === "for-time-plan" && (
-              <>
-                <FormControl fullWidth>
-                  <FormLabel id="timePlanActivityKind">Kind</FormLabel>
-                  <TimePlanActivitKindSelect
-                    name="timePlanActivityKind"
-                    defaultValue={TimePlanActivityKind.FINISH}
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/time_plan_activity_kind"
-                  />
-                </FormControl>
+        <FormControl fullWidth>
+          <FormLabel id="eisen">Eisenhower</FormLabel>
+          <EisenhowerSelect
+            name="eisen"
+            defaultValue={Eisen.REGULAR}
+            inputsEnabled={inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/eisen" />
+        </FormControl>
 
-                <FormControl fullWidth>
-                  <FormLabel id="timePlanActivityFeasability">
-                    Feasability
-                  </FormLabel>
-                  <TimePlanActivityFeasabilitySelect
-                    name="timePlanActivityFeasability"
-                    defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/time_plan_activity_feasability"
-                  />
-                </FormControl>
-              </>
+        <FormControl fullWidth>
+          <FormLabel id="difficulty">Difficulty</FormLabel>
+          <DifficultySelect
+            name="difficulty"
+            defaultValue={Difficulty.EASY}
+            inputsEnabled={inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/difficulty" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="actionableDate" shrink>
+            Actionable From [Optional]
+          </InputLabel>
+          <DateInputWithSuggestions
+            name="actionableDate"
+            label="actionableDate"
+            inputsEnabled={inputsEnabled}
+            defaultValue={
+              loaderData.timePlanReason === "for-time-plan"
+                ? (loaderData.associatedTimePlan as TimePlan).start_date
+                : loaderData.bigPlanReason === "for-big-plan" &&
+                    loaderData.ownerBigPlan?.actionable_date
+                  ? loaderData.ownerBigPlan.actionable_date
+                  : undefined
+            }
+            suggestedDates={getSuggestedDatesForInboxTaskActionableDate(
+              topLevelInfo.today,
+              loaderData.ownerBigPlan,
+              loaderData.associatedTimePlan,
             )}
-        </Stack>
+          />
+
+          <FieldError actionResult={actionData} fieldName="/actionable_date" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="dueDate" shrink>
+            Due At [Optional]
+          </InputLabel>
+          <DateInputWithSuggestions
+            name="dueDate"
+            label="dueDate"
+            inputsEnabled={inputsEnabled}
+            defaultValue={
+              loaderData.timePlanReason === "for-time-plan"
+                ? (loaderData.associatedTimePlan as TimePlan).end_date
+                : loaderData.bigPlanReason === "for-big-plan" &&
+                    loaderData.ownerBigPlan?.due_date
+                  ? loaderData.ownerBigPlan.due_date
+                  : undefined
+            }
+            suggestedDates={getSuggestedDatesForInboxTaskDueDate(
+              topLevelInfo.today,
+              loaderData.ownerBigPlan,
+              loaderData.associatedTimePlan,
+            )}
+          />
+
+          <FieldError actionResult={actionData} fieldName="/due_date" />
+        </FormControl>
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.TIME_PLANS,
+        ) &&
+          loaderData.timePlanReason === "for-time-plan" && (
+            <>
+              <FormControl fullWidth>
+                <FormLabel id="timePlanActivityKind">Kind</FormLabel>
+                <TimePlanActivitKindSelect
+                  name="timePlanActivityKind"
+                  defaultValue={TimePlanActivityKind.FINISH}
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/time_plan_activity_kind"
+                />
+              </FormControl>
+
+              <FormControl fullWidth>
+                <FormLabel id="timePlanActivityFeasability">
+                  Feasability
+                </FormLabel>
+                <TimePlanActivityFeasabilitySelect
+                  name="timePlanActivityFeasability"
+                  defaultValue={TimePlanActivityFeasability.NICE_TO_HAVE}
+                  inputsEnabled={inputsEnabled}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/time_plan_activity_feasability"
+                />
+              </FormControl>
+            </>
+          )}
       </SectionCard>
     </LeafPanel>
   );

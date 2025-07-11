@@ -224,7 +224,7 @@ export default function JournalsSettings() {
         topLevelInfo.workspace,
         WorkspaceFeature.JOURNALS,
       ) && (
-        <Stack spacing={2}>
+        <>
           <SectionCard
             id="journals-settings"
             title="Settings"
@@ -249,184 +249,178 @@ export default function JournalsSettings() {
               />
             }
           >
-            <Stack spacing={2} useFlexGap>
-              <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
-                <FormControl fullWidth>
-                  <FormLabel id="periods">
-                    Periods You Want To Journal
-                  </FormLabel>
-                  <PeriodSelect
-                    labelId="periods"
-                    label="Periods"
-                    name="periods"
-                    multiSelect
-                    inputsEnabled={inputsEnabled}
-                    value={periods}
-                    onChange={(newPeriods) => {
-                      setPeriods(newPeriods as RecurringTaskPeriod[]);
-                    }}
-                  />
-                  <FieldError actionResult={actionData} fieldName="/periods" />
-                </FormControl>
+            <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
+              <FormControl fullWidth>
+                <FormLabel id="periods">Periods You Want To Journal</FormLabel>
+                <PeriodSelect
+                  labelId="periods"
+                  label="Periods"
+                  name="periods"
+                  multiSelect
+                  inputsEnabled={inputsEnabled}
+                  value={periods}
+                  onChange={(newPeriods) => {
+                    setPeriods(newPeriods as RecurringTaskPeriod[]);
+                  }}
+                />
+                <FieldError actionResult={actionData} fieldName="/periods" />
+              </FormControl>
 
-                <FormControl fullWidth>
-                  <FormLabel id="generationApproach">
-                    Generation Approach
-                  </FormLabel>
-                  <ToggleButtonGroup
-                    value={approach}
-                    exclusive
-                    fullWidth
-                    onChange={(_, newApproach) =>
-                      newApproach !== null && setApproach(newApproach)
-                    }
+              <FormControl fullWidth>
+                <FormLabel id="generationApproach">
+                  Generation Approach
+                </FormLabel>
+                <ToggleButtonGroup
+                  value={approach}
+                  exclusive
+                  fullWidth
+                  onChange={(_, newApproach) =>
+                    newApproach !== null && setApproach(newApproach)
+                  }
+                >
+                  <ToggleButton
+                    size="small"
+                    id="approach-both"
+                    disabled={!inputsEnabled}
+                    value={JournalGenerationApproach.BOTH_JOURNAL_AND_TASK}
                   >
-                    <ToggleButton
-                      size="small"
-                      id="approach-both"
-                      disabled={!inputsEnabled}
-                      value={JournalGenerationApproach.BOTH_JOURNAL_AND_TASK}
-                    >
-                      Both Journal and Task
-                    </ToggleButton>
-                    <ToggleButton
-                      size="small"
-                      id="approach-journal"
-                      disabled={!inputsEnabled}
-                      value={JournalGenerationApproach.ONLY_JOURNAL}
-                    >
-                      Only Journal
-                    </ToggleButton>
-                    <ToggleButton
-                      size="small"
-                      id="approach-none"
-                      disabled={!inputsEnabled}
-                      value={JournalGenerationApproach.NONE}
-                    >
-                      None
-                    </ToggleButton>
-                  </ToggleButtonGroup>
-                  <input
-                    name="generationApproach"
-                    type="hidden"
-                    value={approach}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/generation_approach"
-                  />
-                </FormControl>
-              </Stack>
+                    Both Journal and Task
+                  </ToggleButton>
+                  <ToggleButton
+                    size="small"
+                    id="approach-journal"
+                    disabled={!inputsEnabled}
+                    value={JournalGenerationApproach.ONLY_JOURNAL}
+                  >
+                    Only Journal
+                  </ToggleButton>
+                  <ToggleButton
+                    size="small"
+                    id="approach-none"
+                    disabled={!inputsEnabled}
+                    value={JournalGenerationApproach.NONE}
+                  >
+                    None
+                  </ToggleButton>
+                </ToggleButtonGroup>
+                <input
+                  name="generationApproach"
+                  type="hidden"
+                  value={approach}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/generation_approach"
+                />
+              </FormControl>
+            </Stack>
 
-              {approach === JournalGenerationApproach.BOTH_JOURNAL_AND_TASK && (
-                <>
-                  <Divider>
-                    <Typography variant="h6">
-                      Writing Task Properties
-                    </Typography>
-                  </Divider>
+            {approach === JournalGenerationApproach.BOTH_JOURNAL_AND_TASK && (
+              <>
+                <Divider>
+                  <Typography variant="h6">Writing Task Properties</Typography>
+                </Divider>
 
-                  <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
-                    {isWorkspaceFeatureAvailable(
-                      topLevelInfo.workspace,
-                      WorkspaceFeature.PROJECTS,
-                    ) && (
-                      <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                        <ProjectSelect
-                          name="writingTaskProject"
-                          label="Writing Task Project"
-                          inputsEnabled={inputsEnabled}
-                          disabled={false}
-                          allProjects={loaderData.allProjects!}
-                          defaultValue={loaderData.writingTaskProject?.ref_id}
+                <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
+                  {isWorkspaceFeatureAvailable(
+                    topLevelInfo.workspace,
+                    WorkspaceFeature.PROJECTS,
+                  ) && (
+                    <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
+                      <ProjectSelect
+                        name="writingTaskProject"
+                        label="Writing Task Project"
+                        inputsEnabled={inputsEnabled}
+                        disabled={false}
+                        allProjects={loaderData.allProjects!}
+                        defaultValue={loaderData.writingTaskProject?.ref_id}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/writing_task_project_ref_id"
+                      />
+                    </FormControl>
+                  )}
+
+                  <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
+                    <FormLabel id="writingTaskEisen">
+                      Writing Task Eisen
+                    </FormLabel>
+                    <EisenhowerSelect
+                      name="writingTaskEisen"
+                      inputsEnabled={inputsEnabled}
+                      defaultValue={
+                        loaderData.writingTaskGenParams?.eisen ??
+                        Eisen.IMPORTANT
+                      }
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/writing_task_eisen"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
+                    <FormLabel id="writingTaskDifficulty">
+                      Writing Task Difficulty
+                    </FormLabel>
+                    <DifficultySelect
+                      name="writingTaskDifficulty"
+                      inputsEnabled={inputsEnabled}
+                      defaultValue={
+                        loaderData.writingTaskGenParams?.difficulty ??
+                        Difficulty.EASY
+                      }
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/writing_task_difficulty"
+                    />
+                  </FormControl>
+                </Stack>
+              </>
+            )}
+
+            {(approach === JournalGenerationApproach.BOTH_JOURNAL_AND_TASK ||
+              approach === JournalGenerationApproach.ONLY_JOURNAL) && (
+              <>
+                <Divider>
+                  <Typography variant="h6">
+                    Days To Generate In Advance
+                  </Typography>
+                </Divider>
+
+                <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
+                  {Object.values(RecurringTaskPeriod).map((period) => {
+                    if (!periods.includes(period)) {
+                      return null;
+                    }
+
+                    return (
+                      <FormControl fullWidth key={period}>
+                        <InputLabel
+                          id={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
+                        >
+                          For {periodName(period)}
+                        </InputLabel>
+                        <OutlinedInput
+                          name={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
+                          label={`For ${periodName(period)}`}
+                          disabled={!inputsEnabled}
+                          defaultValue={
+                            loaderData.generationInAdvanceDays[period] ?? 1
+                          }
                         />
                         <FieldError
                           actionResult={actionData}
-                          fieldName="/writing_task_project_ref_id"
+                          fieldName={`/generation_in_advance_days`}
                         />
                       </FormControl>
-                    )}
-
-                    <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                      <FormLabel id="writingTaskEisen">
-                        Writing Task Eisen
-                      </FormLabel>
-                      <EisenhowerSelect
-                        name="writingTaskEisen"
-                        inputsEnabled={inputsEnabled}
-                        defaultValue={
-                          loaderData.writingTaskGenParams?.eisen ??
-                          Eisen.IMPORTANT
-                        }
-                      />
-                      <FieldError
-                        actionResult={actionData}
-                        fieldName="/writing_task_eisen"
-                      />
-                    </FormControl>
-
-                    <FormControl fullWidth sx={{ alignSelf: "flex-end" }}>
-                      <FormLabel id="writingTaskDifficulty">
-                        Writing Task Difficulty
-                      </FormLabel>
-                      <DifficultySelect
-                        name="writingTaskDifficulty"
-                        inputsEnabled={inputsEnabled}
-                        defaultValue={
-                          loaderData.writingTaskGenParams?.difficulty ??
-                          Difficulty.EASY
-                        }
-                      />
-                      <FieldError
-                        actionResult={actionData}
-                        fieldName="/writing_task_difficulty"
-                      />
-                    </FormControl>
-                  </Stack>
-                </>
-              )}
-
-              {(approach === JournalGenerationApproach.BOTH_JOURNAL_AND_TASK ||
-                approach === JournalGenerationApproach.ONLY_JOURNAL) && (
-                <>
-                  <Divider>
-                    <Typography variant="h6">
-                      Days To Generate In Advance
-                    </Typography>
-                  </Divider>
-
-                  <Stack direction={isBigScreen ? "row" : "column"} spacing={2}>
-                    {Object.values(RecurringTaskPeriod).map((period) => {
-                      if (!periods.includes(period)) {
-                        return null;
-                      }
-
-                      return (
-                        <FormControl fullWidth key={period}>
-                          <InputLabel
-                            id={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
-                          >
-                            For {periodName(period)}
-                          </InputLabel>
-                          <OutlinedInput
-                            name={`generationInAdvanceDaysFor${period.charAt(0).toUpperCase() + period.slice(1)}`}
-                            label={`For ${periodName(period)}`}
-                            disabled={!inputsEnabled}
-                            defaultValue={
-                              loaderData.generationInAdvanceDays[period] ?? 1
-                            }
-                          />
-                          <FieldError
-                            actionResult={actionData}
-                            fieldName={`/generation_in_advance_days`}
-                          />
-                        </FormControl>
-                      );
-                    })}
-                  </Stack>
-                </>
-              )}
-            </Stack>
+                    );
+                  })}
+                </Stack>
+              </>
+            )}
           </SectionCard>
 
           <SectionCard
@@ -444,7 +438,7 @@ export default function JournalsSettings() {
               inboxTasks={loaderData.writingTasks}
             />
           </SectionCard>
-        </Stack>
+        </>
       )}
     </BranchPanel>
   );
