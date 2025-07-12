@@ -1,4 +1,4 @@
-import { BigPlanStats } from "@jupiter/webapi-client";
+import { BigPlanMilestone, BigPlanStats } from "@jupiter/webapi-client";
 
 import { WidgetProps } from "~/components/domain/application/home/common";
 import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
@@ -11,6 +11,9 @@ export function KeyBigPlansProgressWidget(props: WidgetProps) {
   const keyBigPlans = props.keyBigPlans!;
   const sortedBigPlans = sortBigPlansNaturally(
     keyBigPlans.bigPlans.map((bp) => bp.bigPlan),
+  );
+  const bigPlanMilestonesByRefId: Map<string, BigPlanMilestone[]> = new Map(
+    keyBigPlans.bigPlans.map((bp) => [bp.bigPlan.ref_id, bp.milestones]),
   );
   const bigPlanStatsByRefId: Map<string, BigPlanStats> = new Map(
     keyBigPlans.bigPlans.map((bp) => [bp.bigPlan.ref_id, bp.stats]),
@@ -33,9 +36,11 @@ export function KeyBigPlansProgressWidget(props: WidgetProps) {
       <BigPlanStack
         topLevelInfo={props.topLevelInfo}
         bigPlans={sortedBigPlans}
+        bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
         bigPlanStatsByRefId={bigPlanStatsByRefId}
         showOptions={{
           showDonePct: true,
+          showMilestonesLeft: true,
           showStatus: true,
           showProject: true,
           showEisen: true,

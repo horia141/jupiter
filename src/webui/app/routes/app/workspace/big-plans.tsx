@@ -259,10 +259,12 @@ export default function BigPlans() {
           <BigPlanStack
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
+            bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
             bigPlanStatsByRefId={bigPlanStatsByRefId}
             entriesByRefId={entriesByRefId}
             showOptions={{
               showDonePct: true,
+              showMilestonesLeft: true,
               showProject: true,
               showEisen: true,
               showDifficulty: true,

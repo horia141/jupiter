@@ -18,6 +18,7 @@ import {
   WorkspaceFeature,
   UserFeature,
   WidgetGeometry,
+  BigPlanMilestone,
 } from "@jupiter/webapi-client";
 import {
   Box,
@@ -51,9 +52,10 @@ interface HabitStreakEntry {
   inboxTasks: InboxTask[];
 }
 
-interface BigPlanStatsEntry {
+interface BigPlanEntry {
   bigPlan: BigPlan;
   stats: BigPlanStats;
+  milestones: BigPlanMilestone[];
 }
 
 export interface WidgetProps {
@@ -90,7 +92,7 @@ export interface WidgetProps {
     getYearUrl: (year: number) => string;
   };
   keyBigPlans?: {
-    bigPlans: BigPlanStatsEntry[];
+    bigPlans: BigPlanEntry[];
   };
   calendar?: {
     period: RecurringTaskPeriod;

@@ -260,6 +260,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     keyBigPlansResults: keyBigPlansResults?.map((bp) => ({
       bigPlan: bp.big_plan,
       stats: bp.stats,
+      milestones: bp.milestones,
     })),
     calendarEntriesForToday: calendarForTodayResponse?.entries,
     timePlanForToday: fullTimePlanForToday
@@ -491,6 +492,7 @@ export default function WorkspaceHome() {
           bigPlans: loaderData.keyBigPlansResults.map((bp) => ({
             bigPlan: bp.bigPlan,
             stats: bp.stats,
+            milestones: bp.milestones,
           })),
         }
       : undefined,

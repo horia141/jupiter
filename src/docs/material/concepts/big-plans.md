@@ -48,6 +48,15 @@ plan, if it has any.
 Between them, the actionable and due dates allow you to schedule the big plans in time in
 a more organized manner. There is a special view which allows for this.
 
+## Milestones
+
+Big plans have milestones attached to them. These have a name and a date when they
+are recorded (either need to happen, or finish, etc.).
+
+The milestone must occur before the start date and end date of the big plan if
+these exist. Once milestones are added, the start and end date can only be added
+before the earliest milestone, or after the latest one, respectively.
+
 ## Stats
 
 Big plans have a notion of progress associated with them, which is quantified by a number

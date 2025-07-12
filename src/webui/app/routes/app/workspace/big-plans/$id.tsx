@@ -76,6 +76,10 @@ import {
 } from "~/logic/domain/suggested-date";
 import { BigPlanMilestoneStack } from "~/components/domain/concept/big-plan/big-plan-milestone-stack";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { bigPlanDonePct } from "~/logic/domain/big-plan";
+import { BigPlanDonePctTag } from "~/components/domain/concept/big-plan/big-plan-done-pct-tag";
+import { BigPlanDonePctBigTag } from "~/components/domain/concept/big-plan/big-plan-done-pct-big-tag";
+import { aDateToDate } from "~/logic/domain/adate";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -172,6 +176,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     return json({
       bigPlan: result.big_plan,
+      stats: result.stats,
       project: result.project,
       milestones: result.milestones,
       inboxTasks: result.inbox_tasks,
@@ -361,6 +366,9 @@ export default function BigPlan() {
   const sortedInboxTasks = sortInboxTasksNaturally(loaderData.inboxTasks, {
     dueDateAscending: false,
   });
+  const milestonesLeft = loaderData.milestones.filter(
+    (m) => aDateToDate(m.date) > aDateToDate(topLevelInfo.today),
+  ).length;
 
   const cardActionFetcher = useFetcher();
 
@@ -430,7 +438,7 @@ export default function BigPlan() {
             />
           }
         >
-          <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+          <Stack direction="row" spacing={1}>
             <FormControl sx={{ flexGrow: 3 }}>
               <InputLabel id="name">Name</InputLabel>
               <OutlinedInput
@@ -448,6 +456,9 @@ export default function BigPlan() {
                 inputsEnabled={inputsEnabled}
               />
             </FormControl>
+          </Stack>
+
+          <Stack direction="row" spacing={2}>
             <FormControl sx={{ flexGrow: 1 }}>
               <BigPlanStatusBigTag status={loaderData.bigPlan.status} />
               <input
@@ -457,7 +468,15 @@ export default function BigPlan() {
               />
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
-          </Box>
+
+            <FormControl sx={{ flexGrow: 1 }}>
+              <BigPlanDonePctBigTag
+                donePct={bigPlanDonePct(loaderData.bigPlan, loaderData.stats)}
+                shouldShowMilestonesLeft={loaderData.milestones.length > 0}
+                milestonesLeft={milestonesLeft}
+              />
+            </FormControl>
+          </Stack>
 
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
