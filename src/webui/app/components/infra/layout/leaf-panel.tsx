@@ -434,7 +434,7 @@ const LeafPanelFrame = styled(motion.div)<LeafPanelFrameProps>(
       left: ${isBigScreen ? "unset" : "0px"};
       right: 0px;
       bottom: 0px;
-      z-index: ${theme.zIndex.appBar + (isLeaflet ? 300 : 200)};
+      z-index: ${theme.zIndex.appBar + (isLeaflet ? 3 : 2)};
       background-color: ${theme.palette.background.paper};
       border-left: 1px solid rgba(0, 0, 0, 0.12);
     `,

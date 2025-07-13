@@ -267,7 +267,7 @@ export function SectionActions(props: SectionActionsProps) {
         />
       ))}
 
-      {extraActions.length > 0 && (
+      {extraActions.length > 1 && (
         <SectionActionsWithDialog
           id={props.id}
           topLevelInfo={props.topLevelInfo}
