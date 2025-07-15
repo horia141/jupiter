@@ -25,6 +25,7 @@ interface TimePlanActivityListProps {
   activityDoneness: Record<string, TimePlanActivityDoneness>;
   timeEventsByRefId: Map<string, Array<TimeEventInDayBlock>>;
   fullInfo: boolean;
+  showTimePlanName?: boolean;
   filterKind?: TimePlanActivityKind[];
   filterFeasability?: TimePlanActivityFeasability[];
   filterDoneness?: boolean[];
@@ -81,6 +82,7 @@ export function TimePlanActivityList(props: TimePlanActivityListProps) {
                 : 0
             }
             fullInfo={props.fullInfo}
+            showTimePlanName={props.showTimePlanName}
             timePlansByRefId={props.timePlansByRefId}
             inboxTasksByRefId={props.inboxTasksByRefId}
             bigPlansByRefId={props.bigPlansByRefId}

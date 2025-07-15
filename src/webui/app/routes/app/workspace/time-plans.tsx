@@ -1,4 +1,5 @@
 import {
+  ADate,
   RecurringTaskPeriod,
   TimePlan,
   type TimePlanFindResultEntry,
@@ -10,7 +11,6 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -70,14 +70,11 @@ export default function TimePlans() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
-    "day",
-  );
-
   const activeTimePlans = findTimePlansThatAreActive(
     loaderData.entries.map((e) => e.time_plan),
-    rightNow,
+    topLevelInfo.today,
   );
+
   const yearTimePlan = activeTimePlans.find(
     (tp) => tp.period === RecurringTaskPeriod.YEARLY,
   );
@@ -139,7 +136,7 @@ export default function TimePlans() {
             RecurringTaskPeriod.YEARLY,
           ) && (
             <CurrentTimePlan
-              today={rightNow}
+              today={topLevelInfo.today}
               period={RecurringTaskPeriod.YEARLY}
               topLevelInfo={topLevelInfo}
               timePlan={yearTimePlan}
@@ -151,7 +148,7 @@ export default function TimePlans() {
             RecurringTaskPeriod.QUARTERLY,
           ) && (
             <CurrentTimePlan
-              today={rightNow}
+              today={topLevelInfo.today}
               period={RecurringTaskPeriod.QUARTERLY}
               topLevelInfo={topLevelInfo}
               timePlan={quarterTimePlan}
@@ -163,7 +160,7 @@ export default function TimePlans() {
             RecurringTaskPeriod.MONTHLY,
           ) && (
             <CurrentTimePlan
-              today={rightNow}
+              today={topLevelInfo.today}
               period={RecurringTaskPeriod.MONTHLY}
               topLevelInfo={topLevelInfo}
               timePlan={monthTimePlan}
@@ -175,7 +172,7 @@ export default function TimePlans() {
             RecurringTaskPeriod.WEEKLY,
           ) && (
             <CurrentTimePlan
-              today={rightNow}
+              today={topLevelInfo.today}
               period={RecurringTaskPeriod.WEEKLY}
               topLevelInfo={topLevelInfo}
               timePlan={weekTimePlan}
@@ -187,7 +184,7 @@ export default function TimePlans() {
             RecurringTaskPeriod.DAILY,
           ) && (
             <CurrentTimePlan
-              today={rightNow}
+              today={topLevelInfo.today}
               period={RecurringTaskPeriod.DAILY}
               topLevelInfo={topLevelInfo}
               timePlan={dayTimePlan}
@@ -213,7 +210,7 @@ export default function TimePlans() {
 
 interface CurrentTimePlanProps {
   label: string;
-  today: DateTime;
+  today: ADate;
   period: RecurringTaskPeriod;
   timePlan?: TimePlan;
   topLevelInfo: TopLevelInfo;
@@ -225,7 +222,7 @@ function CurrentTimePlan(props: CurrentTimePlanProps) {
       <Button
         variant="outlined"
         component={Link}
-        to={`/app/workspace/time-plans/new?initialPeriod=${props.period}&initialRightNow=${props.today.toISODate()}`}
+        to={`/app/workspace/time-plans/new?initialPeriod=${props.period}&initialRightNow=${props.today}`}
       >
         Create a {props.label}
       </Button>

@@ -1,17 +1,17 @@
-import type { TimePlan } from "@jupiter/webapi-client";
-import { DateTime } from "luxon";
+import type { ADate, TimePlan } from "@jupiter/webapi-client";
 
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { comparePeriods } from "~/logic/domain/period";
 
 export function findTimePlansThatAreActive(
   timePlans: Array<TimePlan>,
-  rightNow: DateTime,
+  today: ADate,
 ): TimePlan[] {
+  const todayDate = aDateToDate(today);
   return timePlans.filter((timePlan) => {
     const startDate = aDateToDate(timePlan.start_date);
     const endDate = aDateToDate(timePlan.end_date);
-    return startDate <= rightNow && rightNow <= endDate;
+    return startDate <= todayDate && todayDate <= endDate;
   });
 }
 

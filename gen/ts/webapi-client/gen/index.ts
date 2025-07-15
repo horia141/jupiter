@@ -484,6 +484,10 @@ export type { TimePlanActivityRemoveArgs } from './models/TimePlanActivityRemove
 export { TimePlanActivityTarget } from './models/TimePlanActivityTarget';
 export type { TimePlanActivityUpdateArgs } from './models/TimePlanActivityUpdateArgs';
 export type { TimePlanArchiveArgs } from './models/TimePlanArchiveArgs';
+export type { TimePlanAssociateBigPlanWithPlanArgs } from './models/TimePlanAssociateBigPlanWithPlanArgs';
+export type { TimePlanAssociateBigPlanWithPlanResult } from './models/TimePlanAssociateBigPlanWithPlanResult';
+export type { TimePlanAssociateInboxTaskWithPlanArgs } from './models/TimePlanAssociateInboxTaskWithPlanArgs';
+export type { TimePlanAssociateInboxTaskWithPlanResult } from './models/TimePlanAssociateInboxTaskWithPlanResult';
 export type { TimePlanAssociateWithActivitiesArgs } from './models/TimePlanAssociateWithActivitiesArgs';
 export type { TimePlanAssociateWithActivitiesResult } from './models/TimePlanAssociateWithActivitiesResult';
 export type { TimePlanAssociateWithBigPlansArgs } from './models/TimePlanAssociateWithBigPlansArgs';

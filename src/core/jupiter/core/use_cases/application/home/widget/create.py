@@ -67,7 +67,7 @@ class HomeWidgetCreateUseCase(
         workspace = context.workspace
 
         constraints = WIDGET_CONSTRAINTS[args.the_type]
-        if not constraints.is_allowed_for(user, workspace):
+        if not constraints.is_allowed_for(user.feature_flags, workspace.feature_flags):
             # make the the_feature be the first one in the constraints
             the_feature: WorkspaceFeature | UserFeature | str = ""
             if (

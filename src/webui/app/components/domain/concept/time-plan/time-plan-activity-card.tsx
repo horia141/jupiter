@@ -31,6 +31,7 @@ interface TimePlanActivityCardProps {
   activityDoneness: Record<string, TimePlanActivityDoneness>;
   timeEventsByRefId: Map<string, Array<TimeEventInDayBlock>>;
   fullInfo: boolean;
+  showTimePlanName?: boolean;
   allowSelect?: boolean;
   selected?: boolean;
   indent?: number;
@@ -87,7 +88,11 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
                 : "lighter",
             }}
           >
-            {inboxTask ? inboxTask.name : "Archived Task"}
+            {props.showTimePlanName && timePlan
+              ? timePlan.name
+              : inboxTask
+                ? inboxTask.name
+                : "Archived Task"}
           </Typography>
           {props.fullInfo && (
             <>
@@ -159,7 +164,11 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
                 : "lighter",
             }}
           >
-            {bigPlan ? bigPlan.name : "Archived Big Plan"}
+            {props.showTimePlanName && timePlan
+              ? timePlan.name
+              : bigPlan
+                ? bigPlan.name
+                : "Archived Big Plan"}
           </Typography>
 
           {props.fullInfo && (

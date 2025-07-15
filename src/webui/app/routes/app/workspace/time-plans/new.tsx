@@ -14,7 +14,6 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
@@ -40,12 +39,12 @@ import { TopLevelInfoContext } from "~/top-level-context";
 const ParamsSchema = z.object({});
 
 const QuerySchema = z.object({
-  initialRightNow: z.string().optional(),
+  initialToday: z.string().optional(),
   initialPeriod: z.nativeEnum(RecurringTaskPeriod).optional(),
 });
 
 const CreateFormSchema = z.object({
-  rightNow: z.string(),
+  today: z.string(),
   period: z.nativeEnum(RecurringTaskPeriod),
 });
 
@@ -59,7 +58,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     const result = await apiClient.timePlans.timePlanCreate({
-      right_now: form.rightNow,
+      today: form.today,
       period: form.period,
     });
 
@@ -91,16 +90,12 @@ export default function NewTimePlan() {
   const inputsEnabled = navigation.state === "idle";
 
   const query = parseQuery(queryRaw, QuerySchema);
-  const initialRightNow =
-    query.initialRightNow ||
-    DateTime.local({
-      zone: topLevelInfo.user.timezone,
-    }).toISODate();
+  const initialToday = query.initialToday || topLevelInfo.today;
   const initialPeriod = query.initialPeriod || RecurringTaskPeriod.WEEKLY;
 
   return (
     <LeafPanel
-      fakeKey={`time-plans-${initialRightNow}-${initialPeriod}/new`}
+      fakeKey={`time-plans-${initialToday}-${initialPeriod}/new`}
       returnLocation="/app/workspace/time-plans"
       inputsEnabled={inputsEnabled}
     >
@@ -126,19 +121,19 @@ export default function NewTimePlan() {
         }
       >
         <FormControl fullWidth>
-          <InputLabel id="rightNow" shrink margin="dense">
+          <InputLabel id="today" shrink margin="dense">
             The Date
           </InputLabel>
           <OutlinedInput
             type="date"
             notched
-            label="rightNow"
-            name="rightNow"
+            label="today"
+            name="today"
             readOnly={!inputsEnabled}
-            defaultValue={initialRightNow}
+            defaultValue={initialToday}
           />
 
-          <FieldError actionResult={actionData} fieldName="/right_now" />
+          <FieldError actionResult={actionData} fieldName="/today" />
         </FormControl>
 
         <FormControl fullWidth>

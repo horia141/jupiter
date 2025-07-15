@@ -20,7 +20,7 @@ depends_on = None
 def upgrade() -> None:
     op.execute(
         """
-        DROP INDEX ix_home_config_event_owner_ref_id;
+        DROP INDEX IF EXISTS ix_home_config_event_owner_ref_id;
     """
     )
 

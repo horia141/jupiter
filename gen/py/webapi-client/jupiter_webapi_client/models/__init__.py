@@ -585,6 +585,10 @@ from .time_plan_activity_update_args import TimePlanActivityUpdateArgs
 from .time_plan_activity_update_args_feasability import TimePlanActivityUpdateArgsFeasability
 from .time_plan_activity_update_args_kind import TimePlanActivityUpdateArgsKind
 from .time_plan_archive_args import TimePlanArchiveArgs
+from .time_plan_associate_big_plan_with_plan_args import TimePlanAssociateBigPlanWithPlanArgs
+from .time_plan_associate_big_plan_with_plan_result import TimePlanAssociateBigPlanWithPlanResult
+from .time_plan_associate_inbox_task_with_plan_args import TimePlanAssociateInboxTaskWithPlanArgs
+from .time_plan_associate_inbox_task_with_plan_result import TimePlanAssociateInboxTaskWithPlanResult
 from .time_plan_associate_with_activities_args import TimePlanAssociateWithActivitiesArgs
 from .time_plan_associate_with_activities_result import TimePlanAssociateWithActivitiesResult
 from .time_plan_associate_with_big_plans_args import TimePlanAssociateWithBigPlansArgs
@@ -1276,6 +1280,10 @@ __all__ = (
     "TimePlanActivityUpdateArgsFeasability",
     "TimePlanActivityUpdateArgsKind",
     "TimePlanArchiveArgs",
+    "TimePlanAssociateBigPlanWithPlanArgs",
+    "TimePlanAssociateBigPlanWithPlanResult",
+    "TimePlanAssociateInboxTaskWithPlanArgs",
+    "TimePlanAssociateInboxTaskWithPlanResult",
     "TimePlanAssociateWithActivitiesArgs",
     "TimePlanAssociateWithActivitiesResult",
     "TimePlanAssociateWithBigPlansArgs",

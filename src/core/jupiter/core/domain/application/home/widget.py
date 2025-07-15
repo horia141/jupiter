@@ -1,9 +1,7 @@
 """A type of widget."""
 
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
-from jupiter.core.domain.concept.user.user import User
-from jupiter.core.domain.concept.workspaces.workspace import Workspace
-from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, UserFeatureFlags, WorkspaceFeature, WorkspaceFeatureFlags
 from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
 
 
@@ -112,18 +110,18 @@ class WidgetTypeConstraints(CompositeValue):
     only_for_workspace_features: list[WorkspaceFeature] | None
     only_for_user_features: list[UserFeature] | None
 
-    def is_allowed_for(self, user: User, workspace: Workspace) -> bool:
+    def is_allowed_for(self, user: UserFeatureFlags, workspace: WorkspaceFeatureFlags) -> bool:
         """Whether the widget is allowed for the given user and workspace."""
         # Keep in sync with the logic in the frontend on
         # widget.ts:isAllowedForWidgetConstraints
         if self.only_for_user_features is not None:
             for user_feature in self.only_for_user_features:
-                if not user.feature_flags.get(user_feature, False):
+                if not user.get(user_feature, False):
                     return False
 
         if self.only_for_workspace_features is not None:
             for workspace_feature in self.only_for_workspace_features:
-                if not workspace.feature_flags.get(workspace_feature, False):
+                if not workspace.get(workspace_feature, False):
                     return False
 
         return True

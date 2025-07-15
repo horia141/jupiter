@@ -253,6 +253,7 @@ export function SectionActions(props: SectionActionsProps) {
 
   return (
     <Stack
+      id={props.id}
       direction="row"
       spacing={1}
       sx={{ padding: "0.25rem", height: "fit-content" }}

@@ -1,4 +1,9 @@
-import type { BigPlan, BigPlanMilestone, BigPlanStats, Project } from "@jupiter/webapi-client";
+import type {
+  BigPlan,
+  BigPlanMilestone,
+  BigPlanStats,
+  Project,
+} from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import { Divider } from "@mui/material";
 
@@ -47,10 +52,11 @@ export interface BigPlanCardProps {
 }
 
 export function BigPlanCard(props: BigPlanCardProps) {
-  const milestonesLeft = props.bigPlanMilestones?.filter(
-    (m) => aDateToDate(m.date) > aDateToDate(props.topLevelInfo.today),
-  ).length ?? 0;
-  
+  const milestonesLeft =
+    props.bigPlanMilestones?.filter(
+      (m) => aDateToDate(m.date) > aDateToDate(props.topLevelInfo.today),
+    ).length ?? 0;
+
   return (
     <EntityCard
       entityId={`big-plan-${props.bigPlan.ref_id}`}
@@ -91,11 +97,11 @@ export function BigPlanCard(props: BigPlanCardProps) {
             donePct={bigPlanDonePct(props.bigPlan, props.bigPlanStats)}
           />
         )}
-        {props.showOptions.showMilestonesLeft && props.bigPlanMilestones && props.bigPlanMilestones.length > 0 && (
-          <BigPlanMilestonesLeftTag
-            milestonesLeft={milestonesLeft}
-          />
-        )}
+        {props.showOptions.showMilestonesLeft &&
+          props.bigPlanMilestones &&
+          props.bigPlanMilestones.length > 0 && (
+            <BigPlanMilestonesLeftTag milestonesLeft={milestonesLeft} />
+          )}
         {props.showOptions.showStatus && (
           <BigPlanStatusTag status={props.bigPlan.status} />
         )}

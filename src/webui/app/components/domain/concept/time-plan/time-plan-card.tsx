@@ -17,8 +17,11 @@ interface TimePlanCardProps {
   timePlan: TimePlan;
   relativeToTimePlan?: TimePlan;
   showOptions: TimePlanShowOptions;
+  selected?: boolean;
   allowSwipe?: boolean;
+  allowSelect?: boolean;
   allowMarkNotDone?: boolean;
+  onClick?: (timePlan: TimePlan) => void;
   onMarkNotDone?: (timePlan: TimePlan) => void;
 }
 
@@ -32,10 +35,21 @@ export function TimePlanCard(props: TimePlanCardProps) {
     <EntityCard
       entityId={`time-plan-${timePlan.ref_id}`}
       allowSwipe={props.allowSwipe}
+      allowSelect={props.allowSelect}
       allowMarkNotDone={props.allowMarkNotDone}
-      onMarkNotDone={() => props.onMarkNotDone && props.onMarkNotDone(timePlan)}
+      selected={props.selected}
+      onClick={
+        props.onClick
+          ? () => props.onClick && props.onClick(timePlan)
+          : undefined
+      }
+      onMarkNotDone={
+        props.onMarkNotDone
+          ? () => props.onMarkNotDone && props.onMarkNotDone(timePlan)
+          : undefined
+      }
     >
-      <EntityLink to={link}>
+      <EntityLink to={link} block={props.onClick !== undefined}>
         <EntityNameComponent name={props.label ?? timePlan.name} />
         {props.showOptions.showSource && (
           <TimePlanSourceTag source={timePlan.source} />

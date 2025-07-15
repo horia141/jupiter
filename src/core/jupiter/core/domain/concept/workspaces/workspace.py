@@ -5,6 +5,7 @@ from collections.abc import Iterable
 
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
+from jupiter.core.domain.application.home.home_config import HomeConfig
 from jupiter.core.domain.application.stats.stats_log import StatsLog
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
@@ -60,6 +61,7 @@ class Workspace(RootEntity):
     feature_flags: WorkspaceFeatureFlags
 
     inbox_task_collection = ContainsOne(InboxTaskCollection, workspace_ref_id=IsRefId())
+    home_config = ContainsOne(HomeConfig, workspace_ref_id=IsRefId())
     working_mem_collection = ContainsOne(
         WorkingMemCollection, workspace_ref_id=IsRefId()
     )

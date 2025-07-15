@@ -8,7 +8,7 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
  * Args.
  */
 export type TimePlanCreateArgs = {
-    right_now: ADate;
+    today: ADate;
     period: RecurringTaskPeriod;
 };
 

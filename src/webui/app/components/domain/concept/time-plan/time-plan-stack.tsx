@@ -10,10 +10,13 @@ interface TimePlanStackProps {
   label?: string;
   topLevelInfo: TopLevelInfo;
   timePlans: Array<TimePlan>;
+  selectedPredicate?: (timePlan: TimePlan) => boolean;
   allowSwipe?: boolean;
+  allowSelect?: boolean;
   allowMarkNotDone?: boolean;
   relativeToTimePlan?: TimePlan;
   onMarkNotDone?: (timePlan: TimePlan) => void;
+  onClick?: (timePlan: TimePlan) => void;
 }
 
 export function TimePlanStack(props: TimePlanStackProps) {
@@ -31,8 +34,19 @@ export function TimePlanStack(props: TimePlanStackProps) {
             showPeriod: true,
           }}
           allowSwipe={props.allowSwipe}
+          allowSelect={props.allowSelect}
           allowMarkNotDone={props.allowMarkNotDone}
-          onMarkNotDone={props.onMarkNotDone}
+          selected={props.selectedPredicate?.(timePlan)}
+          onClick={
+            props.onClick
+              ? () => props.onClick && props.onClick(timePlan)
+              : undefined
+          }
+          onMarkNotDone={
+            props.onMarkNotDone
+              ? () => props.onMarkNotDone && props.onMarkNotDone(timePlan)
+              : undefined
+          }
           relativeToTimePlan={props.relativeToTimePlan}
         />
       ))}

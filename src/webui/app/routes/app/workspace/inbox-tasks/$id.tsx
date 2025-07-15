@@ -51,6 +51,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 import {
   SectionActions,
   ActionSingle,
+  NavSingle,
 } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
@@ -433,8 +434,22 @@ export default function InboxTask() {
       ) &&
         timePlanActivities && (
           <SectionCard
-            id="inbox-task-time-plan-activities"
-            title="Time Plan Activities"
+            id="inbox-task-time-plans"
+            title="Time Plans"
+            actions={
+              <SectionActions
+                id="inbox-task-time-plans"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  NavSingle({
+                    text: "Add",
+                    highlight: false,
+                    link: `/app/workspace/time-plans/add-inbox-task-to-plans?inboxTaskRefId=${loaderData.info.inbox_task.ref_id}`,
+                  }),
+                ]}
+              />
+            }
           >
             <TimePlanActivityList
               topLevelInfo={topLevelInfo}
@@ -445,6 +460,7 @@ export default function InboxTask() {
               activityDoneness={{}}
               timeEventsByRefId={timeEventsByRefId}
               fullInfo={false}
+              showTimePlanName={true}
             />
           </SectionCard>
         )}

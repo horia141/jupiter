@@ -2,14 +2,15 @@ import { Box, useTheme } from "@mui/material";
 
 interface BigPlanDonePctBigTagProps {
   donePct: number;
-  shouldShowMilestonesLeft: boolean;    
+  shouldShowMilestonesLeft: boolean;
   milestonesLeft: number;
 }
 
 export function BigPlanDonePctBigTag(props: BigPlanDonePctBigTagProps) {
   const theme = useTheme();
 
-  const milestonePlural = props.milestonesLeft === 1 ? "milestone" : "milestones";
+  const milestonePlural =
+    props.milestonesLeft === 1 ? "milestone" : "milestones";
 
   return (
     <Box

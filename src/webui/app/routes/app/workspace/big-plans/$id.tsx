@@ -15,10 +15,8 @@ import {
   SyncTarget,
 } from "@jupiter/webapi-client";
 import {
-  Box,
   Button,
   ButtonGroup,
-  CardActions,
   FormControl,
   FormLabel,
   InputLabel,
@@ -77,7 +75,6 @@ import {
 import { BigPlanMilestoneStack } from "~/components/domain/concept/big-plan/big-plan-milestone-stack";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { bigPlanDonePct } from "~/logic/domain/big-plan";
-import { BigPlanDonePctTag } from "~/components/domain/concept/big-plan/big-plan-done-pct-tag";
 import { BigPlanDonePctBigTag } from "~/components/domain/concept/big-plan/big-plan-done-pct-big-tag";
 import { aDateToDate } from "~/logic/domain/adate";
 
@@ -550,187 +547,187 @@ export default function BigPlan() {
             />
           </FormControl>
 
-            <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
-              {loaderData.bigPlan.status === BigPlanStatus.NOT_STARTED && (
-                <ButtonGroup fullWidth>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="mark-done"
-                  >
-                    Mark Done
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="mark-not-done"
-                  >
-                    Mark Not Done
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="start"
-                  >
-                    Start
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="block"
-                  >
-                    Block
-                  </Button>
-                </ButtonGroup>
-              )}
+          <Stack direction="column" spacing={2} sx={{ width: "100%" }}>
+            {loaderData.bigPlan.status === BigPlanStatus.NOT_STARTED && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="start"
+                >
+                  Start
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="block"
+                >
+                  Block
+                </Button>
+              </ButtonGroup>
+            )}
 
-              {loaderData.bigPlan.status === BigPlanStatus.IN_PROGRESS && (
-                <ButtonGroup fullWidth>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="mark-done"
-                  >
-                    Mark Done
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="mark-not-done"
-                  >
-                    Mark Not Done
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="block"
-                  >
-                    Block
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="stop"
-                  >
-                    Stop
-                  </Button>
-                </ButtonGroup>
-              )}
+            {loaderData.bigPlan.status === BigPlanStatus.IN_PROGRESS && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="block"
+                >
+                  Block
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="stop"
+                >
+                  Stop
+                </Button>
+              </ButtonGroup>
+            )}
 
-              {loaderData.bigPlan.status === BigPlanStatus.BLOCKED && (
-                <ButtonGroup fullWidth>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="mark-done"
-                  >
-                    Mark Done
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="mark-not-done"
-                  >
-                    Mark Not Done
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="restart"
-                  >
-                    Restart
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="stop"
-                  >
-                    Stop
-                  </Button>
-                </ButtonGroup>
-              )}
+            {loaderData.bigPlan.status === BigPlanStatus.BLOCKED && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-done"
+                >
+                  Mark Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="mark-not-done"
+                >
+                  Mark Not Done
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="restart"
+                >
+                  Restart
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="stop"
+                >
+                  Stop
+                </Button>
+              </ButtonGroup>
+            )}
 
-              {(loaderData.bigPlan.status === BigPlanStatus.DONE ||
-                loaderData.bigPlan.status === BigPlanStatus.NOT_DONE) && (
-                <ButtonGroup fullWidth>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    disabled={!inputsEnabled}
-                    type="submit"
-                    name="intent"
-                    value="reactivate"
-                  >
-                    Reactivate
-                  </Button>
-                </ButtonGroup>
-              )}
-            </Stack>
+            {(loaderData.bigPlan.status === BigPlanStatus.DONE ||
+              loaderData.bigPlan.status === BigPlanStatus.NOT_DONE) && (
+              <ButtonGroup fullWidth>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="reactivate"
+                >
+                  Reactivate
+                </Button>
+              </ButtonGroup>
+            )}
+          </Stack>
         </SectionCard>
 
         <SectionCard
-        title="Note"
-        actions={
-          <SectionActions
-            id="person-note"
-            topLevelInfo={topLevelInfo}
-            inputsEnabled={inputsEnabled}
-            actions={[
-              ActionSingle({
-                text: "Create Note",
-                value: "create-note",
-                highlight: false,
-                disabled: loaderData.note !== null,
-              }),
-            ]}
-          />
-        }
-      >
-        {loaderData.note && (
-          <>
-            <EntityNoteEditor
-              initialNote={loaderData.note}
+          title="Note"
+          actions={
+            <SectionActions
+              id="person-note"
+              topLevelInfo={topLevelInfo}
               inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Create Note",
+                  value: "create-note",
+                  highlight: false,
+                  disabled: loaderData.note !== null,
+                }),
+              ]}
             />
-          </>
-        )}
-      </SectionCard>
+          }
+        >
+          {loaderData.note && (
+            <>
+              <EntityNoteEditor
+                initialNote={loaderData.note}
+                inputsEnabled={inputsEnabled}
+              />
+            </>
+          )}
+        </SectionCard>
 
         <SectionCard
           id="big-plan-milestones"
@@ -794,8 +791,22 @@ export default function BigPlan() {
         ) &&
           timePlanActivities && (
             <SectionCard
-              id="big-plan-time-plan-activities"
-              title="Time Plan Activities"
+              id="big-plan-time-plans"
+              title="Time Plans"
+              actions={
+                <SectionActions
+                  id="inbox-task-time-plans"
+                  topLevelInfo={topLevelInfo}
+                  inputsEnabled={inputsEnabled}
+                  actions={[
+                    NavSingle({
+                      text: "Add",
+                      highlight: false,
+                      link: `/app/workspace/time-plans/add-big-plan-to-plans?bigPlanRefId=${loaderData.bigPlan.ref_id}`,
+                    }),
+                  ]}
+                />
+              }
             >
               <TimePlanActivityList
                 topLevelInfo={topLevelInfo}
@@ -806,6 +817,7 @@ export default function BigPlan() {
                 activityDoneness={{}}
                 timeEventsByRefId={timeEventsByRefId}
                 fullInfo={false}
+                showTimePlanName={true}
               />
             </SectionCard>
           )}

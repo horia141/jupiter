@@ -1,4 +1,8 @@
-import type { BigPlan, BigPlanMilestone, BigPlanStats } from "@jupiter/webapi-client";
+import type {
+  BigPlan,
+  BigPlanMilestone,
+  BigPlanStats,
+} from "@jupiter/webapi-client";
 import { Stack } from "@mui/material";
 
 import type { BigPlanParent } from "~/logic/domain/big-plan";
@@ -38,7 +42,9 @@ export function BigPlanStack(props: BigPlanStackProps) {
             compact={props.compact}
             allowSelect={props.allowSelect}
             bigPlan={entry}
-            bigPlanMilestones={props.bigPlanMilestonesByRefId?.get(entry.ref_id)}
+            bigPlanMilestones={props.bigPlanMilestonesByRefId?.get(
+              entry.ref_id,
+            )}
             bigPlanStats={props.bigPlanStatsByRefId?.get(entry.ref_id)}
             selected={props.selectedPredicate?.(entry)}
             showOptions={props.showOptions}
