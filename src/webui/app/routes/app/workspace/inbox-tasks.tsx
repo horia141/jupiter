@@ -43,6 +43,7 @@ import {
   FilterFewOptionsCompact,
   SectionActions,
   FilterFewOptionsSpread,
+  ActionsExpansion,
 } from "~/components/infra/section-actions";
 import { StandardDivider } from "~/components/infra/standard-divider";
 import { TabPanel } from "~/components/infra/tab-panel";

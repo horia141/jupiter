@@ -110,7 +110,7 @@ export default function PersonsSettings() {
               inputsEnabled={inputsEnabled}
               actions={[
                 ActionSingle({
-                  text: "Change Catch Up Project",
+                  text: "Save",
                   value: "change",
                   highlight: true,
                 }),

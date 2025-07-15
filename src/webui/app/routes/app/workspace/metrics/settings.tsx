@@ -105,7 +105,7 @@ export default function MetricsSettings() {
               inputsEnabled={inputsEnabled}
               actions={[
                 ActionSingle({
-                  text: "Change Collection Project",
+                  text: "Save",
                   value: "change",
                   highlight: true,
                 }),

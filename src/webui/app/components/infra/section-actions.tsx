@@ -112,6 +112,16 @@ type ActionDesc =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | FilterManyOptionsDesc<any>; // A group to filter on, with many options
 
+export function isSingleAction(
+  action: ActionDesc,
+): action is NavSingleDesc | ActionSingleDesc | ButtonSingleDesc {
+  return (
+    action.kind === "nav-single" ||
+    action.kind === "action-single" ||
+    action.kind === "button-single"
+  );
+}
+
 export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
   return {
     kind: "nav-single",
@@ -244,8 +254,13 @@ export function SectionActions(props: SectionActionsProps) {
     actions = [];
     extraActions = props.actions.concat(props.extraActions ?? []);
   } else if (expansion === ActionsExpansion.ADAPT && !isBigScreen) {
-    actions = props.actions.slice(0, 1);
-    extraActions = props.actions.concat(props.extraActions ?? []);
+    if (isSingleAction(props.actions[0])) {
+      actions = props.actions.slice(0, 1);
+      extraActions = props.actions.concat(props.extraActions ?? []);
+    } else {
+      actions = [];
+      extraActions = props.actions.concat(props.extraActions ?? []);
+    }
   } else {
     actions = props.actions;
     extraActions = props.extraActions ?? [];

@@ -564,7 +564,7 @@ export default function TimeEventInDayBlockViewOne() {
           rootProject={loaderData.rootProject}
           allProjects={loaderData.allProjects}
           allBigPlans={loaderData.allBigPlans}
-          inputsEnabled={inputsEnabled}
+          inputsEnabled={inputsEnabled && !loaderData.inboxTask.archived}
           inboxTask={loaderData.inboxTask}
           inboxTaskInfo={loaderData.inboxTaskInfo!}
           actionData={actionData}
