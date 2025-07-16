@@ -673,8 +673,6 @@ from .workable_big_plan import WorkableBigPlan
 from .workable_summary import WorkableSummary
 from .working_mem import WorkingMem
 from .working_mem_archive_args import WorkingMemArchiveArgs
-from .working_mem_change_clean_up_project_args import WorkingMemChangeCleanUpProjectArgs
-from .working_mem_change_generation_period_args import WorkingMemChangeGenerationPeriodArgs
 from .working_mem_collection import WorkingMemCollection
 from .working_mem_find_args import WorkingMemFindArgs
 from .working_mem_find_result import WorkingMemFindResult
@@ -686,6 +684,9 @@ from .working_mem_load_current_result import WorkingMemLoadCurrentResult
 from .working_mem_load_result import WorkingMemLoadResult
 from .working_mem_load_settings_args import WorkingMemLoadSettingsArgs
 from .working_mem_load_settings_result import WorkingMemLoadSettingsResult
+from .working_mem_update_settings_args import WorkingMemUpdateSettingsArgs
+from .working_mem_update_settings_args_cleanup_project_ref_id import WorkingMemUpdateSettingsArgsCleanupProjectRefId
+from .working_mem_update_settings_args_generation_period import WorkingMemUpdateSettingsArgsGenerationPeriod
 from .workspace import Workspace
 from .workspace_change_feature_flags_args import WorkspaceChangeFeatureFlagsArgs
 from .workspace_feature import WorkspaceFeature
@@ -1364,8 +1365,6 @@ __all__ = (
     "WorkableSummary",
     "WorkingMem",
     "WorkingMemArchiveArgs",
-    "WorkingMemChangeCleanUpProjectArgs",
-    "WorkingMemChangeGenerationPeriodArgs",
     "WorkingMemCollection",
     "WorkingMemFindArgs",
     "WorkingMemFindResult",
@@ -1377,6 +1376,9 @@ __all__ = (
     "WorkingMemLoadResult",
     "WorkingMemLoadSettingsArgs",
     "WorkingMemLoadSettingsResult",
+    "WorkingMemUpdateSettingsArgs",
+    "WorkingMemUpdateSettingsArgsCleanupProjectRefId",
+    "WorkingMemUpdateSettingsArgsGenerationPeriod",
     "Workspace",
     "WorkspaceChangeFeatureFlagsArgs",
     "WorkspaceFeature",

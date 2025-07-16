@@ -30,6 +30,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -153,9 +154,12 @@ class ProjectArchiveUseCase(
                 WorkingMemCollection
             ).load_by_parent(workspace.ref_id)
             if working_mem_collection.cleanup_project_ref_id == args.ref_id:
-                working_mem_collection = working_mem_collection.change_cleanup_project(
+                working_mem_collection = working_mem_collection.update(
                     context.domain_context,
-                    args.backup_project_ref_id,
+                    generation_period=UpdateAction.do_nothing(),
+                    cleanup_project_ref_id=UpdateAction.change_to(
+                        args.backup_project_ref_id
+                    ),
                 )
                 await uow.get_for(WorkingMemCollection).save(working_mem_collection)
 

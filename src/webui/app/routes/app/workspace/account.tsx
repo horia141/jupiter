@@ -13,13 +13,13 @@ import {
   Typography,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirectDocument } from "@remix-run/node";
+import { json, redirect, redirectDocument } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
-import { parseForm } from "zodix";
+import { parseForm, parseFormSafe } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { UserFeatureFlagsEditor } from "~/components/domain/application/workspace/feature-flags-editor";
@@ -48,7 +48,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   }),
   z.object({
     intent: z.literal("change-feature-flags"),
-    featureFlags: z.array(z.nativeEnum(UserFeature)),
+    featureFlags: z.nativeEnum(UserFeature).optional().or(z.array(z.nativeEnum(UserFeature))).transform((v) => v ? (Array.isArray(v) ? v : [v]) : []),
   }),
   z.object({
     intent: z.literal("close-account"),
@@ -92,7 +92,7 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         });
 
-        return redirectDocument(`/app/workspace/account`);
+        return redirect(`/app/workspace/account?invalidateTopLevel=true`);
       }
 
       case "change-feature-flags": {
@@ -100,7 +100,7 @@ export async function action({ request }: ActionFunctionArgs) {
           feature_flags: form.featureFlags,
         });
 
-        return redirectDocument(`/app/workspace/account`);
+        return redirect(`/app/workspace/account?invalidateTopLevel=true`);
       }
 
       case "close-account": {
@@ -140,11 +140,10 @@ export default function Account() {
   const [showCloseAccountDialog, setShowCloseAccountDialog] = useState(false);
 
   return (
-    <TrunkPanel key={"account"} returnLocation="/app/workspace">
+    <TrunkPanel key={`account/${loaderData.user.version}`} returnLocation="/app/workspace">
       <ToolPanel>
         <GlobalError actionResult={actionData} />
 
-        <Stack useFlexGap gap={2}>
           <SectionCard
             title="Account"
             actions={
@@ -170,7 +169,7 @@ export default function Account() {
                 label="Your Email Address"
                 name="emailAddress"
                 disabled={true}
-                defaultValue={loaderData.user.email_address}
+                defaultValue={loaderData.user.email_address ?? ""}
               />
             </FormControl>
 
@@ -178,7 +177,7 @@ export default function Account() {
               <TextField
                 name="name"
                 label="Your Name"
-                defaultValue={loaderData.user.name}
+                defaultValue={loaderData.user.name ?? ""}
                 disabled={!inputsEnabled}
               />
               <FieldError actionResult={actionData} fieldName="/name" />
@@ -188,7 +187,7 @@ export default function Account() {
                 id="timezone"
                 name="timezone"
                 inputsEnabled={inputsEnabled}
-                initialValue={loaderData.user.timezone}
+                initialValue={loaderData.user.timezone ?? ""}
               />
 
               <FieldError actionResult={actionData} fieldName="/timezone" />
@@ -264,7 +263,6 @@ export default function Account() {
               Close Account
             </Button>
           </SectionCard>
-        </Stack>
       </ToolPanel>
     </TrunkPanel>
   );

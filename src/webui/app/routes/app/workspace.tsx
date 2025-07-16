@@ -71,7 +71,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = () => false;
+export const shouldRevalidate: ShouldRevalidateFunction = ({ nextUrl }) => {
+  return nextUrl.searchParams.has("invalidateTopLevel");
+};
 
 // @secureFn
 export default function Workspace() {

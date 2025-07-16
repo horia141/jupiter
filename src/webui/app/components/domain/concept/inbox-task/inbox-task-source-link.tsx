@@ -3,12 +3,15 @@ import { InboxTaskSource } from "@jupiter/webapi-client";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { Button } from "@mui/material";
 import { Link } from "@remix-run/react";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface InboxTaskSourceLinkProps {
   inboxTaskResult: InboxTaskLoadResult;
 }
 
 export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
+  const isBigScreen = useBigScreen();
+  
   switch (props.inboxTaskResult.inbox_task.source) {
     case InboxTaskSource.WORKING_MEM_CLEANUP: {
       return (
@@ -20,7 +23,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/working-mem/archive/${props.inboxTaskResult.working_mem?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Working Mem
+          {isBigScreen ? "Working Mem" : "WM"}
         </Button>
       );
     }
@@ -35,7 +38,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/time-plans/${props.inboxTaskResult.time_plan?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Time Plan
+          {isBigScreen ? "Time Plan" : "TP"}
         </Button>
       );
     }
@@ -50,7 +53,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/habits/${props.inboxTaskResult.habit?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Habit
+          {isBigScreen ? "Habit" : "H"}
         </Button>
       );
     }
@@ -65,7 +68,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/chores/${props.inboxTaskResult.chore?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Chore
+          {isBigScreen ? "Chore" : "C"}
         </Button>
       );
     }
@@ -80,7 +83,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/big-plans/${props.inboxTaskResult.big_plan?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Big Plan
+          {isBigScreen ? "Big Plan" : "BP"}
         </Button>
       );
     }
@@ -95,7 +98,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/journals/${props.inboxTaskResult.journal?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Journal
+          {isBigScreen ? "Journal" : "J"}
         </Button>
       );
     }
@@ -110,7 +113,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/metrics/${props.inboxTaskResult.metric?.ref_id}/details`}
           sx={{ flexGrow: 1 }}
         >
-          Metric
+          {isBigScreen ? "Metric" : "M"}
         </Button>
       );
     }
@@ -125,7 +128,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/persons/${props.inboxTaskResult.person?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Person
+          {isBigScreen ? "Person" : "P"}
         </Button>
       );
     }
@@ -140,7 +143,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/persons/${props.inboxTaskResult.person?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Person
+          {isBigScreen ? "Person" : "P"}
         </Button>
       );
     }
@@ -155,7 +158,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/push-integration/slack-tasks/${props.inboxTaskResult.slack_task?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Slack Task
+          {isBigScreen ? "Slack Task" : "ST"}
         </Button>
       );
     }
@@ -170,7 +173,7 @@ export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
           to={`/app/workspace/push-integration/email-tasks/${props.inboxTaskResult.email_task?.ref_id}`}
           sx={{ flexGrow: 1 }}
         >
-          Email Task
+          {isBigScreen ? "Email Task" : "ET"}
         </Button>
       );
     }

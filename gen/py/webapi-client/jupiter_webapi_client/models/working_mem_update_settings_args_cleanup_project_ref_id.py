@@ -1,47 +1,57 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="WorkingMemChangeCleanUpProjectArgs")
+from ..types import UNSET, Unset
+
+T = TypeVar("T", bound="WorkingMemUpdateSettingsArgsCleanupProjectRefId")
 
 
 @_attrs_define
-class WorkingMemChangeCleanUpProjectArgs:
-    """PersonFindArgs.
-
+class WorkingMemUpdateSettingsArgsCleanupProjectRefId:
+    """
     Attributes:
-        cleanup_project_ref_id (str): A generic entity id.
+        should_change (bool):
+        value (Union[Unset, str]): A generic entity id.
     """
 
-    cleanup_project_ref_id: str
+    should_change: bool
+    value: Union[Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        cleanup_project_ref_id = self.cleanup_project_ref_id
+        should_change = self.should_change
+
+        value = self.value
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "cleanup_project_ref_id": cleanup_project_ref_id,
+                "should_change": should_change,
             }
         )
+        if value is not UNSET:
+            field_dict["value"] = value
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        cleanup_project_ref_id = d.pop("cleanup_project_ref_id")
+        should_change = d.pop("should_change")
 
-        working_mem_change_clean_up_project_args = cls(
-            cleanup_project_ref_id=cleanup_project_ref_id,
+        value = d.pop("value", UNSET)
+
+        working_mem_update_settings_args_cleanup_project_ref_id = cls(
+            should_change=should_change,
+            value=value,
         )
 
-        working_mem_change_clean_up_project_args.additional_properties = d
-        return working_mem_change_clean_up_project_args
+        working_mem_update_settings_args_cleanup_project_ref_id.additional_properties = d
+        return working_mem_update_settings_args_cleanup_project_ref_id
 
     @property
     def additional_keys(self) -> list[str]:

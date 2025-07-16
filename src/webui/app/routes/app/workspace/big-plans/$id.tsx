@@ -739,7 +739,7 @@ export default function BigPlan() {
               inputsEnabled={inputsEnabled}
               actions={[
                 NavSingle({
-                  text: "New Milestone",
+                  text: "New",
                   link: `/app/workspace/big-plans/${loaderData.bigPlan.ref_id}/milestones/new`,
                 }),
               ]}
@@ -759,7 +759,7 @@ export default function BigPlan() {
               inputsEnabled={inputsEnabled}
               actions={[
                 NavSingle({
-                  text: "New Task",
+                  text: "New",
                   link: `/app/workspace/inbox-tasks/new?bigPlanReason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id}`,
                 }),
               ]}

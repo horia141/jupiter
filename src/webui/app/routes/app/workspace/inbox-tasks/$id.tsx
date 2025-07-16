@@ -396,7 +396,7 @@ export default function InboxTask() {
             inputsEnabled={inputsEnabled}
             actions={[
               ActionSingle({
-                text: "Create Note",
+                text: "Create",
                 value: "create-note",
                 highlight: false,
                 disabled: loaderData.info.note !== null,

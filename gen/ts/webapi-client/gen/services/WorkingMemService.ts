@@ -3,8 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { WorkingMemArchiveArgs } from '../models/WorkingMemArchiveArgs';
-import type { WorkingMemChangeCleanUpProjectArgs } from '../models/WorkingMemChangeCleanUpProjectArgs';
-import type { WorkingMemChangeGenerationPeriodArgs } from '../models/WorkingMemChangeGenerationPeriodArgs';
 import type { WorkingMemFindArgs } from '../models/WorkingMemFindArgs';
 import type { WorkingMemFindResult } from '../models/WorkingMemFindResult';
 import type { WorkingMemLoadArgs } from '../models/WorkingMemLoadArgs';
@@ -13,6 +11,7 @@ import type { WorkingMemLoadCurrentResult } from '../models/WorkingMemLoadCurren
 import type { WorkingMemLoadResult } from '../models/WorkingMemLoadResult';
 import type { WorkingMemLoadSettingsArgs } from '../models/WorkingMemLoadSettingsArgs';
 import type { WorkingMemLoadSettingsResult } from '../models/WorkingMemLoadSettingsResult';
+import type { WorkingMemUpdateSettingsArgs } from '../models/WorkingMemUpdateSettingsArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class WorkingMemService {
@@ -30,50 +29,6 @@ export class WorkingMemService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/working-mem-archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-    /**
-     * The command for updating the collection up project for working mem.
-     * The command for updating the collection up project for working mem.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public workingMemChangeCleanUpProject(
-        requestBody?: WorkingMemChangeCleanUpProjectArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/working-mem-change-clean-up-project',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-    /**
-     * The command for updating the generation period for working mem.
-     * The command for updating the generation period for working mem.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public workingMemChangeGenerationPeriod(
-        requestBody?: WorkingMemChangeGenerationPeriodArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/working-mem-change-generation-period',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -162,6 +117,28 @@ export class WorkingMemService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/working-mem-load-settings',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * The command for updating the settings for working mem.
+     * The command for updating the settings for working mem.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public workingMemUpdateSettings(
+        requestBody?: WorkingMemUpdateSettingsArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/working-mem-update-settings',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

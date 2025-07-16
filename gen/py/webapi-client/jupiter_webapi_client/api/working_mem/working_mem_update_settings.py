@@ -5,19 +5,19 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.working_mem_change_clean_up_project_args import WorkingMemChangeCleanUpProjectArgs
+from ...models.working_mem_update_settings_args import WorkingMemUpdateSettingsArgs
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: WorkingMemChangeCleanUpProjectArgs,
+    body: WorkingMemUpdateSettingsArgs,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/working-mem-change-clean-up-project",
+        "url": "/working-mem-update-settings",
     }
 
     _body = body.to_dict()
@@ -56,14 +56,14 @@ def _build_response(*, client: Union[AuthenticatedClient, Client], response: htt
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: WorkingMemChangeCleanUpProjectArgs,
+    body: WorkingMemUpdateSettingsArgs,
 ) -> Response[Any]:
-    """The command for updating the collection up project for working mem.
+    """The command for updating the settings for working mem.
 
-     The command for updating the collection up project for working mem.
+     The command for updating the settings for working mem.
 
     Args:
-        body (WorkingMemChangeCleanUpProjectArgs): PersonFindArgs.
+        body (WorkingMemUpdateSettingsArgs): PersonFindArgs.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -87,14 +87,14 @@ def sync_detailed(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: WorkingMemChangeCleanUpProjectArgs,
+    body: WorkingMemUpdateSettingsArgs,
 ) -> Response[Any]:
-    """The command for updating the collection up project for working mem.
+    """The command for updating the settings for working mem.
 
-     The command for updating the collection up project for working mem.
+     The command for updating the settings for working mem.
 
     Args:
-        body (WorkingMemChangeCleanUpProjectArgs): PersonFindArgs.
+        body (WorkingMemUpdateSettingsArgs): PersonFindArgs.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

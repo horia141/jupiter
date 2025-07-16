@@ -35,12 +35,9 @@ import { SectionCard } from "~/components/infra/section-card";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
-    intent: z.literal("change-generation-period"),
+    intent: z.literal("update"),
     generationPeriod: z.nativeEnum(RecurringTaskPeriod),
-  }),
-  z.object({
-    intent: z.literal("change-cleanup-project"),
-    cleanupProject: z.string(),
+    cleanupProject: z.string().optional(),
   }),
 ]);
 
@@ -71,20 +68,23 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     switch (form.intent) {
-      case "change-generation-period": {
-        await apiClient.workingMem.workingMemChangeGenerationPeriod({
-          generation_period: form.generationPeriod,
+      case "update": {
+        await apiClient.workingMem.workingMemUpdateSettings({
+          generation_period: {
+            should_change: true,
+            value: form.generationPeriod,
+          },
+          cleanup_project_ref_id: {
+            should_change: form.cleanupProject !== undefined,
+            value: form.cleanupProject,
+          },
         });
 
         return redirect(`/app/workspace/working-mem/settings`);
       }
 
-      case "change-cleanup-project": {
-        await apiClient.workingMem.workingMemChangeCleanUpProject({
-          cleanup_project_ref_id: form.cleanupProject,
-        });
-
-        return redirect(`/app/workspace/working-mem/settings`);
+      default: {
+        throw new Error(`Unknown intent: ${form.intent}`);
       }
     }
   } catch (error) {
@@ -120,29 +120,24 @@ export default function MetricsSettings() {
       <GlobalError actionResult={actionData} />
 
       <SectionCard
-        title="Properties"
+        title="Settings"
         actions={
           <SectionActions
-            id="working-mem-properties"
+            id="working-mem-settings"
             topLevelInfo={topLevelInfo}
             inputsEnabled={inputsEnabled}
-            expansion={ActionsExpansion.ALWAYS_COMPACT}
             actions={[
               ActionSingle({
-                text: "Change Generation Period",
-                value: "change-generation-period",
-                highlight: false,
-              }),
-              ActionSingle({
-                text: "Change Clean Up Project",
-                value: "change-cleanup-projec",
-                highlight: false,
-                gatedOn: WorkspaceFeature.PROJECTS,
+                text: "Save",
+                value: "update",
+                highlight: true,
               }),
             ]}
           />
         }
       >
+        <GlobalError actionResult={actionData} />
+
         <FormControl fullWidth>
           <FormLabel id="generationPeriod">Generation Period</FormLabel>
           <PeriodSelect

@@ -553,8 +553,6 @@ export type { WorkableBigPlan } from './models/WorkableBigPlan';
 export type { WorkableSummary } from './models/WorkableSummary';
 export type { WorkingMem } from './models/WorkingMem';
 export type { WorkingMemArchiveArgs } from './models/WorkingMemArchiveArgs';
-export type { WorkingMemChangeCleanUpProjectArgs } from './models/WorkingMemChangeCleanUpProjectArgs';
-export type { WorkingMemChangeGenerationPeriodArgs } from './models/WorkingMemChangeGenerationPeriodArgs';
 export type { WorkingMemCollection } from './models/WorkingMemCollection';
 export type { WorkingMemFindArgs } from './models/WorkingMemFindArgs';
 export type { WorkingMemFindResult } from './models/WorkingMemFindResult';
@@ -566,6 +564,7 @@ export type { WorkingMemLoadCurrentResult } from './models/WorkingMemLoadCurrent
 export type { WorkingMemLoadResult } from './models/WorkingMemLoadResult';
 export type { WorkingMemLoadSettingsArgs } from './models/WorkingMemLoadSettingsArgs';
 export type { WorkingMemLoadSettingsResult } from './models/WorkingMemLoadSettingsResult';
+export type { WorkingMemUpdateSettingsArgs } from './models/WorkingMemUpdateSettingsArgs';
 export type { Workspace } from './models/Workspace';
 export type { WorkspaceChangeFeatureFlagsArgs } from './models/WorkspaceChangeFeatureFlagsArgs';
 export { WorkspaceFeature } from './models/WorkspaceFeature';
