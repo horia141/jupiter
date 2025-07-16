@@ -94,7 +94,7 @@ export function ViewAsCalendarDaysAndFullDaysContiner(
         minWidth: isBigScreen ? undefined : "fit-content",
         top: isBigScreen ? "-0.5rem" : "0px",
         backgroundColor: theme.palette.background.paper,
-        zIndex: theme.zIndex.appBar + 20,
+        zIndex: theme.zIndex.appBar + 1,
         borderBottom: "1px solid darkgray",
       }}
     >
@@ -169,7 +169,7 @@ export function ViewAsCalendarLeftColumn(props: ViewAsCalendarLeftColumnProps) {
         left: "0px",
         top: "0px",
         backgroundColor: theme.palette.background.paper,
-        zIndex: theme.zIndex.appBar + 10,
+        zIndex: theme.zIndex.appBar + 1,
         borderRight: "1px solid darkgray",
       }}
     >
