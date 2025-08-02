@@ -285,7 +285,7 @@ export function SectionActions(props: SectionActionsProps) {
       ))}
 
       {((actions.length == 0 && extraActions.length > 0) ||
-        (extraActions.length > 1)) && (
+        extraActions.length > 1) && (
         <SectionActionsWithDialog
           id={props.id}
           topLevelInfo={props.topLevelInfo}
@@ -576,7 +576,11 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
           startIcon={realActions[selectedIndex].icon}
           to={realActions[selectedIndex].link}
         >
-          {getRealText(realActions[selectedIndex].text || "", props.isInDialog, isBigScreen)}
+          {getRealText(
+            realActions[selectedIndex].text || "",
+            props.isInDialog,
+            isBigScreen,
+          )}
         </Button>
         <Button
           id="section-action-nav-multiple-compact-button"
@@ -758,7 +762,11 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
           value={realActions[selectedIndex].value}
           id={realActions[selectedIndex].id}
         >
-          {getRealText(realActions[selectedIndex].text || "", props.isInDialog, isBigScreen)}
+          {getRealText(
+            realActions[selectedIndex].text || "",
+            props.isInDialog,
+            isBigScreen,
+          )}
         </Button>
         <Button
           size="small"
@@ -1036,7 +1044,6 @@ function FilterManyOptionsView<K>(props: FilterManyOptionsViewProps<K>) {
     />
   );
 }
-
 
 function getRealText(text: string, isInDialog: boolean, isBigScreen: boolean) {
   if (isBigScreen || isInDialog) {

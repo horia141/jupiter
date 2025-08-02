@@ -3,6 +3,7 @@ import { InboxTaskSource } from "@jupiter/webapi-client";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { Button } from "@mui/material";
 import { Link } from "@remix-run/react";
+
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface InboxTaskSourceLinkProps {
@@ -11,7 +12,7 @@ interface InboxTaskSourceLinkProps {
 
 export function InboxTaskSourceLink(props: InboxTaskSourceLinkProps) {
   const isBigScreen = useBigScreen();
-  
+
   switch (props.inboxTaskResult.inbox_task.source) {
     case InboxTaskSource.WORKING_MEM_CLEANUP: {
       return (

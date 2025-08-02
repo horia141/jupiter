@@ -39,6 +39,7 @@ import {
 } from "~/logic/domain/inbox-task";
 import { TopLevelInfo } from "~/top-level-context";
 import {
+  isWidgetDimensionFlex,
   isWidgetDimensionKSized,
   widgetDimensionRows,
   widgetTypeName,
@@ -129,16 +130,30 @@ export function WidgetContainer(
 ) {
   const isBigScreen = useBigScreen();
   let heightInRem;
+  let minHeightInRem;
+  let maxHeightInRem;
   if (isWidgetDimensionKSized(props.geometry.dimension)) {
     heightInRem = undefined;
+    minHeightInRem = undefined;
+    maxHeightInRem = undefined;
   } else {
-    heightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+    if (isWidgetDimensionFlex(props.geometry.dimension)) {
+      heightInRem = undefined;
+      minHeightInRem = "12rem";
+      maxHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+    } else {
+      heightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+      minHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+      maxHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+    }
   }
   return (
     <Box
       sx={{
         width: isBigScreen ? "100%" : "calc(100% - 2 * 0.4rem)",
         height: heightInRem,
+        minHeight: minHeightInRem,
+        maxHeight: maxHeightInRem,
         border: (theme) => `2px dotted ${theme.palette.primary.main}`,
         borderRadius: "4px",
         margin: "0.2rem",

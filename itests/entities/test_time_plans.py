@@ -1686,14 +1686,12 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan(
     create_inbox_task,
     create_time_plan_activity_from_inbox_task,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     inbox_task = create_inbox_task("The Inbox Task")
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -1705,13 +1703,13 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan(
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
 
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
 
 def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_no_dates(
@@ -1721,14 +1719,12 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_no_dates(
     create_inbox_task,
     create_time_plan_activity_from_inbox_task,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     inbox_task = create_inbox_task("The Inbox Task")
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -1740,13 +1736,13 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_no_dates(
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
 
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
@@ -1760,14 +1756,12 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_with_dates
     create_inbox_task,
     create_time_plan_activity_from_inbox_task,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
+    create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
     inbox_task = create_inbox_task("The Inbox Task", due_date="2024-06-18")
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -1779,13 +1773,13 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_with_dates
         "p", has_text="Daily plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
 
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Daily plan for 2024-06-18")
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Daily plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("")
@@ -1808,9 +1802,7 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -1822,13 +1814,13 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
 
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
@@ -1853,9 +1845,7 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -1867,13 +1857,13 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
 
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
@@ -1900,9 +1890,7 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -1920,7 +1908,9 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
 
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
@@ -1944,9 +1934,7 @@ def test_time_plan_add_an_inbox_task_to_multiple_already_existing_time_plans(
 
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -1961,14 +1949,16 @@ def test_time_plan_add_an_inbox_task_to_multiple_already_existing_time_plans(
         "p", has_text="Weekly plan for 2024-06-25"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
 
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
-    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-25")
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-25"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan1.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
@@ -1990,21 +1980,19 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_with_tasks
         "The Big Plan 1", actionable_date="2024-06-10", due_date="2024-06-19"
     )
     inbox_task1 = create_inbox_task("The Inbox Task 1", big_plan_id=big_plan1.ref_id)
-    inbox_task2 = create_inbox_task("The Inbox Task 2", big_plan_id=big_plan1.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan1.ref_id)
     big_plan2 = create_big_plan(
         "The Big Plan 2", actionable_date="2024-06-10", due_date="2024-06-19"
     )
     inbox_task3 = create_inbox_task("The Inbox Task 3", big_plan_id=big_plan2.ref_id)
-    big_plan3 = create_big_plan(
+    create_big_plan(
         "The Big Plan 3", actionable_date="2024-06-10", due_date="2024-06-19"
     )
 
     # Add first inbox task
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task1.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2016,18 +2004,14 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_with_tasks
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task1.ref_id}"))
 
     # Add third inbox task
     page.goto(f"/app/workspace/inbox-tasks/{inbox_task3.ref_id}")
 
-    page.locator("#inbox-task-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2039,15 +2023,15 @@ def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_with_tasks
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-inbox-task-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task3.ref_id}"))
 
     page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
-    expect(page.locator("#time-plan-activities")).not_to_contain_text("The Inbox Task 2")
+    expect(page.locator("#time-plan-activities")).not_to_contain_text(
+        "The Inbox Task 2"
+    )
     expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 3")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan 1")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan 2")
@@ -2549,14 +2533,12 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan(
     create_big_plan,
     create_time_plan_activity_from_big_plan,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     big_plan = create_big_plan("The Big Plan")
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2568,13 +2550,13 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan(
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-big-plan-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
 
 def test_time_plan_add_big_plan_to_an_already_existing_time_plan_no_dates(
@@ -2584,14 +2566,12 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_no_dates(
     create_big_plan,
     create_time_plan_activity_from_big_plan,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     big_plan = create_big_plan("The Big Plan")
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2603,13 +2583,13 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_no_dates(
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-big-plan-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
@@ -2623,16 +2603,14 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_dates(
     create_big_plan,
     create_time_plan_activity_from_big_plan,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
+    create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
     big_plan = create_big_plan(
         "The Big Plan", actionable_date="2024-06-18", due_date="2024-06-18"
     )
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2644,13 +2622,13 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_dates(
         "p", has_text="Daily plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-big-plan-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Daily plan for 2024-06-18")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Daily plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-18")
@@ -2664,16 +2642,14 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_and_override_da
     create_big_plan,
     create_time_plan_activity_from_big_plan,
 ) -> None:
-    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     big_plan = create_big_plan(
         "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
     )
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2691,7 +2667,9 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_and_override_da
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
     expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
@@ -2711,9 +2689,7 @@ def test_time_plan_add_big_plan_to_multiple_already_existing_time_plans(
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2728,14 +2704,16 @@ def test_time_plan_add_big_plan_to_multiple_already_existing_time_plans(
         "p", has_text="Weekly plan for 2024-06-25"
     ).click()
 
-    page.locator("#add-big-plan-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-25")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-25"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan1.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
@@ -2756,14 +2734,12 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_task
     big_plan = create_big_plan(
         "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
     )
-    inbox_task1 = create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
-    inbox_task2 = create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2775,13 +2751,13 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_task
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-big-plan-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
@@ -2803,14 +2779,12 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_task
 ) -> None:
     time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
     big_plan = create_big_plan("The Big Plan")
-    inbox_task1 = create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
-    inbox_task2 = create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2822,13 +2796,13 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_task
         "p", has_text="Weekly plan for 2024-06-18"
     ).click()
 
-    page.locator("#add-big-plan-to-plans").locator(
-        "button", has_text="Add"
-    ).click()
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
@@ -2852,14 +2826,12 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_task
     big_plan = create_big_plan(
         "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
     )
-    inbox_task1 = create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
-    inbox_task2 = create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
 
     page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
 
-    page.locator("#big-plan-time-plans").locator(
-        "a", has_text="Add"
-    ).click()
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
 
     page.wait_for_url(
         re.compile(
@@ -2877,7 +2849,9 @@ def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_task
 
     page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
 
-    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text("Weekly plan for 2024-06-18")
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
 
     page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")

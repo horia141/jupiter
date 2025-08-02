@@ -1,7 +1,12 @@
 """A type of widget."""
 
 from jupiter.core.domain.application.home.home_tab_target import HomeTabTarget
-from jupiter.core.domain.features import UserFeature, UserFeatureFlags, WorkspaceFeature, WorkspaceFeatureFlags
+from jupiter.core.domain.features import (
+    UserFeature,
+    UserFeatureFlags,
+    WorkspaceFeature,
+    WorkspaceFeatureFlags,
+)
 from jupiter.core.framework.value import CompositeValue, EnumValue, enum_value, value
 
 
@@ -13,9 +18,11 @@ class WidgetDimension(EnumValue):
     DIM_1x2 = "Dim-1x2"
     DIM_1x3 = "Dim-1x3"
     DIM_2x1 = "Dim-2x1"
+    DIM_2x1_SMALL_SCREEN_FLEX = "Dim-2x1-small-screen-flex"
     DIM_2x2 = "Dim-2x2"
     DIM_2x3 = "Dim-2x3"
     DIM_3x1 = "Dim-3x1"
+    DIM_3x1_SMALL_SCREEN_FLEX = "Dim-3x1-small-screen-flex"
     DIM_3x2 = "Dim-3x2"
     DIM_3x3 = "Dim-3x3"
     DIM_kx1 = "Dim-kx1"
@@ -30,9 +37,11 @@ class WidgetDimension(EnumValue):
             WidgetDimension.DIM_1x2: 1,
             WidgetDimension.DIM_1x3: 1,
             WidgetDimension.DIM_2x1: 2,
+            WidgetDimension.DIM_2x1_SMALL_SCREEN_FLEX: 2,
             WidgetDimension.DIM_2x2: 2,
             WidgetDimension.DIM_2x3: 2,
             WidgetDimension.DIM_3x1: 3,
+            WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX: 3,
             WidgetDimension.DIM_3x2: 3,
             WidgetDimension.DIM_3x3: 3,
             WidgetDimension.DIM_kx1: 1,
@@ -48,9 +57,11 @@ class WidgetDimension(EnumValue):
             WidgetDimension.DIM_1x2: 2,
             WidgetDimension.DIM_1x3: 3,
             WidgetDimension.DIM_2x1: 1,
+            WidgetDimension.DIM_2x1_SMALL_SCREEN_FLEX: 1,
             WidgetDimension.DIM_2x2: 2,
             WidgetDimension.DIM_2x3: 3,
             WidgetDimension.DIM_3x1: 1,
+            WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX: 1,
             WidgetDimension.DIM_3x2: 2,
             WidgetDimension.DIM_3x3: 3,
             WidgetDimension.DIM_kx1: 1,
@@ -110,7 +121,9 @@ class WidgetTypeConstraints(CompositeValue):
     only_for_workspace_features: list[WorkspaceFeature] | None
     only_for_user_features: list[UserFeature] | None
 
-    def is_allowed_for(self, user: UserFeatureFlags, workspace: WorkspaceFeatureFlags) -> bool:
+    def is_allowed_for(
+        self, user: UserFeatureFlags, workspace: WorkspaceFeatureFlags
+    ) -> bool:
         """Whether the widget is allowed for the given user and workspace."""
         # Keep in sync with the logic in the frontend on
         # widget.ts:isAllowedForWidgetConstraints
@@ -169,6 +182,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
                 WidgetDimension.DIM_kx1,
             ],
         },
@@ -191,6 +205,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
                 WidgetDimension.DIM_kx1,
             ],
         },
@@ -215,6 +230,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
                 WidgetDimension.DIM_kx1,
             ],
         },
@@ -228,6 +244,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
             ],
         },
         only_for_workspace_features=[WorkspaceFeature.PERSONS],
@@ -241,6 +258,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
                 WidgetDimension.DIM_kx1,
             ],
         },
@@ -255,6 +273,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
                 WidgetDimension.DIM_kx1,
             ],
         },
@@ -269,6 +288,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
                 WidgetDimension.DIM_kx1,
             ],
         },
@@ -283,6 +303,7 @@ WIDGET_CONSTRAINTS = {
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_2x1,
+                WidgetDimension.DIM_2x1_SMALL_SCREEN_FLEX,
             ],
         },
         only_for_workspace_features=None,

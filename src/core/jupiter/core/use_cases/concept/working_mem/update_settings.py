@@ -2,13 +2,19 @@
 
 from typing import cast
 
-from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask, InboxTaskRepository
+from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
+    InboxTask,
+    InboxTaskRepository,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
-from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem, WorkingMemRepository
+from jupiter.core.domain.concept.working_mem.working_mem import (
+    WorkingMem,
+    WorkingMemRepository,
+)
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
@@ -133,10 +139,7 @@ class WorkingMemUpdateSettingsUseCase(
             allow_archived=False,
         )
 
-        if (
-            args.cleanup_project_ref_id.should_change
-            and len(working_mems) > 0
-        ):
+        if args.cleanup_project_ref_id.should_change and len(working_mems) > 0:
             inbox_task_collection = await uow.get_for(
                 InboxTaskCollection
             ).load_by_parent(

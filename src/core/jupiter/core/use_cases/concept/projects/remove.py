@@ -25,7 +25,6 @@ from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDoma
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
-from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId

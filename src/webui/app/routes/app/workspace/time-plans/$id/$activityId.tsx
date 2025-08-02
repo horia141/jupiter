@@ -454,8 +454,10 @@ export default function TimePlanActivity() {
             rootProject={loaderData.rootProject}
             allProjects={loaderData.allProjects}
             allBigPlans={loaderData.allBigPlans}
-            inputsEnabled={inputsEnabled && !loaderData.targetInboxTask.archived}
-            inboxTask={loaderData.targetInboxTask} 
+            inputsEnabled={
+              inputsEnabled && !loaderData.targetInboxTask.archived
+            }
+            inboxTask={loaderData.targetInboxTask}
             inboxTaskInfo={loaderData.targetInboxTaskInfo!}
             actionData={actionData}
           />

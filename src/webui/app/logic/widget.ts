@@ -51,10 +51,12 @@ export function widgetDimensionRows(dimension: WidgetDimension): number {
     case WidgetDimension.DIM_KX3:
       return 1;
     case WidgetDimension.DIM_2X1:
+    case WidgetDimension.DIM_2X1_SMALL_SCREEN_FLEX:
     case WidgetDimension.DIM_2X2:
     case WidgetDimension.DIM_2X3:
       return 2;
     case WidgetDimension.DIM_3X1:
+    case WidgetDimension.DIM_3X1_SMALL_SCREEN_FLEX:
     case WidgetDimension.DIM_3X2:
     case WidgetDimension.DIM_3X3:
       return 3;
@@ -65,7 +67,9 @@ export function widgetDimensionCols(dimension: WidgetDimension): number {
   switch (dimension) {
     case WidgetDimension.DIM_1X1:
     case WidgetDimension.DIM_2X1:
+    case WidgetDimension.DIM_2X1_SMALL_SCREEN_FLEX:
     case WidgetDimension.DIM_3X1:
+    case WidgetDimension.DIM_3X1_SMALL_SCREEN_FLEX:
     case WidgetDimension.DIM_KX1:
       return 1;
     case WidgetDimension.DIM_1X2:
@@ -89,12 +93,28 @@ export function isWidgetDimensionKSized(dimension: WidgetDimension): boolean {
   );
 }
 
+export function isWidgetDimensionFlex(dimension: WidgetDimension): boolean {
+  return (
+    dimension === WidgetDimension.DIM_2X1_SMALL_SCREEN_FLEX ||
+    dimension === WidgetDimension.DIM_3X1_SMALL_SCREEN_FLEX
+  );
+}
+
 export function widgetDimensionName(dimension: WidgetDimension): string {
+  if (dimension === WidgetDimension.DIM_2X1_SMALL_SCREEN_FLEX) {
+    return `2x1 (small screen flex)`;
+  }
+
+  if (dimension === WidgetDimension.DIM_3X1_SMALL_SCREEN_FLEX) {
+    return `3x1 (small screen flex)`;
+  }
+
   if (isWidgetDimensionKSized(dimension)) {
     return `kx${widgetDimensionCols(dimension)}`;
   }
   const rows = widgetDimensionRows(dimension);
   const cols = widgetDimensionCols(dimension);
+
   return `${rows}x${cols}`;
 }
 

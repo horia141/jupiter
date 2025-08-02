@@ -62,7 +62,9 @@ class WorkingMemCollection(TrunkEntity):
             and generation_period.just_the_value != RecurringTaskPeriod.DAILY
             and generation_period.just_the_value != RecurringTaskPeriod.WEEKLY
         ):
-            raise InputValidationError(f"Invalid period: {generation_period.just_the_value}")
+            raise InputValidationError(
+                f"Invalid period: {generation_period.just_the_value}"
+            )
         return self._new_version(
             ctx,
             generation_period=generation_period.or_else(self.generation_period),
