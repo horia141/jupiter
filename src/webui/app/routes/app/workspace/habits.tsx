@@ -7,11 +7,9 @@ import { WorkspaceFeature } from "@jupiter/webapi-client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Outlet, useSearchParams } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
-import { z } from "zod";
-import { parseQuery } from "zodix";
 import { DateTime } from "luxon";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
@@ -38,23 +36,14 @@ import {
 } from "~/rendering/use-nested-entities";
 import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 import { HabitKeyHabitStreakWidget } from "~/components/domain/concept/habit/habit-key-habit-streak-widget";
-import { newURLParams } from "~/logic/domain/navigation";
 import { WidgetProps } from "~/components/domain/application/home/common";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-const QuerySchema = z.object({
-  includeStreakMarksForYear: z
-    .string()
-    .transform((s) => parseInt(s, 10))
-    .optional(),
-});
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
-  const query = parseQuery(request, QuerySchema);
 
   const response = await apiClient.habits.habitFind({
     allow_archived: false,
@@ -74,7 +63,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
         apiClient.habits.habitLoad({
           ref_id: refId,
           allow_archived: false,
-          include_streak_marks_for_year: query.includeStreakMarksForYear,
         }),
       ),
     );
@@ -84,7 +72,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     habits: response.entries,
     keyHabitResults: keyHabitResults.map((h) => ({
       habit: h.habit,
-      streakMarkYear: h.streak_mark_year,
+      streakMarkEarliestDate: h.streak_mark_earliest_date,
+      streakMarkLatestDate: h.streak_mark_latest_date,
       streakMarks: h.streak_marks,
       inboxTasks: h.inbox_tasks,
     })),
@@ -95,7 +84,6 @@ export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Habits() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-  const [query] = useSearchParams();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -116,11 +104,14 @@ export default function Habits() {
     timezone: topLevelInfo.user.timezone,
     topLevelInfo,
     habitStreak: {
-      year: loaderData.keyHabitResults[0]?.streakMarkYear ?? rightNow.year,
-      currentYear: rightNow.year,
+      earliestDate:
+        loaderData.keyHabitResults[0]?.streakMarkEarliestDate ??
+        topLevelInfo.today,
+      latestDate:
+        loaderData.keyHabitResults[0]?.streakMarkLatestDate ??
+        topLevelInfo.today,
+      currentToday: topLevelInfo.today,
       entries: loaderData.keyHabitResults,
-      getYearUrl: (year) =>
-        `/app/workspace/habits?${newURLParams(query, "includeStreakMarksForYear", year.toString())}`,
     },
   };
 

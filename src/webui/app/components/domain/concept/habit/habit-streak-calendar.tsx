@@ -1,179 +1,181 @@
 import {
+  ADate,
   Habit,
   HabitStreakMark,
-  InboxTask,
   InboxTaskStatus,
 } from "@jupiter/webapi-client";
-import { Box, Stack } from "@mui/material";
+import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { CalendarTooltipProps, ResponsiveTimeRange } from "@nivo/calendar";
+import { PropsWithChildren } from "react";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { Link } from "@remix-run/react";
 
-import { aDateToDate } from "~/logic/domain/adate";
-import { useBigScreen } from "~/rendering/use-big-screen";
-import { EntityNameComponent } from "~/components/infra/entity-name";
-import { InboxTaskStatusTag } from "~/components/domain/concept/inbox-task/inbox-task-status-tag";
-import { StandardLink } from "~/components/infra/standard-link";
+import { aDateToDate, dateToAdate } from "~/logic/domain/adate";
 
 interface HabitStreakCalendarProps {
-  year: number;
-  currentYear: number;
+  earliestDate: ADate;
+  latestDate: ADate;
+  currentToday: ADate;
   habit: Habit;
   streakMarks: HabitStreakMark[];
-  inboxTasks: InboxTask[];
-  alwaysWide?: boolean;
-  getYearUrl: (year: number) => string;
+  showNav?: boolean;
+  getNavUrl?: (earliestDate: ADate, latestDate: ADate) => string;
 }
 
 export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
-  const isBigScreen = useBigScreen();
-  const earliestDate = aDateToDate(`${props.year}-01-01`);
-  const latestDate = aDateToDate(`${props.year}-12-31`);
-  const inboxTaskById: Map<string, InboxTask> = new Map(
-    props.inboxTasks.map((it) => [it.ref_id, it]),
-  );
+  const earliestDate = aDateToDate(props.earliestDate);
+  const latestDate = aDateToDate(props.latestDate);
 
-  const data = props.streakMarks.map((streakMark) => {
-    return {
-      value: computeDonenessForStreakMark(streakMark),
-      day: streakMark.date,
-    };
-  });
-
-  function handleTooltip(tooltipProps: CalendarTooltipProps) {
-    const theStreakMark = props.streakMarks.find(
-      (d) => d.date === tooltipProps.day,
-    );
-    if (!theStreakMark) {
-      return null;
-    }
-
-    return (
-      <TooltipBox
-        sx={{
-          backgroundColor: "white",
-        }}
-      >
-        <Stack>
-          {Object.entries(theStreakMark.statuses).map(([taskId, status]) => {
-            const taskIdStr = taskId.toString(); // Sometimes it's a int!
-            return (
-              <TooltipItem key={taskId}>
-                <EntityNameComponent
-                  compact
-                  name={
-                    inboxTaskById.has(taskIdStr)
-                      ? inboxTaskById.get(taskIdStr)!.name
-                      : `Task ${taskIdStr}`
-                  }
-                />
-                <InboxTaskStatusTag status={status} />
-              </TooltipItem>
-            );
-          })}
-        </Stack>
-      </TooltipBox>
-    );
-  }
-
-  function renderCalendar(from: string, to: string) {
-    return (
-      <Box sx={{ height: "140px" }}>
-        <ResponsiveTimeRange
-          data={data}
-          from={from}
-          to={to}
-          weekdayLegendOffset={0}
-          weekdayTicks={[]}
-          minValue={0}
-          maxValue={100}
-          emptyColor="#eeeeee"
-          colorScale={bucketedColorScale}
-          tooltip={handleTooltip}
-          align="center"
-          margin={{
-            top: 40,
-            right: 0,
-            bottom: 0,
-            left: 0,
-          }}
-        />
-      </Box>
-    );
+  const data: Map<string, number> = new Map();
+  for (const streakMark of props.streakMarks) {
+    data.set(streakMark.date, computeDonenessForStreakMark(streakMark));
   }
 
   return (
     <StyledDiv>
-      <Stack
-        direction="row"
-        sx={{ justifyContent: "center", alignItems: "center", gap: 1 }}
-      >
-        <StandardLink
-          to={props.getYearUrl(props.year - 3)}
-          inline="true"
-          replace
-        >
-          {props.year - 3}
-        </StandardLink>
-        <StandardLink
-          to={props.getYearUrl(props.year - 2)}
-          inline="true"
-          replace
-        >
-          {props.year - 2}
-        </StandardLink>
-        <StandardLink
-          to={props.getYearUrl(props.year - 1)}
-          inline="true"
-          replace
-        >
-          {props.year - 1}
-        </StandardLink>
-        <StandardLink
-          to={props.getYearUrl(props.year)}
-          inline="true"
-          sx={{ fontWeight: "bold" }}
-        >
-          {props.year}
-        </StandardLink>
-        {props.year + 1 <= props.currentYear && (
-          <StandardLink
-            to={props.getYearUrl(props.year + 1)}
-            inline="true"
-            replace
-          >
-            {props.year + 1}
-          </StandardLink>
-        )}
-        {props.year + 2 <= props.currentYear && (
-          <StandardLink
-            to={props.getYearUrl(props.year + 2)}
-            inline="true"
-            replace
-          >
-            {props.year + 2}
-          </StandardLink>
-        )}
-        {props.year + 3 <= props.currentYear && (
-          <StandardLink
-            to={props.getYearUrl(props.year + 3)}
-            inline="true"
-            replace
-          >
-            {props.year + 3}
-          </StandardLink>
-        )}
-      </Stack>
-      {isBigScreen || props.alwaysWide ? (
-        renderCalendar(earliestDate.toISODate(), latestDate.toISODate())
-      ) : (
-        <Stack spacing={2}>
-          {renderCalendar(`${props.year}-01-01`, `${props.year}-03-31`)}
-          {renderCalendar(`${props.year}-04-01`, `${props.year}-06-30`)}
-          {renderCalendar(`${props.year}-07-01`, `${props.year}-09-30`)}
-          {renderCalendar(`${props.year}-10-01`, `${props.year}-12-31`)}
-        </Stack>
+      {props.showNav && props.getNavUrl && (
+        <NavBefore
+          to={props.getNavUrl(
+            dateToAdate(earliestDate.minus({ days: 28 })),
+            dateToAdate(latestDate.minus({ days: 28 })),
+          )}
+        />
+      )}
+
+      <OneYear
+        earliestDate={props.earliestDate}
+        latestDate={props.latestDate}
+        data={data}
+      />
+
+      {props.showNav && props.getNavUrl && (
+        <NavAfter
+          to={props.getNavUrl(
+            dateToAdate(earliestDate.plus({ days: 28 })),
+            dateToAdate(latestDate.plus({ days: 28 })),
+          )}
+        />
       )}
     </StyledDiv>
+  );
+}
+
+interface NavBeforeProps {
+  to: string;
+}
+
+function NavBefore(props: NavBeforeProps) {
+  return (
+    <IconButton
+      aria-label="previous-interval"
+      size="large"
+      component={Link}
+      to={props.to}
+    >
+      <ArrowBackIosNewIcon fontSize="inherit" />
+    </IconButton>
+  );
+}
+
+interface NavAfterProps {
+  to: string;
+}
+
+function NavAfter(props: NavAfterProps) {
+  return (
+    <IconButton
+      aria-label="next-interval"
+      size="large"
+      component={Link}
+      to={props.to}
+    >
+      <ArrowForwardIosIcon fontSize="inherit" />
+    </IconButton>
+  );
+}
+
+interface OneYearProps {
+  earliestDate: ADate;
+  latestDate: ADate;
+  data: Map<string, number>;
+}
+
+function OneYear(props: OneYearProps) {
+  const earliestDateAtWeekStart = aDateToDate(props.earliestDate).startOf(
+    "week",
+  );
+  const latestDateAtWeekStart = aDateToDate(props.latestDate);
+
+  const weeksBetween = [];
+  let currentDate = earliestDateAtWeekStart;
+  while (currentDate < latestDateAtWeekStart) {
+    weeksBetween.push(currentDate);
+    currentDate = currentDate.plus({ weeks: 1 });
+  }
+
+  return (
+    <Stack
+      direction="column"
+      sx={{ marginLeft: "auto", marginRight: "auto", width: "fit-content" }}
+    >
+      <Box
+        sx={{ marginLeft: "auto", marginRight: "auto", width: "fit-content" }}
+      >
+        From {props.earliestDate} to {props.latestDate}
+      </Box>
+      <Stack direction="row">
+        {weeksBetween.map((weekStart, index) => {
+          return (
+            <OneCol key={index}>
+              {Array.from({ length: 7 }).map((_, dayIndex) => {
+                const day = weekStart.plus({ days: dayIndex });
+                const value = props.data.get(day.toISODate()!);
+                const theValue = value !== undefined ? `- ${value}%` : "";
+                const tooltip = `${day.toISODate()} ${theValue}`;
+                return (
+                  <Tooltip key={dayIndex} title={tooltip}>
+                    <span>
+                      <OneCell doneness={value} />
+                    </span>
+                  </Tooltip>
+                );
+              })}
+            </OneCol>
+          );
+        })}
+      </Stack>
+    </Stack>
+  );
+}
+
+function OneCol(props: PropsWithChildren) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {props.children}
+    </Box>
+  );
+}
+
+interface OneCellProps {
+  doneness: number | undefined;
+}
+
+function OneCell(props: OneCellProps) {
+  return (
+    <Box
+      sx={{
+        width: "1rem",
+        height: "1rem",
+        margin: "1px",
+        backgroundColor: bucketedColorScale(props.doneness),
+      }}
+    ></Box>
   );
 }
 
@@ -190,36 +192,16 @@ function computeDonenessForStreakMark(streakMark: HabitStreakMark): number {
   return Math.floor((doneStatuses / allStatuses) * 100);
 }
 
-const bucketedColorScale = (value: number | { valueOf(): number }) => {
-  const num = typeof value === "number" ? value : value.valueOf();
-  if (num === undefined || num === null) return "#eeeeee";
-  if (num <= 10) return "#e57373"; // reddish
-  if (num <= 50) return "#ffb74d"; // orange-ish
-  if (num <= 90) return "#fff176"; // yellow-ish
+function bucketedColorScale(value: number | undefined): string {
+  if (value === undefined || value === null) return "#eeeeee";
+  if (value <= 10) return "#e57373"; // reddish
+  if (value <= 50) return "#ffb74d"; // orange-ish
+  if (value <= 90) return "#fff176"; // yellow-ish
   return "#81c784"; // green-ish
-};
-
-bucketedColorScale.ticks = () => {
-  return [0, 10, 50, 90, 100];
-};
-
-const TooltipBox = styled("div")`
-  font-size: 1rem;
-  border: 1px dashed gray;
-  padding: 5px;
-  border-radius: 5px;
-  z-index: 1000;
-`;
-
-const TooltipItem = styled(Box)`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
-`;
+}
 
 const StyledDiv = styled("div")`
   display: flex;
   justify-content: space-between;
-  flex-direction: column;
+  flex-direction: row;
 `;

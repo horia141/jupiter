@@ -65,7 +65,7 @@ class HabitRemoveService:
         )
         for streak_mark in all_streak_marks:
             await uow.get(HabitStreakMarkRepository).remove(
-                (streak_mark.habit.ref_id, streak_mark.year, streak_mark.date)
+                (streak_mark.habit.ref_id, streak_mark.date)
             )
 
         await uow.get_for(Habit).remove(ref_id)

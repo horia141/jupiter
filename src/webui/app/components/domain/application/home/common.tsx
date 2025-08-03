@@ -87,10 +87,10 @@ export interface WidgetProps {
     onCardMarkNotDone: (it: InboxTask) => void;
   };
   habitStreak?: {
-    year: number;
-    currentYear: number;
+    earliestDate: ADate;
+    latestDate: ADate;
+    currentToday: ADate;
     entries: HabitStreakEntry[];
-    getYearUrl: (year: number) => string;
   };
   keyBigPlans?: {
     bigPlans: BigPlanEntry[];

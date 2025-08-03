@@ -21,7 +21,6 @@ class HabitStreakMark(Record):
     """The record of a streak of a habit."""
 
     habit: ParentLink
-    year: int
     date: ADate
     statuses: dict[EntityId, InboxTaskStatus]
 
@@ -37,7 +36,6 @@ class HabitStreakMark(Record):
         return HabitStreakMark._create(
             ctx,
             habit=ParentLink(habit_ref_id),
-            year=date.year,
             date=date,
             statuses=statuses,
         )
@@ -65,11 +63,11 @@ class HabitStreakMark(Record):
     @property
     def raw_key(self) -> object:
         """The raw key of the streak mark."""
-        return (self.habit.ref_id, self.year, self.date)
+        return (self.habit.ref_id, self.date)
 
 
 class HabitStreakMarkRepository(
-    RecordRepository[HabitStreakMark, tuple[EntityId, int, ADate]], abc.ABC
+    RecordRepository[HabitStreakMark, tuple[EntityId, ADate]], abc.ABC
 ):
     """A repository of habit streak marks."""
 
@@ -78,7 +76,7 @@ class HabitStreakMarkRepository(
         """Upsert a habit streak mark."""
 
     @abc.abstractmethod
-    async def find_all_for_year(
-        self, habit_ref_id: EntityId, year: int
+    async def find_all_between_dates(
+        self, habit_ref_id: EntityId, start_date: ADate, end_date: ADate
     ) -> list[HabitStreakMark]:
-        """Find all streak marks for a year."""
+        """Find all streak marks between two dates."""

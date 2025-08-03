@@ -480,13 +480,25 @@ class QuarterlySchedule(Schedule):
     @property
     def end_day(self) -> ADate:
         """The end day of the interval represented by the scedule block."""
+        real_month = self.month_to_quarter_end(self._date)
+        final_end_day = self._correct_end_day(self._date, real_month)
         return ADate.from_date(
             Date(
                 self._date.year,
-                self.month_to_quarter_end(self._date),
-                self._date.day,
+                real_month,
+                final_end_day,
             ).end_of("month"),
         )
+
+    def _correct_end_day(self, date: Date, month: int) -> int:
+        if month == 3:
+            return min(date.day, 31)
+        elif month == 6:
+            return min(date.day, 30)
+        elif month == 9:
+            return min(date.day, 30)
+        else:
+            return date.day
 
 
 class YearlySchedule(Schedule):

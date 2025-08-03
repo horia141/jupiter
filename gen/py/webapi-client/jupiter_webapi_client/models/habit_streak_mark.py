@@ -19,7 +19,6 @@ class HabitStreakMark:
         created_time (str): A timestamp in the application.
         last_modified_time (str): A timestamp in the application.
         habit_ref_id (str):
-        year (int):
         date (str): A date or possibly a datetime for the application.
         statuses (HabitStreakMarkStatuses):
     """
@@ -27,7 +26,6 @@ class HabitStreakMark:
     created_time: str
     last_modified_time: str
     habit_ref_id: str
-    year: int
     date: str
     statuses: "HabitStreakMarkStatuses"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -38,8 +36,6 @@ class HabitStreakMark:
         last_modified_time = self.last_modified_time
 
         habit_ref_id = self.habit_ref_id
-
-        year = self.year
 
         date = self.date
 
@@ -52,7 +48,6 @@ class HabitStreakMark:
                 "created_time": created_time,
                 "last_modified_time": last_modified_time,
                 "habit_ref_id": habit_ref_id,
-                "year": year,
                 "date": date,
                 "statuses": statuses,
             }
@@ -71,8 +66,6 @@ class HabitStreakMark:
 
         habit_ref_id = d.pop("habit_ref_id")
 
-        year = d.pop("year")
-
         date = d.pop("date")
 
         statuses = HabitStreakMarkStatuses.from_dict(d.pop("statuses"))
@@ -81,7 +74,6 @@ class HabitStreakMark:
             created_time=created_time,
             last_modified_time=last_modified_time,
             habit_ref_id=habit_ref_id,
-            year=year,
             date=date,
             statuses=statuses,
         )

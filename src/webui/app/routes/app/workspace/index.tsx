@@ -90,14 +90,9 @@ export const handle = {
 
 const QuerySchema = z.object({
   tabRefId: z.string().optional(),
-  includeStreakMarksForYear: z
-    .string()
-    .transform((s) => parseInt(s, 10))
-    .optional(),
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const query = parseQuery(request, QuerySchema);
   const rightNow = DateTime.now().toISODate();
 
   const apiClient = await getLoggedInApiClient(request);
@@ -123,6 +118,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)) {
     const keyHabits = summaryResponse.habits?.filter((h) => h.is_key) || [];
 
+    const earliestDate = DateTime.now().minus({ days: 120 }).toISODate();
+    const latestDate = DateTime.now().toISODate();
+
     keyHabitResults = [];
     if (keyHabits.length > 0) {
       keyHabitResults = await Promise.all(
@@ -130,7 +128,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
           apiClient.habits.habitLoad({
             ref_id: habit.ref_id,
             allow_archived: false,
-            include_streak_marks_for_year: query.includeStreakMarksForYear,
+            include_streak_marks_earliest_date: earliestDate,
+            include_streak_marks_latest_date: latestDate,
           }),
         ),
       );
@@ -253,7 +252,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     personInboxTasks: personInboxTasksResponse?.entries,
     keyHabitResults: keyHabitResults?.map((h) => ({
       habit: h.habit,
-      streakMarkYear: h.streak_mark_year,
+      streakMarkEarliestDate: h.streak_mark_earliest_date,
+      streakMarkLatestDate: h.streak_mark_latest_date,
       streakMarks: h.streak_marks,
       inboxTasks: h.inbox_tasks,
     })),
@@ -313,7 +313,6 @@ export default function WorkspaceHome() {
   const topLevelInfo = useContext(TopLevelInfoContext);
   const navigation = useNavigation();
   const inputsEnabled = navigation.state === "loading" ? false : true;
-  const [query] = useSearchParams();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
   const isBigScreen = useBigScreen();
 
@@ -480,11 +479,14 @@ export default function WorkspaceHome() {
       : undefined,
     habitStreak: loaderData.keyHabitResults
       ? {
-          year: loaderData.keyHabitResults[0]?.streakMarkYear ?? rightNow.year,
-          currentYear: rightNow.year,
+          earliestDate:
+            loaderData.keyHabitResults[0]?.streakMarkEarliestDate ??
+            topLevelInfo.today,
+          latestDate:
+            loaderData.keyHabitResults[0]?.streakMarkLatestDate ??
+            topLevelInfo.today,
+          currentToday: topLevelInfo.today,
           entries: loaderData.keyHabitResults,
-          getYearUrl: (year) =>
-            `/app/workspace?${newURLParams(query, "includeStreakMarksForYear", year.toString())}`,
         }
       : undefined,
     keyBigPlans: loaderData.keyBigPlansResults

@@ -53,7 +53,6 @@ class SqliteHabitStreakMarkRepository(
             "habit_streak_marks",
             metadata,
             Column("habit_ref_id", Integer, ForeignKey("habit.ref_id"), nullable=False),
-            Column("year", Integer, nullable=False),
             Column("date", Date, nullable=False),
             Column("statuses", JSON, nullable=False),
             Column("created_time", DateTime, nullable=False),
@@ -87,7 +86,6 @@ class SqliteHabitStreakMarkRepository(
             .where(
                 self._habit_streak_mark_table.c.habit_ref_id == record.habit.as_int()
             )
-            .where(self._habit_streak_mark_table.c.year == record.year)
             .where(
                 self._habit_streak_mark_table.c.date
                 == self._realm_codec_registry.db_encode(record.date)
@@ -107,15 +105,14 @@ class SqliteHabitStreakMarkRepository(
             )
         return record
 
-    async def remove(self, key: tuple[EntityId, int, ADate]) -> None:
+    async def remove(self, key: tuple[EntityId, ADate]) -> None:
         """Remove a habit streak mark."""
         result = await self._connection.execute(
             delete(self._habit_streak_mark_table)
             .where(self._habit_streak_mark_table.c.habit_ref_id == key[0].as_int())
-            .where(self._habit_streak_mark_table.c.year == key[1])
             .where(
                 self._habit_streak_mark_table.c.date
-                == self._realm_codec_registry.db_encode(key[2])
+                == self._realm_codec_registry.db_encode(key[1])
             )
         )
         if result.rowcount == 0:
@@ -124,16 +121,15 @@ class SqliteHabitStreakMarkRepository(
             )
 
     async def load_by_key_optional(
-        self, key: tuple[EntityId, int, ADate]
+        self, key: tuple[EntityId, ADate]
     ) -> HabitStreakMark | None:
         """Load a habit streak mark by it's unique key."""
         result = await self._connection.execute(
             select(self._habit_streak_mark_table)
             .where(self._habit_streak_mark_table.c.habit_ref_id == key[0].as_int())
-            .where(self._habit_streak_mark_table.c.year == key[1])
             .where(
                 self._habit_streak_mark_table.c.date
-                == self._realm_codec_registry.db_encode(key[2])
+                == self._realm_codec_registry.db_encode(key[1])
             )
         )
         result_x = result.first()
@@ -144,7 +140,7 @@ class SqliteHabitStreakMarkRepository(
     async def find_all(
         self, prefix: EntityId | list[EntityId]
     ) -> list[HabitStreakMark]:
-        """Find all streak marks for a year."""
+        """Find all streak marks."""
         result = await self._connection.execute(
             select(self._habit_streak_mark_table).where(
                 self._habit_streak_mark_table.c.habit_ref_id.in_(
@@ -165,7 +161,6 @@ class SqliteHabitStreakMarkRepository(
                 self._habit_streak_mark_table.c.habit_ref_id
                 == habit_streak_mark.habit.as_int()
             )
-            .where(self._habit_streak_mark_table.c.year == habit_streak_mark.year)
             .where(
                 self._habit_streak_mark_table.c.date
                 == self._realm_codec_registry.db_encode(habit_streak_mark.date)
@@ -183,16 +178,23 @@ class SqliteHabitStreakMarkRepository(
         if result.rowcount == 0:
             await self.create(habit_streak_mark)
 
-    async def find_all_for_year(
-        self, habit_ref_id: EntityId, year: int
+    async def find_all_between_dates(
+        self, habit_ref_id: EntityId, start_date: ADate, end_date: ADate
     ) -> list[HabitStreakMark]:
-        """Find all streak marks for a year."""
+        """Find all streak marks between two dates."""
         result = await self._connection.execute(
             select(self._habit_streak_mark_table)
             .where(
                 self._habit_streak_mark_table.c.habit_ref_id == habit_ref_id.as_int()
             )
-            .where(self._habit_streak_mark_table.c.year == year)
+            .where(
+                self._habit_streak_mark_table.c.date
+                >= self._realm_codec_registry.db_encode(start_date)
+            )
+            .where(
+                self._habit_streak_mark_table.c.date
+                <= self._realm_codec_registry.db_encode(end_date)
+            )
         )
         results = result.fetchall()
         return [self._row_to_entity(row) for row in results]

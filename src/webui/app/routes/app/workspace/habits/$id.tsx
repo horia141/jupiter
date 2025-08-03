@@ -23,6 +23,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
+import { DateTime } from "luxon";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
@@ -44,7 +45,6 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { IsKeySelect } from "~/components/domain/core/is-key-select";
-import { aDateToDate } from "~/logic/domain/adate";
 import {
   SectionActions,
   ActionSingle,
@@ -60,10 +60,8 @@ const QuerySchema = z.object({
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
-  includeStreakMarksForYear: z
-    .string()
-    .transform((s) => parseInt(s, 10))
-    .optional(),
+  viewOneIncludeStreakMarksEarliestDate: z.string().optional(),
+  viewOneIncludeStreakMarksLatestDate: z.string().optional(),
 });
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -113,19 +111,28 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     include_projects: true,
   });
 
+  let earliestDate = query.viewOneIncludeStreakMarksEarliestDate;
+  let latestDate = query.viewOneIncludeStreakMarksLatestDate;
+  if (earliestDate === undefined) {
+    earliestDate = DateTime.now().minus({ days: 90 }).toISODate();
+    latestDate = DateTime.now().toISODate();
+  }
+
   try {
     const result = await apiClient.habits.habitLoad({
       ref_id: id,
       allow_archived: true,
       inbox_task_retrieve_offset: query.inboxTasksRetrieveOffset, // Pass the offset to the API call
-      include_streak_marks_for_year: query.includeStreakMarksForYear,
+      include_streak_marks_earliest_date: earliestDate,
+      include_streak_marks_latest_date: latestDate,
     });
 
     return json({
       habit: result.habit,
       note: result.note,
       streakMarks: result.streak_marks,
-      streakMarkYear: result.streak_mark_year,
+      streakMarkEarliestDate: result.streak_mark_earliest_date,
+      streakMarkLatestDate: result.streak_mark_latest_date,
       project: result.project,
       inboxTasks: result.inbox_tasks,
       inboxTasksTotalCnt: result.inbox_tasks_total_cnt,
@@ -480,16 +487,19 @@ export default function Habit() {
 
       <SectionCard title="Streak">
         <HabitStreakCalendar
-          year={loaderData.streakMarkYear}
-          currentYear={aDateToDate(topLevelInfo.today).year}
+          earliestDate={loaderData.streakMarkEarliestDate}
+          latestDate={loaderData.streakMarkLatestDate}
+          currentToday={topLevelInfo.today}
           habit={loaderData.habit}
           streakMarks={loaderData.streakMarks}
-          inboxTasks={sortedInboxTasks}
-          getYearUrl={(year) =>
+          showNav
+          getNavUrl={(earliestDate, latestDate) =>
             `/app/workspace/habits/${loaderData.habit.ref_id}?${newURLParams(
               query,
-              "includeStreakMarksForYear",
-              year.toString(),
+              "viewOneIncludeStreakMarksEarliestDate",
+              earliestDate,
+              "viewOneIncludeStreakMarksLatestDate",
+              latestDate,
             )}`
           }
         />

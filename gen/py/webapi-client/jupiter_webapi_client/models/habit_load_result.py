@@ -28,7 +28,8 @@ class HabitLoadResult:
         inbox_tasks_total_cnt (int):
         inbox_tasks_page_size (int):
         streak_marks (list['HabitStreakMark']):
-        streak_mark_year (int):
+        streak_mark_earliest_date (str): A date or possibly a datetime for the application.
+        streak_mark_latest_date (str): A date or possibly a datetime for the application.
         note (Union['Note', None, Unset]):
     """
 
@@ -38,7 +39,8 @@ class HabitLoadResult:
     inbox_tasks_total_cnt: int
     inbox_tasks_page_size: int
     streak_marks: list["HabitStreakMark"]
-    streak_mark_year: int
+    streak_mark_earliest_date: str
+    streak_mark_latest_date: str
     note: Union["Note", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -63,7 +65,9 @@ class HabitLoadResult:
             streak_marks_item = streak_marks_item_data.to_dict()
             streak_marks.append(streak_marks_item)
 
-        streak_mark_year = self.streak_mark_year
+        streak_mark_earliest_date = self.streak_mark_earliest_date
+
+        streak_mark_latest_date = self.streak_mark_latest_date
 
         note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
@@ -83,7 +87,8 @@ class HabitLoadResult:
                 "inbox_tasks_total_cnt": inbox_tasks_total_cnt,
                 "inbox_tasks_page_size": inbox_tasks_page_size,
                 "streak_marks": streak_marks,
-                "streak_mark_year": streak_mark_year,
+                "streak_mark_earliest_date": streak_mark_earliest_date,
+                "streak_mark_latest_date": streak_mark_latest_date,
             }
         )
         if note is not UNSET:
@@ -122,7 +127,9 @@ class HabitLoadResult:
 
             streak_marks.append(streak_marks_item)
 
-        streak_mark_year = d.pop("streak_mark_year")
+        streak_mark_earliest_date = d.pop("streak_mark_earliest_date")
+
+        streak_mark_latest_date = d.pop("streak_mark_latest_date")
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
@@ -148,7 +155,8 @@ class HabitLoadResult:
             inbox_tasks_total_cnt=inbox_tasks_total_cnt,
             inbox_tasks_page_size=inbox_tasks_page_size,
             streak_marks=streak_marks,
-            streak_mark_year=streak_mark_year,
+            streak_mark_earliest_date=streak_mark_earliest_date,
+            streak_mark_latest_date=streak_mark_latest_date,
             note=note,
         )
 

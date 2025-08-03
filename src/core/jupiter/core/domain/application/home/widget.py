@@ -169,7 +169,12 @@ WIDGET_CONSTRAINTS = {
                 WidgetDimension.DIM_1x1,
                 WidgetDimension.DIM_1x2,
             ],
-            HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
+            HomeTabTarget.SMALL_SCREEN: [
+                WidgetDimension.DIM_1x1,
+                WidgetDimension.DIM_2x1_SMALL_SCREEN_FLEX,
+                WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
+                WidgetDimension.DIM_kx1,
+            ],
         },
         only_for_workspace_features=[WorkspaceFeature.HABITS],
         only_for_user_features=None,

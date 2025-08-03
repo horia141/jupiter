@@ -48,13 +48,11 @@ export function HabitKeyHabitStreakWidget(props: WidgetProps) {
             {index === selectedEntry && (
               <Box sx={{ margin: "0.4rem" }}>
                 <HabitStreakCalendar
-                  year={habitStreak.year}
-                  currentYear={habitStreak.currentYear}
+                  earliestDate={habitStreak.earliestDate}
+                  latestDate={habitStreak.latestDate}
+                  currentToday={habitStreak.currentToday}
                   habit={entry.habit}
                   streakMarks={entry.streakMarks}
-                  inboxTasks={entry.inboxTasks}
-                  getYearUrl={habitStreak.getYearUrl}
-                  alwaysWide
                 />
               </Box>
             )}

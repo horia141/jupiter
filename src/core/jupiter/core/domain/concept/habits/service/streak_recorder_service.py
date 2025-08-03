@@ -65,7 +65,7 @@ class HabitStreakRecorderService:
         while start_date <= schedule.end_day:
             habit_streak_mark = await uow.get(
                 HabitStreakMarkRepository
-            ).load_by_key_optional((habit.ref_id, start_date.year, start_date))
+            ).load_by_key_optional((habit.ref_id, start_date))
             if habit_streak_mark is None:
                 habit_streak_mark = HabitStreakMark.new_mark(
                     ctx=ctx,
@@ -99,7 +99,7 @@ class HabitStreakRecorderService:
         while start_date <= schedule.end_day:
             habit_streak_mark = await uow.get(
                 HabitStreakMarkRepository
-            ).load_by_key_optional((habit.ref_id, start_date.year, start_date))
+            ).load_by_key_optional((habit.ref_id, start_date))
             if habit_streak_mark is None:
                 continue
             else:
@@ -127,7 +127,5 @@ class HabitStreakRecorderService:
 
         start_date = schedule.first_day
         while start_date <= schedule.end_day:
-            await uow.get(HabitStreakMarkRepository).remove(
-                (habit.ref_id, start_date.year, start_date)
-            )
+            await uow.get(HabitStreakMarkRepository).remove((habit.ref_id, start_date))
             start_date = start_date.add_days(1)

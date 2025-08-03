@@ -8,7 +8,6 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -19,7 +18,7 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseFormSafe } from "zodix";
+import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { UserFeatureFlagsEditor } from "~/components/domain/application/workspace/feature-flags-editor";

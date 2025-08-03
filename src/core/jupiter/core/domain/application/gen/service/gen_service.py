@@ -1281,8 +1281,6 @@ class GenService:
                     task,
                 )
 
-        print(remaining_tasks)
-
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             streak_recorder_service = HabitStreakRecorderService()
             await streak_recorder_service.upsert(

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ADate } from './ADate';
 import type { Habit } from './Habit';
 import type { HabitStreakMark } from './HabitStreakMark';
 import type { InboxTask } from './InboxTask';
@@ -17,7 +18,8 @@ export type HabitLoadResult = {
     inbox_tasks_total_cnt: number;
     inbox_tasks_page_size: number;
     streak_marks: Array<HabitStreakMark>;
-    streak_mark_year: number;
+    streak_mark_earliest_date: ADate;
+    streak_mark_latest_date: ADate;
     note?: (Note | null);
 };
 

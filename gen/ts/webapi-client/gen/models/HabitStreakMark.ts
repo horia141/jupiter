@@ -12,7 +12,6 @@ export type HabitStreakMark = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     habit_ref_id: string;
-    year: number;
     date: ADate;
     statuses: Record<string, InboxTaskStatus>;
 };

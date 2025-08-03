@@ -14,6 +14,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 )
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.projects.project import Project
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
@@ -40,7 +41,8 @@ class HabitLoadArgs(UseCaseArgsBase):
     ref_id: EntityId
     allow_archived: bool
     inbox_task_retrieve_offset: int | None
-    include_streak_marks_for_year: int | None
+    include_streak_marks_earliest_date: ADate | None
+    include_streak_marks_latest_date: ADate | None
 
 
 @use_case_result
@@ -53,7 +55,8 @@ class HabitLoadResult(UseCaseResultBase):
     inbox_tasks_total_cnt: int
     inbox_tasks_page_size: int
     streak_marks: list[HabitStreakMark]
-    streak_mark_year: int
+    streak_mark_earliest_date: ADate
+    streak_mark_latest_date: ADate
     note: Note | None
 
 
@@ -76,10 +79,14 @@ class HabitLoadUseCase(
         ):
             raise InputValidationError("Invalid inbox_task_retrieve_offset")
         if (
-            args.include_streak_marks_for_year is not None
-            and args.include_streak_marks_for_year < 0
+            args.include_streak_marks_earliest_date is not None
+            and args.include_streak_marks_latest_date is not None
+            and args.include_streak_marks_earliest_date
+            > args.include_streak_marks_latest_date
         ):
-            raise InputValidationError("Invalid include_streak_marks_for_year")
+            raise InputValidationError(
+                "Invalid streak_mark_earliest_date or streak_mark_latest_date"
+            )
 
         workspace = context.workspace
         habit = await uow.get_for(Habit).load_by_id(
@@ -107,13 +114,19 @@ class HabitLoadUseCase(
             retrieve_limit=InboxTaskRepository.PAGE_SIZE,
         )
 
-        year_to_retrieve_streak_marks = (
-            args.include_streak_marks_for_year
-            or self._time_provider.get_current_date().year
+        streak_mark_earliest_date = (
+            args.include_streak_marks_earliest_date
+            or self._time_provider.get_current_date().subtract_days(365)
         )
-        streak_marks = await uow.get(HabitStreakMarkRepository).find_all_for_year(
+        streak_mark_latest_date = (
+            args.include_streak_marks_latest_date
+            or self._time_provider.get_current_date()
+        )
+
+        streak_marks = await uow.get(HabitStreakMarkRepository).find_all_between_dates(
             habit.ref_id,
-            year_to_retrieve_streak_marks,
+            streak_mark_earliest_date,
+            streak_mark_latest_date,
         )
 
         note = await uow.get(NoteRepository).load_optional_for_source(
@@ -129,6 +142,7 @@ class HabitLoadUseCase(
             inbox_tasks_total_cnt=inbox_tasks_total_cnt,
             inbox_tasks_page_size=InboxTaskRepository.PAGE_SIZE,
             streak_marks=streak_marks,
-            streak_mark_year=year_to_retrieve_streak_marks,
+            streak_mark_earliest_date=streak_mark_earliest_date,
+            streak_mark_latest_date=streak_mark_latest_date,
             note=note,
         )
