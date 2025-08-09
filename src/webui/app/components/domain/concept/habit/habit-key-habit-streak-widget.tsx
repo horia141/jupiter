@@ -1,16 +1,43 @@
 import { Box, Stack, Tab, Tabs } from "@mui/material";
 import { Fragment, useEffect, useState } from "react";
+import { WidgetDimension } from "@jupiter/webapi-client";
 
 import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
 import { WidgetProps } from "~/components/domain/application/home/common";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
+import { limitKeyHabitResultsBasedOnScreenSize } from "~/logic/domain/habit-streak";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 const ANIMATION_DURATION_MS = 10_000;
+
+const DAYS_TO_SHOW_ON_BIG_SCREEN_3x1 = 365;
+const DAYS_TO_SHOW_ON_BIG_SCREEN_2x1 = 240;
+const DAYS_TO_SHOW_ON_SMALL_SCREEN = 90;
 
 export function HabitKeyHabitStreakWidget(props: WidgetProps) {
   const habitStreak = props.habitStreak!;
   const [selectedEntry, setSelectedEntry] = useState<number>(0);
+
+  const isBigScreen = useBigScreen();
+
+  const habitsByRefId = new Map(
+    habitStreak.entries.map((e) => [e.habit.ref_id, e.habit]),
+  );
+
+  const keyHabitStreaks = limitKeyHabitResultsBasedOnScreenSize(
+    habitStreak.entries.map((e) => ({
+      habitRefId: e.habit.ref_id,
+      streakMarkEarliestDate: habitStreak.earliestDate,
+      streakMarkLatestDate: habitStreak.latestDate,
+      streakMarks: e.streakMarks,
+    })),
+    isBigScreen
+      ? props.geometry.dimension === WidgetDimension.DIM_3X1
+        ? DAYS_TO_SHOW_ON_BIG_SCREEN_3x1
+        : DAYS_TO_SHOW_ON_BIG_SCREEN_2x1
+      : DAYS_TO_SHOW_ON_SMALL_SCREEN,
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -39,20 +66,28 @@ export function HabitKeyHabitStreakWidget(props: WidgetProps) {
           variant="scrollable"
           scrollButtons="auto"
         >
-          {habitStreak.entries.map((entry, index) => (
-            <Tab key={index} label={entry.habit.name} />
+          {keyHabitStreaks.map((entry, index) => (
+            <Tab
+              key={index}
+              label={
+                habitsByRefId.get(entry.habitRefId)?.name ?? "Unknown Habit"
+              }
+            />
           ))}
         </Tabs>
-        {habitStreak.entries.map((entry, index) => (
+        {keyHabitStreaks.map((entry, index) => (
           <Fragment key={index}>
             {index === selectedEntry && (
               <Box sx={{ margin: "0.4rem" }}>
                 <HabitStreakCalendar
-                  earliestDate={habitStreak.earliestDate}
-                  latestDate={habitStreak.latestDate}
+                  earliestDate={entry.streakMarkEarliestDate}
+                  latestDate={entry.streakMarkLatestDate}
                   currentToday={habitStreak.currentToday}
-                  habit={entry.habit}
+                  habit={habitsByRefId.get(entry.habitRefId)!}
                   streakMarks={entry.streakMarks}
+                  label={habitStreak.label}
+                  showNav={habitStreak.showNav}
+                  getNavUrl={habitStreak.getNavUrl}
                 />
               </Box>
             )}

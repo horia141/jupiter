@@ -4,7 +4,7 @@ import {
   HabitStreakMark,
   InboxTaskStatus,
 } from "@jupiter/webapi-client";
-import { Box, IconButton, Stack, Tooltip } from "@mui/material";
+import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { PropsWithChildren } from "react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -19,6 +19,7 @@ interface HabitStreakCalendarProps {
   currentToday: ADate;
   habit: Habit;
   streakMarks: HabitStreakMark[];
+  label?: string;
   showNav?: boolean;
   getNavUrl?: (earliestDate: ADate, latestDate: ADate) => string;
 }
@@ -34,29 +35,49 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
 
   return (
     <StyledDiv>
-      {props.showNav && props.getNavUrl && (
-        <NavBefore
-          to={props.getNavUrl(
-            dateToAdate(earliestDate.minus({ days: 28 })),
-            dateToAdate(latestDate.minus({ days: 28 })),
-          )}
-        />
-      )}
+      <Stack direction="row" sx={{ alignSelf: "center" }}>
+        {props.showNav && props.getNavUrl && (
+          <NavBefore
+            to={props.getNavUrl(
+              dateToAdate(earliestDate.minus({ days: 28 })),
+              dateToAdate(latestDate.minus({ days: 28 })),
+            )}
+          />
+        )}
+
+        {props.label && (
+          <Typography
+            variant="body2"
+            sx={{ display: "flex", alignItems: "center", textAlign: "center" }}
+          >
+            {props.label}
+          </Typography>
+        )}
+        {!props.label && (
+          <Typography
+            variant="body2"
+            sx={{ display: "flex", alignItems: "center", textAlign: "center" }}
+          >
+            From {props.earliestDate} <br />
+            To {props.latestDate}
+          </Typography>
+        )}
+
+        {props.showNav && props.getNavUrl && (
+          <NavAfter
+            to={props.getNavUrl(
+              dateToAdate(earliestDate.plus({ days: 28 })),
+              dateToAdate(latestDate.plus({ days: 28 })),
+            )}
+          />
+        )}
+      </Stack>
 
       <OneYear
         earliestDate={props.earliestDate}
         latestDate={props.latestDate}
         data={data}
       />
-
-      {props.showNav && props.getNavUrl && (
-        <NavAfter
-          to={props.getNavUrl(
-            dateToAdate(earliestDate.plus({ days: 28 })),
-            dateToAdate(latestDate.plus({ days: 28 })),
-          )}
-        />
-      )}
     </StyledDiv>
   );
 }
@@ -116,35 +137,28 @@ function OneYear(props: OneYearProps) {
 
   return (
     <Stack
-      direction="column"
+      direction="row"
       sx={{ marginLeft: "auto", marginRight: "auto", width: "fit-content" }}
     >
-      <Box
-        sx={{ marginLeft: "auto", marginRight: "auto", width: "fit-content" }}
-      >
-        From {props.earliestDate} to {props.latestDate}
-      </Box>
-      <Stack direction="row">
-        {weeksBetween.map((weekStart, index) => {
-          return (
-            <OneCol key={index}>
-              {Array.from({ length: 7 }).map((_, dayIndex) => {
-                const day = weekStart.plus({ days: dayIndex });
-                const value = props.data.get(day.toISODate()!);
-                const theValue = value !== undefined ? `- ${value}%` : "";
-                const tooltip = `${day.toISODate()} ${theValue}`;
-                return (
-                  <Tooltip key={dayIndex} title={tooltip}>
-                    <span>
-                      <OneCell doneness={value} />
-                    </span>
-                  </Tooltip>
-                );
-              })}
-            </OneCol>
-          );
-        })}
-      </Stack>
+      {weeksBetween.map((weekStart, index) => {
+        return (
+          <OneCol key={index}>
+            {Array.from({ length: 7 }).map((_, dayIndex) => {
+              const day = weekStart.plus({ days: dayIndex });
+              const value = props.data.get(day.toISODate()!);
+              const theValue = value !== undefined ? `- ${value}%` : "";
+              const tooltip = `${day.toISODate()} ${theValue}`;
+              return (
+                <Tooltip key={dayIndex} title={tooltip}>
+                  <span>
+                    <OneCell doneness={value} />
+                  </span>
+                </Tooltip>
+              );
+            })}
+          </OneCol>
+        );
+      })}
     </Stack>
   );
 }
@@ -203,5 +217,5 @@ function bucketedColorScale(value: number | undefined): string {
 const StyledDiv = styled("div")`
   display: flex;
   justify-content: space-between;
-  flex-direction: row;
+  flex-direction: column;
 `;

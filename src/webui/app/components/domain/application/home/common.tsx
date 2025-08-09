@@ -47,10 +47,11 @@ import {
 import { workspaceFeatureName, userFeatureName } from "~/logic/domain/feature";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
+const WIDGET_HEIGHT_IN_REM_BASE = 14;
+
 interface HabitStreakEntry {
   habit: Habit;
   streakMarks: HabitStreakMark[];
-  inboxTasks: InboxTask[];
 }
 
 interface BigPlanEntry {
@@ -91,6 +92,9 @@ export interface WidgetProps {
     latestDate: ADate;
     currentToday: ADate;
     entries: HabitStreakEntry[];
+    label?: string;
+    showNav?: boolean;
+    getNavUrl?: (earliestDate: ADate, latestDate: ADate) => string;
   };
   keyBigPlans?: {
     bigPlans: BigPlanEntry[];
@@ -119,7 +123,10 @@ export interface WidgetProps {
   };
   gamificationOverview?: UserScoreOverview;
   gamificationHistory?: UserScoreHistory;
+  geometry: WidgetGeometry;
 }
+
+export type WidgetPropsNoGeometry = Omit<WidgetProps, "geometry">;
 
 interface WidgetContainerProps {
   geometry: WidgetGeometry;
@@ -139,12 +146,12 @@ export function WidgetContainer(
   } else {
     if (isWidgetDimensionFlex(props.geometry.dimension)) {
       heightInRem = undefined;
-      minHeightInRem = "12rem";
-      maxHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+      minHeightInRem = `${WIDGET_HEIGHT_IN_REM_BASE}rem`;
+      maxHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * WIDGET_HEIGHT_IN_REM_BASE}rem`;
     } else {
-      heightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
-      minHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
-      maxHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * 12}rem`;
+      heightInRem = `${widgetDimensionRows(props.geometry.dimension) * WIDGET_HEIGHT_IN_REM_BASE}rem`;
+      minHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * WIDGET_HEIGHT_IN_REM_BASE}rem`;
+      maxHeightInRem = `${widgetDimensionRows(props.geometry.dimension) * WIDGET_HEIGHT_IN_REM_BASE}rem`;
     }
   }
   return (

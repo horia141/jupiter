@@ -61,9 +61,9 @@ import { CalendarDailyWidget } from "~/components/domain/application/calendar/ca
 import { HabitKeyHabitStreakWidget } from "~/components/domain/concept/habit/habit-key-habit-streak-widget";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import {
-  WidgetProps,
   WidgetFeatureNotAvailableBanner,
   WidgetContainer,
+  WidgetPropsNoGeometry,
 } from "~/components/domain/application/home/common";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
@@ -118,7 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)) {
     const keyHabits = summaryResponse.habits?.filter((h) => h.is_key) || [];
 
-    const earliestDate = DateTime.now().minus({ days: 120 }).toISODate();
+    const earliestDate = DateTime.now().minus({ days: 365 }).toISODate();
     const latestDate = DateTime.now().toISODate();
 
     keyHabitResults = [];
@@ -255,7 +255,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       streakMarkEarliestDate: h.streak_mark_earliest_date,
       streakMarkLatestDate: h.streak_mark_latest_date,
       streakMarks: h.streak_marks,
-      inboxTasks: h.inbox_tasks,
     })),
     keyBigPlansResults: keyBigPlansResults?.map((bp) => ({
       bigPlan: bp.big_plan,
@@ -444,7 +443,7 @@ export default function WorkspaceHome() {
     }, 0);
   }
 
-  const widgetProps: WidgetProps = {
+  const widgetProps: WidgetPropsNoGeometry = {
     rightNow,
     timezone: topLevelInfo.user.timezone,
     topLevelInfo,
@@ -487,6 +486,7 @@ export default function WorkspaceHome() {
             topLevelInfo.today,
           currentToday: topLevelInfo.today,
           entries: loaderData.keyHabitResults,
+          label: "Last Quarter",
         }
       : undefined,
     keyBigPlans: loaderData.keyBigPlansResults
@@ -597,7 +597,7 @@ interface BigScreenTabsProps {
   widgetConstraints: Record<string, WidgetTypeConstraints>;
   bigScreenTabs: HomeTab[];
   widgetByRefId: Map<string, HomeWidget>;
-  widgetProps: WidgetProps;
+  widgetProps: WidgetPropsNoGeometry;
 }
 
 function BigScreenTabs(props: BigScreenTabsProps) {
@@ -750,7 +750,7 @@ interface SmallScreenTabsProps {
   widgetConstraints: Record<string, WidgetTypeConstraints>;
   smallScreenTabs: HomeTab[];
   widgetByRefId: Map<string, HomeWidget>;
-  widgetProps: WidgetProps;
+  widgetProps: WidgetPropsNoGeometry;
 }
 
 function SmallScreenTabs(props: SmallScreenTabsProps) {
@@ -842,7 +842,7 @@ function SmallScreenTabs(props: SmallScreenTabsProps) {
 
 interface ActualWidgetProps {
   widget: HomeWidget;
-  widgetProps: WidgetProps;
+  widgetProps: WidgetPropsNoGeometry;
   widgetConstraints: Record<WidgetType, WidgetTypeConstraints>;
   user: User;
   workspace: Workspace;
@@ -889,41 +889,46 @@ function ActualWidget({
 
 interface ActualWidgetItselfProps {
   widget: HomeWidget;
-  widgetProps: WidgetProps;
+  widgetProps: WidgetPropsNoGeometry;
 }
 
 function ActualWidgetItself({ widget, widgetProps }: ActualWidgetItselfProps) {
+  const widgetPropsWithGeometry = {
+    ...widgetProps,
+    geometry: widget.geometry,
+  };
+
   switch (widget.the_type) {
     case WidgetType.MOTD:
-      return <MOTDWidget {...widgetProps} />;
+      return <MOTDWidget {...widgetPropsWithGeometry} />;
     case WidgetType.WORKING_MEM:
       return <div>Not implemented</div>;
     case WidgetType.KEY_HABITS_STREAKS:
-      return <HabitKeyHabitStreakWidget {...widgetProps} />;
+      return <HabitKeyHabitStreakWidget {...widgetPropsWithGeometry} />;
     case WidgetType.HABIT_INBOX_TASKS:
-      return <HabitInboxTasksWidget {...widgetProps} />;
+      return <HabitInboxTasksWidget {...widgetPropsWithGeometry} />;
     case WidgetType.RANDOM_HABIT:
-      return <HabitRandomWidget {...widgetProps} />;
+      return <HabitRandomWidget {...widgetPropsWithGeometry} />;
     case WidgetType.CHORE_INBOX_TASKS:
-      return <ChoreInboxTasksWidget {...widgetProps} />;
+      return <ChoreInboxTasksWidget {...widgetPropsWithGeometry} />;
     case WidgetType.RANDOM_CHORE:
-      return <ChoreRandomWidget {...widgetProps} />;
+      return <ChoreRandomWidget {...widgetPropsWithGeometry} />;
     case WidgetType.KEY_BIG_PLANS_PROGRESS:
-      return <KeyBigPlansProgressWidget {...widgetProps} />;
+      return <KeyBigPlansProgressWidget {...widgetPropsWithGeometry} />;
     case WidgetType.UPCOMING_BIRTHDAYS:
-      return <UpcomingBirthdaysWidget {...widgetProps} />;
+      return <UpcomingBirthdaysWidget {...widgetPropsWithGeometry} />;
     case WidgetType.CALENDAR_DAY:
-      return <CalendarDailyWidget {...widgetProps} />;
+      return <CalendarDailyWidget {...widgetPropsWithGeometry} />;
     case WidgetType.SCHEDULE_DAY:
-      return <ScheduleDailyWidget {...widgetProps} />;
+      return <ScheduleDailyWidget {...widgetPropsWithGeometry} />;
     case WidgetType.TIME_PLAN_VIEW:
-      return <TimePlanViewWidget {...widgetProps} />;
+      return <TimePlanViewWidget {...widgetPropsWithGeometry} />;
     case WidgetType.GAMIFICATION_OVERVIEW:
-      return <GamificationOverviewWidget {...widgetProps} />;
+      return <GamificationOverviewWidget {...widgetPropsWithGeometry} />;
     case WidgetType.GAMIFICATION_HISTORY_WEEKLY:
-      return <GamificationHistoryWeeklyWidget {...widgetProps} />;
+      return <GamificationHistoryWeeklyWidget {...widgetPropsWithGeometry} />;
     case WidgetType.GAMIFICATION_HISTORY_MONTHLY:
-      return <GamificationHistoryMonthlyWidget {...widgetProps} />;
+      return <GamificationHistoryMonthlyWidget {...widgetPropsWithGeometry} />;
   }
 }
 

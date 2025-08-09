@@ -1,9 +1,10 @@
 import type {
+  ADate,
   HabitFindResultEntry,
   HabitLoadResult,
   Project,
 } from "@jupiter/webapi-client";
-import { WorkspaceFeature } from "@jupiter/webapi-client";
+import { WidgetDimension, WorkspaceFeature } from "@jupiter/webapi-client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -11,6 +12,8 @@ import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 import { DateTime } from "luxon";
+import { z } from "zod";
+import { parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -42,8 +45,14 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
+const QuerySchema = z.object({
+  includeStreakMarksEarliestDate: z.string().optional(),
+  includeStreakMarksLatestDate: z.string().optional(),
+});
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
+  const query = parseQuery(request, QuerySchema);
 
   const response = await apiClient.habits.habitFind({
     allow_archived: false,
@@ -51,6 +60,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     include_project: true,
     include_inbox_tasks: false,
   });
+
+  let earliestDate = query.includeStreakMarksEarliestDate;
+  let latestDate = query.includeStreakMarksLatestDate;
+  if (earliestDate === undefined) {
+    earliestDate = DateTime.now().minus({ days: 365 }).toISODate();
+    latestDate = DateTime.now().toISODate();
+  }
 
   const keyHabitRefIds = response.entries
     .filter((e) => e.habit.is_key)
@@ -63,6 +79,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         apiClient.habits.habitLoad({
           ref_id: refId,
           allow_archived: false,
+          include_streak_marks_earliest_date: earliestDate,
+          include_streak_marks_latest_date: latestDate,
         }),
       ),
     );
@@ -70,12 +88,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     habits: response.entries,
-    keyHabitResults: keyHabitResults.map((h) => ({
-      habit: h.habit,
+    keyHabitStreaks: keyHabitResults.map((h) => ({
+      habitRefId: h.habit.ref_id,
       streakMarkEarliestDate: h.streak_mark_earliest_date,
       streakMarkLatestDate: h.streak_mark_latest_date,
       streakMarks: h.streak_marks,
-      inboxTasks: h.inbox_tasks,
     })),
   });
 }
@@ -105,13 +122,25 @@ export default function Habits() {
     topLevelInfo,
     habitStreak: {
       earliestDate:
-        loaderData.keyHabitResults[0]?.streakMarkEarliestDate ??
+        loaderData.keyHabitStreaks[0]?.streakMarkEarliestDate ??
         topLevelInfo.today,
       latestDate:
-        loaderData.keyHabitResults[0]?.streakMarkLatestDate ??
+        loaderData.keyHabitStreaks[0]?.streakMarkLatestDate ??
         topLevelInfo.today,
       currentToday: topLevelInfo.today,
-      entries: loaderData.keyHabitResults,
+      entries: loaderData.keyHabitStreaks.map((h) => ({
+        habit: entriesByRefId.get(h.habitRefId)!.habit,
+        streakMarks: h.streakMarks,
+      })),
+      showNav: true,
+      getNavUrl: (earliestDate: ADate, latestDate: ADate) => {
+        return `/app/workspace/habits?includeStreakMarksEarliestDate=${earliestDate}&includeStreakMarksLatestDate=${latestDate}`;
+      },
+    },
+    geometry: {
+      row: 0,
+      col: 0,
+      dimension: WidgetDimension.DIM_3X1,
     },
   };
 
@@ -131,7 +160,7 @@ export default function Habits() {
           />
         )}
 
-        {loaderData.keyHabitResults.length > 0 && (
+        {loaderData.keyHabitStreaks.length > 0 && (
           <HabitKeyHabitStreakWidget {...widgetProps} />
         )}
 
