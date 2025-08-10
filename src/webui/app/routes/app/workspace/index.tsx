@@ -83,6 +83,7 @@ import { GamificationHistoryMonthlyWidget } from "~/components/domain/applicatio
 import { KeyBigPlansProgressWidget } from "~/components/domain/concept/big-plan/key-big-plans-progress-widget";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
+import { sortAndFilterTabsByTheirOrder } from "~/logic/domain/home-tab";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -382,11 +383,15 @@ export default function WorkspaceHome() {
   const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
   const today = rightNow.toISODate();
 
-  const bigScreenTabs = loaderData.homeConfig.tabs.filter(
-    (t) => t.target === HomeTabTarget.BIG_SCREEN,
+  const bigScreenTabs = sortAndFilterTabsByTheirOrder(
+    loaderData.homeConfig.config,
+    HomeTabTarget.BIG_SCREEN,
+    loaderData.homeConfig.tabs
   );
-  const smallScreenTabs = loaderData.homeConfig.tabs.filter(
-    (t) => t.target === HomeTabTarget.SMALL_SCREEN,
+  const smallScreenTabs = sortAndFilterTabsByTheirOrder(
+    loaderData.homeConfig.config,
+    HomeTabTarget.SMALL_SCREEN,
+    loaderData.homeConfig.tabs
   );
 
   const widgetByRefId = new Map(
