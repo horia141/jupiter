@@ -168,10 +168,16 @@ WIDGET_CONSTRAINTS = {
             HomeTabTarget.BIG_SCREEN: [
                 WidgetDimension.DIM_1x1,
                 WidgetDimension.DIM_1x2,
+                WidgetDimension.DIM_1x3,
+                WidgetDimension.DIM_2x1,
+                WidgetDimension.DIM_3x1,
+                WidgetDimension.DIM_kx1,
             ],
             HomeTabTarget.SMALL_SCREEN: [
                 WidgetDimension.DIM_1x1,
+                WidgetDimension.DIM_2x1,
                 WidgetDimension.DIM_2x1_SMALL_SCREEN_FLEX,
+                WidgetDimension.DIM_3x1,
                 WidgetDimension.DIM_3x1_SMALL_SCREEN_FLEX,
                 WidgetDimension.DIM_kx1,
             ],

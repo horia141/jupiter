@@ -19,6 +19,7 @@ interface HabitStreakCalendarProps {
   currentToday: ADate;
   habit: Habit;
   streakMarks: HabitStreakMark[];
+  noLabel?: boolean;
   label?: string;
   showNav?: boolean;
   getNavUrl?: (earliestDate: ADate, latestDate: ADate) => string;
@@ -45,7 +46,7 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
           />
         )}
 
-        {props.label && (
+        {props.label && !props.noLabel && (
           <Typography
             variant="body2"
             sx={{ display: "flex", alignItems: "center", textAlign: "center" }}
@@ -53,7 +54,7 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
             {props.label}
           </Typography>
         )}
-        {!props.label && (
+        {!props.label && !props.noLabel && (
           <Typography
             variant="body2"
             sx={{ display: "flex", alignItems: "center", textAlign: "center" }}

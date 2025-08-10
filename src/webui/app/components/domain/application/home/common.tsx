@@ -92,7 +92,6 @@ export interface WidgetProps {
     latestDate: ADate;
     currentToday: ADate;
     entries: HabitStreakEntry[];
-    label?: string;
     showNav?: boolean;
     getNavUrl?: (earliestDate: ADate, latestDate: ADate) => string;
   };

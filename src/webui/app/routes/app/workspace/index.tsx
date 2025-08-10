@@ -491,7 +491,6 @@ export default function WorkspaceHome() {
             topLevelInfo.today,
           currentToday: topLevelInfo.today,
           entries: loaderData.keyHabitResults,
-          label: "Last Quarter",
         }
       : undefined,
     keyBigPlans: loaderData.keyBigPlansResults
