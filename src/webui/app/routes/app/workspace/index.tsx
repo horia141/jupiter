@@ -491,6 +491,7 @@ export default function WorkspaceHome() {
             topLevelInfo.today,
           currentToday: topLevelInfo.today,
           entries: loaderData.keyHabitResults,
+          noLabel: true,
         }
       : undefined,
     keyBigPlans: loaderData.keyBigPlansResults

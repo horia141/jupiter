@@ -12,6 +12,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Link } from "@remix-run/react";
 
 import { aDateToDate, dateToAdate } from "~/logic/domain/adate";
+import { DateTime } from "luxon";
 
 interface HabitStreakCalendarProps {
   earliestDate: ADate;
@@ -77,6 +78,7 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
       <OneYear
         earliestDate={props.earliestDate}
         latestDate={props.latestDate}
+        currentToday={props.currentToday}
         data={data}
       />
     </StyledDiv>
@@ -120,6 +122,7 @@ function NavAfter(props: NavAfterProps) {
 interface OneYearProps {
   earliestDate: ADate;
   latestDate: ADate;
+  currentToday: ADate;
   data: Map<string, number>;
 }
 
@@ -143,7 +146,7 @@ function OneYear(props: OneYearProps) {
     >
       {weeksBetween.map((weekStart, index) => {
         return (
-          <OneCol key={index}>
+          <OneCol key={index} weekStart={weekStart} currentToday={props.currentToday}>
             {Array.from({ length: 7 }).map((_, dayIndex) => {
               const day = weekStart.plus({ days: dayIndex });
               const value = props.data.get(day.toISODate()!);
@@ -164,12 +167,21 @@ function OneYear(props: OneYearProps) {
   );
 }
 
-function OneCol(props: PropsWithChildren) {
+interface OneColProps extends PropsWithChildren {
+  weekStart: DateTime<true>;
+  currentToday: ADate;
+}
+
+function OneCol(props: OneColProps) {
+  const currentTodayWeek = aDateToDate(props.currentToday).startOf("week");
+  const isCurrentWeek = props.weekStart.equals(currentTodayWeek);
+
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
+        backgroundColor: isCurrentWeek ? (theme) => theme.palette.info.light : 'transparent',
       }}
     >
       {props.children}

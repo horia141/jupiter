@@ -132,6 +132,7 @@ export default function Habits() {
         habit: entriesByRefId.get(h.habitRefId)!.habit,
         streakMarks: h.streakMarks,
       })),
+      label: "Latest Streak",
       showNav: true,
       getNavUrl: (earliestDate: ADate, latestDate: ADate) => {
         return `/app/workspace/habits?includeStreakMarksEarliestDate=${earliestDate}&includeStreakMarksLatestDate=${latestDate}`;
