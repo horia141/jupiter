@@ -34,7 +34,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 
 class SqliteHabitStreakMarkRepository(
-    SqliteRecordRepository[HabitStreakMark, tuple[EntityId, int, ADate]],
+    SqliteRecordRepository[HabitStreakMark, tuple[EntityId, ADate]],
     HabitStreakMarkRepository,
 ):
     """The SQLite repository for habit streak marks."""

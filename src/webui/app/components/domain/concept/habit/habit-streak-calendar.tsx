@@ -4,15 +4,26 @@ import {
   HabitStreakMark,
   InboxTaskStatus,
 } from "@jupiter/webapi-client";
-import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Stack,
+  Theme,
+  Tooltip,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { PropsWithChildren } from "react";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Link } from "@remix-run/react";
+import { DateTime } from "luxon";
 
 import { aDateToDate, dateToAdate } from "~/logic/domain/adate";
-import { DateTime } from "luxon";
+
+const CELL_SIZE = (theme: Theme) => theme.typography.htmlFontSize - 2;
+export const CELL_FULL_SIZE = (theme: Theme) => CELL_SIZE(theme) + 2;
 
 interface HabitStreakCalendarProps {
   earliestDate: ADate;
@@ -30,9 +41,39 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
   const earliestDate = aDateToDate(props.earliestDate);
   const latestDate = aDateToDate(props.latestDate);
 
-  const data: Map<string, number> = new Map();
+  const earliestDateAtWeekStart = aDateToDate(props.earliestDate).startOf(
+    "week",
+  );
+  const latestDateAtWeekStart = aDateToDate(props.latestDate);
+
+  const weeksBetween = [];
+  let currentDate = earliestDateAtWeekStart;
+  while (currentDate < latestDateAtWeekStart) {
+    weeksBetween.push(currentDate);
+    currentDate = currentDate.plus({ weeks: 1 });
+  }
+
+  const dataPerDay: Map<string, number> = new Map();
   for (const streakMark of props.streakMarks) {
-    data.set(streakMark.date, computeDonenessForStreakMark(streakMark));
+    dataPerDay.set(
+      streakMark.date,
+      computeDonenessForStreakMark(streakMark.statuses),
+    );
+  }
+
+  const dataPerWeek: Map<string, number> = new Map();
+  const mergedStatuses: Record<string, Record<string, InboxTaskStatus>> = {};
+  for (const streakMark of props.streakMarks) {
+    const weekStart = aDateToDate(streakMark.date).startOf("week").toISODate()!;
+    if (!mergedStatuses[weekStart]) {
+      mergedStatuses[weekStart] = {};
+    }
+    for (const [key, value] of Object.entries(streakMark.statuses)) {
+      mergedStatuses[weekStart][key] = value;
+    }
+  }
+  for (const [weekStart, statuses] of Object.entries(mergedStatuses)) {
+    dataPerWeek.set(weekStart, computeDonenessForStreakMark(statuses));
   }
 
   return (
@@ -76,10 +117,10 @@ export function HabitStreakCalendar(props: HabitStreakCalendarProps) {
       </Stack>
 
       <OneYear
-        earliestDate={props.earliestDate}
-        latestDate={props.latestDate}
+        weeksBetween={weeksBetween}
         currentToday={props.currentToday}
-        data={data}
+        dataPerDay={dataPerDay}
+        dataPerWeek={dataPerWeek}
       />
     </StyledDiv>
   );
@@ -120,36 +161,37 @@ function NavAfter(props: NavAfterProps) {
 }
 
 interface OneYearProps {
-  earliestDate: ADate;
-  latestDate: ADate;
   currentToday: ADate;
-  data: Map<string, number>;
+  weeksBetween: DateTime<true>[];
+  dataPerDay: Map<string, number>;
+  dataPerWeek: Map<string, number>;
 }
 
 function OneYear(props: OneYearProps) {
-  const earliestDateAtWeekStart = aDateToDate(props.earliestDate).startOf(
-    "week",
-  );
-  const latestDateAtWeekStart = aDateToDate(props.latestDate);
-
-  const weeksBetween = [];
-  let currentDate = earliestDateAtWeekStart;
-  while (currentDate < latestDateAtWeekStart) {
-    weeksBetween.push(currentDate);
-    currentDate = currentDate.plus({ weeks: 1 });
-  }
-
   return (
     <Stack
       direction="row"
       sx={{ marginLeft: "auto", marginRight: "auto", width: "fit-content" }}
     >
-      {weeksBetween.map((weekStart, index) => {
+      {props.weeksBetween.map((weekStart, index) => {
+        const weekTooltip = `Week of ${weekStart.toISODate()}`;
         return (
-          <OneCol key={index} weekStart={weekStart} currentToday={props.currentToday}>
+          <OneCol
+            key={index}
+            weekStart={weekStart}
+            currentToday={props.currentToday}
+          >
+            <Tooltip title={weekTooltip}>
+              <span style={{ marginBottom: "0.5rem" }}>
+                <OneCell
+                  doneness={props.dataPerWeek.get(weekStart.toISODate()!)}
+                />
+              </span>
+            </Tooltip>
+
             {Array.from({ length: 7 }).map((_, dayIndex) => {
               const day = weekStart.plus({ days: dayIndex });
-              const value = props.data.get(day.toISODate()!);
+              const value = props.dataPerDay.get(day.toISODate()!);
               const theValue = value !== undefined ? `- ${value}%` : "";
               const tooltip = `${day.toISODate()} ${theValue}`;
               return (
@@ -181,7 +223,9 @@ function OneCol(props: OneColProps) {
       sx={{
         display: "flex",
         flexDirection: "column",
-        backgroundColor: isCurrentWeek ? (theme) => theme.palette.info.light : 'transparent',
+        backgroundColor: isCurrentWeek
+          ? (theme) => theme.palette.info.light
+          : "transparent",
       }}
     >
       {props.children}
@@ -194,11 +238,12 @@ interface OneCellProps {
 }
 
 function OneCell(props: OneCellProps) {
+  const theme = useTheme();
   return (
     <Box
       sx={{
-        width: "1rem",
-        height: "1rem",
+        width: CELL_SIZE(theme),
+        height: CELL_SIZE(theme),
         margin: "1px",
         backgroundColor: bucketedColorScale(props.doneness),
       }}
@@ -206,15 +251,20 @@ function OneCell(props: OneCellProps) {
   );
 }
 
-function computeDonenessForStreakMark(streakMark: HabitStreakMark): number {
+function computeDonenessForStreakMark(
+  statuses: Record<string, InboxTaskStatus>,
+): number {
   // look at number of done statuses in streakMark.statuses
   let doneStatuses = 0;
   let allStatuses = 0;
-  for (const status of Object.values(streakMark.statuses)) {
+  for (const status of Object.values(statuses)) {
     if (status === InboxTaskStatus.DONE) {
       doneStatuses++;
     }
     allStatuses++;
+  }
+  if (allStatuses === 0) {
+    return 0;
   }
   return Math.floor((doneStatuses / allStatuses) * 100);
 }

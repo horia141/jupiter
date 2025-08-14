@@ -1,12 +1,22 @@
 import { Box, Stack, Tab, Tabs, Typography, useTheme } from "@mui/material";
 import { Fragment, useEffect, useRef, useState } from "react";
 
-import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
+import {
+  CELL_FULL_SIZE,
+  HabitStreakCalendar,
+} from "~/components/domain/concept/habit/habit-streak-calendar";
 import { WidgetProps } from "~/components/domain/application/home/common";
 import { DocsHelpSubject } from "~/components/infra/docs-help";
 import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
-import { KeyHabitStreak, limitKeyHabitResultsBasedOnScreenSize } from "~/logic/domain/habit-streak";
-import { isWidgetDimensionKSized, widgetDimensionCols, widgetDimensionRows } from "~/logic/widget";
+import {
+  KeyHabitStreak,
+  limitKeyHabitResultsBasedOnScreenSize,
+} from "~/logic/domain/habit-streak";
+import {
+  isWidgetDimensionKSized,
+  widgetDimensionCols,
+  widgetDimensionRows,
+} from "~/logic/widget";
 
 const ANIMATION_DURATION_MS = 10_000;
 
@@ -28,18 +38,27 @@ export function HabitKeyHabitStreakWidget(props: WidgetProps) {
     const containerWidth = widgetContainer.current.clientWidth;
     // Each cell has 1rem in width and 2px borders. Each column is 7 cells,
     // corresponding to a week, so we need to look at the below number of cells.
-    const daysToInclude = (Math.floor(containerWidth / (theme.typography.htmlFontSize + 2)) - 1) * 7;
+    const daysToInclude =
+      (Math.floor(containerWidth / CELL_FULL_SIZE(theme)) - 1) * 7;
 
-    setKeyHabitStreaks(limitKeyHabitResultsBasedOnScreenSize(
-      habitStreak.entries.map((e) => ({
-        habitRefId: e.habit.ref_id,
-        streakMarkEarliestDate: habitStreak.earliestDate,
-        streakMarkLatestDate: habitStreak.latestDate,
-        streakMarks: e.streakMarks,
-      })),
-      daysToInclude)
+    setKeyHabitStreaks(
+      limitKeyHabitResultsBasedOnScreenSize(
+        habitStreak.entries.map((e) => ({
+          habitRefId: e.habit.ref_id,
+          streakMarkEarliestDate: habitStreak.earliestDate,
+          streakMarkLatestDate: habitStreak.latestDate,
+          streakMarks: e.streakMarks,
+        })),
+        daysToInclude,
+      ),
     );
-  }, [habitStreak.earliestDate, habitStreak.entries, habitStreak.latestDate, theme.typography.htmlFontSize]);
+  }, [
+    theme,
+    habitStreak.earliestDate,
+    habitStreak.entries,
+    habitStreak.latestDate,
+    theme.typography.htmlFontSize,
+  ]);
 
   if (habitStreak.entries.length === 0) {
     return (
@@ -52,13 +71,20 @@ export function HabitKeyHabitStreakWidget(props: WidgetProps) {
     );
   }
 
-  return <Box id="habit-key-habit-streak-widget-container" ref={widgetContainer}>
-    {!isWidgetDimensionKSized(props.geometry.dimension) && dimensionRows === 1 && dimensionCols >= 1 ? (
-      <HorizontalStreak widgetProps={props} keyHabitStreak={keyHabitStreaks} />
-    ) : (
-      <VerticalStreak widgetProps={props} keyHabitStreak={keyHabitStreaks} />
-    )}
-  </Box>;
+  return (
+    <Box id="habit-key-habit-streak-widget-container" ref={widgetContainer}>
+      {!isWidgetDimensionKSized(props.geometry.dimension) &&
+      dimensionRows === 1 &&
+      dimensionCols >= 1 ? (
+        <HorizontalStreak
+          widgetProps={props}
+          keyHabitStreak={keyHabitStreaks}
+        />
+      ) : (
+        <VerticalStreak widgetProps={props} keyHabitStreak={keyHabitStreaks} />
+      )}
+    </Box>
+  );
 }
 
 interface HorizontalStreakProps {
@@ -66,7 +92,10 @@ interface HorizontalStreakProps {
   keyHabitStreak: KeyHabitStreak[];
 }
 
-function HorizontalStreak({ widgetProps, keyHabitStreak }: HorizontalStreakProps) {
+function HorizontalStreak({
+  widgetProps,
+  keyHabitStreak,
+}: HorizontalStreakProps) {
   const [selectedEntry, setSelectedEntry] = useState<number>(0);
   const habitStreak = widgetProps.habitStreak!;
   const habitsByRefId = new Map(
@@ -102,17 +131,17 @@ function HorizontalStreak({ widgetProps, keyHabitStreak }: HorizontalStreakProps
         {keyHabitStreak.map((entry, index) => (
           <Fragment key={index}>
             {index === selectedEntry && (
-                <HabitStreakCalendar
-                  earliestDate={entry.streakMarkEarliestDate}
-                  latestDate={entry.streakMarkLatestDate}
-                  currentToday={habitStreak.currentToday}
-                  habit={habitsByRefId.get(entry.habitRefId)!}
-                  streakMarks={entry.streakMarks}
-                  noLabel={habitStreak.noLabel}
-                  label={habitStreak.label}
-                  showNav={habitStreak.showNav}
-                  getNavUrl={habitStreak.getNavUrl}
-                />
+              <HabitStreakCalendar
+                earliestDate={entry.streakMarkEarliestDate}
+                latestDate={entry.streakMarkLatestDate}
+                currentToday={habitStreak.currentToday}
+                habit={habitsByRefId.get(entry.habitRefId)!}
+                streakMarks={entry.streakMarks}
+                noLabel={habitStreak.noLabel}
+                label={habitStreak.label}
+                showNav={habitStreak.showNav}
+                getNavUrl={habitStreak.getNavUrl}
+              />
             )}
           </Fragment>
         ))}
@@ -155,4 +184,3 @@ function VerticalStreak({ widgetProps, keyHabitStreak }: VerticalStreakProps) {
     </Stack>
   );
 }
-

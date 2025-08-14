@@ -386,12 +386,12 @@ export default function WorkspaceHome() {
   const bigScreenTabs = sortAndFilterTabsByTheirOrder(
     loaderData.homeConfig.config,
     HomeTabTarget.BIG_SCREEN,
-    loaderData.homeConfig.tabs
+    loaderData.homeConfig.tabs,
   );
   const smallScreenTabs = sortAndFilterTabsByTheirOrder(
     loaderData.homeConfig.config,
     HomeTabTarget.SMALL_SCREEN,
-    loaderData.homeConfig.tabs
+    loaderData.homeConfig.tabs,
   );
 
   const widgetByRefId = new Map(
