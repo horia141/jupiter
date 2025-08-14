@@ -21,6 +21,7 @@ import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import type { TopLevelInfo } from "~/top-level-context";
 import { ADateTag } from "~/components/domain/core/adate-tag";
 import { TimePlanTag } from "~/components/domain/concept/time-plan/time-plan-tag";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
 
 interface TimePlanActivityCardProps {
   topLevelInfo: TopLevelInfo;
@@ -78,6 +79,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           to={`/app/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
+          <IsKeyTag isKey={inboxTask.is_key} />
           <Typography
             sx={{
               fontWeight: inboxTask
@@ -154,6 +156,7 @@ export function TimePlanActivityCard(props: TimePlanActivityCardProps) {
           to={`/app/workspace/time-plans/${props.activity.time_plan_ref_id}/${props.activity.ref_id}`}
           block={props.onClick !== undefined}
         >
+          <IsKeyTag isKey={bigPlan.is_key} />
           <Typography
             sx={{
               fontWeight: bigPlan
