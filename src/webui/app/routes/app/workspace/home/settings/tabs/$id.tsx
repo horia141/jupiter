@@ -152,10 +152,10 @@ export default function HomeTab() {
 
   return (
     <BranchPanel
+      key={`home-tab-${loaderData.tab.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.tab.archived}
-      key={`home-tab-${loaderData.tab.ref_id}`}
       createLocation={`/app/workspace/home/settings/tabs/${loaderData.tab.ref_id}/widgets/new`}
       returnLocation="/app/workspace/home/settings"
       actions={

@@ -210,6 +210,7 @@ export default function ScheduleEventFullDaysViewOne() {
 
   return (
     <LeafPanel
+      key={`schedule-event-full-days-${loaderData.scheduleEventFullDays.ref_id}`}
       fakeKey={`schedule-event-full-days-${loaderData.scheduleEventFullDays.ref_id}`}
       showArchiveAndRemoveButton={inputsEnabled}
       inputsEnabled={inputsEnabled}

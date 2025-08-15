@@ -259,6 +259,7 @@ export default function ScheduleEventInDayViewOne() {
 
   return (
     <LeafPanel
+      key={`schedule-event-in-day-${loaderData.scheduleEventInDay.ref_id}`}
       fakeKey={`schedule-event-in-day-${loaderData.scheduleEventInDay.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}

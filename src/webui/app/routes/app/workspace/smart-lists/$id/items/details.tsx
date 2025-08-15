@@ -158,6 +158,7 @@ export default function SmartListDetails() {
 
   return (
     <LeafPanel
+      key={`smart-list-${id}/details`}
       fakeKey={`smart-list-${id}/details`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}

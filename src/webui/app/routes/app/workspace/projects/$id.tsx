@@ -191,6 +191,7 @@ export default function Project() {
 
   return (
     <LeafPanel
+      key={`project-${loaderData.project.ref_id}`}
       fakeKey={`projects-${loaderData.project.ref_id}`}
       showArchiveAndRemoveButton={!isRootProject(loaderData.project)}
       inputsEnabled={inputsEnabled}

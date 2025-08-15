@@ -102,6 +102,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
             : returnLocation;
         return (
           <LeafPanel
+            key="error"
             fakeKey="error"
             inputsEnabled={true}
             returnLocation={resolvedReturnLocation}
@@ -120,6 +121,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
     if (error instanceof Error) {
       return (
         <LeafPanel
+          key="error"
           fakeKey="error"
           inputsEnabled={true}
           returnLocation={resolvedReturnLocation}
@@ -143,6 +145,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
 
     return (
       <LeafPanel
+        key="error"
         fakeKey="error"
         inputsEnabled={true}
         returnLocation={resolvedReturnLocation}

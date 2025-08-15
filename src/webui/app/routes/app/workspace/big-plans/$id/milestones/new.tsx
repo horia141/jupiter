@@ -86,6 +86,7 @@ export default function BigPlanMilestoneNew() {
 
   return (
     <LeafPanel
+      key="big-plan-milestones/new"
       isLeaflet
       fakeKey="big-plan-milestones/new"
       returnLocation={`/app/workspace/big-plans/${bigPlanId}`}

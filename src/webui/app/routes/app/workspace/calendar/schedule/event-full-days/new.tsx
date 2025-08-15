@@ -116,6 +116,7 @@ export default function ScheduleEventFullDaysNew() {
 
   return (
     <LeafPanel
+      key="schedule-event-full-days/new"
       fakeKey="schedule-event-full-days/new"
       returnLocation={`/app/workspace/calendar?${query}`}
       inputsEnabled={inputsEnabled}

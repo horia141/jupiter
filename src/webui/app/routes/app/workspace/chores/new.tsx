@@ -133,6 +133,7 @@ export default function NewChore() {
 
   return (
     <LeafPanel
+      key="chores/new"
       fakeKey={"chores/new"}
       returnLocation="/app/workspace/chores"
       inputsEnabled={inputsEnabled}

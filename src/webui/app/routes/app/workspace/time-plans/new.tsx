@@ -95,6 +95,7 @@ export default function NewTimePlan() {
 
   return (
     <LeafPanel
+      key="time-plans/new"
       fakeKey={`time-plans-${initialToday}-${initialPeriod}/new`}
       returnLocation="/app/workspace/time-plans"
       inputsEnabled={inputsEnabled}

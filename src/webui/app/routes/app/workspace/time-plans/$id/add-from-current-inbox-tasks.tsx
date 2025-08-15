@@ -283,6 +283,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
 
   return (
     <LeafPanel
+      key={`time-plan-${id}/add-from-current-inbox-tasks`}
       fakeKey={`time-plan-${id}/add-from-current-inbox-tasks`}
       returnLocation={`/app/workspace/time-plans/${id}`}
       returnLocationDiscriminator="add-from-current-inbox-tasks"

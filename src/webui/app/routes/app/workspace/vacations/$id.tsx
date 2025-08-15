@@ -169,6 +169,7 @@ export default function Vacation() {
 
   return (
     <LeafPanel
+      key={`vacation-${vacation.ref_id}`}
       fakeKey={`vacation-${vacation.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}

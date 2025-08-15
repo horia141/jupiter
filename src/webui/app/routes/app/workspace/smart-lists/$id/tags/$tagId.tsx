@@ -136,6 +136,7 @@ export default function SmartListTag() {
 
   return (
     <LeafPanel
+      key={`smart-list-${id}/tag-${tagId}`}
       fakeKey={`smart-list-${id}/tag-${tagId}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}

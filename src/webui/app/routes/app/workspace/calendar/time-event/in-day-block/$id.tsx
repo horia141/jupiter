@@ -409,6 +409,7 @@ export default function TimeEventInDayBlockViewOne() {
 
   return (
     <LeafPanel
+      key={`time-event-in-day-block-${loaderData.inDayBlock.ref_id}`}
       fakeKey={`time-event-in-day-block-${loaderData.inDayBlock.ref_id}`}
       showArchiveAndRemoveButton={corePropertyEditable}
       inputsEnabled={inputsEnabled}

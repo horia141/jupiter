@@ -146,6 +146,7 @@ export default function BigPlanMilestoneView() {
 
   return (
     <LeafPanel
+      key={`big-plan-milestone-${milestone.ref_id}`}
       fakeKey={`big-plan-milestone-${milestone.ref_id}`}
       isLeaflet
       showArchiveAndRemoveButton

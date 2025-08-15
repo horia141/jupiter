@@ -93,6 +93,7 @@ export default function SlackTasksSettings() {
 
   return (
     <LeafPanel
+      key="slack-tasks/settings"
       fakeKey={"slack-tasks/settings"}
       returnLocation="/app/workspace/push-integrations/slack-tasks"
       inputsEnabled={inputsEnabled}

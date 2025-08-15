@@ -85,6 +85,7 @@ export default function NewProject() {
 
   return (
     <LeafPanel
+      key="projects/new"
       fakeKey={"projects/new"}
       returnLocation="/app/workspace/projects"
       inputsEnabled={inputsEnabled}

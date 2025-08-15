@@ -90,6 +90,7 @@ export type { DocCreateResult } from './models/DocCreateResult';
 export type { DocFindArgs } from './models/DocFindArgs';
 export type { DocFindResult } from './models/DocFindResult';
 export type { DocFindResultEntry } from './models/DocFindResultEntry';
+export type { DocIdempotencyKey } from './models/DocIdempotencyKey';
 export type { DocLoadArgs } from './models/DocLoadArgs';
 export type { DocLoadResult } from './models/DocLoadResult';
 export type { DocName } from './models/DocName';

@@ -142,6 +142,7 @@ export default function NewHabit() {
 
   return (
     <LeafPanel
+      key="habits/new"
       fakeKey={"habits/new"}
       returnLocation="/app/workspace/habits"
       inputsEnabled={inputsEnabled}

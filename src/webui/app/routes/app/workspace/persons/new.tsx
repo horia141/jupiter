@@ -140,6 +140,7 @@ export default function NewPerson() {
 
   return (
     <LeafPanel
+      key="persons/new"
       fakeKey={"persons/new"}
       returnLocation="/app/workspace/persons"
       inputsEnabled={inputsEnabled}

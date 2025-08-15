@@ -147,6 +147,7 @@ export default function ScheduleEventInDayNew() {
 
   return (
     <LeafPanel
+      key="schedule-event-in-day/new"
       fakeKey="schedule-event-in-day/new"
       returnLocation={`/app/workspace/calendar?${query}`}
       inputsEnabled={inputsEnabled}

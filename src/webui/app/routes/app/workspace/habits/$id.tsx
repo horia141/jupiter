@@ -357,6 +357,7 @@ export default function Habit() {
 
   return (
     <LeafPanel
+      key={`habit-${loaderData.habit.ref_id}`}
       fakeKey={`habit-${loaderData.habit.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}

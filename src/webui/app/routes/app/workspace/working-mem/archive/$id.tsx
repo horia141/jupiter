@@ -164,6 +164,7 @@ export default function WorkingMem() {
 
   return (
     <LeafPanel
+      key={`working-mem-${loaderData.workingMem.ref_id}`}
       fakeKey={`working-mem-${loaderData.workingMem.ref_id}`}
       showArchiveAndRemoveButton={
         aDateToDate(loaderData.workingMem.right_now) <

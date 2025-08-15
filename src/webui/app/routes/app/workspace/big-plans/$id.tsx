@@ -404,6 +404,7 @@ export default function BigPlan() {
 
   return (
     <LeafPanel
+      key={`big-plan-${loaderData.bigPlan.ref_id}`}
       fakeKey={`big-plan-${loaderData.bigPlan.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}

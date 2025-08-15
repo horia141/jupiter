@@ -112,6 +112,7 @@ export default function MetricsSettings() {
 
   return (
     <LeafPanel
+      key="working-mem/settings"
       fakeKey={"working-mem/settings"}
       returnLocation="/app/workspace/working-mem"
       inputsEnabled={inputsEnabled}

@@ -14,6 +14,7 @@ import {
 import type { OneOfNoteContentBlock } from "~/logic/domain/notes";
 import type { BlockEditorProps } from "~/components/infra/block-editor";
 import { FieldError, GlobalError } from "~/components/infra/errors";
+import { useIdempotencyKey } from "~/rendering/use-idempotency";
 
 const BlockEditor = lazy(() =>
   import("~/components/infra/block-editor.js").then((module) => ({
@@ -48,6 +49,8 @@ export function DocEditor({
     initialNote ? initialNote.content : [],
   );
 
+  const { key, clear } = useIdempotencyKey("idempotency/doc-editor");
+
   const act = useCallback(() => {
     setIsActing(true);
     const base64Content = Buffer.from(
@@ -72,6 +75,7 @@ export function DocEditor({
       // We need to create it!
       cardActionFetcher.submit(
         {
+          idempotencyKey: key,
           name: noteName || "Untitled",
           content: base64Content,
         },
@@ -82,7 +86,7 @@ export function DocEditor({
       );
     }
     setDataModified(false);
-  }, [cardActionFetcher, docId, noteContent, noteId, noteName]);
+  }, [cardActionFetcher, docId, noteContent, noteId, noteName, key]);
 
   useEffect(() => {
     if (dataModified) {
@@ -102,6 +106,7 @@ export function DocEditor({
     ) {
       setDocId(cardActionFetcher.data?.data.new_doc.ref_id);
       setNoteId(cardActionFetcher.data?.data.new_note.ref_id);
+      clear();
     }
 
     if (cardActionFetcher.state === "idle" && cardActionFetcher.data !== null) {
@@ -111,7 +116,7 @@ export function DocEditor({
         setShouldAct(false);
       }
     }
-  }, [cardActionFetcher, act, shouldAct]);
+  }, [cardActionFetcher, act, shouldAct, clear]);
 
   return (
     <>

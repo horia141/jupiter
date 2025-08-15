@@ -21,6 +21,7 @@ class Doc:
         last_modified_time (str): A timestamp in the application.
         name (str): The doc name.
         doc_collection_ref_id (str):
+        idempotency_key (str): A document idempotency key in this domain.
         archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         parent_doc_ref_id (Union[None, Unset, str]):
@@ -33,6 +34,7 @@ class Doc:
     last_modified_time: str
     name: str
     doc_collection_ref_id: str
+    idempotency_key: str
     archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     parent_doc_ref_id: Union[None, Unset, str] = UNSET
@@ -52,6 +54,8 @@ class Doc:
         name = self.name
 
         doc_collection_ref_id = self.doc_collection_ref_id
+
+        idempotency_key = self.idempotency_key
 
         archival_reason: Union[None, Unset, str]
         if isinstance(self.archival_reason, Unset):
@@ -82,6 +86,7 @@ class Doc:
                 "last_modified_time": last_modified_time,
                 "name": name,
                 "doc_collection_ref_id": doc_collection_ref_id,
+                "idempotency_key": idempotency_key,
             }
         )
         if archival_reason is not UNSET:
@@ -109,6 +114,8 @@ class Doc:
         name = d.pop("name")
 
         doc_collection_ref_id = d.pop("doc_collection_ref_id")
+
+        idempotency_key = d.pop("idempotency_key")
 
         def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -145,6 +152,7 @@ class Doc:
             last_modified_time=last_modified_time,
             name=name,
             doc_collection_ref_id=doc_collection_ref_id,
+            idempotency_key=idempotency_key,
             archival_reason=archival_reason,
             archived_time=archived_time,
             parent_doc_ref_id=parent_doc_ref_id,

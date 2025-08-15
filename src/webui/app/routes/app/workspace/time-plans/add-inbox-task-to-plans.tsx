@@ -152,6 +152,7 @@ export default function AddInboxTaskToPlans() {
 
   return (
     <LeafPanel
+      key="add-inbox-task-to-plans"
       fakeKey={`add-inbox-task-to-plans/${searchParams.get("inboxTaskRefId")}`}
       returnLocation={`/app/workspace/inbox-tasks/${searchParams.get("inboxTaskRefId")}`}
       returnLocationDiscriminator="add-inbox-task-to-plans"

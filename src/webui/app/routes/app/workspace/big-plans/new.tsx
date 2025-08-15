@@ -177,6 +177,7 @@ export default function NewBigPlan() {
 
   return (
     <LeafPanel
+      key="big-plans/new"
       fakeKey={`big-plans/new`}
       returnLocation="/app/workspace/big-plans"
       inputsEnabled={inputsEnabled}

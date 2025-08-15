@@ -31,6 +31,7 @@ class DocCreateArgs:
         name (str): The doc name.
         content (list[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock', 'EntityReferenceBlock',
             'HeadingBlock', 'LinkBlock', 'NumberedListBlock', 'ParagraphBlock', 'QuoteBlock', 'TableBlock']]):
+        idempotency_key (str): A document idempotency key in this domain.
         parent_doc_ref_id (Union[None, Unset, str]):
     """
 
@@ -50,6 +51,7 @@ class DocCreateArgs:
             "TableBlock",
         ]
     ]
+    idempotency_key: str
     parent_doc_ref_id: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -95,6 +97,8 @@ class DocCreateArgs:
 
             content.append(content_item)
 
+        idempotency_key = self.idempotency_key
+
         parent_doc_ref_id: Union[None, Unset, str]
         if isinstance(self.parent_doc_ref_id, Unset):
             parent_doc_ref_id = UNSET
@@ -107,6 +111,7 @@ class DocCreateArgs:
             {
                 "name": name,
                 "content": content,
+                "idempotency_key": idempotency_key,
             }
         )
         if parent_doc_ref_id is not UNSET:
@@ -240,6 +245,8 @@ class DocCreateArgs:
 
             content.append(content_item)
 
+        idempotency_key = d.pop("idempotency_key")
+
         def _parse_parent_doc_ref_id(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -252,6 +259,7 @@ class DocCreateArgs:
         doc_create_args = cls(
             name=name,
             content=content,
+            idempotency_key=idempotency_key,
             parent_doc_ref_id=parent_doc_ref_id,
         )
 

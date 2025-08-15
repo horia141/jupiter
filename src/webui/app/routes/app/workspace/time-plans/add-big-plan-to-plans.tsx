@@ -152,6 +152,7 @@ export default function AddBigPlanToPlans() {
 
   return (
     <LeafPanel
+      key="add-big-plan-to-plans"
       fakeKey={`add-big-plan-to-plans/${searchParams.get("bigPlanRefId")}`}
       returnLocation={`/app/workspace/big-plans/${searchParams.get("bigPlanRefId")}`}
       returnLocationDiscriminator="add-big-plan-to-plans"

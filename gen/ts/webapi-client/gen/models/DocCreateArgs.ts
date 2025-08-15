@@ -6,6 +6,7 @@ import type { BulletedListBlock } from './BulletedListBlock';
 import type { ChecklistBlock } from './ChecklistBlock';
 import type { CodeBlock } from './CodeBlock';
 import type { DividerBlock } from './DividerBlock';
+import type { DocIdempotencyKey } from './DocIdempotencyKey';
 import type { DocName } from './DocName';
 import type { EntityId } from './EntityId';
 import type { EntityReferenceBlock } from './EntityReferenceBlock';
@@ -22,5 +23,6 @@ export type DocCreateArgs = {
     name: DocName;
     content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
     parent_doc_ref_id?: (EntityId | null);
+    idempotency_key: DocIdempotencyKey;
 };
 

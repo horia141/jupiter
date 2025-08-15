@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { DocIdempotencyKey } from './DocIdempotencyKey';
 import type { DocName } from './DocName';
 import type { EntityId } from './EntityId';
 import type { Timestamp } from './Timestamp';
@@ -19,5 +20,6 @@ export type Doc = {
     name: DocName;
     doc_collection_ref_id: string;
     parent_doc_ref_id?: (EntityId | null);
+    idempotency_key: DocIdempotencyKey;
 };
 

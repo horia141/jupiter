@@ -78,6 +78,7 @@ export default function ScheduleStreamNew() {
 
   return (
     <LeafPanel
+      key="schedule-stream/new"
       fakeKey="schedule-stream/new"
       inputsEnabled={inputsEnabled}
       returnLocation={`/app/workspace/calendar/schedule/stream?${query}`}

@@ -110,6 +110,7 @@ export default function NewSmartListItem() {
 
   return (
     <LeafPanel
+      key={`smart-list-${id}/items/new`}
       fakeKey={`smart-list-${id}/items/new`}
       returnLocation={`/app/workspace/smart-lists/${id}/items`}
       inputsEnabled={inputsEnabled}

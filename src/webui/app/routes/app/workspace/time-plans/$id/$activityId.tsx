@@ -390,6 +390,7 @@ export default function TimePlanActivity() {
 
   return (
     <LeafPanel
+      key={`time-plan-${id}/activity-${activityId}`}
       fakeKey={`time-plan-${id}/activity-${activityId}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
