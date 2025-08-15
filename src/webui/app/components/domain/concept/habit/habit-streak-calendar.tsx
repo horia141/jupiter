@@ -168,6 +168,7 @@ interface OneYearProps {
 }
 
 function OneYear(props: OneYearProps) {
+  const theme = useTheme();
   return (
     <Stack
       direction="row"
@@ -182,22 +183,31 @@ function OneYear(props: OneYearProps) {
             currentToday={props.currentToday}
           >
             <Tooltip title={weekTooltip}>
-              <span style={{ marginBottom: "0.5rem" }}>
+              <span>
                 <OneCell
+                  isToday={false}
+                  isFuture={false}
                   doneness={props.dataPerWeek.get(weekStart.toISODate()!)}
                 />
               </span>
             </Tooltip>
 
+            <span style={{ paddingBottom: "0.5rem", background: theme.palette.background.paper }}></span>
+
             {Array.from({ length: 7 }).map((_, dayIndex) => {
               const day = weekStart.plus({ days: dayIndex });
               const value = props.dataPerDay.get(day.toISODate()!);
               const theValue = value !== undefined ? `- ${value}%` : "";
-              const tooltip = `${day.toISODate()} ${theValue}`;
+              const isToday = props.currentToday == day.toISODate();
+              const tooltip = isToday ? "Today" : `${day.toISODate()} ${theValue}`;
               return (
                 <Tooltip key={dayIndex} title={tooltip}>
                   <span>
-                    <OneCell doneness={value} />
+                    <OneCell 
+                      isToday={isToday} 
+                      isFuture={day.toISODate() > props.currentToday}
+                      doneness={value} 
+                    />
                   </span>
                 </Tooltip>
               );
@@ -234,6 +244,8 @@ function OneCol(props: OneColProps) {
 }
 
 interface OneCellProps {
+  isToday: boolean;
+  isFuture: boolean;
   doneness: number | undefined;
 }
 
@@ -245,7 +257,8 @@ function OneCell(props: OneCellProps) {
         width: CELL_SIZE(theme),
         height: CELL_SIZE(theme),
         margin: "1px",
-        backgroundColor: bucketedColorScale(props.doneness),
+        backgroundColor: 
+          props.isToday ? "#ffd700" : props.isFuture ? theme.palette.info.light : bucketedColorScale(props.doneness),
       }}
     ></Box>
   );
@@ -271,10 +284,12 @@ function computeDonenessForStreakMark(
 
 function bucketedColorScale(value: number | undefined): string {
   if (value === undefined || value === null) return "#eeeeee";
-  if (value <= 10) return "#e57373"; // reddish
-  if (value <= 50) return "#ffb74d"; // orange-ish
-  if (value <= 90) return "#fff176"; // yellow-ish
-  return "#81c784"; // green-ish
+  if (value <= 15) return "#e57373"; // reddish
+  if (value <= 30) return "#ef9a9a"; // lighter red
+  if (value <= 45) return "#ffb74d"; // orange
+  if (value <= 60) return "#fff176"; // yellow
+  if (value <= 75) return "#aed581"; // light green
+  return "#81c784"; // green
 }
 
 const StyledDiv = styled("div")`

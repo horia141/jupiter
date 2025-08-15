@@ -25,7 +25,6 @@ import { StatusCodes } from "http-status-codes";
 import { Fragment, useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -174,7 +173,7 @@ export default function HomeTab() {
       }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <EntityStack>
+        <Stack sx={{ alignItems: "center"}}>
           {loaderData.tab.target === HomeTabTarget.BIG_SCREEN && (
             <BigScreenWidgetPlacement
               action={query.action}
@@ -190,7 +189,7 @@ export default function HomeTab() {
               widgets={loaderData.widgets}
             />
           )}
-        </EntityStack>
+        </Stack>
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
