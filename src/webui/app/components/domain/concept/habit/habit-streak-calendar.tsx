@@ -192,21 +192,28 @@ function OneYear(props: OneYearProps) {
               </span>
             </Tooltip>
 
-            <span style={{ paddingBottom: "0.5rem", background: theme.palette.background.paper }}></span>
+            <span
+              style={{
+                paddingBottom: "0.5rem",
+                background: theme.palette.background.paper,
+              }}
+            ></span>
 
             {Array.from({ length: 7 }).map((_, dayIndex) => {
               const day = weekStart.plus({ days: dayIndex });
               const value = props.dataPerDay.get(day.toISODate()!);
               const theValue = value !== undefined ? `- ${value}%` : "";
               const isToday = props.currentToday == day.toISODate();
-              const tooltip = isToday ? "Today" : `${day.toISODate()} ${theValue}`;
+              const tooltip = isToday
+                ? "Today"
+                : `${day.toISODate()} ${theValue}`;
               return (
                 <Tooltip key={dayIndex} title={tooltip}>
                   <span>
-                    <OneCell 
-                      isToday={isToday} 
+                    <OneCell
+                      isToday={isToday}
                       isFuture={day.toISODate() > props.currentToday}
-                      doneness={value} 
+                      doneness={value}
                     />
                   </span>
                 </Tooltip>
@@ -257,8 +264,11 @@ function OneCell(props: OneCellProps) {
         width: CELL_SIZE(theme),
         height: CELL_SIZE(theme),
         margin: "1px",
-        backgroundColor: 
-          props.isToday ? "#ffd700" : props.isFuture ? theme.palette.info.light : bucketedColorScale(props.doneness),
+        backgroundColor: props.isToday
+          ? "#ffd700"
+          : props.isFuture
+            ? theme.palette.info.light
+            : bucketedColorScale(props.doneness),
       }}
     ></Box>
   );

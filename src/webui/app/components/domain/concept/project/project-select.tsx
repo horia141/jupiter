@@ -79,7 +79,15 @@ export function ProjectSelect(props: ProjectSelectProps) {
           }
         }}
         isOptionEqualToValue={(o, v) => o.project_ref_id === v.project_ref_id}
-        renderOption={(props, option) => <li {...props}>{option.bigName}</li>}
+        renderOption={(props, option) => {
+          // eslint-disable-next-line react/prop-types
+          const { key, ...restProps } = props;
+          return (
+            <li {...restProps} key={key}>
+              {option.bigName}
+            </li>
+          );
+        }}
         renderInput={(params) => <TextField {...params} label={props.label} />}
       />
 

@@ -7,7 +7,14 @@ interface StandardDividerProps {
 
 export function StandardDivider(props: StandardDividerProps) {
   return (
-    <Divider variant="fullWidth">
+    <Divider
+      variant="fullWidth"
+      sx={{
+        "& .MuiDivider-wrapper": {
+          width: "100%",
+        },
+      }}
+    >
       <Typography
         variant={
           props.size === "small"

@@ -29,7 +29,9 @@ export function SectionCard(props: PropsWithChildren<SectionCardProps>) {
     <StyledCard id={props.id}>
       <Form method={props.method ?? "post"}>
         <SectionHeader>
-          <SectionTitle label={props.title} />
+          <SectionHeaderContent>
+            <SectionTitle label={props.title} />
+          </SectionHeaderContent>
           {actionsPosition === ActionsPosition.ABOVE && props.actions}
         </SectionHeader>
         <CardContent>
@@ -47,17 +49,27 @@ const SectionHeader = styled("div")(() => ({
   display: "flex",
   flexWrap: "nowrap",
   justifyContent: "space-between",
-  alignItems: "stretch",
+  alignItems: "center",
   height: "3rem",
+  width: "100%",
 }));
 
 const StyledCard = styled(Card)(() => ({
   position: "relative",
 }));
 
+const SectionHeaderContent = styled("div")(() => ({
+  display: "flex",
+  flex: "1 1 auto",
+  minWidth: "0",
+  flexWrap: "nowrap",
+  justifyContent: "space-between",
+  alignItems: "center",
+  height: "3rem",
+}));
+
 const SectionTitle = styled(Chip)(() => ({
   position: "relative",
-  maxWidth: "calc(100% - 5rem)",
   top: "-0.05rem",
   fontSize: "1.5rem",
   fontVariant: "small-caps",

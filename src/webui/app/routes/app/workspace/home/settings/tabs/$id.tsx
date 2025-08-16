@@ -173,7 +173,7 @@ export default function HomeTab() {
       }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <Stack sx={{ alignItems: "center"}}>
+        <Stack sx={{ alignItems: "center" }}>
           {loaderData.tab.target === HomeTabTarget.BIG_SCREEN && (
             <BigScreenWidgetPlacement
               action={query.action}

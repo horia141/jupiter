@@ -40,6 +40,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { useBigScreen } from "~/rendering/use-big-screen";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -185,6 +186,8 @@ export default function Journal() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
 
+  const isBigScreen = useBigScreen();
+
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const corePropertyEditable = allowUserChanges(loaderData.journal.source);
@@ -230,7 +233,11 @@ export default function Journal() {
           />
         }
       >
-        <Stack direction={"row"} spacing={2} useFlexGap>
+        <Stack
+          direction={isBigScreen ? "row" : "column"}
+          spacing={2}
+          useFlexGap
+        >
           <FormControl fullWidth>
             <InputLabel id="rightNow" shrink margin="dense">
               The Date
