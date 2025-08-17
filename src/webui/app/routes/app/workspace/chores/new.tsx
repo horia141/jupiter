@@ -229,6 +229,7 @@ export default function NewChore() {
             label="startAtDate"
             name="startAtDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
           <FieldError actionResult={actionData} fieldName="/start_at_date" />
         </FormControl>
@@ -243,6 +244,7 @@ export default function NewChore() {
             label="endAtDate"
             name="endAtDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
           <FieldError actionResult={actionData} fieldName="/end_at_date" />
         </FormControl>

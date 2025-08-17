@@ -132,6 +132,7 @@ export default function NewMetricEntry() {
             }).toFormat("yyyy-MM-dd")}
             name="collectionTime"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
 
           <FieldError actionResult={actionData} fieldName="/collection_time" />

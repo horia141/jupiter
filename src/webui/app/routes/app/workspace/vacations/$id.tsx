@@ -218,6 +218,7 @@ export default function Vacation() {
             )}
             name="startDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
 
           <FieldError actionResult={actionData} fieldName="/start_date" />
@@ -234,6 +235,7 @@ export default function Vacation() {
             defaultValue={aDateToDate(vacation.end_date).toFormat("yyyy-MM-dd")}
             name="endDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
 
           <FieldError actionResult={actionData} fieldName="/end_date" />

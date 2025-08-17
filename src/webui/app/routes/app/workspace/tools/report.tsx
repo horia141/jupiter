@@ -187,6 +187,7 @@ export default function Report() {
                   }).toISODate()
             }
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
 
           <FieldError actionResult={loaderData} fieldName="/today" />

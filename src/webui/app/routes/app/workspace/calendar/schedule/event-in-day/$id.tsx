@@ -346,6 +346,7 @@ export default function ScheduleEventInDayViewOne() {
             label="startDate"
             name="startDate"
             readOnly={!inputsEnabled || !corePropertyEditable}
+            disabled={!inputsEnabled || !corePropertyEditable}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />

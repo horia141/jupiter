@@ -118,6 +118,7 @@ export default function NewJournal() {
             label="rightNow"
             name="rightNow"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             defaultValue={DateTime.local({
               zone: topLevelInfo.user.timezone,
             }).toISODate()}

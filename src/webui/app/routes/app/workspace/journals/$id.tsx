@@ -249,6 +249,7 @@ export default function Journal() {
               name="rightNow"
               readOnly={!inputsEnabled || !corePropertyEditable}
               defaultValue={loaderData.journal.right_now}
+              disabled={!inputsEnabled || !corePropertyEditable}
             />
 
             <FieldError actionResult={actionData} fieldName="/right_now" />

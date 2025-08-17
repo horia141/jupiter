@@ -205,6 +205,7 @@ export default function MetricEntry() {
             }
             name="collectionTime"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
 
           <FieldError actionResult={actionData} fieldName="/collection_time" />

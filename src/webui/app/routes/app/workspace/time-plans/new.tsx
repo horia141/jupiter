@@ -131,6 +131,7 @@ export default function NewTimePlan() {
             label="today"
             name="today"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             defaultValue={initialToday}
           />
 

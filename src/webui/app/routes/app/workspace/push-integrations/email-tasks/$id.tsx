@@ -398,6 +398,7 @@ export default function EmailTask() {
             notched
             label="generationActionableDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             defaultValue={
               loaderData.emailTask.generation_extra_info?.actionable_date
                 ? aDateToDate(
@@ -423,6 +424,7 @@ export default function EmailTask() {
             notched
             label="generationDueDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             defaultValue={
               loaderData.emailTask.generation_extra_info?.due_date
                 ? aDateToDate(

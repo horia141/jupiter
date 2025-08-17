@@ -172,6 +172,7 @@ export default function ScheduleEventFullDaysNew() {
             label="startDate"
             name="startDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             defaultValue={loaderData.date}
           />
 

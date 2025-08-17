@@ -451,6 +451,7 @@ export default function Chore() {
               }
               name="startAtDate"
               readOnly={!inputsEnabled}
+              disabled={!inputsEnabled}
             />
 
             <FieldError actionResult={actionData} fieldName="/start_at_date" />
@@ -473,6 +474,7 @@ export default function Chore() {
               }
               name="endAtDate"
               readOnly={!inputsEnabled}
+              disabled={!inputsEnabled}
             />
 
             <FieldError actionResult={actionData} fieldName="/end_at_date" />

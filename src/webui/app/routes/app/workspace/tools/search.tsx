@@ -347,6 +347,7 @@ export default function Search() {
                       }
                       name="filterCreatedTimeAfter"
                       readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
                     />
 
                     <FieldError
@@ -369,6 +370,7 @@ export default function Search() {
                       }
                       name="filterCreatedTimeBefore"
                       readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
                     />
 
                     <FieldError
@@ -393,6 +395,7 @@ export default function Search() {
                       }
                       name="filterLastModifiedTimeAfter"
                       readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
                     />
 
                     <FieldError
@@ -415,6 +418,7 @@ export default function Search() {
                       }
                       name="filterLastModifiedTimeBefore"
                       readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
                     />
 
                     <FieldError
@@ -439,6 +443,7 @@ export default function Search() {
                       }
                       name="filterArchivedTimeAfter"
                       readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
                     />
 
                     <FieldError
@@ -461,6 +466,7 @@ export default function Search() {
                       }
                       name="filterArchivedTimeBefore"
                       readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
                     />
 
                     <FieldError

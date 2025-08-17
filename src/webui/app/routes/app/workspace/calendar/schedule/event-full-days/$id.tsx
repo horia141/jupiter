@@ -287,6 +287,7 @@ export default function ScheduleEventFullDaysViewOne() {
             label="startDate"
             name="startDate"
             readOnly={!inputsEnabled || !corePropertyEditable}
+            disabled={!inputsEnabled || !corePropertyEditable}
             defaultValue={loaderData.timeEventFullDaysBlock.start_date}
           />
 

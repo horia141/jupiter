@@ -362,6 +362,7 @@ export default function TimePlanView() {
                 label="rightNow"
                 name="rightNow"
                 readOnly={!inputsEnabled || !corePropertyEditable}
+                disabled={!inputsEnabled || !corePropertyEditable}
                 defaultValue={loaderData.timePlan.right_now}
               />
 

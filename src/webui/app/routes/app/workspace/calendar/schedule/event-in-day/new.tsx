@@ -213,6 +213,7 @@ export default function ScheduleEventInDayNew() {
             label="startDate"
             name="startDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />

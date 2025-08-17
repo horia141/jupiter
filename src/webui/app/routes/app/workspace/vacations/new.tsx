@@ -110,6 +110,7 @@ export default function NewVacation() {
             label="startDate"
             name="startDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
           <FieldError actionResult={actionData} fieldName="/start_date" />
         </FormControl>
@@ -124,6 +125,7 @@ export default function NewVacation() {
             label="endDate"
             name="endDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
           />
           <FieldError actionResult={actionData} fieldName="/end_date" />
         </FormControl>

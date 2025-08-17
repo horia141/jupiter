@@ -390,6 +390,7 @@ export default function SlackTask() {
             notched
             label="generationActionableDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             defaultValue={
               loaderData.slackTask.generation_extra_info?.actionable_date
                 ? aDateToDate(
@@ -415,6 +416,7 @@ export default function SlackTask() {
             notched
             label="generationDueDate"
             readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
             defaultValue={
               loaderData.slackTask.generation_extra_info?.due_date
                 ? aDateToDate(
