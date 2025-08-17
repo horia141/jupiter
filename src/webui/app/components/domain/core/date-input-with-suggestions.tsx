@@ -48,6 +48,7 @@ export function DateInputWithSuggestions(props: DateInputWithSuggestionsProps) {
         type="date"
         label={props.label}
         readOnly={!props.inputsEnabled}
+        disabled={!props.inputsEnabled}
         name={props.name}
         notched
         value={date || ""}
@@ -55,9 +56,6 @@ export function DateInputWithSuggestions(props: DateInputWithSuggestionsProps) {
           const newDate = strToADate(e.target.value as ADate);
           setDate(newDate);
           props.onChange?.(newDate);
-        }}
-        inputProps={{
-          inputMode: !props.inputsEnabled ? "none" : undefined,
         }}
         sx={{ flexGrow: 1 }}
       />
