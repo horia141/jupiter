@@ -97,7 +97,6 @@ class WidgetType(EnumValue):
     """A type of widget."""
 
     MOTD = "motd"
-    WORKING_MEMORY = "working-mem"
     KEY_HABITS_STREAKS = "key-habits-streaks"
     HABIT_INBOX_TASKS = "habit-inbox-tasks"
     RANDOM_HABIT = "random-habit"
@@ -153,14 +152,6 @@ WIDGET_CONSTRAINTS = {
             ],
         },
         only_for_workspace_features=None,
-        only_for_user_features=None,
-    ),
-    WidgetType.WORKING_MEMORY: WidgetTypeConstraints(
-        allowed_dimensions={
-            HomeTabTarget.BIG_SCREEN: [WidgetDimension.DIM_1x1],
-            HomeTabTarget.SMALL_SCREEN: [WidgetDimension.DIM_1x1],
-        },
-        only_for_workspace_features=[WorkspaceFeature.WORKING_MEM],
         only_for_user_features=None,
     ),
     WidgetType.KEY_HABITS_STREAKS: WidgetTypeConstraints(

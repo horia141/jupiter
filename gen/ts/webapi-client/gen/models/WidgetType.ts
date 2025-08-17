@@ -7,7 +7,6 @@
  */
 export enum WidgetType {
     MOTD = 'motd',
-    WORKING_MEM = 'working-mem',
     KEY_HABITS_STREAKS = 'key-habits-streaks',
     HABIT_INBOX_TASKS = 'habit-inbox-tasks',
     RANDOM_HABIT = 'random-habit',

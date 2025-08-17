@@ -93,8 +93,6 @@ export function ViewAsCalendarDaily(props: ViewAsProps) {
         position: "relative",
         margin: isBigScreen ? "auto" : "initial",
         width: isBigScreen ? "300px" : "100%",
-        paddingTop:
-          isBigScreen || thePartititionFullDays.length > 0 ? "0" : "1rem",
       }}
     >
       <ViewAsCalendarDaysAndFullDaysContiner>

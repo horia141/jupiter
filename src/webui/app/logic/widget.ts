@@ -10,8 +10,6 @@ export function widgetTypeName(type: WidgetType): string {
   switch (type) {
     case WidgetType.MOTD:
       return "Message of the Day";
-    case WidgetType.WORKING_MEM:
-      return "Working Memory";
     case WidgetType.KEY_HABITS_STREAKS:
       return "Key Habits Streaks";
     case WidgetType.HABIT_INBOX_TASKS:

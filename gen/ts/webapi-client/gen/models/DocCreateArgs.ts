@@ -20,9 +20,9 @@ import type { TableBlock } from './TableBlock';
  * DocCreate args.
  */
 export type DocCreateArgs = {
+    idempotency_key: DocIdempotencyKey;
     name: DocName;
     content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
     parent_doc_ref_id?: (EntityId | null);
-    idempotency_key: DocIdempotencyKey;
 };
 

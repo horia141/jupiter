@@ -906,8 +906,6 @@ function ActualWidgetItself({ widget, widgetProps }: ActualWidgetItselfProps) {
   switch (widget.the_type) {
     case WidgetType.MOTD:
       return <MOTDWidget {...widgetPropsWithGeometry} />;
-    case WidgetType.WORKING_MEM:
-      return <div>Not implemented</div>;
     case WidgetType.KEY_HABITS_STREAKS:
       return <HabitKeyHabitStreakWidget {...widgetPropsWithGeometry} />;
     case WidgetType.HABIT_INBOX_TASKS:

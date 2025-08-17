@@ -16,7 +16,6 @@ class WidgetType(str, Enum):
     SCHEDULE_DAY = "schedule-day"
     TIME_PLAN_VIEW = "time-plan-view"
     UPCOMING_BIRTHDAYS = "upcoming-birthdays"
-    WORKING_MEM = "working-mem"
 
     def __str__(self) -> str:
         return str(self.value)

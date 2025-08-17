@@ -1508,8 +1508,6 @@ class GenService:
                     found_journal = journal
 
             if journal_collection.generation_approach.should_generate_a_writing_task:
-                if journal_collection.writing_task_project_ref_id is None:
-                    raise Exception("Writing task project ref id is not set")
                 if journal_collection.writing_task_gen_params is None:
                     raise Exception("Writing task gen params is not set")
                 project = all_projects_by_ref_id[

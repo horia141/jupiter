@@ -56,6 +56,9 @@ export function DateInputWithSuggestions(props: DateInputWithSuggestionsProps) {
           setDate(newDate);
           props.onChange?.(newDate);
         }}
+        inputProps={{
+          inputMode: !props.inputsEnabled ? "none" : undefined,
+        }}
         sx={{ flexGrow: 1 }}
       />
       {props.suggestedDates && props.suggestedDates.length > 0 && (
