@@ -240,12 +240,12 @@ In terms of working:
 * To create a release use `./scripts/release/prepare.sh x.y.z`.
 * You'll need to edit `src/docs/material/releases/release-x.y.z.md` with the
   release notes. And update `mkdocs.yaml` to include it.
-* Also run a `make stats-for-nerds` to include some per-release info.
+* Also run a `./scripts/build/stats-for-nerds.sh` to include some per-release info.
 * Then run `./scripts/release/finish.sh` to finish everything about the
   release on GitHub size.
 * You can run `./scripts/build/desktop.sh` to build the new version of the
   desktop apps.
-* And then `./scripts/release/gh-release.sh x.y.z` to create a new release
+* And then `./scripts/release/upload-gh.sh x.y.z` to create a new release
   on GitHub.
 * Finally, if you so with you can upload to the AppStore via
   `./scripts/release/appstore-upload-(ios|macos).sh x.y.z`. As mentioned above, not

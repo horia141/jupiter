@@ -1,6 +1,7 @@
 # Self-Hosting
 
-> This is a work in progress section on how to do self-hosting for Thrive.
+> This document is a work in progress. Self-hosting works, and this document describes
+> one way of doing things. There are more that I'd like to add in the future!
 
 Thrive natively support self-hosting, though at this moment only via the webapp, PWA, and
 desktop app surfaces. This document presents a number of alternative ways to achieve this.
