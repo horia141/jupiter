@@ -237,7 +237,7 @@ In terms of representation:
 
 In terms of working:
 
-* To create a release use `./scripts/release/new.sh x.y.z`.
+* To create a release use `./scripts/release/prepare.sh x.y.z`.
 * You'll need to edit `src/docs/material/releases/release-x.y.z.md` with the
   release notes. And update `mkdocs.yaml` to include it.
 * Also run a `make stats-for-nerds` to include some per-release info.
