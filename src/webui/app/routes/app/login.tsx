@@ -1,41 +1,38 @@
 import { ApiError, AppShell } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
+import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getGuestApiClient } from "~/api-clients.server";
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
-import { EntityActionHeader } from "~/components/infra/entity-actions-header";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { Logo } from "~/components/logo";
-import { Password } from "~/components/password";
-import { Title } from "~/components/title";
+import { Logo } from "~/components/infra/logo";
+import { Password } from "~/components/domain/application/auth/password";
+import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { commitSession, getSession } from "~/sessions";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  NavSingle,
+  NavMultipleCompact,
+  ActionsExpansion,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { EMPTY_CONTEXT } from "~/top-level-context";
 
 const LoginFormSchema = z.object({
   emailAddress: z.string(),
@@ -115,92 +112,69 @@ export default function Login() {
       </SmartAppBar>
 
       <LifecyclePanel>
-        <Form method="post">
-          <Card>
-            <GlobalError actionResult={actionData} />
-            <CardHeader title="Login" />
-            <CardContent>
-              <Stack spacing={2} useFlexGap>
-                <FormControl fullWidth>
-                  <InputLabel id="emailAddress">Email Address</InputLabel>
-                  <OutlinedInput
-                    label="Email Address"
-                    name="emailAddress"
-                    type="email"
-                    autoComplete="email"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/email_address"
-                  />
-                </FormControl>
+        <GlobalError actionResult={actionData} />
+        <SectionCard
+          title="Login"
+          actionsPosition={ActionsPosition.BELOW}
+          actions={
+            <SectionActions
+              id="login"
+              topLevelInfo={EMPTY_CONTEXT}
+              inputsEnabled={inputsEnabled}
+              expansion={ActionsExpansion.ALWAYS_SHOW}
+              actions={[
+                ActionSingle({
+                  text: "Login",
+                  value: "login",
+                  highlight: true,
+                }),
+                NavMultipleCompact({
+                  navs: [
+                    NavSingle({
+                      text: "New Workspace",
+                      link: "/app/init",
+                    }),
+                    NavSingle({
+                      text: "Reset Password",
+                      link: "/app/reset-password",
+                    }),
+                    NavSingle({
+                      text: "Pick Server",
+                      link: "/app/pick-server/desktop",
+                      disabled:
+                        globalProperties.frontDoorInfo.appShell !==
+                        AppShell.DESKTOP_ELECTRON,
+                    }),
+                  ],
+                }),
+              ]}
+            />
+          }
+        >
+          <FormControl fullWidth>
+            <InputLabel id="emailAddress">Email Address</InputLabel>
+            <OutlinedInput
+              label="Email Address"
+              name="emailAddress"
+              type="email"
+              autoComplete="email"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/email_address" />
+          </FormControl>
 
-                <FormControl fullWidth>
-                  <InputLabel id="password">Password</InputLabel>
-                  <Password
-                    label="Password"
-                    name="password"
-                    autoComplete="current-password"
-                    inputsEnabled={inputsEnabled}
-                  />
-                  <FieldError actionResult={actionData} fieldName="/password" />
-                </FormControl>
-              </Stack>
-            </CardContent>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  id="login"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                >
-                  Login
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
-        </Form>
-
-        <EntityActionHeader>
-          <ButtonGroup>
-            <Button
-              id="new-workspace"
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/init`}
-              component={Link}
-            >
-              New Workspace
-            </Button>
-            <Button
-              id="reset-password"
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/reset-password`}
-              component={Link}
-            >
-              Reset Password
-            </Button>
-          </ButtonGroup>
-
-          {globalProperties.frontDoorInfo.appShell ===
-            AppShell.DESKTOP_ELECTRON && (
-            <Button
-              id="pick-another-server"
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/pick-server/desktop`}
-              component={Link}
-              sx={{ marginLeft: "auto" }}
-            >
-              Pick Server
-            </Button>
-          )}
-        </EntityActionHeader>
+          <FormControl fullWidth>
+            <InputLabel id="password">Password</InputLabel>
+            <Password
+              label="Password"
+              name="password"
+              autoComplete="current-password"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/password" />
+          </FormControl>
+        </SectionCard>
       </LifecyclePanel>
     </StandaloneContainer>
   );

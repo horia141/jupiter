@@ -1,6 +1,7 @@
 """Archive a person."""
 
 from jupiter.core.domain.concept.persons.person import Person
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -38,5 +39,10 @@ class PersonArchiveUseCase(
     ) -> None:
         """Execute the command's action."""
         await generic_crown_archiver(
-            context.domain_context, uow, progress_reporter, Person, args.ref_id
+            context.domain_context,
+            uow,
+            progress_reporter,
+            Person,
+            args.ref_id,
+            ArchivalReason.USER,
         )

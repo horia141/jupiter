@@ -5,6 +5,7 @@ from jupiter.core.domain.concept.docs.doc import Doc
 from jupiter.core.domain.concept.docs.service.doc_archive_service import (
     DocArchiveService,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -40,5 +41,5 @@ class DocArchiveUseCase(AppTransactionalLoggedInMutationUseCase[DocArchiveArgs, 
         """Execute the command's action."""
         doc = await uow.get_for(Doc).load_by_id(args.ref_id)
         await DocArchiveService().do_it(
-            context.domain_context, uow, progress_reporter, doc
+            context.domain_context, uow, progress_reporter, doc, ArchivalReason.USER
         )

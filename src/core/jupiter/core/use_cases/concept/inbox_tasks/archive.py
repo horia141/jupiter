@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -41,5 +42,9 @@ class InboxTaskArchiveUseCase(
         """Execute the command's action."""
         inbox_task = await uow.get_for(InboxTask).load_by_id(args.ref_id)
         await InboxTaskArchiveService().do_it(
-            context.domain_context, uow, progress_reporter, inbox_task
+            context.domain_context,
+            uow,
+            progress_reporter,
+            inbox_task,
+            ArchivalReason.USER,
         )

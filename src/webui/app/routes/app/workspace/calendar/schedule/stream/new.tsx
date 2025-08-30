@@ -1,5 +1,5 @@
 import { ApiError, ScheduleStreamColor } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -21,8 +21,8 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-input";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
+import { ScheduleStreamColorInput } from "~/components/domain/concept/schedule/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -79,13 +79,15 @@ export default function ScheduleStreamNew() {
   return (
     <LeafPanel
       key="schedule-stream/new"
+      fakeKey="schedule-stream/new"
       inputsEnabled={inputsEnabled}
       returnLocation={`/app/workspace/calendar/schedule/stream?${query}`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="schedule-stream-properties"
         title="Properties"
+        actionsPosition={ActionsPosition.BELOW}
         actions={
           <SectionActions
             id="schedule-stream-properties"
@@ -101,26 +103,24 @@ export default function ScheduleStreamNew() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput label="name" name="name" readOnly={!inputsEnabled} />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput label="name" name="name" readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="color">Color</InputLabel>
-            <ScheduleStreamColorInput
-              labelId="color"
-              label="Color"
-              name="color"
-              value={ScheduleStreamColor.BLUE}
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/color" />
-          </FormControl>
-        </Stack>
-      </SectionCardNew>
+        <FormControl fullWidth>
+          <InputLabel id="color">Color</InputLabel>
+          <ScheduleStreamColorInput
+            labelId="color"
+            label="Color"
+            name="color"
+            value={ScheduleStreamColor.BLUE}
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/color" />
+        </FormControl>
+      </SectionCard>
     </LeafPanel>
   );
 }

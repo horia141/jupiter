@@ -46,6 +46,7 @@ class HabitCreateArgs(UseCaseArgsBase):
     name: HabitName
     period: RecurringTaskPeriod
     project_ref_id: EntityId | None
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     actionable_from_day: RecurringTaskDueAtDay | None
@@ -107,6 +108,7 @@ class HabitCreateUseCase(
             habit_collection_ref_id=habit_collection.ref_id,
             project_ref_id=project_ref_id,
             name=args.name,
+            is_key=args.is_key,
             gen_params=RecurringTaskGenParams(
                 period=args.period,
                 eisen=args.eisen,

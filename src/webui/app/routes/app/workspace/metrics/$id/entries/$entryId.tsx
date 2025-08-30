@@ -1,37 +1,31 @@
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { TimeDiffTag } from "~/components/time-diff-tag";
+import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -162,97 +156,93 @@ export default function MetricEntry() {
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.metricEntry.archived;
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`metric-${id}/entry-${entryId}`}
+      fakeKey={`metric-${id}/entry-${entryId}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.metricEntry.archived}
       returnLocation={`/app/workspace/metrics/${id}`}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <TimeDiffTag
-              today={today}
-              labelPrefix="Collected"
-              collectionTime={loaderData.metricEntry.collection_time}
-            />
-            <FormControl fullWidth>
-              <InputLabel id="collectionTime" shrink>
-                Collection Time
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="collectionTime"
-                defaultValue={
-                  loaderData.metricEntry.collection_time
-                    ? aDateToDate(
-                        loaderData.metricEntry.collection_time,
-                      ).toFormat("yyyy-MM-dd")
-                    : undefined
-                }
-                name="collectionTime"
-                readOnly={!inputsEnabled}
-              />
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={
+          <SectionActions
+            id="metric-entry-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <TimeDiffTag
+          today={topLevelInfo.today}
+          labelPrefix="Collected"
+          collectionTime={loaderData.metricEntry.collection_time}
+        />
+        <FormControl fullWidth>
+          <InputLabel id="collectionTime" shrink>
+            Collection Time
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="collectionTime"
+            defaultValue={
+              loaderData.metricEntry.collection_time
+                ? aDateToDate(loaderData.metricEntry.collection_time).toFormat(
+                    "yyyy-MM-dd",
+                  )
+                : undefined
+            }
+            name="collectionTime"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/collection_time"
-              />
-            </FormControl>
+          <FieldError actionResult={actionData} fieldName="/collection_time" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="value">Value</InputLabel>
-              <OutlinedInput
-                type="number"
-                inputProps={{ step: "any" }}
-                label="Value"
-                name="value"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.metricEntry.value}
-              />
-              <FieldError actionResult={actionData} fieldName="/value" />
-            </FormControl>
-          </Stack>
-        </CardContent>
+        <FormControl fullWidth>
+          <InputLabel id="value">Value</InputLabel>
+          <OutlinedInput
+            type="number"
+            inputProps={{ step: "any" }}
+            label="Value"
+            name="value"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.metricEntry.value}
+          />
+          <FieldError actionResult={actionData} fieldName="/value" />
+        </FormControl>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="metric-entry-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -261,7 +251,7 @@ export default function MetricEntry() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

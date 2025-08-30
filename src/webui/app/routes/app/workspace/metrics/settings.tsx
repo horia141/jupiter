@@ -1,15 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  FormControl,
-  Stack,
-} from "@mui/material";
+import { FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -20,17 +11,21 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
+import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 const ParamsSchema = z.object({});
 
 const UpdateFormSchema = z.object({
@@ -38,7 +33,7 @@ const UpdateFormSchema = z.object({
 });
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.BRANCH,
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -90,56 +85,55 @@ export default function MetricsSettings() {
   const inputsEnabled = navigation.state === "idle";
 
   return (
-    <LeafPanel
+    <BranchPanel
       key={"metrics/settings"}
       returnLocation="/app/workspace/metrics"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
       ) && (
-        <Card>
-          <GlobalError actionResult={actionData} />
-
-          <CardHeader title="Collection Project" />
-          <CardContent>
-            <Stack spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Collection Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.collectionProject.ref_id}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/collection_project_ref_id"
-                />
-              </FormControl>
-            </Stack>
-          </CardContent>
-
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-              >
-                Change Collection Project
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
+        <SectionCard
+          id="metrics-settings"
+          title="Collection Project"
+          actions={
+            <SectionActions
+              id="metrics-settings-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Save",
+                  value: "change",
+                  highlight: true,
+                }),
+              ]}
+            />
+          }
+        >
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Collection Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.collectionProject.ref_id}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/collection_project_ref_id"
+            />
+          </FormControl>
+        </SectionCard>
       )}
-    </LeafPanel>
+    </BranchPanel>
   );
 }
 
-export const ErrorBoundary = makeLeafErrorBoundary(
+export const ErrorBoundary = makeBranchErrorBoundary(
   "/app/workspace/metrics",
   ParamsSchema,
   {

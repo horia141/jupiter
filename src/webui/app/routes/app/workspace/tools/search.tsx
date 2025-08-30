@@ -4,11 +4,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -22,19 +17,18 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntitySummaryLink } from "~/components/entity-summary-link";
+import { EntitySummaryLink } from "~/components/infra/entity-summary-link";
 import { EntityCard } from "~/components/infra/entity-card";
 import { EntityStack2 } from "~/components/infra/entity-stack";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
-import { EntityTagSelect } from "~/components/named-entity-tag-select";
+import { EntityTagSelect } from "~/components/infra/named-entity-tag-select";
 import {
   isNoErrorSomeData,
   noErrorSomeData,
@@ -46,7 +40,11 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-
+import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 export const handle = {
   displayType: DisplayType.TOOL,
 };
@@ -231,258 +229,257 @@ export default function Search() {
 
   const inputsEnabled = navigation.state === "idle";
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
-    <ToolPanel method="get">
-      <Card>
-        <GlobalError actionResult={loaderData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="query">Query</InputLabel>
-              <OutlinedInput
-                label="Query"
-                name="query"
-                readOnly={!inputsEnabled}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <FieldError actionResult={loaderData} fieldName="/query" />
-            </FormControl>
+    <ToolPanel>
+      <GlobalError actionResult={loaderData} />
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Advanced</Typography>
-              </AccordionSummary>
+      <SectionCard
+        title="Search"
+        method="get"
+        actions={
+          <SectionActions
+            id="search-actions"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Search",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="query">Query</InputLabel>
+          <OutlinedInput
+            label="Query"
+            name="query"
+            readOnly={!inputsEnabled}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <FieldError actionResult={loaderData} fieldName="/query" />
+        </FormControl>
 
-              <AccordionDetails>
-                <Stack useFlexGap spacing={2}>
-                  <Stack
-                    useFlexGap
-                    sx={{ alignItems: "center" }}
-                    direction={isBigScreen ? "row" : "column"}
-                    spacing={2}
-                  >
-                    <FormControl fullWidth>
-                      <InputLabel id="limit">Limit</InputLabel>
-                      <OutlinedInput
-                        label="Limit"
-                        name="limit"
-                        type="number"
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Advanced</Typography>
+          </AccordionSummary>
+
+          <AccordionDetails>
+            <Stack useFlexGap spacing={2}>
+              <Stack
+                useFlexGap
+                sx={{ alignItems: "center" }}
+                direction={isBigScreen ? "row" : "column"}
+                spacing={2}
+              >
+                <FormControl fullWidth>
+                  <InputLabel id="limit">Limit</InputLabel>
+                  <OutlinedInput
+                    label="Limit"
+                    name="limit"
+                    type="number"
+                    readOnly={!inputsEnabled}
+                    value={searchLimit}
+                    onChange={(e) => setSearchLimit(e.target.value)}
+                  />
+                  <FieldError actionResult={loaderData} fieldName="/limit" />
+                </FormControl>
+
+                <FormControl fullWidth>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        name="includeArchived"
                         readOnly={!inputsEnabled}
-                        value={searchLimit}
-                        onChange={(e) => setSearchLimit(e.target.value)}
-                      />
-                      <FieldError
-                        actionResult={loaderData}
-                        fieldName="/limit"
-                      />
-                    </FormControl>
-
-                    <FormControl fullWidth>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            name="includeArchived"
-                            readOnly={!inputsEnabled}
-                            checked={searchIncludeArchived}
-                            onChange={(e) =>
-                              setSearchIncludeArchived(e.target.checked)
-                            }
-                          />
+                        checked={searchIncludeArchived}
+                        onChange={(e) =>
+                          setSearchIncludeArchived(e.target.checked)
                         }
-                        label="Include Archived"
                       />
-                      <FieldError
-                        actionResult={loaderData}
-                        fieldName="/include_archived"
-                      />
-                    </FormControl>
+                    }
+                    label="Include Archived"
+                  />
+                  <FieldError
+                    actionResult={loaderData}
+                    fieldName="/include_archived"
+                  />
+                </FormControl>
 
-                    <FormControl fullWidth>
-                      <InputLabel id="filterEntityTags">
-                        Filter Entities
-                      </InputLabel>
-                      <EntityTagSelect
-                        topLevelInfo={topLevelInfo}
-                        labelId="filterEntityTags"
-                        label="Filter Entities"
-                        name="filterEntityTags"
-                        readOnly={!inputsEnabled}
-                        value={searchFilterEntityTags}
-                        onChange={(e) => setSearchFilterEntityTags(e)}
-                      />
-                      <FieldError
-                        actionResult={loaderData}
-                        fieldName="/filter_entity_tags"
-                      />
-                    </FormControl>
-                  </Stack>
+                <FormControl fullWidth>
+                  <InputLabel id="filterEntityTags">Filter Entities</InputLabel>
+                  <EntityTagSelect
+                    topLevelInfo={topLevelInfo}
+                    labelId="filterEntityTags"
+                    label="Filter Entities"
+                    name="filterEntityTags"
+                    readOnly={!inputsEnabled}
+                    value={searchFilterEntityTags}
+                    onChange={(e) => setSearchFilterEntityTags(e)}
+                  />
+                  <FieldError
+                    actionResult={loaderData}
+                    fieldName="/filter_entity_tags"
+                  />
+                </FormControl>
+              </Stack>
 
-                  <Stack
-                    spacing={2}
-                    useFlexGap
-                    direction={isBigScreen ? "row" : "column"}
-                  >
-                    <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="filterCreatedTimeAfter" shrink>
-                          Created After
-                        </InputLabel>
-                        <OutlinedInput
-                          type="date"
-                          notched
-                          label="Created After"
-                          value={searchFilterCreatedTimeAfter}
-                          onChange={(e) =>
-                            setSearchFilterCreatedTimeAfter(e.target.value)
-                          }
-                          name="filterCreatedTimeAfter"
-                          readOnly={!inputsEnabled}
-                        />
+              <Stack
+                spacing={2}
+                useFlexGap
+                direction={isBigScreen ? "row" : "column"}
+              >
+                <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="filterCreatedTimeAfter" shrink>
+                      Created After
+                    </InputLabel>
+                    <OutlinedInput
+                      type="date"
+                      notched
+                      label="Created After"
+                      value={searchFilterCreatedTimeAfter}
+                      onChange={(e) =>
+                        setSearchFilterCreatedTimeAfter(e.target.value)
+                      }
+                      name="filterCreatedTimeAfter"
+                      readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
+                    />
 
-                        <FieldError
-                          actionResult={loaderData}
-                          fieldName="/filter_created_time_after"
-                        />
-                      </FormControl>
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/filter_created_time_after"
+                    />
+                  </FormControl>
 
-                      <FormControl fullWidth>
-                        <InputLabel id="filterCreatedTimeBefore" shrink>
-                          Created Before
-                        </InputLabel>
-                        <OutlinedInput
-                          type="date"
-                          notched
-                          label="Created Before"
-                          value={searchFilterCreatedTimeBefore}
-                          onChange={(e) =>
-                            setSearchFilterCreatedTimeBefore(e.target.value)
-                          }
-                          name="filterCreatedTimeBefore"
-                          readOnly={!inputsEnabled}
-                        />
+                  <FormControl fullWidth>
+                    <InputLabel id="filterCreatedTimeBefore" shrink>
+                      Created Before
+                    </InputLabel>
+                    <OutlinedInput
+                      type="date"
+                      notched
+                      label="Created Before"
+                      value={searchFilterCreatedTimeBefore}
+                      onChange={(e) =>
+                        setSearchFilterCreatedTimeBefore(e.target.value)
+                      }
+                      name="filterCreatedTimeBefore"
+                      readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
+                    />
 
-                        <FieldError
-                          actionResult={loaderData}
-                          fieldName="/filter_created_time_before"
-                        />
-                      </FormControl>
-                    </Stack>
-
-                    <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="filterLastModifiedTimeAfter" shrink>
-                          Last Modified After
-                        </InputLabel>
-                        <OutlinedInput
-                          type="date"
-                          notched
-                          label="Last Modified After"
-                          value={searchFilterLastModifiedTimeAfter}
-                          onChange={(e) =>
-                            setSearchFilterLastModifiedTimeAfter(e.target.value)
-                          }
-                          name="filterLastModifiedTimeAfter"
-                          readOnly={!inputsEnabled}
-                        />
-
-                        <FieldError
-                          actionResult={loaderData}
-                          fieldName="/filter_last_modified_time_after"
-                        />
-                      </FormControl>
-
-                      <FormControl fullWidth>
-                        <InputLabel id="filterLastModifiedTimeBefore" shrink>
-                          Last Modified Before
-                        </InputLabel>
-                        <OutlinedInput
-                          type="date"
-                          notched
-                          label="Last Modified Before"
-                          value={searchFilterLastModifiedTimeBefore}
-                          onChange={(e) =>
-                            setSearchFilterLastModifiedTimeBefore(
-                              e.target.value,
-                            )
-                          }
-                          name="filterLastModifiedTimeBefore"
-                          readOnly={!inputsEnabled}
-                        />
-
-                        <FieldError
-                          actionResult={loaderData}
-                          fieldName="/filter_last_modified_time_before"
-                        />
-                      </FormControl>
-                    </Stack>
-
-                    <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="filterArchivedTimeAfter" shrink>
-                          Archived After
-                        </InputLabel>
-                        <OutlinedInput
-                          type="date"
-                          notched
-                          label="Archived After"
-                          value={searchFilterArchivedTimeAfter}
-                          onChange={(e) =>
-                            setSearchFilterArchivedTimeAfter(e.target.value)
-                          }
-                          name="filterArchivedTimeAfter"
-                          readOnly={!inputsEnabled}
-                        />
-
-                        <FieldError
-                          actionResult={loaderData}
-                          fieldName="/filter_archived_time_after"
-                        />
-                      </FormControl>
-
-                      <FormControl fullWidth>
-                        <InputLabel id="filterArchivedTimeBefore" shrink>
-                          Archived Before
-                        </InputLabel>
-                        <OutlinedInput
-                          type="date"
-                          notched
-                          label="Archived Before"
-                          value={searchFilterArchivedTimeBefore}
-                          onChange={(e) =>
-                            setSearchFilterArchivedTimeBefore(e.target.value)
-                          }
-                          name="filterArchivedTimeBefore"
-                          readOnly={!inputsEnabled}
-                        />
-
-                        <FieldError
-                          actionResult={loaderData}
-                          fieldName="/filter_archived_time_before"
-                        />
-                      </FormControl>
-                    </Stack>
-                  </Stack>
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/filter_created_time_before"
+                    />
+                  </FormControl>
                 </Stack>
-              </AccordionDetails>
-            </Accordion>
 
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                >
-                  Search
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Stack>
-        </CardContent>
-      </Card>
+                <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="filterLastModifiedTimeAfter" shrink>
+                      Last Modified After
+                    </InputLabel>
+                    <OutlinedInput
+                      type="date"
+                      notched
+                      label="Last Modified After"
+                      value={searchFilterLastModifiedTimeAfter}
+                      onChange={(e) =>
+                        setSearchFilterLastModifiedTimeAfter(e.target.value)
+                      }
+                      name="filterLastModifiedTimeAfter"
+                      readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
+                    />
+
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/filter_last_modified_time_after"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <InputLabel id="filterLastModifiedTimeBefore" shrink>
+                      Last Modified Before
+                    </InputLabel>
+                    <OutlinedInput
+                      type="date"
+                      notched
+                      label="Last Modified Before"
+                      value={searchFilterLastModifiedTimeBefore}
+                      onChange={(e) =>
+                        setSearchFilterLastModifiedTimeBefore(e.target.value)
+                      }
+                      name="filterLastModifiedTimeBefore"
+                      readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
+                    />
+
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/filter_last_modified_time_before"
+                    />
+                  </FormControl>
+                </Stack>
+
+                <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="filterArchivedTimeAfter" shrink>
+                      Archived After
+                    </InputLabel>
+                    <OutlinedInput
+                      type="date"
+                      notched
+                      label="Archived After"
+                      value={searchFilterArchivedTimeAfter}
+                      onChange={(e) =>
+                        setSearchFilterArchivedTimeAfter(e.target.value)
+                      }
+                      name="filterArchivedTimeAfter"
+                      readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
+                    />
+
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/filter_archived_time_after"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <InputLabel id="filterArchivedTimeBefore" shrink>
+                      Archived Before
+                    </InputLabel>
+                    <OutlinedInput
+                      type="date"
+                      notched
+                      label="Archived Before"
+                      value={searchFilterArchivedTimeBefore}
+                      onChange={(e) =>
+                        setSearchFilterArchivedTimeBefore(e.target.value)
+                      }
+                      name="filterArchivedTimeBefore"
+                      readOnly={!inputsEnabled}
+                      disabled={!inputsEnabled}
+                    />
+
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/filter_archived_time_before"
+                    />
+                  </FormControl>
+                </Stack>
+              </Stack>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+      </SectionCard>
 
       {isNoErrorSomeData(loaderData) && loaderData.data.result && (
         <EntityStack2>
@@ -497,7 +494,10 @@ export default function Search() {
                 showAsArchived={match.summary.archived}
                 key={`${match.summary.entity_tag}:${match.summary.ref_id}`}
               >
-                <EntitySummaryLink today={today} summary={match.summary} />
+                <EntitySummaryLink
+                  today={topLevelInfo.today}
+                  summary={match.summary}
+                />
               </EntityCard>
             );
           })}

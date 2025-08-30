@@ -18,6 +18,8 @@ class BigPlanFindArgs:
         include_project (bool):
         include_inbox_tasks (bool):
         include_notes (bool):
+        include_milestones (bool):
+        include_stats (bool):
         filter_just_workable (Union[None, Unset, bool]):
         filter_ref_ids (Union[None, Unset, list[str]]):
         filter_project_ref_ids (Union[None, Unset, list[str]]):
@@ -27,6 +29,8 @@ class BigPlanFindArgs:
     include_project: bool
     include_inbox_tasks: bool
     include_notes: bool
+    include_milestones: bool
+    include_stats: bool
     filter_just_workable: Union[None, Unset, bool] = UNSET
     filter_ref_ids: Union[None, Unset, list[str]] = UNSET
     filter_project_ref_ids: Union[None, Unset, list[str]] = UNSET
@@ -40,6 +44,10 @@ class BigPlanFindArgs:
         include_inbox_tasks = self.include_inbox_tasks
 
         include_notes = self.include_notes
+
+        include_milestones = self.include_milestones
+
+        include_stats = self.include_stats
 
         filter_just_workable: Union[None, Unset, bool]
         if isinstance(self.filter_just_workable, Unset):
@@ -73,6 +81,8 @@ class BigPlanFindArgs:
                 "include_project": include_project,
                 "include_inbox_tasks": include_inbox_tasks,
                 "include_notes": include_notes,
+                "include_milestones": include_milestones,
+                "include_stats": include_stats,
             }
         )
         if filter_just_workable is not UNSET:
@@ -94,6 +104,10 @@ class BigPlanFindArgs:
         include_inbox_tasks = d.pop("include_inbox_tasks")
 
         include_notes = d.pop("include_notes")
+
+        include_milestones = d.pop("include_milestones")
+
+        include_stats = d.pop("include_stats")
 
         def _parse_filter_just_workable(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -143,6 +157,8 @@ class BigPlanFindArgs:
             include_project=include_project,
             include_inbox_tasks=include_inbox_tasks,
             include_notes=include_notes,
+            include_milestones=include_milestones,
+            include_stats=include_stats,
             filter_just_workable=filter_just_workable,
             filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids,

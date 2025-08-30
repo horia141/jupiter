@@ -3,7 +3,12 @@
 from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
-from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
+from jupiter.core.domain.sync_target import (
+    SyncTarget,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -51,7 +56,7 @@ class GenDoUseCase(AppLoggedInMutationUseCase[GenDoArgs, None]):
         gen_targets = (
             args.gen_targets
             if args.gen_targets is not None
-            else workspace.infer_sync_targets_for_enabled_features(None)
+            else infer_sync_targets_for_enabled_features(user, workspace, None)
         )
 
         gen_service = GenService(

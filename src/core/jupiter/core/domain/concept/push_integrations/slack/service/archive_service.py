@@ -18,6 +18,7 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task import Slack
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.use_case import ProgressReporter
@@ -40,6 +41,7 @@ class SlackTaskArchiveService:
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         slack_task: SlackTask,
+        archival_reason: ArchivalReason,
     ) -> SlackTaskArchiveServiceResult:
         """Execute the service's action."""
         if slack_task.archived:
@@ -69,11 +71,11 @@ class SlackTaskArchiveService:
         inbox_task_archive_service = InboxTaskArchiveService()
         for inbox_task in inbox_tasks_to_archive:
             await inbox_task_archive_service.do_it(
-                ctx, uow, progress_reporter, inbox_task
+                ctx, uow, progress_reporter, inbox_task, archival_reason
             )
             archived_inbox_taskd.append(inbox_task)
 
-        slack_task = slack_task.mark_archived(ctx)
+        slack_task = slack_task.mark_archived(ctx, archival_reason)
         await uow.get_for(SlackTask).save(slack_task)
         await progress_reporter.mark_updated(slack_task)
 

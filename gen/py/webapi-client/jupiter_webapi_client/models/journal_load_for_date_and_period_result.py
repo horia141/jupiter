@@ -8,6 +8,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.journal import Journal
+    from ..models.journal_stats import JournalStats
 
 
 T = TypeVar("T", bound="JournalLoadForDateAndPeriodResult")
@@ -20,14 +21,17 @@ class JournalLoadForDateAndPeriodResult:
     Attributes:
         sub_period_journals (list['Journal']):
         journal (Union['Journal', None, Unset]):
+        journal_stats (Union['JournalStats', None, Unset]):
     """
 
     sub_period_journals: list["Journal"]
     journal: Union["Journal", None, Unset] = UNSET
+    journal_stats: Union["JournalStats", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.journal import Journal
+        from ..models.journal_stats import JournalStats
 
         sub_period_journals = []
         for sub_period_journals_item_data in self.sub_period_journals:
@@ -42,6 +46,14 @@ class JournalLoadForDateAndPeriodResult:
         else:
             journal = self.journal
 
+        journal_stats: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.journal_stats, Unset):
+            journal_stats = UNSET
+        elif isinstance(self.journal_stats, JournalStats):
+            journal_stats = self.journal_stats.to_dict()
+        else:
+            journal_stats = self.journal_stats
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -51,12 +63,15 @@ class JournalLoadForDateAndPeriodResult:
         )
         if journal is not UNSET:
             field_dict["journal"] = journal
+        if journal_stats is not UNSET:
+            field_dict["journal_stats"] = journal_stats
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.journal import Journal
+        from ..models.journal_stats import JournalStats
 
         d = dict(src_dict)
         sub_period_journals = []
@@ -83,9 +98,27 @@ class JournalLoadForDateAndPeriodResult:
 
         journal = _parse_journal(d.pop("journal", UNSET))
 
+        def _parse_journal_stats(data: object) -> Union["JournalStats", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                journal_stats_type_0 = JournalStats.from_dict(data)
+
+                return journal_stats_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["JournalStats", None, Unset], data)
+
+        journal_stats = _parse_journal_stats(d.pop("journal_stats", UNSET))
+
         journal_load_for_date_and_period_result = cls(
             sub_period_journals=sub_period_journals,
             journal=journal,
+            journal_stats=journal_stats,
         )
 
         journal_load_for_date_and_period_result.additional_properties = d

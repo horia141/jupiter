@@ -1,15 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -24,6 +14,11 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -100,61 +95,61 @@ export default function NewMetricEntry() {
   return (
     <LeafPanel
       key={`metric-${id}/entries/new`}
+      fakeKey={`metric-${id}/entries/new`}
       returnLocation={`/app/workspace/metrics/${loaderData.metric.ref_id}`}
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="collectionTime" shrink>
-                Collection Time
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="collectionTime"
-                defaultValue={DateTime.local({
-                  zone: topLevelInfo.user.timezone,
-                }).toFormat("yyyy-MM-dd")}
-                name="collectionTime"
-                readOnly={!inputsEnabled}
-              />
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Metric Entry"
+        actionsPosition={ActionsPosition.BELOW}
+        actions={
+          <SectionActions
+            id="metric-entry-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "metric-entry-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="collectionTime" shrink>
+            Collection Time
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="collectionTime"
+            defaultValue={DateTime.local({
+              zone: topLevelInfo.user.timezone,
+            }).toFormat("yyyy-MM-dd")}
+            name="collectionTime"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/collection_time"
-              />
-            </FormControl>
+          <FieldError actionResult={actionData} fieldName="/collection_time" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="value">Value</InputLabel>
-              <OutlinedInput
-                type="number"
-                inputProps={{ step: "any" }}
-                label="Value"
-                name="value"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/value" />
-            </FormControl>
-          </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="metric-entry-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        <FormControl fullWidth>
+          <InputLabel id="value">Value</InputLabel>
+          <OutlinedInput
+            type="number"
+            inputProps={{ step: "any" }}
+            label="Value"
+            name="value"
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/value" />
+        </FormControl>
+      </SectionCard>
     </LeafPanel>
   );
 }

@@ -13,11 +13,10 @@ import {
 import { SnackbarProvider } from "notistack";
 import { StrictMode } from "react";
 
-import { EnvBanner } from "./components/infra/env-banner";
-import { serverToClientGlobalProperties } from "./global-properties-client";
-import { GLOBAL_PROPERTIES } from "./global-properties-server";
-import { loadFrontDoorInfo } from "./logic/frontdoor.server";
-import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
+import { EnvBanner } from "~/components/infra/env-banner";
+import { serverToClientGlobalProperties } from "~/global-properties-client";
+import { GLOBAL_PROPERTIES } from "~/global-properties-server";
+import { loadFrontDoorInfo } from "~/logic/frontdoor.server";
 
 const THEME = createTheme({
   palette: {
@@ -61,28 +60,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
-  return [
-    { charset: "utf-8" },
-    { title: data.globalProperties.title },
-    {
-      viewport:
-        "width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no",
-    },
-  ];
+  return [{ charset: "utf-8" }, { title: data.globalProperties.title }];
 }
 
 export function links() {
   return [{ rel: "manifest", href: "/pwa-manifest" }];
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = () => false;
 
 export default function Root() {
   const loaderData = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+        />
         <Meta />
         <Links />
       </head>

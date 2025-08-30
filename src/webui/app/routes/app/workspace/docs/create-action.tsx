@@ -13,6 +13,7 @@ import {
 import { NoteContentParser } from "~/logic/domain/notes";
 
 const CreateFormSchema = z.object({
+  idempotencyKey: z.string(),
   name: z.string(),
   content: z.preprocess((value) => {
     const utf8Buffer = Buffer.from(String(value), "base64");
@@ -26,6 +27,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     const result = await apiClient.docs.docCreate({
+      idempotency_key: form.idempotencyKey,
       name: form.name,
       content: form.content,
     });

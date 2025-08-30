@@ -21,6 +21,7 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_user_name import 
     SlackUserName,
 )
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.difficulty import Difficulty
 from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.email_address import EmailAddress
@@ -64,6 +65,7 @@ class InboxTask(LeafEntity):
     project_ref_id: EntityId
     name: InboxTaskName
     status: InboxTaskStatus
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     actionable_date: ADate | None
@@ -96,6 +98,7 @@ class InboxTask(LeafEntity):
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
         status: InboxTaskStatus,
+        is_key: bool,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
@@ -119,6 +122,7 @@ class InboxTask(LeafEntity):
             ),
             name=name,
             status=status,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date
@@ -155,6 +159,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.WORKING_MEM_CLEANUP,
             name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=Eisen.IMPORTANT,
             difficulty=Difficulty.EASY,
             actionable_date=None,
@@ -171,7 +176,7 @@ class InboxTask(LeafEntity):
 
     @staticmethod
     @create_entity_action
-    def new_inbox_task_for_habit(
+    def new_inbox_task_for_time_plan(
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
@@ -180,18 +185,60 @@ class InboxTask(LeafEntity):
         actionable_date: ADate | None,
         due_date: ADate | None,
         project_ref_id: EntityId,
-        habit_ref_id: EntityId,
+        time_plan_ref_id: EntityId,
         recurring_task_timeline: str,
-        recurring_task_repeat_index: int | None,
         recurring_task_gen_right_now: Timestamp,
     ) -> "InboxTask":
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
-            source=InboxTaskSource.HABIT,
-            name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
+            source=InboxTaskSource.TIME_PLAN,
+            name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
+            eisen=eisen,
+            difficulty=difficulty,
+            actionable_date=actionable_date,
+            due_date=due_date,
+            project_ref_id=project_ref_id,
+            source_entity_ref_id=time_plan_ref_id,
+            notes=None,
+            recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=None,
+            recurring_gen_right_now=recurring_task_gen_right_now,
+            working_time=None,
+            completed_time=None,
+        )
+
+    @staticmethod
+    @create_entity_action
+    def new_inbox_task_for_habit(
+        ctx: DomainContext,
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        is_key: bool,
+        eisen: Eisen,
+        difficulty: Difficulty,
+        actionable_date: ADate | None,
+        due_date: ADate | None,
+        project_ref_id: EntityId,
+        habit_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_repeat_index: int,
+        recurring_task_gen_right_now: Timestamp,
+        repeats_in_period_count: int | None,
+    ) -> "InboxTask":
+        """Create an inbox task."""
+        return InboxTask._create(
+            ctx,
+            inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
+            source=InboxTaskSource.HABIT,
+            name=InboxTask._build_name_for_habit(
+                name, recurring_task_repeat_index, repeats_in_period_count
+            ),
+            status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -212,6 +259,7 @@ class InboxTask(LeafEntity):
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
         name: InboxTaskName,
+        is_key: bool,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
@@ -228,6 +276,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.CHORE,
             name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -244,25 +293,27 @@ class InboxTask(LeafEntity):
 
     @staticmethod
     @create_entity_action
-    def new_inbox_task_for_writing_journal(
+    def new_inbox_task_for_journal(
         ctx: DomainContext,
         inbox_task_collection_ref_id: EntityId,
-        period: RecurringTaskPeriod,
-        right_now: ADate,
-        project_ref_id: EntityId,
-        journal_ref_id: EntityId,
+        name: InboxTaskName,
         eisen: Eisen,
         difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
+        project_ref_id: EntityId,
+        journal_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_gen_right_now: Timestamp,
     ) -> "InboxTask":
         """Create an inbox task."""
         return InboxTask._create(
             ctx,
             inbox_task_collection=ParentLink(inbox_task_collection_ref_id),
             source=InboxTaskSource.JOURNAL,
-            name=InboxTask._build_name_for_writing_journal(period, right_now),
+            name=name,
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -270,9 +321,9 @@ class InboxTask(LeafEntity):
             project_ref_id=project_ref_id,
             source_entity_ref_id=journal_ref_id,
             notes=None,
-            recurring_timeline=None,
+            recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
-            recurring_gen_right_now=None,
+            recurring_gen_right_now=recurring_task_gen_right_now,
             working_time=None,
             completed_time=None,
         )
@@ -299,6 +350,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.METRIC,
             name=InboxTask._build_name_for_collection_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -335,6 +387,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.PERSON_CATCH_UP,
             name=InboxTask._build_name_for_catch_up_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
@@ -369,6 +422,7 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.PERSON_BIRTHDAY,
             name=InboxTask._build_name_for_birthday_task(name),
             status=InboxTaskStatus.NOT_STARTED_GEN,
+            is_key=False,
             eisen=Eisen.IMPORTANT,
             difficulty=Difficulty.EASY,
             actionable_date=due_date.subtract_days(preparation_days_cnt),
@@ -406,6 +460,7 @@ class InboxTask(LeafEntity):
                 generation_extra_info,
             ),
             status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
+            is_key=False,
             eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
@@ -446,6 +501,7 @@ class InboxTask(LeafEntity):
                 generation_extra_info,
             ),
             status=generation_extra_info.status or InboxTaskStatus.NOT_STARTED,
+            is_key=False,
             eisen=generation_extra_info.eisen,
             difficulty=generation_extra_info.difficulty,
             actionable_date=generation_extra_info.actionable_date,
@@ -511,13 +567,37 @@ class InboxTask(LeafEntity):
         )
 
     @update_entity_action
+    def update_link_to_time_plan(
+        self,
+        ctx: DomainContext,
+        project_ref_id: EntityId,
+        eisen: Eisen,
+        difficulty: Difficulty,
+        due_date: ADate,
+    ) -> "InboxTask":
+        """Update all the info associated with a time plan."""
+        if self.source is not InboxTaskSource.TIME_PLAN:
+            raise Exception(
+                f"Cannot associate a task which is not a time plan for '{self.name}'",
+            )
+        return self._new_version(
+            ctx,
+            project_ref_id=project_ref_id,
+            eisen=eisen,
+            difficulty=difficulty,
+            due_date=due_date,
+        )
+
+    @update_entity_action
     def update_link_to_habit(
         self,
         ctx: DomainContext,
         project_ref_id: EntityId,
         name: InboxTaskName,
         timeline: str,
-        repeat_index: int | None,
+        repeat_index: int,
+        repeats_in_period_count: int | None,
+        is_key: bool,
         actionable_date: ADate | None,
         due_date: ADate,
         eisen: Eisen,
@@ -531,7 +611,10 @@ class InboxTask(LeafEntity):
         return self._new_version(
             ctx,
             project_ref_id=project_ref_id,
-            name=InboxTask._build_name_for_habit(name, repeat_index),
+            name=InboxTask._build_name_for_habit(
+                name, repeat_index, repeats_in_period_count
+            ),
+            is_key=is_key,
             actionable_date=actionable_date,
             due_date=due_date,
             eisen=eisen,
@@ -547,6 +630,7 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         name: InboxTaskName,
         timeline: str,
+        is_key: bool,
         actionable_date: ADate | None,
         due_date: ADate,
         eisen: Eisen,
@@ -561,11 +645,34 @@ class InboxTask(LeafEntity):
             ctx,
             project_ref_id=project_ref_id,
             name=name,
+            is_key=is_key,
             actionable_date=actionable_date,
             due_date=due_date,
             eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=timeline,
+        )
+
+    @update_entity_action
+    def update_link_to_journal(
+        self,
+        ctx: DomainContext,
+        project_ref_id: EntityId,
+        eisen: Eisen,
+        difficulty: Difficulty,
+        due_date: ADate,
+    ) -> "InboxTask":
+        """Update all the info associated with a journal."""
+        if self.source is not InboxTaskSource.JOURNAL:
+            raise Exception(
+                f"Cannot associate a task which is not a journal for '{self.name}'",
+            )
+        return self._new_version(
+            ctx,
+            project_ref_id=project_ref_id,
+            eisen=eisen,
+            difficulty=difficulty,
+            due_date=due_date,
         )
 
     @update_entity_action
@@ -721,6 +828,7 @@ class InboxTask(LeafEntity):
         status: UpdateAction[InboxTaskStatus],
         project_ref_id: UpdateAction[EntityId],
         big_plan_ref_id: UpdateAction[EntityId | None],
+        is_key: UpdateAction[bool],
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
         eisen: UpdateAction[Eisen],
@@ -788,6 +896,13 @@ class InboxTask(LeafEntity):
         else:
             the_source_entity_ref_id = self.source_entity_ref_id
 
+        if is_key.should_change:
+            if not self.source.allow_user_changes:
+                raise CannotModifyGeneratedTaskError("is key")
+            the_is_key = is_key.just_the_value
+        else:
+            the_is_key = self.is_key
+
         if actionable_date.should_change or due_date.should_change:
             the_actionable_date = actionable_date.or_else(self.actionable_date)
             the_due_date = due_date.or_else(self.due_date)
@@ -827,6 +942,7 @@ class InboxTask(LeafEntity):
             status=the_status,
             project_ref_id=the_project,
             source_entity_ref_id=the_source_entity_ref_id,
+            is_key=the_is_key,
             actionable_date=the_actionable_date,
             due_date=the_due_date,
             working_time=the_working_time,
@@ -861,6 +977,11 @@ class InboxTask(LeafEntity):
         return self.source.allow_user_changes
 
     @property
+    def is_working(self) -> bool:
+        """Whether this task is being worked on or not."""
+        return self.status.is_working
+
+    @property
     def is_working_or_more(self) -> bool:
         """Whether this task is being worked on or not."""
         return self.status.is_working_or_more
@@ -871,20 +992,30 @@ class InboxTask(LeafEntity):
         return self.status.is_completed
 
     @staticmethod
+    def _build_name_for_working_mem_cleanup(
+        recurring_task_timeline: str,
+    ) -> InboxTaskName:
+        return InboxTaskName(f"Clean up working memory for [{recurring_task_timeline}]")
+
+    @staticmethod
+    def _build_name_for_time_plan(
+        period: RecurringTaskPeriod,
+        recurring_task_timeline: str,
+    ) -> InboxTaskName:
+        return InboxTaskName(
+            f"Make {period.value} plan for [{recurring_task_timeline}]"
+        )
+
+    @staticmethod
     def _build_name_for_habit(
         name: InboxTaskName,
-        repeat_index: int | None,
+        repeat_index: int,
+        repeats_in_period_count: int | None,
     ) -> InboxTaskName:
-        if repeat_index is not None:
+        if repeats_in_period_count is not None and repeats_in_period_count > 1:
             return InboxTaskName(f"{name} [{repeat_index + 1}]")
         else:
             return name
-
-    @staticmethod
-    def _build_name_for_writing_journal(
-        period: RecurringTaskPeriod, right_now: ADate
-    ) -> InboxTaskName:
-        return InboxTaskName(f"Write {period} journal entry for for {right_now}")
 
     @staticmethod
     def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:
@@ -980,7 +1111,7 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         parent_ref_id: EntityId,
         source: InboxTaskSource,
         source_entity_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
     ) -> int:
         """Count all inbox tasks for a source."""
 
@@ -990,7 +1121,7 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         parent_ref_id: EntityId,
         source: InboxTaskSource,
         source_entity_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
         retrieve_offset: int | None = None,
         retrieve_limit: int | None = None,
     ) -> list[InboxTask]:
@@ -1000,7 +1131,7 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
     async def find_modified_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
         filter_ref_ids: Iterable[EntityId] | None = None,
         filter_sources: Iterable[InboxTaskSource] | None = None,
         filter_project_ref_ids: Iterable[EntityId] | None = None,
@@ -1013,7 +1144,7 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
     async def find_completed_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_start_completed_date: ADate,
         filter_end_completed_date: ADate,
         filter_include_sources: Iterable[InboxTaskSource],

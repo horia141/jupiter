@@ -6,7 +6,10 @@ from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
     from ..models.big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
+    from ..models.big_plan_update_args_difficulty import BigPlanUpdateArgsDifficulty
     from ..models.big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
+    from ..models.big_plan_update_args_eisen import BigPlanUpdateArgsEisen
+    from ..models.big_plan_update_args_is_key import BigPlanUpdateArgsIsKey
     from ..models.big_plan_update_args_name import BigPlanUpdateArgsName
     from ..models.big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
     from ..models.big_plan_update_args_status import BigPlanUpdateArgsStatus
@@ -24,6 +27,9 @@ class BigPlanUpdateArgs:
         name (BigPlanUpdateArgsName):
         status (BigPlanUpdateArgsStatus):
         project_ref_id (BigPlanUpdateArgsProjectRefId):
+        is_key (BigPlanUpdateArgsIsKey):
+        eisen (BigPlanUpdateArgsEisen):
+        difficulty (BigPlanUpdateArgsDifficulty):
         actionable_date (BigPlanUpdateArgsActionableDate):
         due_date (BigPlanUpdateArgsDueDate):
     """
@@ -32,6 +38,9 @@ class BigPlanUpdateArgs:
     name: "BigPlanUpdateArgsName"
     status: "BigPlanUpdateArgsStatus"
     project_ref_id: "BigPlanUpdateArgsProjectRefId"
+    is_key: "BigPlanUpdateArgsIsKey"
+    eisen: "BigPlanUpdateArgsEisen"
+    difficulty: "BigPlanUpdateArgsDifficulty"
     actionable_date: "BigPlanUpdateArgsActionableDate"
     due_date: "BigPlanUpdateArgsDueDate"
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -45,6 +54,12 @@ class BigPlanUpdateArgs:
 
         project_ref_id = self.project_ref_id.to_dict()
 
+        is_key = self.is_key.to_dict()
+
+        eisen = self.eisen.to_dict()
+
+        difficulty = self.difficulty.to_dict()
+
         actionable_date = self.actionable_date.to_dict()
 
         due_date = self.due_date.to_dict()
@@ -57,6 +72,9 @@ class BigPlanUpdateArgs:
                 "name": name,
                 "status": status,
                 "project_ref_id": project_ref_id,
+                "is_key": is_key,
+                "eisen": eisen,
+                "difficulty": difficulty,
                 "actionable_date": actionable_date,
                 "due_date": due_date,
             }
@@ -67,7 +85,10 @@ class BigPlanUpdateArgs:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
+        from ..models.big_plan_update_args_difficulty import BigPlanUpdateArgsDifficulty
         from ..models.big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
+        from ..models.big_plan_update_args_eisen import BigPlanUpdateArgsEisen
+        from ..models.big_plan_update_args_is_key import BigPlanUpdateArgsIsKey
         from ..models.big_plan_update_args_name import BigPlanUpdateArgsName
         from ..models.big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
         from ..models.big_plan_update_args_status import BigPlanUpdateArgsStatus
@@ -81,6 +102,12 @@ class BigPlanUpdateArgs:
 
         project_ref_id = BigPlanUpdateArgsProjectRefId.from_dict(d.pop("project_ref_id"))
 
+        is_key = BigPlanUpdateArgsIsKey.from_dict(d.pop("is_key"))
+
+        eisen = BigPlanUpdateArgsEisen.from_dict(d.pop("eisen"))
+
+        difficulty = BigPlanUpdateArgsDifficulty.from_dict(d.pop("difficulty"))
+
         actionable_date = BigPlanUpdateArgsActionableDate.from_dict(d.pop("actionable_date"))
 
         due_date = BigPlanUpdateArgsDueDate.from_dict(d.pop("due_date"))
@@ -90,6 +117,9 @@ class BigPlanUpdateArgs:
             name=name,
             status=status,
             project_ref_id=project_ref_id,
+            is_key=is_key,
+            eisen=eisen,
+            difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
         )

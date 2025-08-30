@@ -1,22 +1,25 @@
 import { ApiError, SyncTarget } from "@jupiter/webapi-client";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button, Card, CardContent } from "@mui/material";
+import { Button } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useNavigation } from "@remix-run/react";
+import { Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { StatusCodes } from "http-status-codes";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { SectionActions, NavSingle } from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -26,6 +29,7 @@ import {
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({ intent: z.literal("generate-first-note") }),
@@ -83,61 +87,58 @@ export default function WorkingMem() {
   const navigation = useNavigation();
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
-
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
 
   return (
     <TrunkPanel
       key={"working-mem"}
       returnLocation="/app/workspace"
-      extraControls={[
-        <Button
-          key="settings"
-          component={Link}
-          to="/app/workspace/working-mem/settings"
-          variant="outlined"
-          startIcon={<TuneIcon />}
-        >
-          Settings
-        </Button>,
-        <Button
-          key="archive"
-          component={Link}
-          to="/app/workspace/working-mem/archive"
-          variant="outlined"
-          startIcon={<ArchiveIcon />}
-        >
-          Archive
-        </Button>,
-      ]}
+      actions={
+        <SectionActions
+          id="working-mem-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              link: "/app/workspace/working-mem/settings",
+              icon: <TuneIcon />,
+            }),
+            NavSingle({
+              text: "Archive",
+              link: "/app/workspace/working-mem/archive",
+              icon: <ArchiveIcon />,
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock
         branchForceHide={shouldShowABranch}
         shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
         <ToolPanel>
-          <Card>
-            <CardContent>
-              {loaderData.entry && (
-                <EntityNoteEditor
-                  initialNote={loaderData.entry.note}
-                  inputsEnabled={inputsEnabled}
-                />
-              )}
+          <SectionCard title="Working Mem">
+            {loaderData.entry && (
+              <EntityNoteEditor
+                initialNote={loaderData.entry.note}
+                inputsEnabled={inputsEnabled}
+              />
+            )}
 
-              {!loaderData.entry && (
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="generate-first-note"
-                >
-                  Generate First WorkingMem.txt Note
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+            {!loaderData.entry && (
+              <Button
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="generate-first-note"
+              >
+                Generate First WorkingMem.txt Note
+              </Button>
+            )}
+          </SectionCard>
         </ToolPanel>
       </NestingAwareBlock>
 

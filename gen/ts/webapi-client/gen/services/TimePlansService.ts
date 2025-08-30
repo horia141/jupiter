@@ -3,6 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TimePlanArchiveArgs } from '../models/TimePlanArchiveArgs';
+import type { TimePlanAssociateBigPlanWithPlanArgs } from '../models/TimePlanAssociateBigPlanWithPlanArgs';
+import type { TimePlanAssociateBigPlanWithPlanResult } from '../models/TimePlanAssociateBigPlanWithPlanResult';
+import type { TimePlanAssociateInboxTaskWithPlanArgs } from '../models/TimePlanAssociateInboxTaskWithPlanArgs';
+import type { TimePlanAssociateInboxTaskWithPlanResult } from '../models/TimePlanAssociateInboxTaskWithPlanResult';
 import type { TimePlanAssociateWithActivitiesArgs } from '../models/TimePlanAssociateWithActivitiesArgs';
 import type { TimePlanAssociateWithActivitiesResult } from '../models/TimePlanAssociateWithActivitiesResult';
 import type { TimePlanAssociateWithBigPlansArgs } from '../models/TimePlanAssociateWithBigPlansArgs';
@@ -19,7 +23,11 @@ import type { TimePlanLoadArgs } from '../models/TimePlanLoadArgs';
 import type { TimePlanLoadForDateAndPeriodArgs } from '../models/TimePlanLoadForDateAndPeriodArgs';
 import type { TimePlanLoadForDateAndPeriodResult } from '../models/TimePlanLoadForDateAndPeriodResult';
 import type { TimePlanLoadResult } from '../models/TimePlanLoadResult';
+import type { TimePlanLoadSettingsArgs } from '../models/TimePlanLoadSettingsArgs';
+import type { TimePlanLoadSettingsResult } from '../models/TimePlanLoadSettingsResult';
+import type { TimePlanRegenArgs } from '../models/TimePlanRegenArgs';
 import type { TimePlanRemoveArgs } from '../models/TimePlanRemoveArgs';
+import type { TimePlanUpdateSettingsArgs } from '../models/TimePlanUpdateSettingsArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class TimePlansService {
@@ -37,6 +45,50 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Use case for creating activities starting from a big plan.
+     * Use case for creating activities starting from a big plan.
+     * @param requestBody The input data
+     * @returns TimePlanAssociateBigPlanWithPlanResult Successful response
+     * @throws ApiError
+     */
+    public timePlanAssociateBigPlanWithPlan(
+        requestBody?: TimePlanAssociateBigPlanWithPlanArgs,
+    ): CancelablePromise<TimePlanAssociateBigPlanWithPlanResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-associate-big-plan-with-plan',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Use case for creating activities starting from an inbox task.
+     * Use case for creating activities starting from an inbox task.
+     * @param requestBody The input data
+     * @returns TimePlanAssociateInboxTaskWithPlanResult Successful response
+     * @throws ApiError
+     */
+    public timePlanAssociateInboxTaskWithPlan(
+        requestBody?: TimePlanAssociateInboxTaskWithPlanArgs,
+    ): CancelablePromise<TimePlanAssociateInboxTaskWithPlanResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-associate-inbox-task-with-plan',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -245,6 +297,50 @@ export class TimePlansService {
         });
     }
     /**
+     * The command for loading the settings around journals.
+     * The command for loading the settings around journals.
+     * @param requestBody The input data
+     * @returns TimePlanLoadSettingsResult Successful response
+     * @throws ApiError
+     */
+    public timePlanLoadSettings(
+        requestBody?: TimePlanLoadSettingsArgs,
+    ): CancelablePromise<TimePlanLoadSettingsResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-load-settings',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * A use case for regenerating time plans.
+     * A use case for regenerating time plans.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public timePlanRegen(
+        requestBody?: TimePlanRegenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-regen',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
      * Use case for removing a time_plan.
      * Use case for removing a time_plan.
      * @param requestBody The input data
@@ -257,6 +353,28 @@ export class TimePlansService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/time-plan-remove',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Command for updating the settings for time plans in general.
+     * Command for updating the settings for time plans in general.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public timePlanUpdateSettings(
+        requestBody?: TimePlanUpdateSettingsArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/time-plan-update-settings',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

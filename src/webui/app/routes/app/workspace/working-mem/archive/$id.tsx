@@ -5,8 +5,6 @@ import {
   RecurringTaskPeriod,
 } from "@jupiter/webapi-client";
 import {
-  Card,
-  CardContent,
   FormControl,
   InputLabel,
   MenuItem,
@@ -17,16 +15,15 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useFetcher, useNavigation } from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import {
@@ -36,10 +33,11 @@ import {
 import { aDateToDate } from "~/logic/domain/adate";
 import { periodName } from "~/logic/domain/period";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import { GlobalError } from "~/components/infra/errors";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -129,13 +127,12 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function WorkingMem() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.workingMem.archived;
 
   const topLevelInfo = useContext(TopLevelInfoContext);
-
-  const isBigScreen = useBigScreen();
 
   const cardActionFetcher = useFetcher();
 
@@ -165,90 +162,82 @@ export default function WorkingMem() {
     );
   }
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`working-mem-${loaderData.workingMem.ref_id}`}
+      fakeKey={`working-mem-${loaderData.workingMem.ref_id}`}
       showArchiveAndRemoveButton={
-        aDateToDate(loaderData.workingMem.right_now) < today.minus({ days: 14 })
+        aDateToDate(loaderData.workingMem.right_now) <
+        aDateToDate(topLevelInfo.today).minus({ days: 14 })
       }
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.workingMem.archived}
       returnLocation="/app/workspace/working-mem/archive"
     >
-      <Card
-        sx={{
-          marginBottom: "1rem",
-          display: "flex",
-          flexDirection: isBigScreen ? "row" : "column",
-        }}
-      >
-        <CardContent sx={{ flexGrow: "1" }}>
-          <Stack direction={"row"} spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="rightNow" shrink margin="dense">
-                The Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="rightNow"
-                name="rightNow"
-                readOnly={true}
-                defaultValue={loaderData.workingMem.right_now}
-              />
-            </FormControl>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Properties">
+        <Stack direction={"row"} spacing={2} useFlexGap>
+          <FormControl fullWidth>
+            <InputLabel id="rightNow" shrink margin="dense">
+              The Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="rightNow"
+              name="rightNow"
+              readOnly={true}
+              defaultValue={loaderData.workingMem.right_now}
+            />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="period">Period</InputLabel>
-              <Select
-                labelId="status"
-                name="period"
-                readOnly={true}
-                defaultValue={loaderData.workingMem.period}
-                label="Period"
-              >
-                {Object.values(RecurringTaskPeriod).map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {periodName(s)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent>
-          <EntityNoteEditor
-            initialNote={loaderData.note}
-            inputsEnabled={inputsEnabled}
-          />
-        </CardContent>
-      </Card>
+          <FormControl fullWidth>
+            <InputLabel id="period">Period</InputLabel>
+            <Select
+              labelId="status"
+              name="period"
+              readOnly={true}
+              defaultValue={loaderData.workingMem.period}
+              label="Period"
+            >
+              {Object.values(RecurringTaskPeriod).map((s) => (
+                <MenuItem key={s} value={s}>
+                  {periodName(s)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+      </SectionCard>
 
-      {loaderData.cleanupTasks.length > 0 && (
-        <InboxTaskStack
-          today={today}
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Cleanup Tasks"
-          inboxTasks={loaderData.cleanupTasks}
-          withPages={{
-            retrieveOffsetParamName: "cleanupTasksRetrieveOffset",
-            totalCnt: loaderData.cleanupTasksTotalCnt,
-            pageSize: loaderData.cleanupTasksPageSize,
-          }}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
+      <SectionCard title="Content">
+        <EntityNoteEditor
+          initialNote={loaderData.note}
+          inputsEnabled={inputsEnabled}
         />
-      )}
+      </SectionCard>
+
+      <SectionCard title="Cleanup Tasks">
+        {loaderData.cleanupTasks.length > 0 && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={loaderData.cleanupTasks}
+            withPages={{
+              retrieveOffsetParamName: "cleanupTasksRetrieveOffset",
+              totalCnt: loaderData.cleanupTasksTotalCnt,
+              pageSize: loaderData.cleanupTasksPageSize,
+            }}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

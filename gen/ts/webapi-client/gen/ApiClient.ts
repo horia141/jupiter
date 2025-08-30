@@ -21,6 +21,7 @@ import { GcService } from './services/GcService';
 import { GenService } from './services/GenService';
 import { GetSummariesService } from './services/GetSummariesService';
 import { HabitsService } from './services/HabitsService';
+import { HomeService } from './services/HomeService';
 import { InboxTasksService } from './services/InboxTasksService';
 import { InDayBlockService } from './services/InDayBlockService';
 import { ItemService } from './services/ItemService';
@@ -29,18 +30,23 @@ import { LoadProgressReporterTokenService } from './services/LoadProgressReporte
 import { LoadTopLevelInfoService } from './services/LoadTopLevelInfoService';
 import { LoginService } from './services/LoginService';
 import { MetricsService } from './services/MetricsService';
+import { MilestonesService } from './services/MilestonesService';
+import { MotdService } from './services/MotdService';
 import { NotesService } from './services/NotesService';
 import { PersonsService } from './services/PersonsService';
 import { ProjectsService } from './services/ProjectsService';
 import { ScheduleService } from './services/ScheduleService';
 import { SlackService } from './services/SlackService';
 import { SmartListsService } from './services/SmartListsService';
+import { StatsService } from './services/StatsService';
 import { StreamService } from './services/StreamService';
+import { TabService } from './services/TabService';
 import { TagService } from './services/TagService';
 import { TestHelperService } from './services/TestHelperService';
 import { TimePlansService } from './services/TimePlansService';
 import { UsersService } from './services/UsersService';
 import { VacationsService } from './services/VacationsService';
+import { WidgetService } from './services/WidgetService';
 import { WorkingMemService } from './services/WorkingMemService';
 import { WorkspacesService } from './services/WorkspacesService';
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
@@ -61,6 +67,7 @@ export class ApiClient {
     public readonly gen: GenService;
     public readonly getSummaries: GetSummariesService;
     public readonly habits: HabitsService;
+    public readonly home: HomeService;
     public readonly inboxTasks: InboxTasksService;
     public readonly inDayBlock: InDayBlockService;
     public readonly item: ItemService;
@@ -69,25 +76,30 @@ export class ApiClient {
     public readonly loadTopLevelInfo: LoadTopLevelInfoService;
     public readonly login: LoginService;
     public readonly metrics: MetricsService;
+    public readonly milestones: MilestonesService;
+    public readonly motd: MotdService;
     public readonly notes: NotesService;
     public readonly persons: PersonsService;
     public readonly projects: ProjectsService;
     public readonly schedule: ScheduleService;
     public readonly slack: SlackService;
     public readonly smartLists: SmartListsService;
+    public readonly stats: StatsService;
     public readonly stream: StreamService;
+    public readonly tab: TabService;
     public readonly tag: TagService;
     public readonly testHelper: TestHelperService;
     public readonly timePlans: TimePlansService;
     public readonly users: UsersService;
     public readonly vacations: VacationsService;
+    public readonly widget: WidgetService;
     public readonly workingMem: WorkingMemService;
     public readonly workspaces: WorkspacesService;
     public readonly request: BaseHttpRequest;
     constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = FetchHttpRequest) {
         this.request = new HttpRequest({
             BASE: config?.BASE ?? '',
-            VERSION: config?.VERSION ?? '1.1.4',
+            VERSION: config?.VERSION ?? '1.2.0',
             WITH_CREDENTIALS: config?.WITH_CREDENTIALS ?? false,
             CREDENTIALS: config?.CREDENTIALS ?? 'include',
             TOKEN: config?.TOKEN,
@@ -112,6 +124,7 @@ export class ApiClient {
         this.gen = new GenService(this.request);
         this.getSummaries = new GetSummariesService(this.request);
         this.habits = new HabitsService(this.request);
+        this.home = new HomeService(this.request);
         this.inboxTasks = new InboxTasksService(this.request);
         this.inDayBlock = new InDayBlockService(this.request);
         this.item = new ItemService(this.request);
@@ -120,18 +133,23 @@ export class ApiClient {
         this.loadTopLevelInfo = new LoadTopLevelInfoService(this.request);
         this.login = new LoginService(this.request);
         this.metrics = new MetricsService(this.request);
+        this.milestones = new MilestonesService(this.request);
+        this.motd = new MotdService(this.request);
         this.notes = new NotesService(this.request);
         this.persons = new PersonsService(this.request);
         this.projects = new ProjectsService(this.request);
         this.schedule = new ScheduleService(this.request);
         this.slack = new SlackService(this.request);
         this.smartLists = new SmartListsService(this.request);
+        this.stats = new StatsService(this.request);
         this.stream = new StreamService(this.request);
+        this.tab = new TabService(this.request);
         this.tag = new TagService(this.request);
         this.testHelper = new TestHelperService(this.request);
         this.timePlans = new TimePlansService(this.request);
         this.users = new UsersService(this.request);
         this.vacations = new VacationsService(this.request);
+        this.widget = new WidgetService(this.request);
         this.workingMem = new WorkingMemService(this.request);
         this.workspaces = new WorkspacesService(this.request);
     }

@@ -11,5 +11,6 @@ export type BigPlanSummary = {
     ref_id: EntityId;
     name: BigPlanName;
     project_ref_id: EntityId;
+    is_key: boolean;
 };
 

@@ -14,16 +14,16 @@ class TimePlanCreateArgs:
     """Args.
 
     Attributes:
-        right_now (str): A date or possibly a datetime for the application.
+        today (str): A date or possibly a datetime for the application.
         period (RecurringTaskPeriod): A period for a particular task.
     """
 
-    right_now: str
+    today: str
     period: RecurringTaskPeriod
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        right_now = self.right_now
+        today = self.today
 
         period = self.period.value
 
@@ -31,7 +31,7 @@ class TimePlanCreateArgs:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "right_now": right_now,
+                "today": today,
                 "period": period,
             }
         )
@@ -41,12 +41,12 @@ class TimePlanCreateArgs:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        right_now = d.pop("right_now")
+        today = d.pop("today")
 
         period = RecurringTaskPeriod(d.pop("period"))
 
         time_plan_create_args = cls(
-            right_now=right_now,
+            today=today,
             period=period,
         )
 

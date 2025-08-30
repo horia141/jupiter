@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { InboxTask } from './InboxTask';
 import type { Note } from './Note';
 import type { TimePlan } from './TimePlan';
 /**
@@ -10,5 +11,6 @@ import type { TimePlan } from './TimePlan';
 export type TimePlanFindResultEntry = {
     time_plan: TimePlan;
     note?: (Note | null);
+    planning_task?: (InboxTask | null);
 };
 

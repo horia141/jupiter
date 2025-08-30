@@ -12,7 +12,7 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNameComponent } from "~/components/entity-name";
+import { EntityNameComponent } from "~/components/infra/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -35,11 +35,9 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 
-const UpdateFormSchema = z.discriminatedUnion("intent", [
-  z.object({
-    intent: z.literal("reorder"),
-  }),
-]);
+const UpdateFormSchema = z.object({
+  intent: z.string(),
+});
 
 export const handle = {
   displayType: DisplayType.TRUNK,

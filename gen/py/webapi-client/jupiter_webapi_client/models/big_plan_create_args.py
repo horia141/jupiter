@@ -4,6 +4,8 @@ from typing import Any, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.difficulty import Difficulty
+from ..models.eisen import Eisen
 from ..models.time_plan_activity_feasability import TimePlanActivityFeasability
 from ..models.time_plan_activity_kind import TimePlanActivityKind
 from ..types import UNSET, Unset
@@ -17,6 +19,9 @@ class BigPlanCreateArgs:
 
     Attributes:
         name (str): The big plan name.
+        is_key (bool):
+        eisen (Eisen): The Eisenhower status of a particular task.
+        difficulty (Difficulty): The difficulty of a particular task.
         time_plan_ref_id (Union[None, Unset, str]):
         time_plan_activity_kind (Union[None, TimePlanActivityKind, Unset]):
         time_plan_activity_feasability (Union[None, TimePlanActivityFeasability, Unset]):
@@ -26,6 +31,9 @@ class BigPlanCreateArgs:
     """
 
     name: str
+    is_key: bool
+    eisen: Eisen
+    difficulty: Difficulty
     time_plan_ref_id: Union[None, Unset, str] = UNSET
     time_plan_activity_kind: Union[None, TimePlanActivityKind, Unset] = UNSET
     time_plan_activity_feasability: Union[None, TimePlanActivityFeasability, Unset] = UNSET
@@ -36,6 +44,12 @@ class BigPlanCreateArgs:
 
     def to_dict(self) -> dict[str, Any]:
         name = self.name
+
+        is_key = self.is_key
+
+        eisen = self.eisen.value
+
+        difficulty = self.difficulty.value
 
         time_plan_ref_id: Union[None, Unset, str]
         if isinstance(self.time_plan_ref_id, Unset):
@@ -82,6 +96,9 @@ class BigPlanCreateArgs:
         field_dict.update(
             {
                 "name": name,
+                "is_key": is_key,
+                "eisen": eisen,
+                "difficulty": difficulty,
             }
         )
         if time_plan_ref_id is not UNSET:
@@ -103,6 +120,12 @@ class BigPlanCreateArgs:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
         name = d.pop("name")
+
+        is_key = d.pop("is_key")
+
+        eisen = Eisen(d.pop("eisen"))
+
+        difficulty = Difficulty(d.pop("difficulty"))
 
         def _parse_time_plan_ref_id(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -178,6 +201,9 @@ class BigPlanCreateArgs:
 
         big_plan_create_args = cls(
             name=name,
+            is_key=is_key,
+            eisen=eisen,
+            difficulty=difficulty,
             time_plan_ref_id=time_plan_ref_id,
             time_plan_activity_kind=time_plan_activity_kind,
             time_plan_activity_feasability=time_plan_activity_feasability,

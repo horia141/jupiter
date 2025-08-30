@@ -1,15 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, WorkspaceFeature } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  FormControl,
-  Stack,
-} from "@mui/material";
+import { FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -23,13 +14,18 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({});
 
@@ -97,49 +93,49 @@ export default function SlackTasksSettings() {
 
   return (
     <LeafPanel
-      key={"slack-tasks/settings"}
+      key="slack-tasks/settings"
+      fakeKey={"slack-tasks/settings"}
       returnLocation="/app/workspace/push-integrations/slack-tasks"
       inputsEnabled={inputsEnabled}
     >
+      <GlobalError actionResult={actionData} />
+
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS,
       ) && (
-        <Card>
-          <GlobalError actionResult={actionData} />
-
-          <CardHeader title="Generation Project" />
-          <CardContent>
-            <Stack spacing={2} useFlexGap>
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.generationProject.ref_id}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/generation_project_ref_id"
-                />
-              </FormControl>
-            </Stack>
-          </CardContent>
-
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-              >
-                Change Generation Project
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
+        <SectionCard
+          title="Generation Project"
+          actions={
+            <SectionActions
+              id="slack-task-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Change Generation Project",
+                  value: "update",
+                  highlight: true,
+                }),
+              ]}
+            />
+          }
+        >
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.generationProject.ref_id}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/generation_project_ref_id"
+            />
+          </FormControl>
+        </SectionCard>
       )}
     </LeafPanel>
   );

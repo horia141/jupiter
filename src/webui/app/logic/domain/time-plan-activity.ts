@@ -1,16 +1,15 @@
-import type {
+import {
   BigPlan,
   InboxTask,
   TimePlanActivity,
+  TimePlanActivityDoneness,
   TimePlanActivityFeasability,
-} from "@jupiter/webapi-client";
-import {
   InboxTaskSource,
   TimePlanActivityTarget,
 } from "@jupiter/webapi-client";
 
-import { compareTimePlanActivityFeasability } from "./time-plan-activity-feasability";
-import { compareTimePlanActivityKind } from "./time-plan-activity-kind";
+import { compareTimePlanActivityFeasability } from "~/logic/domain/time-plan-activity-feasability";
+import { compareTimePlanActivityKind } from "~/logic/domain/time-plan-activity-kind";
 
 const TIME_PLAN_ACTIVITY_TARGET_MAP = {
   [TimePlanActivityTarget.BIG_PLAN]: 0,
@@ -45,10 +44,10 @@ export function filterActivitiesByTargetStatus(
   timePlanActivities: TimePlanActivity[],
   targetInboxTasks: Map<string, InboxTask>,
   targetBigPlans: Map<string, BigPlan>,
-  activityDoneness: Record<string, boolean>,
+  activityDoneness: Record<string, TimePlanActivityDoneness>,
 ): TimePlanActivity[] {
   return timePlanActivities.filter((activity) => {
-    if (activityDoneness[activity.ref_id]) {
+    if (activityDoneness[activity.ref_id] === TimePlanActivityDoneness.DONE) {
       return false;
     }
 

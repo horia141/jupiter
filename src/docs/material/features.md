@@ -32,9 +32,11 @@ all of the others and give an extra boost of usefulness to Thrive.
 
 | Cross-Cutting Featurs | Global Hosted | Self Hosted | Local |
 |---------|--------------|-------------|--------|
+| Home Page | ✅ | ✅ | ✅ |
 | Gamification | ✅ | ✅ | ✅ |
 | Search | ✅ | ✅ | ✅ |
 | Reporting | ✅ | ✅ | ✅ |
+| Stats | ✅ | ✅ | ✅ |
 | Pomodor Timer | ✅ | ✅ | ✅ |
 | Auto Tasks Generation | ✅ | ✅ | ❌ |
 | Auto Garbage Collection | ✅ | ✅ | ❌ |

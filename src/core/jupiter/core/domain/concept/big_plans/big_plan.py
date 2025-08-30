@@ -3,17 +3,23 @@
 import abc
 from typing import Iterable
 
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.big_plans.big_plan_stats import BigPlanStats
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
+    ContainsMany,
     IsRefId,
     LeafEntity,
     OwnsAtMostOne,
@@ -24,6 +30,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.record import ContainsOneRecord
 from jupiter.core.framework.repository import LeafEntityRepository
 from jupiter.core.framework.update_action import UpdateAction
 
@@ -36,17 +43,22 @@ class BigPlan(LeafEntity):
     project_ref_id: EntityId
     name: BigPlanName
     status: BigPlanStatus
+    is_key: bool
+    eisen: Eisen
+    difficulty: Difficulty
     actionable_date: ADate | None
     due_date: ADate | None
     working_time: Timestamp | None
     completed_time: Timestamp | None
 
+    milestones = ContainsMany(BigPlanMilestone, big_plan_ref_id=IsRefId())
     inbox_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.BIG_PLAN, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(
         Note, domain=NoteDomain.BIG_PLAN, source_entity_ref_id=IsRefId()
     )
+    stats = ContainsOneRecord(BigPlanStats, big_plan_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action
@@ -56,6 +68,9 @@ class BigPlan(LeafEntity):
         project_ref_id: EntityId,
         name: BigPlanName,
         status: BigPlanStatus,
+        is_key: bool,
+        eisen: Eisen,
+        difficulty: Difficulty,
         actionable_date: ADate | None,
         due_date: ADate | None,
     ) -> "BigPlan":
@@ -70,6 +85,9 @@ class BigPlan(LeafEntity):
             project_ref_id=project_ref_id,
             name=name,
             status=status,
+            is_key=is_key,
+            eisen=eisen,
+            difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
             working_time=working_time,
@@ -83,6 +101,9 @@ class BigPlan(LeafEntity):
         name: UpdateAction[BigPlanName],
         status: UpdateAction[BigPlanStatus],
         project_ref_id: UpdateAction[EntityId],
+        is_key: UpdateAction[bool],
+        eisen: UpdateAction[Eisen],
+        difficulty: UpdateAction[Difficulty],
         actionable_date: UpdateAction[ADate | None],
         due_date: UpdateAction[ADate | None],
     ) -> "BigPlan":
@@ -117,12 +138,17 @@ class BigPlan(LeafEntity):
 
         new_actionable_date = actionable_date.or_else(self.actionable_date)
         new_due_date = due_date.or_else(self.due_date)
+        new_eisen = eisen.or_else(self.eisen)
+        new_difficulty = difficulty.or_else(self.difficulty)
 
         return self._new_version(
             ctx,
             name=new_name,
             status=new_status,
             project_ref_id=project_ref_id.or_else(self.project_ref_id),
+            is_key=is_key.or_else(self.is_key),
+            eisen=new_eisen,
+            difficulty=new_difficulty,
             working_time=new_working_time,
             completed_time=new_completed_time,
             actionable_date=new_actionable_date,
@@ -142,6 +168,11 @@ class BigPlan(LeafEntity):
         return self._new_version(
             ctx, actionable_date=actionable_date, due_date=due_date
         )
+
+    @property
+    def is_working(self) -> bool:
+        """Whether this task is being worked on or not."""
+        return self.status.is_working
 
     @property
     def is_working_or_more(self) -> bool:
@@ -174,7 +205,7 @@ class BigPlanRepository(LeafEntityRepository[BigPlan], abc.ABC):
     async def find_completed_in_range(
         self,
         parent_ref_id: EntityId,
-        allow_archived: bool,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason],
         filter_start_completed_date: ADate,
         filter_end_completed_date: ADate,
         filter_exclude_ref_ids: Iterable[EntityId] | None = None,

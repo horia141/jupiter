@@ -19,7 +19,7 @@ export function LifecyclePanel(props: PropsWithChildren) {
         alignSelf: "center",
       }}
     >
-      <Stack>
+      <Stack spacing={2}>
         {props.children}
         <Box sx={{ height: "4rem" }}></Box>
       </Stack>

@@ -1,15 +1,6 @@
-import type { ADate } from "@jupiter/webapi-client";
 import { WorkspaceFeature } from "@jupiter/webapi-client";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewTimelineIcon from "@mui/icons-material/ViewTimeline";
-import {
-  Button,
-  ButtonGroup,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -19,15 +10,19 @@ import { DateTime } from "luxon";
 import { Fragment, useContext, useState } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStack } from "~/components/big-plan-stack";
-import { BigPlanTimelineBigScreen } from "~/components/big-plan-timeline-big-screen";
-import { BigPlanTimelineSmallScreen } from "~/components/big-plan-timeline-small-screen";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
+import { BigPlanTimelineBigScreen } from "~/components/domain/concept/big-plan/big-plan-timeline-big-screen";
+import { BigPlanTimelineSmallScreen } from "~/components/domain/concept/big-plan/big-plan-timeline-small-screen";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { StandardDivider } from "~/components/standard-divider";
+import {
+  FilterFewOptionsSpread,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { StandardDivider } from "~/components/infra/standard-divider";
 import type { BigPlanParent } from "~/logic/domain/big-plan";
 import {
   bigPlanFindEntryToParent,
@@ -38,11 +33,12 @@ import {
   sortProjectsByTreeOrder,
 } from "~/logic/domain/project";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
+  useLeafNeedsToShowLeaflet,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -59,6 +55,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const response = await apiClient.bigPlans.bigPlanFind({
     allow_archived: false,
     include_project: true,
+    include_milestones: true,
+    include_stats: true,
     include_inbox_tasks: false,
     include_notes: false,
   });
@@ -74,14 +72,14 @@ enum View {
   LIST = "list",
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function BigPlans() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const isBigScreen = useBigScreen();
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
 
   const sortedBigPlans = sortBigPlansNaturally(
     loaderData.bigPlans.map((b) => b.big_plan),
@@ -93,9 +91,6 @@ export default function BigPlans() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
-  const theRealToday = rightNow.toISODate() as ADate;
-
   const initialView = isWorkspaceFeatureAvailable(
     topLevelInfo.workspace,
     WorkspaceFeature.PROJECTS,
@@ -104,57 +99,6 @@ export default function BigPlans() {
     : View.TIMELINE;
   const [selectedView, setSelectedView] = useState(initialView);
 
-  const [showFilterDialog, setShowFilterDialog] = useState(false);
-
-  let extraControls = [];
-  if (isBigScreen) {
-    extraControls = [
-      <ButtonGroup key="1">
-        {isWorkspaceFeatureAvailable(
-          topLevelInfo.workspace,
-          WorkspaceFeature.PROJECTS,
-        ) && (
-          <Button
-            variant={
-              selectedView === View.TIMELINE_BY_PROJECT
-                ? "contained"
-                : "outlined"
-            }
-            startIcon={<ViewTimelineIcon />}
-            onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-          >
-            Timeline by Project
-          </Button>
-        )}
-        <Button
-          variant={selectedView === View.TIMELINE ? "contained" : "outlined"}
-          startIcon={<ViewTimelineIcon />}
-          onClick={() => setSelectedView(View.TIMELINE)}
-        >
-          Timeline
-        </Button>
-        <Button
-          variant={selectedView === View.LIST ? "contained" : "outlined"}
-          startIcon={<ViewListIcon />}
-          onClick={() => setSelectedView(View.LIST)}
-        >
-          List
-        </Button>
-      </ButtonGroup>,
-    ];
-  } else {
-    extraControls = [
-      <Button
-        key="1"
-        variant="outlined"
-        startIcon={<ViewTimelineIcon />}
-        onClick={() => setShowFilterDialog(true)}
-      >
-        Views
-      </Button>,
-    ];
-  }
-
   const thisYear = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
     "year",
   );
@@ -162,61 +106,48 @@ export default function BigPlans() {
   const allProjectsByRefId = new Map(
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
+  const bigPlanMilestonesByRefId = new Map(
+    loaderData.bigPlans.map((b) => [b.big_plan.ref_id, b.milestones!]),
+  );
+  const bigPlanStatsByRefId = new Map(
+    loaderData.bigPlans.map((b) => [b.big_plan.ref_id, b.stats!]),
+  );
 
   return (
     <TrunkPanel
       key={"big-plans"}
       createLocation="/app/workspace/big-plans/new"
-      extraControls={extraControls}
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="big-plans-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            FilterFewOptionsSpread(
+              "View",
+              selectedView,
+              [
+                {
+                  value: View.TIMELINE_BY_PROJECT,
+                  text: "Timeline by Project",
+                  icon: <ViewTimelineIcon />,
+                  gatedOn: WorkspaceFeature.PROJECTS,
+                },
+                {
+                  value: View.TIMELINE,
+                  text: "Timeline",
+                  icon: <ViewTimelineIcon />,
+                },
+                { value: View.LIST, text: "List", icon: <ViewListIcon /> },
+              ],
+              (selected) => setSelectedView(selected),
+            ),
+          ]}
+        />
+      }
     >
-      <Dialog
-        onClose={() => setShowFilterDialog(false)}
-        open={showFilterDialog}
-      >
-        <DialogTitle>Filters</DialogTitle>
-        <DialogContent>
-          <ButtonGroup orientation="vertical">
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <Button
-                variant={
-                  selectedView === View.TIMELINE_BY_PROJECT
-                    ? "contained"
-                    : "outlined"
-                }
-                startIcon={<ViewTimelineIcon />}
-                onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-              >
-                Timeline by Project
-              </Button>
-            )}
-            <Button
-              variant={
-                selectedView === View.TIMELINE ? "contained" : "outlined"
-              }
-              startIcon={<ViewTimelineIcon />}
-              onClick={() => setSelectedView(View.TIMELINE)}
-            >
-              Timeline
-            </Button>
-            <Button
-              variant={selectedView === View.LIST ? "contained" : "outlined"}
-              startIcon={<ViewListIcon />}
-              onClick={() => setSelectedView(View.LIST)}
-            >
-              List
-            </Button>
-          </ButtonGroup>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+      <NestingAwareBlock shouldHide={shouldShowALeaf || shouldShowALeaflet}>
         {sortedBigPlans.length === 0 && (
           <EntityNoNothingCard
             title="You Have To Start Somewhere"
@@ -256,9 +187,11 @@ export default function BigPlans() {
                         <BigPlanTimelineBigScreen
                           thisYear={thisYear}
                           bigPlans={theBigPlans}
+                          bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
+                          bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
-                              date: theRealToday,
+                              date: topLevelInfo.today,
                               color: "red",
                               label: "Today",
                             },
@@ -269,9 +202,11 @@ export default function BigPlans() {
                         <BigPlanTimelineSmallScreen
                           thisYear={thisYear}
                           bigPlans={theBigPlans}
+                          bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
+                          bigPlanStatsByRefId={bigPlanStatsByRefId}
                           dateMarkers={[
                             {
-                              date: theRealToday,
+                              date: topLevelInfo.today,
                               color: "red",
                               label: "Today",
                             },
@@ -291,9 +226,11 @@ export default function BigPlans() {
               <BigPlanTimelineBigScreen
                 thisYear={thisYear}
                 bigPlans={sortedBigPlans}
+                bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
+                bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {
-                    date: theRealToday,
+                    date: topLevelInfo.today,
                     color: "red",
                     label: "Today",
                   },
@@ -304,9 +241,11 @@ export default function BigPlans() {
               <BigPlanTimelineSmallScreen
                 thisYear={thisYear}
                 bigPlans={sortedBigPlans}
+                bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
+                bigPlanStatsByRefId={bigPlanStatsByRefId}
                 dateMarkers={[
                   {
-                    date: theRealToday,
+                    date: topLevelInfo.today,
                     color: "red",
                     label: "Today",
                   },
@@ -320,10 +259,15 @@ export default function BigPlans() {
           <BigPlanStack
             topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
+            bigPlanMilestonesByRefId={bigPlanMilestonesByRefId}
+            bigPlanStatsByRefId={bigPlanStatsByRefId}
             entriesByRefId={entriesByRefId}
             showOptions={{
-              showStatus: true,
-              showParent: true,
+              showDonePct: true,
+              showMilestonesLeft: true,
+              showProject: true,
+              showEisen: true,
+              showDifficulty: true,
               showActionableDate: true,
               showDueDate: true,
               showHandleMarkDone: false,

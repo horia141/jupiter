@@ -55,6 +55,8 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase, HabitFindResult]):
 
             habit_text = Text("")
             habit_text.append(entity_id_to_rich_text(habit.ref_id))
+            if habit.is_key:
+                habit_text.append(" 🔑")
             habit_text.append(f" {habit.name}")
 
             habit_info_text = Text("")

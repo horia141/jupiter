@@ -1,6 +1,6 @@
 import type { Vacation } from "@jupiter/webapi-client";
 
-import { aDateToDate } from "./adate";
+import { aDateToDate } from "~/logic/domain/adate";
 
 export function sortVacationsNaturally(vacations: Vacation[]) {
   return [...vacations].sort((v1, v2) => {

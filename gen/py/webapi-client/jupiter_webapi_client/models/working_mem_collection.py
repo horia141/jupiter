@@ -23,6 +23,7 @@ class WorkingMemCollection:
         workspace_ref_id (str):
         generation_period (RecurringTaskPeriod): A period for a particular task.
         cleanup_project_ref_id (str): A generic entity id.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -34,6 +35,7 @@ class WorkingMemCollection:
     workspace_ref_id: str
     generation_period: RecurringTaskPeriod
     cleanup_project_ref_id: str
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -53,6 +55,12 @@ class WorkingMemCollection:
         generation_period = self.generation_period.value
 
         cleanup_project_ref_id = self.cleanup_project_ref_id
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -74,6 +82,8 @@ class WorkingMemCollection:
                 "cleanup_project_ref_id": cleanup_project_ref_id,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -98,6 +108,15 @@ class WorkingMemCollection:
 
         cleanup_project_ref_id = d.pop("cleanup_project_ref_id")
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -116,6 +135,7 @@ class WorkingMemCollection:
             workspace_ref_id=workspace_ref_id,
             generation_period=generation_period,
             cleanup_project_ref_id=cleanup_project_ref_id,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

@@ -30,8 +30,8 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventParamsSource } from "~/components/time-event-params-source";
+import { SectionCard } from "~/components/infra/section-card";
+import { TimeEventParamsSource } from "~/components/domain/application/calendar/time-event-params-source";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { timeEventInDayBlockParamsToUtc } from "~/logic/domain/time-event";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -180,6 +180,7 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
   return (
     <LeafPanel
       key="time-event-in-day-block/new"
+      fakeKey="time-event-in-day-block/new"
       returnLocation={`/app/workspace/calendar?${query}`}
       inputsEnabled={inputsEnabled}
     >
@@ -189,7 +190,7 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
         durationMins={durationMins}
       />
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-event-in-day-block-properties"
         title="Properties"
         actions={
@@ -207,113 +208,109 @@ export default function TimeEventInDayBlockCreateForInboxTask() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <input
-            type="hidden"
-            name="userTimezone"
-            value={topLevelInfo.user.timezone}
+        <input
+          type="hidden"
+          name="userTimezone"
+          value={topLevelInfo.user.timezone}
+        />
+
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="name"
+            name="name"
+            defaultValue={loaderData.inboxTask.name}
+            readOnly={true}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
           />
 
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="name"
-              name="name"
-              defaultValue={loaderData.inboxTask.name}
-              readOnly={true}
-            />
-          </FormControl>
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startTimeInDay" shrink margin="dense">
+            Start Time
+          </InputLabel>
+          <OutlinedInput
+            type="time"
+            label="startTimeInDay"
+            name="startTimeInDay"
+            readOnly={!inputsEnabled}
+            value={startTimeInDay}
+            onChange={(e) => setStartTimeInDay(e.target.value)}
+          />
+
+          <FieldError
+            actionResult={actionData}
+            fieldName="/start_time_in_day"
+          />
+        </FormControl>
+
+        <Stack spacing={2} direction="row">
+          <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 15 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(15)}
+            >
+              15m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 30 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(30)}
+            >
+              30m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 60 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(60)}
+            >
+              60m
+            </Button>
+          </ButtonGroup>
 
           <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
+            <InputLabel id="durationMins" shrink margin="dense">
+              Duration (Mins)
             </InputLabel>
             <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
+              type="number"
+              label="Duration (Mins)"
+              name="durationMins"
               readOnly={!inputsEnabled}
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              value={durationMins}
+              onChange={(e) => {
+                if (Number.isNaN(parseInt(e.target.value, 10))) {
+                  setDurationMins(0);
+                  e.preventDefault();
+                  return;
+                }
+
+                return setDurationMins(parseInt(e.target.value, 10));
+              }}
             />
 
-            <FieldError actionResult={actionData} fieldName="/start_date" />
+            <FieldError actionResult={actionData} fieldName="/duration_mins" />
           </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="startTimeInDay" shrink margin="dense">
-              Start Time
-            </InputLabel>
-            <OutlinedInput
-              type="time"
-              label="startTimeInDay"
-              name="startTimeInDay"
-              readOnly={!inputsEnabled}
-              value={startTimeInDay}
-              onChange={(e) => setStartTimeInDay(e.target.value)}
-            />
-
-            <FieldError
-              actionResult={actionData}
-              fieldName="/start_time_in_day"
-            />
-          </FormControl>
-
-          <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!inputsEnabled}>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 15 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(15)}
-              >
-                15m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 30 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(30)}
-              >
-                30m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 60 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(60)}
-              >
-                60m
-              </Button>
-            </ButtonGroup>
-
-            <FormControl fullWidth>
-              <InputLabel id="durationMins" shrink margin="dense">
-                Duration (Mins)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Mins)"
-                name="durationMins"
-                readOnly={!inputsEnabled}
-                value={durationMins}
-                onChange={(e) => {
-                  if (Number.isNaN(parseInt(e.target.value, 10))) {
-                    setDurationMins(0);
-                    e.preventDefault();
-                    return;
-                  }
-
-                  return setDurationMins(parseInt(e.target.value, 10));
-                }}
-              />
-
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_mins"
-              />
-            </FormControl>
-          </Stack>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

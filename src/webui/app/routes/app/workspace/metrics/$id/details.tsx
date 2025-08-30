@@ -7,17 +7,7 @@ import {
   NoteDomain,
   RecurringTaskPeriod,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -28,27 +18,31 @@ import {
   useParams,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams, parseQuery } from "zodix";
+import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { IconSelector } from "~/components/icon-selector";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { IconSelector } from "~/components/infra/icon-selector";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
-import { StandardDivider } from "~/components/standard-divider";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
+import { StandardDivider } from "~/components/infra/standard-divider";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
-
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { SectionCard } from "~/components/infra/section-card";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 const ParamsSchema = z.object({
   id: z.string(),
 });
@@ -64,6 +58,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("update"),
     name: z.string(),
+    isKey: CheckboxAsString,
     icon: z.string().optional(),
     collectionPeriod: z
       .union([z.nativeEnum(RecurringTaskPeriod), z.literal("none")])
@@ -138,6 +133,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           name: {
             should_change: true,
             value: form.name,
+          },
+          is_key: {
+            should_change: true,
+            value: form.isKey,
           },
           icon: {
             should_change: true,
@@ -305,104 +304,109 @@ export default function MetricDetails() {
     );
   }
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`metric-${id}/details`}
+      fakeKey={`metric-${id}/details`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.metric.archived}
       returnLocation={`/app/workspace/metrics/${id}`}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.metric.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="icon">Icon</InputLabel>
-              <IconSelector
-                readOnly={!inputsEnabled}
-                defaultIcon={loaderData.metric.icon}
-              />
-              <FieldError actionResult={actionData} fieldName="/icon" />
-            </FormControl>
-
-            <StandardDivider title="Collection" size="large" />
-
-            <RecurringTaskGenParamsBlock
-              namePrefix="collection"
-              fieldsPrefix="collection"
-              allowNonePeriod
-              period={loaderData.metric.collection_params?.period || "none"}
-              eisen={loaderData.metric.collection_params?.eisen}
-              difficulty={loaderData.metric.collection_params?.difficulty}
-              actionableFromDay={
-                loaderData.metric.collection_params?.actionable_from_day
-              }
-              actionableFromMonth={
-                loaderData.metric.collection_params?.actionable_from_month
-              }
-              dueAtDay={loaderData.metric.collection_params?.due_at_day}
-              dueAtMonth={loaderData.metric.collection_params?.due_at_month}
-              inputsEnabled={inputsEnabled}
-              actionData={actionData}
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={
+          <SectionActions
+            id="metric-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+              ActionSingle({
+                text: "Regen",
+                value: "regen",
+                highlight: false,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack direction="row" spacing={2}>
+          <FormControl fullWidth sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.metric.name}
             />
-          </Stack>
-        </CardContent>
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="regen"
-            >
-              Regen
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={loaderData.metric.is_key}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
 
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
+        <FormControl fullWidth>
+          <InputLabel id="icon">Icon</InputLabel>
+          <IconSelector
+            readOnly={!inputsEnabled}
+            defaultIcon={loaderData.metric.icon}
+          />
+          <FieldError actionResult={actionData} fieldName="/icon" />
+        </FormControl>
 
+        <StandardDivider title="Collection" size="large" />
+
+        <RecurringTaskGenParamsBlock
+          namePrefix="collection"
+          fieldsPrefix="collection"
+          allowNonePeriod
+          period={loaderData.metric.collection_params?.period || "none"}
+          eisen={loaderData.metric.collection_params?.eisen}
+          difficulty={loaderData.metric.collection_params?.difficulty}
+          actionableFromDay={
+            loaderData.metric.collection_params?.actionable_from_day
+          }
+          actionableFromMonth={
+            loaderData.metric.collection_params?.actionable_from_month
+          }
+          dueAtDay={loaderData.metric.collection_params?.due_at_day}
+          dueAtMonth={loaderData.metric.collection_params?.due_at_month}
+          inputsEnabled={inputsEnabled}
+          actionData={actionData}
+        />
+      </SectionCard>
+
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="chore-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -411,29 +415,29 @@ export default function MetricDetails() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
-      {sortedCollectionTasks && (
-        <InboxTaskStack
-          today={today}
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Collection Tasks"
-          inboxTasks={sortedCollectionTasks}
-          withPages={{
-            retrieveOffsetParamName: "collectionTasksRetrieveOffset",
-            totalCnt: loaderData.collectionTasksTotalCnt,
-            pageSize: loaderData.collectionTasksPageSize,
-          }}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+      <SectionCard title="Collection Tasks">
+        {sortedCollectionTasks && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={sortedCollectionTasks}
+            withPages={{
+              retrieveOffsetParamName: "collectionTasksRetrieveOffset",
+              totalCnt: loaderData.collectionTasksTotalCnt,
+              pageSize: loaderData.collectionTasksPageSize,
+            }}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

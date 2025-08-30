@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.service.archive_service import (
     BigPlanArchiveService,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -42,5 +43,9 @@ class BigPlanArchiveUseCase(
         big_plan = await uow.get_for(BigPlan).load_by_id(args.ref_id)
 
         await BigPlanArchiveService().do_it(
-            context.domain_context, uow, progress_reporter, big_plan
+            context.domain_context,
+            uow,
+            progress_reporter,
+            big_plan,
+            ArchivalReason.USER,
         )

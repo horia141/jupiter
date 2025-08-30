@@ -2,6 +2,10 @@
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.journals.journal import Journal, JournalRepository
+from jupiter.core.domain.concept.journals.journal_stats import (
+    JournalStats,
+    JournalStatsRepository,
+)
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.features import WorkspaceFeature
@@ -35,6 +39,7 @@ class JournalLoadResult(UseCaseResultBase):
 
     journal: Journal
     note: Note
+    journal_stats: JournalStats
     writing_task: InboxTask | None
     sub_period_journals: list[Journal]
 
@@ -62,6 +67,13 @@ class JournalLoadUseCase(
             allow_subentity_archived=True,
         )
 
+        journal_stats = await uow.get(JournalStatsRepository).load_by_key_optional(
+            journal.ref_id
+        )
+
+        if journal_stats is None:
+            raise Exception("Journal stats not found")
+
         schedule = schedules.get_schedule(
             period=journal.period,
             name=journal.name,
@@ -79,6 +91,7 @@ class JournalLoadUseCase(
         return JournalLoadResult(
             journal=journal,
             note=note,
+            journal_stats=journal_stats,
             writing_task=writing_task,
             sub_period_journals=sub_period_journals,
         )

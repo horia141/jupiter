@@ -9,43 +9,47 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
+import {
+  useActionData,
+  useFetcher,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams, parseQuery } from "zodix";
+import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
+import { DateTime } from "luxon";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { HabitRepeatStrategySelect } from "~/components/habit-repeat-strategy-select";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { HabitRepeatStrategySelect } from "~/components/domain/concept/habit/habit-repeat-strategy-select";
+import { HabitStreakCalendar } from "~/components/domain/concept/habit/habit-streak-calendar";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
+import { newURLParams } from "~/logic/domain/navigation";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -56,6 +60,8 @@ const QuerySchema = z.object({
     .string()
     .transform((s) => parseInt(s, 10))
     .optional(),
+  viewOneIncludeStreakMarksEarliestDate: z.string().optional(),
+  viewOneIncludeStreakMarksLatestDate: z.string().optional(),
 });
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -64,6 +70,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     name: z.string(),
     project: z.string().optional(),
     period: z.nativeEnum(RecurringTaskPeriod),
+    isKey: CheckboxAsString,
     eisen: z.nativeEnum(Eisen),
     difficulty: z.nativeEnum(Difficulty),
     actionableFromDay: z.string().optional(),
@@ -104,16 +111,28 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     include_projects: true,
   });
 
+  let earliestDate = query.viewOneIncludeStreakMarksEarliestDate;
+  let latestDate = query.viewOneIncludeStreakMarksLatestDate;
+  if (earliestDate === undefined) {
+    earliestDate = DateTime.now().minus({ days: 90 }).toISODate();
+    latestDate = DateTime.now().toISODate();
+  }
+
   try {
     const result = await apiClient.habits.habitLoad({
       ref_id: id,
       allow_archived: true,
       inbox_task_retrieve_offset: query.inboxTasksRetrieveOffset, // Pass the offset to the API call
+      include_streak_marks_earliest_date: earliestDate,
+      include_streak_marks_latest_date: latestDate,
     });
 
     return json({
       habit: result.habit,
       note: result.note,
+      streakMarks: result.streak_marks,
+      streakMarkEarliestDate: result.streak_mark_earliest_date,
+      streakMarkLatestDate: result.streak_mark_latest_date,
       project: result.project,
       inboxTasks: result.inbox_tasks,
       inboxTasksTotalCnt: result.inbox_tasks_total_cnt,
@@ -152,6 +171,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           period: {
             should_change: true,
             value: form.period,
+          },
+          is_key: {
+            should_change: true,
+            value: form.isKey,
           },
           eisen: {
             should_change: true,
@@ -266,13 +289,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Habit() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
+  const [query] = useSearchParams();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -332,152 +355,175 @@ export default function Habit() {
     setSelectedRepeatsStrategy(loaderData.habit.repeats_strategy || "none");
   }, [loaderData]);
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
       key={`habit-${loaderData.habit.ref_id}`}
+      fakeKey={`habit-${loaderData.habit.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.habit.archived}
       returnLocation="/app/workspace/habits"
+      initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.habit.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={!inputsEnabled}
-                  allProjects={loaderData.allProjects}
-                  value={selectedProject}
-                  onChange={setSelectedProject}
-                />
-                <FieldError actionResult={actionData} fieldName="/project" />
-              </FormControl>
-            )}
-
-            <RecurringTaskGenParamsBlock
-              allowSkipRule
-              inputsEnabled={inputsEnabled}
-              period={selectedPeriod}
-              onChangePeriod={(newPeriod) => {
-                if (newPeriod === "none") {
-                  setSelectedPeriod(RecurringTaskPeriod.DAILY);
-                } else {
-                  setSelectedPeriod(newPeriod);
-                }
-              }}
-              eisen={loaderData.habit.gen_params.eisen}
-              difficulty={loaderData.habit.gen_params.difficulty}
-              actionableFromDay={
-                loaderData.habit.gen_params.actionable_from_day
-              }
-              actionableFromMonth={
-                loaderData.habit.gen_params.actionable_from_month
-              }
-              dueAtDay={loaderData.habit.gen_params.due_at_day}
-              dueAtMonth={loaderData.habit.gen_params.due_at_month}
-              skipRule={loaderData.habit.gen_params.skip_rule}
-              actionData={actionData}
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={
+          <SectionActions
+            id="habit-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+              ActionSingle({
+                text: "Regen",
+                value: "regen",
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack direction="row" useFlexGap spacing={1}>
+          <FormControl sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.habit.name}
             />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            {selectedPeriod !== RecurringTaskPeriod.DAILY && (
-              <Stack direction="row" spacing={2}>
-                <FormControl sx={{ flexGrow: 3 }}>
-                  <HabitRepeatStrategySelect
-                    name="repeatsStrategy"
-                    inputsEnabled={inputsEnabled}
-                    allowNone
-                    value={selectedRepeatsStrategy}
-                    onChange={(newStrategy) =>
-                      setSelectedRepeatsStrategy(newStrategy)
-                    }
-                  />
-                </FormControl>
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={loaderData.habit.is_key}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
 
-                {selectedRepeatsStrategy !== "none" && (
-                  <FormControl sx={{ flexGrow: 1 }}>
-                    <InputLabel id="repeatsInPeriodCount">
-                      Repeats In Period [Optional]
-                    </InputLabel>
-                    <OutlinedInput
-                      label="Repeats In Period"
-                      name="repeatsInPeriodCount"
-                      readOnly={!inputsEnabled}
-                      defaultValue={loaderData.habit.repeats_in_period_count}
-                      sx={{ height: "100%" }}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/repeats_in_period_count"
-                    />
-                  </FormControl>
-                )}
-              </Stack>
-            )}
-          </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
               disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="regen"
-            >
-              Regen
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
+              allProjects={loaderData.allProjects}
+              value={selectedProject}
+              onChange={setSelectedProject}
+            />
+            <FieldError actionResult={actionData} fieldName="/project" />
+          </FormControl>
         )}
 
+        <RecurringTaskGenParamsBlock
+          allowSkipRule
+          inputsEnabled={inputsEnabled}
+          period={selectedPeriod}
+          onChangePeriod={(newPeriod) => {
+            if (newPeriod === "none") {
+              setSelectedPeriod(RecurringTaskPeriod.DAILY);
+            } else {
+              setSelectedPeriod(newPeriod);
+            }
+          }}
+          eisen={loaderData.habit.gen_params.eisen}
+          difficulty={loaderData.habit.gen_params.difficulty}
+          actionableFromDay={loaderData.habit.gen_params.actionable_from_day}
+          actionableFromMonth={
+            loaderData.habit.gen_params.actionable_from_month
+          }
+          dueAtDay={loaderData.habit.gen_params.due_at_day}
+          dueAtMonth={loaderData.habit.gen_params.due_at_month}
+          skipRule={loaderData.habit.gen_params.skip_rule}
+          actionData={actionData}
+        />
+
+        {selectedPeriod !== RecurringTaskPeriod.DAILY && (
+          <Stack direction="row" spacing={2}>
+            <FormControl sx={{ flexGrow: 3 }}>
+              <HabitRepeatStrategySelect
+                name="repeatsStrategy"
+                inputsEnabled={inputsEnabled}
+                allowNone
+                value={selectedRepeatsStrategy}
+                onChange={(newStrategy) =>
+                  setSelectedRepeatsStrategy(newStrategy)
+                }
+              />
+            </FormControl>
+
+            {selectedRepeatsStrategy !== "none" && (
+              <FormControl sx={{ flexGrow: 1 }}>
+                <InputLabel id="repeatsInPeriodCount">
+                  Repeats In Period [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  label="Repeats In Period"
+                  name="repeatsInPeriodCount"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.habit.repeats_in_period_count}
+                  sx={{ height: "100%" }}
+                />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/repeats_in_period_count"
+                />
+              </FormControl>
+            )}
+          </Stack>
+        )}
+      </SectionCard>
+
+      <SectionCard title="Streak">
+        <HabitStreakCalendar
+          earliestDate={loaderData.streakMarkEarliestDate}
+          latestDate={loaderData.streakMarkLatestDate}
+          currentToday={topLevelInfo.today}
+          habit={loaderData.habit}
+          streakMarks={loaderData.streakMarks}
+          showNav
+          getNavUrl={(earliestDate, latestDate) =>
+            `/app/workspace/habits/${loaderData.habit.ref_id}?${newURLParams(
+              query,
+              "viewOneIncludeStreakMarksEarliestDate",
+              earliestDate,
+              "viewOneIncludeStreakMarksLatestDate",
+              latestDate,
+            )}`
+          }
+        />
+      </SectionCard>
+
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="habit-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -486,29 +532,29 @@ export default function Habit() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
-      {sortedInboxTasks.length > 0 && (
-        <InboxTaskStack
-          today={today}
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Inbox Tasks"
-          inboxTasks={sortedInboxTasks}
-          withPages={{
-            retrieveOffsetParamName: "inboxTasksRetrieveOffset",
-            totalCnt: loaderData.inboxTasksTotalCnt,
-            pageSize: loaderData.inboxTasksPageSize,
-          }}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+      <SectionCard title="Inbox Tasks">
+        {sortedInboxTasks.length > 0 && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={sortedInboxTasks}
+            withPages={{
+              retrieveOffsetParamName: "inboxTasksRetrieveOffset",
+              totalCnt: loaderData.inboxTasksTotalCnt,
+              pageSize: loaderData.inboxTasksPageSize,
+            }}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

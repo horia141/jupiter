@@ -27,10 +27,10 @@ import {
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { CheckboxAsString, parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
+import { InboxTaskPropertiesEditor } from "~/components/domain/concept/inbox-task/inbox-task-properties-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -39,9 +39,9 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventParamsSource } from "~/components/time-event-params-source";
-import { TimeEventSourceLink } from "~/components/time-event-source-link";
+import { SectionCard } from "~/components/infra/section-card";
+import { TimeEventParamsSource } from "~/components/domain/application/calendar/time-event-params-source";
+import { TimeEventSourceLink } from "~/components/domain/application/calendar/time-event-source-link";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
@@ -67,6 +67,7 @@ const UpdateFormInboxTaskSchema = {
   inboxTaskProject: z.string().optional(),
   inboxTaskBigPlan: z.string().optional(),
   inboxTaskStatus: z.nativeEnum(InboxTaskStatus),
+  inboxTaskIsKey: CheckboxAsString,
   inboxTaskEisen: z.nativeEnum(Eisen),
   inboxTaskDifficulty: z.nativeEnum(Difficulty),
   inboxTaskActionableDate: z.string().optional(),
@@ -273,6 +274,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
                 ? form.inboxTaskBigPlan
                 : undefined,
           },
+          is_key: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.inboxTaskIsKey,
+              }
+            : { should_change: false },
           eisen: corePropertyEditable
             ? {
                 should_change: true,
@@ -403,6 +410,7 @@ export default function TimeEventInDayBlockViewOne() {
   return (
     <LeafPanel
       key={`time-event-in-day-block-${loaderData.inDayBlock.ref_id}`}
+      fakeKey={`time-event-in-day-block-${loaderData.inDayBlock.ref_id}`}
       showArchiveAndRemoveButton={corePropertyEditable}
       inputsEnabled={inputsEnabled}
       entityNotEditable={!corePropertyEditable}
@@ -415,7 +423,7 @@ export default function TimeEventInDayBlockViewOne() {
         durationMins={durationMins}
       />
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-event-in-day-block-properties"
         title="Properties"
         actions={
@@ -437,120 +445,116 @@ export default function TimeEventInDayBlockViewOne() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
-            <input
-              type="hidden"
-              name="userTimezone"
-              value={topLevelInfo.user.timezone}
-            />
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="name"
-                name="name"
-                readOnly={true}
-                defaultValue={name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <TimeEventSourceLink timeEvent={loaderData.inDayBlock} />
-          </Box>
-
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
+          <input
+            type="hidden"
+            name="userTimezone"
+            value={topLevelInfo.user.timezone}
+          />
           <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
-            </InputLabel>
+            <InputLabel id="name">Name</InputLabel>
             <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
-              readOnly={!(inputsEnabled && corePropertyEditable)}
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              label="name"
+              name="name"
+              readOnly={true}
+              defaultValue={name}
             />
-
-            <FieldError actionResult={actionData} fieldName="/start_date" />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="startTimeInDay" shrink margin="dense">
-              Start Time
-            </InputLabel>
-            <OutlinedInput
-              type="time"
-              label="startTimeInDay"
-              name="startTimeInDay"
-              readOnly={!(inputsEnabled && corePropertyEditable)}
-              value={startTimeInDay}
-              onChange={(e) => setStartTimeInDay(e.target.value)}
-            />
+          <TimeEventSourceLink timeEvent={loaderData.inDayBlock} />
+        </Box>
 
-            <FieldError
-              actionResult={actionData}
-              fieldName="/start_time_in_day"
-            />
-          </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!(inputsEnabled && corePropertyEditable)}
+            disabled={!(inputsEnabled && corePropertyEditable)}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
 
-          <Stack spacing={2} direction="row">
-            <ButtonGroup
-              variant="outlined"
-              disabled={!(inputsEnabled && corePropertyEditable)}
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startTimeInDay" shrink margin="dense">
+            Start Time
+          </InputLabel>
+          <OutlinedInput
+            type="time"
+            label="startTimeInDay"
+            name="startTimeInDay"
+            readOnly={!(inputsEnabled && corePropertyEditable)}
+            value={startTimeInDay}
+            onChange={(e) => setStartTimeInDay(e.target.value)}
+          />
+
+          <FieldError
+            actionResult={actionData}
+            fieldName="/start_time_in_day"
+          />
+        </FormControl>
+
+        <Stack spacing={2} direction="row">
+          <ButtonGroup
+            variant="outlined"
+            disabled={!(inputsEnabled && corePropertyEditable)}
+          >
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 15 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(15)}
             >
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 15 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(15)}
-              >
-                15m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 30 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(30)}
-              >
-                30m
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationMins === 60 ? "contained" : "outlined"}
-                onClick={() => setDurationMins(60)}
-              >
-                60m
-              </Button>
-            </ButtonGroup>
+              15m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 30 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(30)}
+            >
+              30m
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationMins === 60 ? "contained" : "outlined"}
+              onClick={() => setDurationMins(60)}
+            >
+              60m
+            </Button>
+          </ButtonGroup>
 
-            <FormControl fullWidth>
-              <InputLabel id="durationMins" shrink margin="dense">
-                Duration (Mins)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Mins)"
-                name="durationMins"
-                readOnly={!(inputsEnabled && corePropertyEditable)}
-                value={durationMins}
-                onChange={(e) => {
-                  if (Number.isNaN(parseInt(e.target.value, 10))) {
-                    setDurationMins(0);
-                    e.preventDefault();
-                    return;
-                  }
+          <FormControl fullWidth>
+            <InputLabel id="durationMins" shrink margin="dense">
+              Duration (Mins)
+            </InputLabel>
+            <OutlinedInput
+              type="number"
+              label="Duration (Mins)"
+              name="durationMins"
+              readOnly={!(inputsEnabled && corePropertyEditable)}
+              value={durationMins}
+              onChange={(e) => {
+                if (Number.isNaN(parseInt(e.target.value, 10))) {
+                  setDurationMins(0);
+                  e.preventDefault();
+                  return;
+                }
 
-                  return setDurationMins(parseInt(e.target.value, 10));
-                }}
-              />
+                return setDurationMins(parseInt(e.target.value, 10));
+              }}
+            />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_mins"
-              />
-            </FormControl>
-          </Stack>
+            <FieldError actionResult={actionData} fieldName="/duration_mins" />
+          </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
 
       {loaderData.inboxTask && (
         <InboxTaskPropertiesEditor
@@ -562,7 +566,7 @@ export default function TimeEventInDayBlockViewOne() {
           rootProject={loaderData.rootProject}
           allProjects={loaderData.allProjects}
           allBigPlans={loaderData.allBigPlans}
-          inputsEnabled={inputsEnabled}
+          inputsEnabled={inputsEnabled && !loaderData.inboxTask.archived}
           inboxTask={loaderData.inboxTask}
           inboxTaskInfo={loaderData.inboxTaskInfo!}
           actionData={actionData}

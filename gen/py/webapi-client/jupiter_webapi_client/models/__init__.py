@@ -5,6 +5,7 @@ from .app_distribution import AppDistribution
 from .app_distribution_state import AppDistributionState
 from .app_platform import AppPlatform
 from .app_shell import AppShell
+from .archival_reason import ArchivalReason
 from .big_plan import BigPlan
 from .big_plan_archive_args import BigPlanArchiveArgs
 from .big_plan_archive_service_result import BigPlanArchiveServiceResult
@@ -16,17 +17,34 @@ from .big_plan_find_result import BigPlanFindResult
 from .big_plan_find_result_entry import BigPlanFindResultEntry
 from .big_plan_load_args import BigPlanLoadArgs
 from .big_plan_load_result import BigPlanLoadResult
+from .big_plan_milestone import BigPlanMilestone
+from .big_plan_milestone_archive_args import BigPlanMilestoneArchiveArgs
+from .big_plan_milestone_create_args import BigPlanMilestoneCreateArgs
+from .big_plan_milestone_create_result import BigPlanMilestoneCreateResult
+from .big_plan_milestone_load_args import BigPlanMilestoneLoadArgs
+from .big_plan_milestone_load_result import BigPlanMilestoneLoadResult
+from .big_plan_milestone_remove_args import BigPlanMilestoneRemoveArgs
+from .big_plan_milestone_update_args import BigPlanMilestoneUpdateArgs
+from .big_plan_milestone_update_args_date import BigPlanMilestoneUpdateArgsDate
+from .big_plan_milestone_update_args_name import BigPlanMilestoneUpdateArgsName
+from .big_plan_refresh_stats_args import BigPlanRefreshStatsArgs
 from .big_plan_remove_args import BigPlanRemoveArgs
+from .big_plan_stats import BigPlanStats
 from .big_plan_status import BigPlanStatus
 from .big_plan_summary import BigPlanSummary
 from .big_plan_update_args import BigPlanUpdateArgs
 from .big_plan_update_args_actionable_date import BigPlanUpdateArgsActionableDate
+from .big_plan_update_args_difficulty import BigPlanUpdateArgsDifficulty
 from .big_plan_update_args_due_date import BigPlanUpdateArgsDueDate
+from .big_plan_update_args_eisen import BigPlanUpdateArgsEisen
+from .big_plan_update_args_is_key import BigPlanUpdateArgsIsKey
 from .big_plan_update_args_name import BigPlanUpdateArgsName
 from .big_plan_update_args_project_ref_id import BigPlanUpdateArgsProjectRefId
 from .big_plan_update_args_status import BigPlanUpdateArgsStatus
 from .big_plan_update_result import BigPlanUpdateResult
 from .big_plan_work_summary import BigPlanWorkSummary
+from .big_screen_home_tab_widget_placement import BigScreenHomeTabWidgetPlacement
+from .big_screen_home_tab_widget_placement_kind import BigScreenHomeTabWidgetPlacementKind
 from .bulleted_list_block import BulletedListBlock
 from .bulleted_list_block_kind import BulletedListBlockKind
 from .calendar_events_entries import CalendarEventsEntries
@@ -61,6 +79,7 @@ from .chore_update_args_due_at_day import ChoreUpdateArgsDueAtDay
 from .chore_update_args_due_at_month import ChoreUpdateArgsDueAtMonth
 from .chore_update_args_eisen import ChoreUpdateArgsEisen
 from .chore_update_args_end_at_date import ChoreUpdateArgsEndAtDate
+from .chore_update_args_is_key import ChoreUpdateArgsIsKey
 from .chore_update_args_must_do import ChoreUpdateArgsMustDo
 from .chore_update_args_name import ChoreUpdateArgsName
 from .chore_update_args_period import ChoreUpdateArgsPeriod
@@ -147,6 +166,8 @@ from .habit_load_result import HabitLoadResult
 from .habit_regen_args import HabitRegenArgs
 from .habit_remove_args import HabitRemoveArgs
 from .habit_repeats_strategy import HabitRepeatsStrategy
+from .habit_streak_mark import HabitStreakMark
+from .habit_streak_mark_statuses import HabitStreakMarkStatuses
 from .habit_summary import HabitSummary
 from .habit_suspend_args import HabitSuspendArgs
 from .habit_unsuspend_args import HabitUnsuspendArgs
@@ -157,6 +178,7 @@ from .habit_update_args_difficulty import HabitUpdateArgsDifficulty
 from .habit_update_args_due_at_day import HabitUpdateArgsDueAtDay
 from .habit_update_args_due_at_month import HabitUpdateArgsDueAtMonth
 from .habit_update_args_eisen import HabitUpdateArgsEisen
+from .habit_update_args_is_key import HabitUpdateArgsIsKey
 from .habit_update_args_name import HabitUpdateArgsName
 from .habit_update_args_period import HabitUpdateArgsPeriod
 from .habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
@@ -165,6 +187,32 @@ from .habit_update_args_repeats_strategy import HabitUpdateArgsRepeatsStrategy
 from .habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 from .heading_block import HeadingBlock
 from .heading_block_kind import HeadingBlockKind
+from .home_config import HomeConfig
+from .home_config_load_args import HomeConfigLoadArgs
+from .home_config_load_result import HomeConfigLoadResult
+from .home_config_load_result_widget_constraints import HomeConfigLoadResultWidgetConstraints
+from .home_config_order_of_tabs import HomeConfigOrderOfTabs
+from .home_tab import HomeTab
+from .home_tab_archive_args import HomeTabArchiveArgs
+from .home_tab_create_args import HomeTabCreateArgs
+from .home_tab_create_result import HomeTabCreateResult
+from .home_tab_load_args import HomeTabLoadArgs
+from .home_tab_load_result import HomeTabLoadResult
+from .home_tab_remove_args import HomeTabRemoveArgs
+from .home_tab_target import HomeTabTarget
+from .home_tab_update_args import HomeTabUpdateArgs
+from .home_tab_update_args_icon import HomeTabUpdateArgsIcon
+from .home_tab_update_args_name import HomeTabUpdateArgsName
+from .home_tab_widget_placement import HomeTabWidgetPlacement
+from .home_tab_widget_placement_section import HomeTabWidgetPlacementSection
+from .home_widget import HomeWidget
+from .home_widget_archive_args import HomeWidgetArchiveArgs
+from .home_widget_create_args import HomeWidgetCreateArgs
+from .home_widget_create_result import HomeWidgetCreateResult
+from .home_widget_load_args import HomeWidgetLoadArgs
+from .home_widget_load_result import HomeWidgetLoadResult
+from .home_widget_move_and_resize_args import HomeWidgetMoveAndResizeArgs
+from .home_widget_remove_args import HomeWidgetRemoveArgs
 from .hosting import Hosting
 from .inbox_task import InboxTask
 from .inbox_task_archive_args import InboxTaskArchiveArgs
@@ -187,6 +235,7 @@ from .inbox_task_update_args_big_plan_ref_id import InboxTaskUpdateArgsBigPlanRe
 from .inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
 from .inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
 from .inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
+from .inbox_task_update_args_is_key import InboxTaskUpdateArgsIsKey
 from .inbox_task_update_args_name import InboxTaskUpdateArgsName
 from .inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
 from .inbox_task_update_args_status import InboxTaskUpdateArgsStatus
@@ -196,25 +245,40 @@ from .init_args import InitArgs
 from .init_result import InitResult
 from .journal import Journal
 from .journal_archive_args import JournalArchiveArgs
-from .journal_change_periods_args import JournalChangePeriodsArgs
 from .journal_change_time_config_args import JournalChangeTimeConfigArgs
 from .journal_change_time_config_args_period import JournalChangeTimeConfigArgsPeriod
 from .journal_change_time_config_args_right_now import JournalChangeTimeConfigArgsRightNow
 from .journal_collection import JournalCollection
+from .journal_collection_generation_in_advance_days import JournalCollectionGenerationInAdvanceDays
 from .journal_create_args import JournalCreateArgs
 from .journal_create_result import JournalCreateResult
 from .journal_find_args import JournalFindArgs
 from .journal_find_result import JournalFindResult
 from .journal_find_result_entry import JournalFindResultEntry
+from .journal_generation_approach import JournalGenerationApproach
 from .journal_load_args import JournalLoadArgs
 from .journal_load_for_date_and_period_args import JournalLoadForDateAndPeriodArgs
 from .journal_load_for_date_and_period_result import JournalLoadForDateAndPeriodResult
 from .journal_load_result import JournalLoadResult
 from .journal_load_settings_args import JournalLoadSettingsArgs
 from .journal_load_settings_result import JournalLoadSettingsResult
+from .journal_load_settings_result_generation_in_advance_days import JournalLoadSettingsResultGenerationInAdvanceDays
+from .journal_refresh_stats_args import JournalRefreshStatsArgs
+from .journal_regen_args import JournalRegenArgs
 from .journal_remove_args import JournalRemoveArgs
 from .journal_source import JournalSource
-from .journal_update_report_args import JournalUpdateReportArgs
+from .journal_stats import JournalStats
+from .journal_summary import JournalSummary
+from .journal_update_settings_args import JournalUpdateSettingsArgs
+from .journal_update_settings_args_generation_approach import JournalUpdateSettingsArgsGenerationApproach
+from .journal_update_settings_args_generation_in_advance_days import JournalUpdateSettingsArgsGenerationInAdvanceDays
+from .journal_update_settings_args_generation_in_advance_days_value import (
+    JournalUpdateSettingsArgsGenerationInAdvanceDaysValue,
+)
+from .journal_update_settings_args_periods import JournalUpdateSettingsArgsPeriods
+from .journal_update_settings_args_writing_task_difficulty import JournalUpdateSettingsArgsWritingTaskDifficulty
+from .journal_update_settings_args_writing_task_eisen import JournalUpdateSettingsArgsWritingTaskEisen
+from .journal_update_settings_args_writing_task_project_ref_id import JournalUpdateSettingsArgsWritingTaskProjectRefId
 from .link_block import LinkBlock
 from .link_block_kind import LinkBlockKind
 from .list_item import ListItem
@@ -264,7 +328,11 @@ from .metric_update_args_collection_due_at_month import MetricUpdateArgsCollecti
 from .metric_update_args_collection_eisen import MetricUpdateArgsCollectionEisen
 from .metric_update_args_collection_period import MetricUpdateArgsCollectionPeriod
 from .metric_update_args_icon import MetricUpdateArgsIcon
+from .metric_update_args_is_key import MetricUpdateArgsIsKey
 from .metric_update_args_name import MetricUpdateArgsName
+from .motd import MOTD
+from .motd_get_for_today_args import MOTDGetForTodayArgs
+from .motd_get_for_today_result import MOTDGetForTodayResult
 from .named_entity_tag import NamedEntityTag
 from .nested_result import NestedResult
 from .nested_result_per_source import NestedResultPerSource
@@ -341,6 +409,7 @@ from .recurring_task_gen_params import RecurringTaskGenParams
 from .recurring_task_period import RecurringTaskPeriod
 from .recurring_task_work_summary import RecurringTaskWorkSummary
 from .remove_all_args import RemoveAllArgs
+from .reorder_tabs_args import ReorderTabsArgs
 from .report_args import ReportArgs
 from .report_breakdown import ReportBreakdown
 from .report_period_result import ReportPeriodResult
@@ -431,6 +500,8 @@ from .slack_task_update_args_generation_name import SlackTaskUpdateArgsGeneratio
 from .slack_task_update_args_generation_status import SlackTaskUpdateArgsGenerationStatus
 from .slack_task_update_args_message import SlackTaskUpdateArgsMessage
 from .slack_task_update_args_user import SlackTaskUpdateArgsUser
+from .small_screen_home_tab_widget_placement import SmallScreenHomeTabWidgetPlacement
+from .small_screen_home_tab_widget_placement_kind import SmallScreenHomeTabWidgetPlacementKind
 from .smart_list import SmartList
 from .smart_list_archive_args import SmartListArchiveArgs
 from .smart_list_collection import SmartListCollection
@@ -467,6 +538,13 @@ from .smart_list_tag_update_args_tag_name import SmartListTagUpdateArgsTagName
 from .smart_list_update_args import SmartListUpdateArgs
 from .smart_list_update_args_icon import SmartListUpdateArgsIcon
 from .smart_list_update_args_name import SmartListUpdateArgsName
+from .stats_do_all_args import StatsDoAllArgs
+from .stats_do_args import StatsDoArgs
+from .stats_load_runs_args import StatsLoadRunsArgs
+from .stats_load_runs_result import StatsLoadRunsResult
+from .stats_log import StatsLog
+from .stats_log_entry import StatsLogEntry
+from .suggested_date import SuggestedDate
 from .sync_target import SyncTarget
 from .table_block import TableBlock
 from .table_block_kind import TableBlockKind
@@ -493,6 +571,7 @@ from .time_event_namespace import TimeEventNamespace
 from .time_plan import TimePlan
 from .time_plan_activity import TimePlanActivity
 from .time_plan_activity_archive_args import TimePlanActivityArchiveArgs
+from .time_plan_activity_doneness import TimePlanActivityDoneness
 from .time_plan_activity_feasability import TimePlanActivityFeasability
 from .time_plan_activity_find_for_target_args import TimePlanActivityFindForTargetArgs
 from .time_plan_activity_find_for_target_result import TimePlanActivityFindForTargetResult
@@ -506,6 +585,10 @@ from .time_plan_activity_update_args import TimePlanActivityUpdateArgs
 from .time_plan_activity_update_args_feasability import TimePlanActivityUpdateArgsFeasability
 from .time_plan_activity_update_args_kind import TimePlanActivityUpdateArgsKind
 from .time_plan_archive_args import TimePlanArchiveArgs
+from .time_plan_associate_big_plan_with_plan_args import TimePlanAssociateBigPlanWithPlanArgs
+from .time_plan_associate_big_plan_with_plan_result import TimePlanAssociateBigPlanWithPlanResult
+from .time_plan_associate_inbox_task_with_plan_args import TimePlanAssociateInboxTaskWithPlanArgs
+from .time_plan_associate_inbox_task_with_plan_result import TimePlanAssociateInboxTaskWithPlanResult
 from .time_plan_associate_with_activities_args import TimePlanAssociateWithActivitiesArgs
 from .time_plan_associate_with_activities_result import TimePlanAssociateWithActivitiesResult
 from .time_plan_associate_with_big_plans_args import TimePlanAssociateWithBigPlansArgs
@@ -518,17 +601,35 @@ from .time_plan_change_time_config_args_right_now import TimePlanChangeTimeConfi
 from .time_plan_create_args import TimePlanCreateArgs
 from .time_plan_create_result import TimePlanCreateResult
 from .time_plan_domain import TimePlanDomain
+from .time_plan_domain_generation_in_advance_days import TimePlanDomainGenerationInAdvanceDays
 from .time_plan_find_args import TimePlanFindArgs
 from .time_plan_find_result import TimePlanFindResult
 from .time_plan_find_result_entry import TimePlanFindResultEntry
 from .time_plan_gen_for_time_plan_args import TimePlanGenForTimePlanArgs
+from .time_plan_generation_approach import TimePlanGenerationApproach
 from .time_plan_load_args import TimePlanLoadArgs
 from .time_plan_load_for_date_and_period_args import TimePlanLoadForDateAndPeriodArgs
 from .time_plan_load_for_date_and_period_result import TimePlanLoadForDateAndPeriodResult
 from .time_plan_load_result import TimePlanLoadResult
 from .time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0
+from .time_plan_load_settings_args import TimePlanLoadSettingsArgs
+from .time_plan_load_settings_result import TimePlanLoadSettingsResult
+from .time_plan_load_settings_result_generation_in_advance_days import TimePlanLoadSettingsResultGenerationInAdvanceDays
+from .time_plan_regen_args import TimePlanRegenArgs
 from .time_plan_remove_args import TimePlanRemoveArgs
 from .time_plan_source import TimePlanSource
+from .time_plan_update_settings_args import TimePlanUpdateSettingsArgs
+from .time_plan_update_settings_args_generation_approach import TimePlanUpdateSettingsArgsGenerationApproach
+from .time_plan_update_settings_args_generation_in_advance_days import TimePlanUpdateSettingsArgsGenerationInAdvanceDays
+from .time_plan_update_settings_args_generation_in_advance_days_value import (
+    TimePlanUpdateSettingsArgsGenerationInAdvanceDaysValue,
+)
+from .time_plan_update_settings_args_periods import TimePlanUpdateSettingsArgsPeriods
+from .time_plan_update_settings_args_planning_task_difficulty import TimePlanUpdateSettingsArgsPlanningTaskDifficulty
+from .time_plan_update_settings_args_planning_task_eisen import TimePlanUpdateSettingsArgsPlanningTaskEisen
+from .time_plan_update_settings_args_planning_task_project_ref_id import (
+    TimePlanUpdateSettingsArgsPlanningTaskProjectRefId,
+)
 from .user import User
 from .user_category import UserCategory
 from .user_change_feature_flags_args import UserChangeFeatureFlagsArgs
@@ -563,12 +664,15 @@ from .vacation_update_args import VacationUpdateArgs
 from .vacation_update_args_end_date import VacationUpdateArgsEndDate
 from .vacation_update_args_name import VacationUpdateArgsName
 from .vacation_update_args_start_date import VacationUpdateArgsStartDate
+from .widget_dimension import WidgetDimension
+from .widget_geometry import WidgetGeometry
+from .widget_type import WidgetType
+from .widget_type_constraints import WidgetTypeConstraints
+from .widget_type_constraints_allowed_dimensions import WidgetTypeConstraintsAllowedDimensions
 from .workable_big_plan import WorkableBigPlan
 from .workable_summary import WorkableSummary
 from .working_mem import WorkingMem
 from .working_mem_archive_args import WorkingMemArchiveArgs
-from .working_mem_change_clean_up_project_args import WorkingMemChangeCleanUpProjectArgs
-from .working_mem_change_generation_period_args import WorkingMemChangeGenerationPeriodArgs
 from .working_mem_collection import WorkingMemCollection
 from .working_mem_find_args import WorkingMemFindArgs
 from .working_mem_find_result import WorkingMemFindResult
@@ -580,6 +684,9 @@ from .working_mem_load_current_result import WorkingMemLoadCurrentResult
 from .working_mem_load_result import WorkingMemLoadResult
 from .working_mem_load_settings_args import WorkingMemLoadSettingsArgs
 from .working_mem_load_settings_result import WorkingMemLoadSettingsResult
+from .working_mem_update_settings_args import WorkingMemUpdateSettingsArgs
+from .working_mem_update_settings_args_cleanup_project_ref_id import WorkingMemUpdateSettingsArgsCleanupProjectRefId
+from .working_mem_update_settings_args_generation_period import WorkingMemUpdateSettingsArgsGenerationPeriod
 from .workspace import Workspace
 from .workspace_change_feature_flags_args import WorkspaceChangeFeatureFlagsArgs
 from .workspace_feature import WorkspaceFeature
@@ -598,6 +705,7 @@ __all__ = (
     "AppDistributionState",
     "AppPlatform",
     "AppShell",
+    "ArchivalReason",
     "BigPlan",
     "BigPlanArchiveArgs",
     "BigPlanArchiveServiceResult",
@@ -609,17 +717,34 @@ __all__ = (
     "BigPlanFindResultEntry",
     "BigPlanLoadArgs",
     "BigPlanLoadResult",
+    "BigPlanMilestone",
+    "BigPlanMilestoneArchiveArgs",
+    "BigPlanMilestoneCreateArgs",
+    "BigPlanMilestoneCreateResult",
+    "BigPlanMilestoneLoadArgs",
+    "BigPlanMilestoneLoadResult",
+    "BigPlanMilestoneRemoveArgs",
+    "BigPlanMilestoneUpdateArgs",
+    "BigPlanMilestoneUpdateArgsDate",
+    "BigPlanMilestoneUpdateArgsName",
+    "BigPlanRefreshStatsArgs",
     "BigPlanRemoveArgs",
+    "BigPlanStats",
     "BigPlanStatus",
     "BigPlanSummary",
     "BigPlanUpdateArgs",
     "BigPlanUpdateArgsActionableDate",
+    "BigPlanUpdateArgsDifficulty",
     "BigPlanUpdateArgsDueDate",
+    "BigPlanUpdateArgsEisen",
+    "BigPlanUpdateArgsIsKey",
     "BigPlanUpdateArgsName",
     "BigPlanUpdateArgsProjectRefId",
     "BigPlanUpdateArgsStatus",
     "BigPlanUpdateResult",
     "BigPlanWorkSummary",
+    "BigScreenHomeTabWidgetPlacement",
+    "BigScreenHomeTabWidgetPlacementKind",
     "BulletedListBlock",
     "BulletedListBlockKind",
     "CalendarEventsEntries",
@@ -654,6 +779,7 @@ __all__ = (
     "ChoreUpdateArgsDueAtMonth",
     "ChoreUpdateArgsEisen",
     "ChoreUpdateArgsEndAtDate",
+    "ChoreUpdateArgsIsKey",
     "ChoreUpdateArgsMustDo",
     "ChoreUpdateArgsName",
     "ChoreUpdateArgsPeriod",
@@ -740,6 +866,8 @@ __all__ = (
     "HabitRegenArgs",
     "HabitRemoveArgs",
     "HabitRepeatsStrategy",
+    "HabitStreakMark",
+    "HabitStreakMarkStatuses",
     "HabitSummary",
     "HabitSuspendArgs",
     "HabitUnsuspendArgs",
@@ -750,6 +878,7 @@ __all__ = (
     "HabitUpdateArgsDueAtDay",
     "HabitUpdateArgsDueAtMonth",
     "HabitUpdateArgsEisen",
+    "HabitUpdateArgsIsKey",
     "HabitUpdateArgsName",
     "HabitUpdateArgsPeriod",
     "HabitUpdateArgsProjectRefId",
@@ -758,6 +887,32 @@ __all__ = (
     "HabitUpdateArgsSkipRule",
     "HeadingBlock",
     "HeadingBlockKind",
+    "HomeConfig",
+    "HomeConfigLoadArgs",
+    "HomeConfigLoadResult",
+    "HomeConfigLoadResultWidgetConstraints",
+    "HomeConfigOrderOfTabs",
+    "HomeTab",
+    "HomeTabArchiveArgs",
+    "HomeTabCreateArgs",
+    "HomeTabCreateResult",
+    "HomeTabLoadArgs",
+    "HomeTabLoadResult",
+    "HomeTabRemoveArgs",
+    "HomeTabTarget",
+    "HomeTabUpdateArgs",
+    "HomeTabUpdateArgsIcon",
+    "HomeTabUpdateArgsName",
+    "HomeTabWidgetPlacement",
+    "HomeTabWidgetPlacementSection",
+    "HomeWidget",
+    "HomeWidgetArchiveArgs",
+    "HomeWidgetCreateArgs",
+    "HomeWidgetCreateResult",
+    "HomeWidgetLoadArgs",
+    "HomeWidgetLoadResult",
+    "HomeWidgetMoveAndResizeArgs",
+    "HomeWidgetRemoveArgs",
     "Hosting",
     "InboxTask",
     "InboxTaskArchiveArgs",
@@ -781,6 +936,7 @@ __all__ = (
     "InboxTaskUpdateArgsDifficulty",
     "InboxTaskUpdateArgsDueDate",
     "InboxTaskUpdateArgsEisen",
+    "InboxTaskUpdateArgsIsKey",
     "InboxTaskUpdateArgsName",
     "InboxTaskUpdateArgsProjectRefId",
     "InboxTaskUpdateArgsStatus",
@@ -789,25 +945,38 @@ __all__ = (
     "InitResult",
     "Journal",
     "JournalArchiveArgs",
-    "JournalChangePeriodsArgs",
     "JournalChangeTimeConfigArgs",
     "JournalChangeTimeConfigArgsPeriod",
     "JournalChangeTimeConfigArgsRightNow",
     "JournalCollection",
+    "JournalCollectionGenerationInAdvanceDays",
     "JournalCreateArgs",
     "JournalCreateResult",
     "JournalFindArgs",
     "JournalFindResult",
     "JournalFindResultEntry",
+    "JournalGenerationApproach",
     "JournalLoadArgs",
     "JournalLoadForDateAndPeriodArgs",
     "JournalLoadForDateAndPeriodResult",
     "JournalLoadResult",
     "JournalLoadSettingsArgs",
     "JournalLoadSettingsResult",
+    "JournalLoadSettingsResultGenerationInAdvanceDays",
+    "JournalRefreshStatsArgs",
+    "JournalRegenArgs",
     "JournalRemoveArgs",
     "JournalSource",
-    "JournalUpdateReportArgs",
+    "JournalStats",
+    "JournalSummary",
+    "JournalUpdateSettingsArgs",
+    "JournalUpdateSettingsArgsGenerationApproach",
+    "JournalUpdateSettingsArgsGenerationInAdvanceDays",
+    "JournalUpdateSettingsArgsGenerationInAdvanceDaysValue",
+    "JournalUpdateSettingsArgsPeriods",
+    "JournalUpdateSettingsArgsWritingTaskDifficulty",
+    "JournalUpdateSettingsArgsWritingTaskEisen",
+    "JournalUpdateSettingsArgsWritingTaskProjectRefId",
     "LinkBlock",
     "LinkBlockKind",
     "ListItem",
@@ -855,7 +1024,11 @@ __all__ = (
     "MetricUpdateArgsCollectionEisen",
     "MetricUpdateArgsCollectionPeriod",
     "MetricUpdateArgsIcon",
+    "MetricUpdateArgsIsKey",
     "MetricUpdateArgsName",
+    "MOTD",
+    "MOTDGetForTodayArgs",
+    "MOTDGetForTodayResult",
     "NamedEntityTag",
     "NestedResult",
     "NestedResultPerSource",
@@ -932,6 +1105,7 @@ __all__ = (
     "RecurringTaskPeriod",
     "RecurringTaskWorkSummary",
     "RemoveAllArgs",
+    "ReorderTabsArgs",
     "ReportArgs",
     "ReportBreakdown",
     "ReportPeriodResult",
@@ -1022,6 +1196,8 @@ __all__ = (
     "SlackTaskUpdateArgsGenerationStatus",
     "SlackTaskUpdateArgsMessage",
     "SlackTaskUpdateArgsUser",
+    "SmallScreenHomeTabWidgetPlacement",
+    "SmallScreenHomeTabWidgetPlacementKind",
     "SmartList",
     "SmartListArchiveArgs",
     "SmartListCollection",
@@ -1058,6 +1234,13 @@ __all__ = (
     "SmartListUpdateArgs",
     "SmartListUpdateArgsIcon",
     "SmartListUpdateArgsName",
+    "StatsDoAllArgs",
+    "StatsDoArgs",
+    "StatsLoadRunsArgs",
+    "StatsLoadRunsResult",
+    "StatsLog",
+    "StatsLogEntry",
+    "SuggestedDate",
     "SyncTarget",
     "TableBlock",
     "TableBlockKind",
@@ -1084,6 +1267,7 @@ __all__ = (
     "TimePlan",
     "TimePlanActivity",
     "TimePlanActivityArchiveArgs",
+    "TimePlanActivityDoneness",
     "TimePlanActivityFeasability",
     "TimePlanActivityFindForTargetArgs",
     "TimePlanActivityFindForTargetResult",
@@ -1097,6 +1281,10 @@ __all__ = (
     "TimePlanActivityUpdateArgsFeasability",
     "TimePlanActivityUpdateArgsKind",
     "TimePlanArchiveArgs",
+    "TimePlanAssociateBigPlanWithPlanArgs",
+    "TimePlanAssociateBigPlanWithPlanResult",
+    "TimePlanAssociateInboxTaskWithPlanArgs",
+    "TimePlanAssociateInboxTaskWithPlanResult",
     "TimePlanAssociateWithActivitiesArgs",
     "TimePlanAssociateWithActivitiesResult",
     "TimePlanAssociateWithBigPlansArgs",
@@ -1109,17 +1297,31 @@ __all__ = (
     "TimePlanCreateArgs",
     "TimePlanCreateResult",
     "TimePlanDomain",
+    "TimePlanDomainGenerationInAdvanceDays",
     "TimePlanFindArgs",
     "TimePlanFindResult",
     "TimePlanFindResultEntry",
+    "TimePlanGenerationApproach",
     "TimePlanGenForTimePlanArgs",
     "TimePlanLoadArgs",
     "TimePlanLoadForDateAndPeriodArgs",
     "TimePlanLoadForDateAndPeriodResult",
     "TimePlanLoadResult",
     "TimePlanLoadResultActivityDonenessType0",
+    "TimePlanLoadSettingsArgs",
+    "TimePlanLoadSettingsResult",
+    "TimePlanLoadSettingsResultGenerationInAdvanceDays",
+    "TimePlanRegenArgs",
     "TimePlanRemoveArgs",
     "TimePlanSource",
+    "TimePlanUpdateSettingsArgs",
+    "TimePlanUpdateSettingsArgsGenerationApproach",
+    "TimePlanUpdateSettingsArgsGenerationInAdvanceDays",
+    "TimePlanUpdateSettingsArgsGenerationInAdvanceDaysValue",
+    "TimePlanUpdateSettingsArgsPeriods",
+    "TimePlanUpdateSettingsArgsPlanningTaskDifficulty",
+    "TimePlanUpdateSettingsArgsPlanningTaskEisen",
+    "TimePlanUpdateSettingsArgsPlanningTaskProjectRefId",
     "User",
     "UserCategory",
     "UserChangeFeatureFlagsArgs",
@@ -1154,12 +1356,15 @@ __all__ = (
     "VacationUpdateArgsEndDate",
     "VacationUpdateArgsName",
     "VacationUpdateArgsStartDate",
+    "WidgetDimension",
+    "WidgetGeometry",
+    "WidgetType",
+    "WidgetTypeConstraints",
+    "WidgetTypeConstraintsAllowedDimensions",
     "WorkableBigPlan",
     "WorkableSummary",
     "WorkingMem",
     "WorkingMemArchiveArgs",
-    "WorkingMemChangeCleanUpProjectArgs",
-    "WorkingMemChangeGenerationPeriodArgs",
     "WorkingMemCollection",
     "WorkingMemFindArgs",
     "WorkingMemFindResult",
@@ -1171,6 +1376,9 @@ __all__ = (
     "WorkingMemLoadResult",
     "WorkingMemLoadSettingsArgs",
     "WorkingMemLoadSettingsResult",
+    "WorkingMemUpdateSettingsArgs",
+    "WorkingMemUpdateSettingsArgsCleanupProjectRefId",
+    "WorkingMemUpdateSettingsArgsGenerationPeriod",
     "Workspace",
     "WorkspaceChangeFeatureFlagsArgs",
     "WorkspaceFeature",

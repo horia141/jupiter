@@ -1,26 +1,21 @@
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  Typography,
-} from "@mui/material";
+import { Typography } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { parseQuery } from "zodix";
 
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { Logo } from "~/components/logo";
-import { Title } from "~/components/title";
+import { Logo } from "~/components/infra/logo";
+import { Title } from "~/components/infra/title";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
+import { EMPTY_CONTEXT } from "~/top-level-context";
 
 const QuerySchema = z.object({
   returnTo: z.string(),
@@ -54,30 +49,31 @@ export default function RenderFix() {
       </SmartAppBar>
 
       <LifecyclePanel>
-        <Card>
-          <CardHeader title="Oops" />
-          <CardContent>
-            <Typography>
-              There seems to have been some application error.
-            </Typography>
+        <SectionCard
+          title="Oops"
+          actionsPosition={ActionsPosition.BELOW}
+          actions={
+            <SectionActions
+              id="render-fix"
+              topLevelInfo={EMPTY_CONTEXT}
+              inputsEnabled={true}
+              actions={[
+                NavSingle({
+                  text: "Return",
+                  link: loaderData.returnTo,
+                }),
+              ]}
+            />
+          }
+        >
+          <Typography>
+            There seems to have been some application error.
+          </Typography>
 
-            <Typography>
-              We&apos;ve recovered. Press the button below to return!
-            </Typography>
-          </CardContent>
-        </Card>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              to={loaderData.returnTo}
-              component={Link}
-            >
-              Return
-            </Button>
-          </ButtonGroup>
-        </CardActions>
+          <Typography>
+            We&apos;ve recovered. Press the button below to return!
+          </Typography>
+        </SectionCard>
       </LifecyclePanel>
     </StandaloneContainer>
   );

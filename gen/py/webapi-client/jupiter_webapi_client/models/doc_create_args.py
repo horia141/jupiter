@@ -28,12 +28,14 @@ class DocCreateArgs:
     """DocCreate args.
 
     Attributes:
+        idempotency_key (str): A document idempotency key in this domain.
         name (str): The doc name.
         content (list[Union['BulletedListBlock', 'ChecklistBlock', 'CodeBlock', 'DividerBlock', 'EntityReferenceBlock',
             'HeadingBlock', 'LinkBlock', 'NumberedListBlock', 'ParagraphBlock', 'QuoteBlock', 'TableBlock']]):
         parent_doc_ref_id (Union[None, Unset, str]):
     """
 
+    idempotency_key: str
     name: str
     content: list[
         Union[
@@ -64,6 +66,8 @@ class DocCreateArgs:
         from ..models.paragraph_block import ParagraphBlock
         from ..models.quote_block import QuoteBlock
         from ..models.table_block import TableBlock
+
+        idempotency_key = self.idempotency_key
 
         name = self.name
 
@@ -105,6 +109,7 @@ class DocCreateArgs:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
+                "idempotency_key": idempotency_key,
                 "name": name,
                 "content": content,
             }
@@ -129,6 +134,8 @@ class DocCreateArgs:
         from ..models.table_block import TableBlock
 
         d = dict(src_dict)
+        idempotency_key = d.pop("idempotency_key")
+
         name = d.pop("name")
 
         content = []
@@ -250,6 +257,7 @@ class DocCreateArgs:
         parent_doc_ref_id = _parse_parent_doc_ref_id(d.pop("parent_doc_ref_id", UNSET))
 
         doc_create_args = cls(
+            idempotency_key=idempotency_key,
             name=name,
             content=content,
             parent_doc_ref_id=parent_doc_ref_id,

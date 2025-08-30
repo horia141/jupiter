@@ -9,6 +9,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.inbox_task import InboxTask
     from ..models.journal import Journal
+    from ..models.journal_stats import JournalStats
     from ..models.note import Note
 
 
@@ -22,16 +23,19 @@ class JournalFindResultEntry:
     Attributes:
         journal (Journal): A journal for a particular range.
         note (Union['Note', None, Unset]):
+        journal_stats (Union['JournalStats', None, Unset]):
         writing_task (Union['InboxTask', None, Unset]):
     """
 
     journal: "Journal"
     note: Union["Note", None, Unset] = UNSET
+    journal_stats: Union["JournalStats", None, Unset] = UNSET
     writing_task: Union["InboxTask", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.inbox_task import InboxTask
+        from ..models.journal_stats import JournalStats
         from ..models.note import Note
 
         journal = self.journal.to_dict()
@@ -43,6 +47,14 @@ class JournalFindResultEntry:
             note = self.note.to_dict()
         else:
             note = self.note
+
+        journal_stats: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.journal_stats, Unset):
+            journal_stats = UNSET
+        elif isinstance(self.journal_stats, JournalStats):
+            journal_stats = self.journal_stats.to_dict()
+        else:
+            journal_stats = self.journal_stats
 
         writing_task: Union[None, Unset, dict[str, Any]]
         if isinstance(self.writing_task, Unset):
@@ -61,6 +73,8 @@ class JournalFindResultEntry:
         )
         if note is not UNSET:
             field_dict["note"] = note
+        if journal_stats is not UNSET:
+            field_dict["journal_stats"] = journal_stats
         if writing_task is not UNSET:
             field_dict["writing_task"] = writing_task
 
@@ -70,6 +84,7 @@ class JournalFindResultEntry:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.inbox_task import InboxTask
         from ..models.journal import Journal
+        from ..models.journal_stats import JournalStats
         from ..models.note import Note
 
         d = dict(src_dict)
@@ -92,6 +107,23 @@ class JournalFindResultEntry:
 
         note = _parse_note(d.pop("note", UNSET))
 
+        def _parse_journal_stats(data: object) -> Union["JournalStats", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                journal_stats_type_0 = JournalStats.from_dict(data)
+
+                return journal_stats_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["JournalStats", None, Unset], data)
+
+        journal_stats = _parse_journal_stats(d.pop("journal_stats", UNSET))
+
         def _parse_writing_task(data: object) -> Union["InboxTask", None, Unset]:
             if data is None:
                 return data
@@ -112,6 +144,7 @@ class JournalFindResultEntry:
         journal_find_result_entry = cls(
             journal=journal,
             note=note,
+            journal_stats=journal_stats,
             writing_task=writing_task,
         )
 

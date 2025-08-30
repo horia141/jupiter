@@ -19,15 +19,19 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { useActionData, useNavigation, useParams } from "@remix-run/react";
+import {
+  useActionData,
+  useNavigation,
+  useParams,
+  useSearchParams,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { InboxTaskCard } from "~/components/inbox-task-card";
+import { InboxTaskCard } from "~/components/domain/concept/inbox-task/inbox-task-card";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -37,11 +41,11 @@ import {
   FilterFewOptionsCompact,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { PeriodSelect } from "~/components/period-select";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
+import { SectionCard } from "~/components/infra/section-card";
+import { PeriodSelect } from "~/components/domain/core/period-select";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { InboxTaskParent } from "~/logic/domain/inbox-task";
 import {
@@ -49,6 +53,7 @@ import {
   inboxTaskFindEntryToParent,
   sortInboxTasksByEisenAndDifficulty,
 } from "~/logic/domain/inbox-task";
+import { allHigherPeriods } from "~/logic/domain/period";
 import {
   computeProjectHierarchicalNameFromRoot,
   sortProjectsByTreeOrder,
@@ -74,6 +79,10 @@ enum View {
 
 const ParamsSchema = z.object({
   id: z.string(),
+});
+
+const QuerySchema = z.object({
+  showFromPeriod: z.nativeEnum(RecurringTaskPeriod).optional(),
 });
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
@@ -146,6 +155,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
+  const query = await parseQuery(request, QuerySchema);
 
   try {
     switch (form.intent) {
@@ -156,7 +166,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         });
 
         return redirect(
-          `/app/workspace/time-plans/${id}/add-from-generated-inbox-tasks`,
+          `/app/workspace/time-plans/${id}/add-from-generated-inbox-tasks?${new URLSearchParams(query).toString()}`,
         );
       }
 
@@ -194,6 +204,8 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   const navigation = useNavigation();
   const topLevelInfo = useContext(TopLevelInfoContext);
   const isBigScreen = useBigScreen();
+  const [searchParams] = useSearchParams();
+  const query = parseQuery(searchParams, QuerySchema);
 
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.timePlan.archived;
@@ -206,6 +218,10 @@ export default function TimePlanAddFromCurrentInboxTasks() {
 
   const [targetInboxTaskRefIds, setTargetInboxTaskRefIds] = useState(
     new Set<string>(),
+  );
+
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    query.showFromPeriod ? query.showFromPeriod : RecurringTaskPeriod.DAILY,
   );
 
   const entriesByRefId: { [key: string]: InboxTaskParent } = {};
@@ -235,6 +251,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
         topLevelInfo.user.timezone,
       ),
       includeIfNoDueDate: true,
+      allowPeriodsForRecurringTasks: allHigherPeriods(selectedPeriod),
     },
   );
 
@@ -243,8 +260,6 @@ export default function TimePlanAddFromCurrentInboxTasks() {
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   useEffect(() => {
     setSelectedView(inferDefaultSelectedView(topLevelInfo.workspace));
   }, [topLevelInfo]);
@@ -252,6 +267,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   return (
     <LeafPanel
       key={`time-plan-${id}/add-from-generated-inbox-tasks`}
+      fakeKey={`time-plan-${id}/add-from-generated-inbox-tasks`}
       returnLocation={`/app/workspace/time-plans/${id}`}
       returnLocationDiscriminator="add-from-generated-inbox-tasks"
       inputsEnabled={inputsEnabled}
@@ -262,7 +278,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
       ]}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-plan-current-inbox-tasks"
         title="Current Inbox Tasks"
         actions={
@@ -321,86 +337,113 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                 ],
                 (selected) => setSelectedActionableTime(selected),
               ),
+              FilterFewOptionsCompact(
+                "From Period",
+                selectedPeriod,
+                [
+                  {
+                    value: RecurringTaskPeriod.DAILY,
+                    text: "From Daily",
+                  },
+                  {
+                    value: RecurringTaskPeriod.WEEKLY,
+                    text: "From Weekly",
+                  },
+                  {
+                    value: RecurringTaskPeriod.MONTHLY,
+                    text: "From Monthly",
+                  },
+                  {
+                    value: RecurringTaskPeriod.QUARTERLY,
+                    text: "From Quarterly",
+                  },
+                  {
+                    value: RecurringTaskPeriod.YEARLY,
+                    text: "From Yearly",
+                  },
+                ],
+                (selected) => setSelectedPeriod(selected),
+              ),
             ]}
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Stack
-            spacing={2}
-            useFlexGap
-            direction={isBigScreen ? "row" : "column"}
-          >
-            <FormControl fullWidth>
-              <InputLabel id="today" shrink>
-                Generation Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="Generation Date"
-                readOnly={!inputsEnabled}
-                disabled={!inputsEnabled}
-                defaultValue={loaderData.timePlan.start_date}
-                name="today"
-              />
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
+          <FormControl fullWidth>
+            <InputLabel id="today" shrink>
+              Generation Date
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="Generation Date"
+              readOnly={!inputsEnabled}
+              disabled={!inputsEnabled}
+              defaultValue={loaderData.timePlan.start_date}
+              name="today"
+            />
 
-              <FieldError actionResult={actionData} fieldName="/today" />
-            </FormControl>
+            <FieldError actionResult={actionData} fieldName="/today" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <PeriodSelect
-                labelId="period"
-                label="Generation Period"
-                name="period"
-                inputsEnabled={inputsEnabled}
-                defaultValue={[loaderData.timePlan.period]}
-              />
-              <FieldError actionResult={actionData} fieldName="/period" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <PeriodSelect
+              labelId="period"
+              label="Generation Period"
+              name="period"
+              inputsEnabled={inputsEnabled}
+              defaultValue={[loaderData.timePlan.period]}
+            />
+            <FieldError actionResult={actionData} fieldName="/period" />
+          </FormControl>
+        </Stack>
 
-          <Stack
-            spacing={2}
-            useFlexGap
-            direction={isBigScreen ? "row" : "column"}
-          >
-            <FormControl fullWidth>
-              <FormLabel id="kind">Kind</FormLabel>
-              <TimePlanActivitKindSelect
-                name="kind"
-                defaultValue={TimePlanActivityKind.FINISH}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/kind" />
-            </FormControl>
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
+          <FormControl fullWidth>
+            <FormLabel id="kind">Kind</FormLabel>
+            <TimePlanActivitKindSelect
+              name="kind"
+              defaultValue={TimePlanActivityKind.FINISH}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/kind" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <FormLabel id="feasability">Feasability</FormLabel>
-              <TimePlanActivityFeasabilitySelect
-                name="feasability"
-                defaultValue={TimePlanActivityFeasability.MUST_DO}
-                inputsEnabled={inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/feasability" />
-            </FormControl>
-          </Stack>
+          <FormControl fullWidth>
+            <FormLabel id="feasability">Feasability</FormLabel>
+            <TimePlanActivityFeasabilitySelect
+              name="feasability"
+              defaultValue={TimePlanActivityFeasability.MUST_DO}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/feasability" />
+          </FormControl>
         </Stack>
 
         {selectedView === View.MERGED && (
-          <InboxTaskList
-            today={today}
-            topLevelInfo={topLevelInfo}
-            inboxTasks={filteredInboxTasks}
-            alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
-            targetInboxTaskRefIds={targetInboxTaskRefIds}
-            inboxTasksByRefId={entriesByRefId}
-            onSelected={(it) =>
-              setTargetInboxTaskRefIds((itri) =>
-                toggleInboxTaskRefIds(itri, it.ref_id),
-              )
-            }
-          />
+          <>
+            <StandardDivider title="All Inbox Tasks" size="large" />
+            <InboxTaskList
+              topLevelInfo={topLevelInfo}
+              inboxTasks={filteredInboxTasks}
+              alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
+              targetInboxTaskRefIds={targetInboxTaskRefIds}
+              inboxTasksByRefId={entriesByRefId}
+              onSelected={(it) =>
+                setTargetInboxTaskRefIds((itri) =>
+                  toggleInboxTaskRefIds(itri, it.ref_id),
+                )
+              }
+            />
+          </>
         )}
 
         {selectedView === View.BY_PROJECT && (
@@ -424,7 +467,6 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                   <StandardDivider title={fullProjectName} size="large" />
 
                   <InboxTaskList
-                    today={today}
                     topLevelInfo={topLevelInfo}
                     inboxTasks={theInboxTasks}
                     alreadyIncludedInboxTaskRefIds={
@@ -449,7 +491,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           type="hidden"
           value={Array.from(targetInboxTaskRefIds).join(",")}
         />
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }
@@ -465,7 +507,6 @@ export const ErrorBoundary = makeLeafErrorBoundary(
 );
 
 interface InboxTaskListProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   alreadyIncludedInboxTaskRefIds: Set<string>;
@@ -480,7 +521,6 @@ function InboxTaskList(props: InboxTaskListProps) {
       {props.inboxTasks.map((inboxTask) => (
         <InboxTaskCard
           key={`inbox-task-${inboxTask.ref_id}`}
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTask={inboxTask}
           allowSelect

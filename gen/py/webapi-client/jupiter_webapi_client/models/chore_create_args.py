@@ -19,6 +19,7 @@ class ChoreCreateArgs:
     Attributes:
         name (str): The chore name.
         period (RecurringTaskPeriod): A period for a particular task.
+        is_key (bool):
         eisen (Eisen): The Eisenhower status of a particular task.
         difficulty (Difficulty): The difficulty of a particular task.
         must_do (bool):
@@ -34,6 +35,7 @@ class ChoreCreateArgs:
 
     name: str
     period: RecurringTaskPeriod
+    is_key: bool
     eisen: Eisen
     difficulty: Difficulty
     must_do: bool
@@ -51,6 +53,8 @@ class ChoreCreateArgs:
         name = self.name
 
         period = self.period.value
+
+        is_key = self.is_key
 
         eisen = self.eisen.value
 
@@ -112,6 +116,7 @@ class ChoreCreateArgs:
             {
                 "name": name,
                 "period": period,
+                "is_key": is_key,
                 "eisen": eisen,
                 "difficulty": difficulty,
                 "must_do": must_do,
@@ -142,6 +147,8 @@ class ChoreCreateArgs:
         name = d.pop("name")
 
         period = RecurringTaskPeriod(d.pop("period"))
+
+        is_key = d.pop("is_key")
 
         eisen = Eisen(d.pop("eisen"))
 
@@ -224,6 +231,7 @@ class ChoreCreateArgs:
         chore_create_args = cls(
             name=name,
             period=period,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             must_do=must_do,

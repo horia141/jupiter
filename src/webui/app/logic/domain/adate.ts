@@ -1,12 +1,20 @@
 import type { ADate } from "@jupiter/webapi-client";
 import { DateTime } from "luxon";
 
+export function strToADate(str: string): ADate {
+  return DateTime.fromFormat(str, "yyyy-MM-dd").toISODate() as ADate;
+}
+
 export function aDateToDate(aDate: ADate): DateTime<true> {
   const date = DateTime.fromISO(aDate);
   if (!date.isValid) {
     throw new Error(`Invalid date: ${aDate}`);
   }
   return date;
+}
+
+export function dateToAdate(date: DateTime<true>): ADate {
+  return date.toISODate() as ADate;
 }
 
 export function compareADate(

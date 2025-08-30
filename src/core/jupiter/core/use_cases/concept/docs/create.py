@@ -1,16 +1,18 @@
 """Use case for creating a doc."""
 
 from jupiter.core.domain.app import AppCore
-from jupiter.core.domain.concept.docs.doc import Doc
+from jupiter.core.domain.concept.docs.doc import Doc, DocRepository
 from jupiter.core.domain.concept.docs.doc_collection import DocCollection
+from jupiter.core.domain.concept.docs.doc_idempotency_key import DocIdempotencyKey
 from jupiter.core.domain.concept.docs.doc_name import DocName
-from jupiter.core.domain.core.notes.note import Note
+from jupiter.core.domain.core.notes.note import Note, NoteRepository
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -31,6 +33,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 class DocCreateArgs(UseCaseArgsBase):
     """DocCreate args."""
 
+    idempotency_key: DocIdempotencyKey
     name: DocName
     content: list[OneOfNoteContentBlock]
     parent_doc_ref_id: EntityId | None
@@ -70,19 +73,34 @@ class DocCreateUseCase(
             ctx=context.domain_context,
             doc_collection_ref_id=doc_collection.ref_id,
             parent_doc_ref_id=args.parent_doc_ref_id,
+            idempotency_key=args.idempotency_key,
             name=args.name,
         )
-        doc = await uow.get_for(Doc).create(doc)
+        doc, newly_created = await uow.get(DocRepository).create_if_not_exists(doc)
 
-        note = Note.new_note(
-            ctx=context.domain_context,
-            note_collection_ref_id=note_collection.ref_id,
-            domain=NoteDomain.DOC,
-            source_entity_ref_id=doc.ref_id,
-            content=args.content,
-        )
-        note = await uow.get_for(Note).create(note)
+        if newly_created:
+            await progress_reporter.mark_created(doc)
+        else:
+            await progress_reporter.mark_updated(doc)
 
-        await progress_reporter.mark_created(doc)
+        if newly_created:
+            note = Note.new_note(
+                ctx=context.domain_context,
+                note_collection_ref_id=note_collection.ref_id,
+                domain=NoteDomain.DOC,
+                source_entity_ref_id=doc.ref_id,
+                content=args.content,
+            )
+            note = await uow.get_for(Note).create(note)
+        else:
+            note = await uow.get(NoteRepository).load_for_source(
+                NoteDomain.DOC,
+                doc.ref_id,
+            )
+            note = note.update(
+                ctx=context.domain_context,
+                content=UpdateAction.change_to(args.content),
+            )
+            note = await uow.get_for(Note).save(note)
 
         return DocCreateResult(new_doc=doc, new_note=note)

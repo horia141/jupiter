@@ -5,15 +5,14 @@ import {
   CardActions,
   CardContent,
   IconButton,
-  styled,
   useTheme,
 } from "@mui/material";
-import { Link } from "@remix-run/react";
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import type { PropsWithChildren } from "react";
 
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { FakeLink, StandardLink } from "~/components/infra/standard-link";
 
 const SWIPE_THRESHOLD = 200;
 const SWIPE_COMPLETE_THRESHOLD = 150;
@@ -21,7 +20,7 @@ const SWIPE_COMPLETE_THRESHOLD = 150;
 interface EntityCardProps {
   entityId?: string;
   showAsArchived?: boolean;
-  backgroundHint?: "neutral" | "success" | "failure";
+  backgroundHint?: "neutral" | "success" | "failure" | "warning";
   extraControls?: JSX.Element;
   allowSwipe?: boolean;
   allowSelect?: boolean;
@@ -106,14 +105,20 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           alignItems: "center",
           touchAction: "pan-y",
           position: "relative",
+          boxShadow:
+            props.allowSelect && props.selected
+              ? `inset 0 0 4px ${theme.palette.primary.main};`
+              : undefined,
           backgroundColor:
             backgroundHint === "neutral"
-              ? (props.allowSelect && props.selected) || props.showAsArchived
+              ? props.showAsArchived
                 ? theme.palette.action.hover
                 : "transparent"
               : backgroundHint === "success"
                 ? `${theme.palette.success.light}22`
-                : `${theme.palette.error.light}22`,
+                : backgroundHint === "warning"
+                  ? `${theme.palette.warning.light}22`
+                  : `${theme.palette.error.light}22`,
         }}
         onClick={props.onClick}
       >
@@ -154,93 +159,49 @@ interface EntityLinkProps {
   block?: boolean;
   light?: boolean;
   inline?: boolean;
+  singleLine?: boolean;
 }
 
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   if (!(props.block === true)) {
     return (
-      <StyledLink
+      <StandardLink
         onMouseDown={(e) => e.preventDefault()}
         to={props.to}
         inline={props.inline === true ? "true" : "false"}
         light={props.light === true ? "true" : "false"}
+        singleline={props.singleLine ? "true" : "false"}
       >
         {props.children}
-      </StyledLink>
+      </StandardLink>
     );
   } else {
     return (
-      <EntityFakeLink inline={props.inline} light={props.light}>
+      <EntityFakeLink
+        inline={props.inline}
+        light={props.light}
+        singleLine={props.singleLine}
+      >
         {props.children}
       </EntityFakeLink>
     );
   }
 }
 
-interface StyledLinkProps {
-  light: string;
-  inline: string;
-}
-
-const StyledLink = styled(Link)<StyledLinkProps>(
-  ({ theme, light, inline }) => ({
-    textDecoration: "none",
-    width: inline === "true" ? undefined : "100%",
-    color:
-      light === "true"
-        ? theme.palette.info.contrastText
-        : theme.palette.info.dark,
-    ":visited": {
-      color:
-        light === "true"
-          ? theme.palette.info.contrastText
-          : theme.palette.info.dark,
-    },
-    display: "flex",
-    gap: "0.5rem",
-    flexGrow: "1",
-    flexWrap: "wrap",
-    padding: inline === "true" ? undefined : "16px",
-    alignItems: "center",
-    WebkitTapHighlightColor: "transparent",
-  }),
-);
-
 interface EntityFakeLinkProps {
   inline?: boolean;
   light?: boolean;
+  singleLine?: boolean;
 }
 
 export function EntityFakeLink(props: PropsWithChildren<EntityFakeLinkProps>) {
   return (
-    <StyledFakeLink
+    <FakeLink
       inline={props.inline ? "true" : "false"}
       light={props.light ? "true" : "false"}
+      singleline={props.singleLine === true ? "true" : "false"}
     >
       {props.children}
-    </StyledFakeLink>
+    </FakeLink>
   );
 }
-
-const StyledFakeLink = styled("span")<StyledLinkProps>(
-  ({ theme, inline, light }) => ({
-    textDecoration: "none",
-    width: "100%",
-    color:
-      light === "true"
-        ? theme.palette.info.contrastText
-        : theme.palette.info.dark,
-    ":visited": {
-      color:
-        light === "true"
-          ? theme.palette.info.contrastText
-          : theme.palette.info.dark,
-    },
-    display: "flex",
-    gap: "0.5rem",
-    flexWrap: "wrap",
-    padding: inline === "true" ? undefined : "16px",
-    alignItems: "center",
-    WebkitTapHighlightColor: "transparent",
-  }),
-);

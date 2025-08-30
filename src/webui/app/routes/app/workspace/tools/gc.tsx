@@ -5,11 +5,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   InputLabel,
   styled,
@@ -19,22 +14,21 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntitySummaryLink } from "~/components/entity-summary-link";
-import { EventSourceTag } from "~/components/event-source-tag";
+import { EntitySummaryLink } from "~/components/infra/entity-summary-link";
+import { EventSourceTag } from "~/components/infra/event-source-tag";
 import { EntityCard } from "~/components/infra/entity-card";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
-import { StandardDivider } from "~/components/standard-divider";
-import { SyncTargetSelect } from "~/components/sync-target-select";
-import { SyncTargetTag } from "~/components/sync-target-tag";
-import { TimeDiffTag } from "~/components/time-diff-tag";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { SyncTargetSelect } from "~/components/domain/core/sync-target-select";
+import { SyncTargetTag } from "~/components/domain/core/sync-target-tag";
+import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 import {
   noErrorNoData,
   validationErrorToUIErrorInfo,
@@ -44,6 +38,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const GCFormSchema = z.object({
   gcTargets: selectZod(z.nativeEnum(SyncTarget)),
@@ -91,40 +90,40 @@ export default function GC() {
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = navigation.state === "idle";
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
 
   return (
     <ToolPanel>
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <FormControl fullWidth>
-            <InputLabel id="gcTargets">Garbage Collect Targets</InputLabel>
-            <SyncTargetSelect
-              topLevelInfo={topLevelInfo}
-              labelId="gcTargets"
-              label="Garbage Collect Targets"
-              name="gcTargets"
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/gc_targets" />
-          </FormControl>
-        </CardContent>
+      <GlobalError actionResult={actionData} />
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Garbage Collect
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+      <SectionCard
+        title="Garbage Collection"
+        actions={
+          <SectionActions
+            id="gc-actions"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Garbage Collect",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="gcTargets">Garbage Collect Targets</InputLabel>
+          <SyncTargetSelect
+            topLevelInfo={topLevelInfo}
+            labelId="gcTargets"
+            label="Garbage Collect Targets"
+            name="gcTargets"
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/gc_targets" />
+        </FormControl>
+      </SectionCard>
 
       <StandardDivider title="Garbage Collection" size="large" />
 
@@ -136,7 +135,7 @@ export default function GC() {
                 Run from <EventSourceTag source={entry.source} />
                 with {entry.entity_records.length} entities archived
                 <TimeDiffTag
-                  today={today}
+                  today={topLevelInfo.today}
                   labelPrefix="from"
                   collectionTime={entry.created_time}
                 />
@@ -153,7 +152,10 @@ export default function GC() {
 
               {entry.entity_records.map((record) => (
                 <EntityCard key={record.ref_id}>
-                  <EntitySummaryLink today={today} summary={record} />
+                  <EntitySummaryLink
+                    today={topLevelInfo.today}
+                    summary={record}
+                  />
                 </EntityCard>
               ))}
             </AccordionDetails>

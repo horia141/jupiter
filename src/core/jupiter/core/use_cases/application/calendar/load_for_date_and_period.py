@@ -14,6 +14,7 @@ from jupiter.core.domain.concept.vacations.vacation import Vacation
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
 from jupiter.core.domain.core import schedules
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.core.time_events.time_event_domain import TimeEventDomain
 from jupiter.core.domain.core.time_events.time_event_full_days_block import (
@@ -329,7 +330,7 @@ class CalendarLoadForDateAndPeriodUseCase(
         if len(time_events_in_day_for_inbox_tasks) > 0:
             inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
                 parent_ref_id=workspace.ref_id,
-                allow_archived=False,
+                allow_archived=ArchivalReason.GC,
                 ref_id=list(time_events_in_day_for_inbox_tasks.keys()),
             )
         inbox_task_entries = [

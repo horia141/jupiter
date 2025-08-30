@@ -27,6 +27,7 @@ class Person:
         name (str): The person name.
         person_collection_ref_id (str):
         relationship (PersonRelationship): The relationship the user has with a person.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         catch_up_params (Union['RecurringTaskGenParams', None, Unset]):
         birthday (Union[None, Unset, str]):
@@ -40,6 +41,7 @@ class Person:
     name: str
     person_collection_ref_id: str
     relationship: PersonRelationship
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     catch_up_params: Union["RecurringTaskGenParams", None, Unset] = UNSET
     birthday: Union[None, Unset, str] = UNSET
@@ -63,6 +65,12 @@ class Person:
         person_collection_ref_id = self.person_collection_ref_id
 
         relationship = self.relationship.value
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -98,6 +106,8 @@ class Person:
                 "relationship": relationship,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if catch_up_params is not UNSET:
@@ -127,6 +137,15 @@ class Person:
         person_collection_ref_id = d.pop("person_collection_ref_id")
 
         relationship = PersonRelationship(d.pop("relationship"))
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -172,6 +191,7 @@ class Person:
             name=name,
             person_collection_ref_id=person_collection_ref_id,
             relationship=relationship,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             catch_up_params=catch_up_params,
             birthday=birthday,

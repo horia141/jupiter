@@ -3,6 +3,7 @@ import type {
   InboxTask,
   TimePlan,
   TimePlanActivity,
+  TimePlanActivityDoneness,
   Workspace,
 } from "@jupiter/webapi-client";
 import {
@@ -19,20 +20,19 @@ import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Form, Outlet, useActionData, useNavigation } from "@remix-run/react";
+import { Outlet, useActionData, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
-import { Fragment, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStack } from "~/components/big-plan-stack";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
@@ -45,23 +45,18 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { JournalStack } from "~/components/journal-stack";
-import { PeriodSelect } from "~/components/period-select";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityList } from "~/components/time-plan-activity-list";
-import { TimePlanStack } from "~/components/time-plan-stack";
+import { SectionCard } from "~/components/infra/section-card";
+import { JournalStack } from "~/components/domain/concept/journal/journal-stack";
+import { PeriodSelect } from "~/components/domain/core/period-select";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { sortJournalsNaturally } from "~/logic/domain/journal";
-import {
-  computeProjectHierarchicalNameFromRoot,
-  sortProjectsByTreeOrder,
-} from "~/logic/domain/project";
+import { sortProjectsByTreeOrder } from "~/logic/domain/project";
 import { sortTimePlansNaturally } from "~/logic/domain/time-plan";
 import { filterActivityByFeasabilityWithParents } from "~/logic/domain/time-plan-activity";
+import { allowUserChanges } from "~/logic/domain/time-plan-source";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -71,6 +66,9 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { TimePlanMergedActivities } from "~/components/domain/concept/time-plan/time-plan-merged-activities";
+import { TimePlanByProjectActivities } from "~/components/domain/concept/time-plan/time-plan-by-project-activities";
+import { TimePlanStack } from "~/components/domain/concept/time-plan/time-plan-stack";
 
 enum View {
   MERGED = "merged",
@@ -143,7 +141,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       activities: result.activities,
       targetInboxTasks: result.target_inbox_tasks as Array<InboxTask>,
       targetBigPlans: result.target_big_plans,
-      activityDoneness: result.activity_doneness as Record<string, boolean>,
+      activityDoneness: result.activity_doneness as Record<
+        string,
+        TimePlanActivityDoneness
+      >,
       completedNontargetInboxTasks:
         result.completed_nontarget_inbox_tasks as Array<InboxTask>,
       completedNontargetBigPlans: result.completed_nottarget_big_plans,
@@ -237,6 +238,7 @@ export default function TimePlanView() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
+  const corePropertyEditable = allowUserChanges(loaderData.timePlan.source);
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.timePlan.archived;
 
@@ -314,421 +316,310 @@ export default function TimePlanView() {
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   const sortedSubJournals = sortJournalsNaturally(loaderData.subPeriodJournals);
 
   return (
     <BranchPanel
       key={`time-plan-${loaderData.timePlan.ref_id}`}
-      showArchiveAndRemoveButton
+      showArchiveAndRemoveButton={corePropertyEditable}
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.timePlan.archived}
       returnLocation="/app/workspace/time-plans"
     >
-      <Form method="post">
-        <NestingAwareBlock shouldHide={shouldShowALeaf}>
-          <GlobalError actionResult={actionData} />
-          <SectionCardNew
-            title="Properties"
-            actions={
-              <SectionActions
-                id="time-plan-properties"
-                topLevelInfo={topLevelInfo}
-                inputsEnabled={inputsEnabled}
-                actions={[
-                  ActionSingle({
-                    id: "time-plan-change-time-config",
-                    text: "Change Time Config",
-                    value: "change-time-config",
-                    disabled: !inputsEnabled,
-                    highlight: true,
-                  }),
-                ]}
-              />
-            }
-          >
-            <Stack
-              direction={isBigScreen ? "row" : "column"}
-              spacing={2}
-              useFlexGap
-            >
-              <FormControl fullWidth>
-                <InputLabel id="rightNow" shrink margin="dense">
-                  The Date
-                </InputLabel>
-                <OutlinedInput
-                  type="date"
-                  notched
-                  label="rightNow"
-                  name="rightNow"
-                  readOnly={!inputsEnabled}
-                  defaultValue={loaderData.timePlan.right_now}
-                />
-
-                <FieldError actionResult={actionData} fieldName="/right_now" />
-              </FormControl>
-
-              <FormControl fullWidth>
-                <PeriodSelect
-                  labelId="period"
-                  label="Period"
-                  name="period"
-                  inputsEnabled={inputsEnabled}
-                  defaultValue={loaderData.timePlan.period}
-                />
-                <FieldError actionResult={actionData} fieldName="/period" />
-                <FieldError actionResult={actionData} fieldName="/status" />
-              </FormControl>
-            </Stack>
-          </SectionCardNew>
-          <SectionCardNew title="Notes">
-            <EntityNoteEditor
-              initialNote={loaderData.note}
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
+        <GlobalError actionResult={actionData} />
+        <SectionCard
+          title="Properties"
+          actions={
+            <SectionActions
+              id="time-plan-properties"
+              topLevelInfo={topLevelInfo}
               inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  id: "time-plan-change-time-config",
+                  text: "Change Time Config",
+                  value: "change-time-config",
+                  disabled: !inputsEnabled || !corePropertyEditable,
+                  highlight: true,
+                }),
+              ]}
             />
-          </SectionCardNew>
-
-          <SectionCardNew
-            id="time-plan-activities"
-            title="Activities"
-            actions={
-              <SectionActions
-                id="activities"
-                topLevelInfo={topLevelInfo}
-                inputsEnabled={inputsEnabled}
-                actions={[
-                  NavMultipleCompact({
-                    navs: [
-                      NavSingle({
-                        text: "New Inbox Task",
-                        link: `/app/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
-                      }),
-                      NavSingle({
-                        text: "New Big Plan",
-                        link: `/app/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
-                        gatedOn: WorkspaceFeature.BIG_PLANS,
-                      }),
-                      NavSingle({
-                        text: "From Current Inbox Tasks",
-                        link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`,
-                      }),
-                      NavSingle({
-                        text: "From Generated Inbox Tasks",
-                        link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-generated-inbox-tasks`,
-                      }),
-                      NavSingle({
-                        text: "From Current Big Plans",
-                        link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
-                        gatedOn: WorkspaceFeature.BIG_PLANS,
-                      }),
-                      NavSingle({
-                        text: "From Time Plans",
-                        link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`,
-                      }),
-                    ],
-                  }),
-                  FilterFewOptionsSpread(
-                    "View",
-                    selectedView,
-                    [
-                      {
-                        value: View.MERGED,
-                        text: "Merged",
-                        icon: <ViewListIcon />,
-                      },
-                      {
-                        value: View.BY_PROJECT,
-                        text: "By Project",
-                        icon: <FlareIcon />,
-                        gatedOn: WorkspaceFeature.PROJECTS,
-                      },
-                    ],
-                    (selected) => setSelectedView(selected),
-                  ),
-                ]}
-                extraActions={[
-                  FilterManyOptions(
-                    "Kind",
-                    [
-                      { value: TimePlanActivityKind.FINISH, text: "Finish" },
-                      {
-                        value: TimePlanActivityKind.MAKE_PROGRESS,
-                        text: "Make Progress",
-                      },
-                    ],
-                    setSelectedKinds,
-                  ),
-                  FilterManyOptions(
-                    "Feasability",
-                    [
-                      {
-                        value: TimePlanActivityFeasability.MUST_DO,
-                        text: "Must Do",
-                      },
-                      {
-                        value: TimePlanActivityFeasability.NICE_TO_HAVE,
-                        text: "Nice to Have",
-                      },
-                      {
-                        value: TimePlanActivityFeasability.STRETCH,
-                        text: "Stretch",
-                      },
-                    ],
-                    setSelectedFeasabilities,
-                  ),
-                  FilterManyOptions(
-                    "Done",
-                    [
-                      { value: true, text: "Done" },
-                      { value: false, text: "Not Done" },
-                    ],
-                    setSelectedDoneness,
-                  ),
-                ]}
-              />
-            }
+          }
+        >
+          <Stack
+            direction={isBigScreen ? "row" : "column"}
+            spacing={2}
+            useFlexGap
           >
-            {loaderData.activities.length === 0 && (
-              <EntityNoNothingCard
-                title="You Have To Start Somewhere"
-                message="There are no activities to show. You can create a new activity."
-                newEntityLocations={`/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
-                helpSubject={DocsHelpSubject.TIME_PLANS}
+            <FormControl fullWidth>
+              <InputLabel id="rightNow" shrink margin="dense">
+                The Date
+              </InputLabel>
+              <OutlinedInput
+                type="date"
+                notched
+                label="rightNow"
+                name="rightNow"
+                readOnly={!inputsEnabled || !corePropertyEditable}
+                disabled={!inputsEnabled || !corePropertyEditable}
+                defaultValue={loaderData.timePlan.right_now}
               />
-            )}
 
-            <Stack useFlexGap gap={2}>
-              {selectedView === View.MERGED && (
-                <>
-                  {mustDoActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Must Do" size="large" />
+              <FieldError actionResult={actionData} fieldName="/right_now" />
+            </FormControl>
 
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={mustDoActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
+            <FormControl fullWidth>
+              <PeriodSelect
+                labelId="period"
+                label="Period"
+                name="period"
+                inputsEnabled={inputsEnabled && corePropertyEditable}
+                defaultValue={loaderData.timePlan.period}
+              />
+              <FieldError actionResult={actionData} fieldName="/period" />
+              <FieldError actionResult={actionData} fieldName="/status" />
+            </FormControl>
+          </Stack>
+        </SectionCard>
+        <SectionCard title="Notes">
+          <EntityNoteEditor
+            initialNote={loaderData.note}
+            inputsEnabled={inputsEnabled}
+          />
+        </SectionCard>
 
-                  {niceToHaveActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Nice To Have" size="large" />
+        <SectionCard
+          id="time-plan-activities"
+          title="Activities"
+          actions={
+            <SectionActions
+              id="activities"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                NavMultipleCompact({
+                  navs: [
+                    NavSingle({
+                      text: "New Inbox Task",
+                      link: `/app/workspace/inbox-tasks/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                    }),
+                    NavSingle({
+                      text: "New Big Plan",
+                      link: `/app/workspace/big-plans/new?timePlanReason=for-time-plan&timePlanRefId=${loaderData.timePlan.ref_id}`,
+                      gatedOn: WorkspaceFeature.BIG_PLANS,
+                    }),
+                    NavSingle({
+                      text: "From Current Inbox Tasks",
+                      link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`,
+                    }),
+                    NavSingle({
+                      text: "From Generated Inbox Tasks",
+                      link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-generated-inbox-tasks?showFromPeriod=${loaderData.timePlan.period}`,
+                    }),
+                    NavSingle({
+                      text: "From Current Big Plans",
+                      link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-big-plans`,
+                      gatedOn: WorkspaceFeature.BIG_PLANS,
+                    }),
+                    NavSingle({
+                      text: "From Time Plans",
+                      link: `/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-time-plans/${loaderData.timePlan.ref_id}`,
+                    }),
+                  ],
+                }),
+                FilterFewOptionsSpread(
+                  "View",
+                  selectedView,
+                  [
+                    {
+                      value: View.MERGED,
+                      text: "Merged",
+                      icon: <ViewListIcon />,
+                    },
+                    {
+                      value: View.BY_PROJECT,
+                      text: "By Project",
+                      icon: <FlareIcon />,
+                      gatedOn: WorkspaceFeature.PROJECTS,
+                    },
+                  ],
+                  (selected) => setSelectedView(selected),
+                ),
+              ]}
+              extraActions={[
+                FilterManyOptions(
+                  "Kind",
+                  [
+                    { value: TimePlanActivityKind.FINISH, text: "Finish" },
+                    {
+                      value: TimePlanActivityKind.MAKE_PROGRESS,
+                      text: "Make Progress",
+                    },
+                  ],
+                  setSelectedKinds,
+                ),
+                FilterManyOptions(
+                  "Feasability",
+                  [
+                    {
+                      value: TimePlanActivityFeasability.MUST_DO,
+                      text: "Must Do",
+                    },
+                    {
+                      value: TimePlanActivityFeasability.NICE_TO_HAVE,
+                      text: "Nice to Have",
+                    },
+                    {
+                      value: TimePlanActivityFeasability.STRETCH,
+                      text: "Stretch",
+                    },
+                  ],
+                  setSelectedFeasabilities,
+                ),
+                FilterManyOptions(
+                  "Done",
+                  [
+                    { value: true, text: "Done" },
+                    { value: false, text: "Not Done" },
+                  ],
+                  setSelectedDoneness,
+                ),
+              ]}
+            />
+          }
+        >
+          {loaderData.activities.length === 0 && (
+            <EntityNoNothingCard
+              title="You Have To Start Somewhere"
+              message="There are no activities to show. You can create a new activity."
+              newEntityLocations={`/app/workspace/time-plans/${loaderData.timePlan.ref_id}/add-from-current-inbox-tasks`}
+              helpSubject={DocsHelpSubject.TIME_PLANS}
+            />
+          )}
 
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={niceToHaveActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
+          {selectedView === View.MERGED && (
+            <TimePlanMergedActivities
+              mustDoActivities={mustDoActivities}
+              niceToHaveActivities={niceToHaveActivities}
+              stretchActivities={stretchActivities}
+              targetInboxTasksByRefId={targetInboxTasksByRefId}
+              targetBigPlansByRefId={targetBigPlansByRefId}
+              activityDoneness={loaderData.activityDoneness}
+              timeEventsByRefId={timeEventsByRefId}
+              selectedKinds={selectedKinds}
+              selectedFeasabilities={selectedFeasabilities}
+              selectedDoneness={selectedDoneness}
+            />
+          )}
 
-                  {stretchActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Stretch" size="large" />
+          {selectedView === View.BY_PROJECT && (
+            <TimePlanByProjectActivities
+              mustDoActivities={mustDoActivities}
+              otherActivities={otherActivities}
+              targetInboxTasksByRefId={targetInboxTasksByRefId}
+              targetBigPlansByRefId={targetBigPlansByRefId}
+              activityDoneness={loaderData.activityDoneness}
+              timeEventsByRefId={timeEventsByRefId}
+              selectedKinds={selectedKinds}
+              selectedFeasabilities={selectedFeasabilities}
+              selectedDoneness={selectedDoneness}
+              projects={sortedProjects}
+              projectsByRefId={allProjectsByRefId}
+            />
+          )}
+        </SectionCard>
 
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={stretchActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
-                </>
-              )}
+        {loaderData.completedNontargetInboxTasks.length > 0 && (
+          <SectionCard
+            id="time-plan-untracked-inbox-tasks"
+            title="Completed & Untracked Inbox Tasks"
+          >
+            <InboxTaskStack
+              topLevelInfo={topLevelInfo}
+              showOptions={{
+                showStatus: true,
+                showEisen: true,
+                showDifficulty: true,
+              }}
+              inboxTasks={loaderData.completedNontargetInboxTasks}
+            />
+          </SectionCard>
+        )}
 
-              {selectedView === View.BY_PROJECT && (
-                <>
-                  {mustDoActivities.length > 0 && (
-                    <>
-                      <StandardDivider title="Must Do" size="large" />
-
-                      <TimePlanActivityList
-                        topLevelInfo={topLevelInfo}
-                        activities={mustDoActivities}
-                        inboxTasksByRefId={targetInboxTasksByRefId}
-                        timePlansByRefId={new Map()}
-                        bigPlansByRefId={targetBigPlansByRefId}
-                        activityDoneness={loaderData.activityDoneness}
-                        fullInfo
-                        filterKind={selectedKinds}
-                        filterFeasability={selectedFeasabilities}
-                        filterDoneness={selectedDoneness}
-                        timeEventsByRefId={timeEventsByRefId}
-                      />
-                    </>
-                  )}
-
-                  {sortedProjects.map((p) => {
-                    const theActivities = otherActivities.filter((ac) => {
-                      switch (ac.target) {
-                        case TimePlanActivityTarget.INBOX_TASK:
-                          return (
-                            targetInboxTasksByRefId.get(ac.target_ref_id)
-                              ?.project_ref_id === p.ref_id
-                          );
-                        case TimePlanActivityTarget.BIG_PLAN:
-                          return (
-                            targetBigPlansByRefId.get(ac.target_ref_id)
-                              ?.project_ref_id === p.ref_id
-                          );
-                      }
-                      throw new Error("Should not get here");
-                    });
-
-                    if (theActivities.length === 0) {
-                      return null;
-                    }
-
-                    const fullProjectName =
-                      computeProjectHierarchicalNameFromRoot(
-                        p,
-                        allProjectsByRefId,
-                      );
-
-                    return (
-                      <Fragment key={`project-${p.ref_id}`}>
-                        <StandardDivider title={fullProjectName} size="large" />
-
-                        <TimePlanActivityList
-                          topLevelInfo={topLevelInfo}
-                          activities={theActivities}
-                          inboxTasksByRefId={targetInboxTasksByRefId}
-                          timePlansByRefId={new Map()}
-                          bigPlansByRefId={targetBigPlansByRefId}
-                          activityDoneness={loaderData.activityDoneness}
-                          fullInfo
-                          filterKind={selectedKinds}
-                          filterFeasability={selectedFeasabilities}
-                          filterDoneness={selectedDoneness}
-                          timeEventsByRefId={timeEventsByRefId}
-                        />
-                      </Fragment>
-                    );
-                  })}
-                </>
-              )}
-            </Stack>
-          </SectionCardNew>
-
-          {loaderData.completedNontargetInboxTasks.length > 0 && (
-            <SectionCardNew
-              id="time-plan-untracked-inbox-tasks"
-              title="Completed & Untracked Inbox Tasks"
+        {loaderData.completedNontargetBigPlans &&
+          loaderData.completedNontargetBigPlans.length > 0 && (
+            <SectionCard
+              id="time-plan-untracked-big-plans"
+              title="Completed & Untracked Big Plans"
             >
-              <InboxTaskStack
-                today={today}
+              <BigPlanStack
                 topLevelInfo={topLevelInfo}
                 showOptions={{
+                  showDonePct: true,
                   showStatus: true,
+                  showProject: true,
                   showEisen: true,
                   showDifficulty: true,
+                  showActionableDate: true,
+                  showDueDate: true,
+                  showHandleMarkDone: false,
+                  showHandleMarkNotDone: false,
                 }}
-                inboxTasks={loaderData.completedNontargetInboxTasks}
+                bigPlans={loaderData.completedNontargetBigPlans}
               />
-            </SectionCardNew>
+            </SectionCard>
           )}
 
-          {loaderData.completedNontargetBigPlans &&
-            loaderData.completedNontargetBigPlans.length > 0 && (
-              <SectionCardNew
-                id="time-plan-untracked-big-plans"
-                title="Completed & Untracked Big Plans"
-              >
-                <BigPlanStack
+        {sortedSubTimePlans.length > 0 && (
+          <SectionCard id="time-plan-lower" title="Lower Time Plans">
+            <TimePlanStack
+              topLevelInfo={topLevelInfo}
+              timePlans={sortedSubTimePlans}
+            />
+          </SectionCard>
+        )}
+
+        {loaderData.higherTimePlan && (
+          <SectionCard id="time-plan-higher" title="Higher Time Plan">
+            <TimePlanStack
+              topLevelInfo={topLevelInfo}
+              timePlans={[loaderData.higherTimePlan]}
+            />
+          </SectionCard>
+        )}
+
+        {loaderData.previousTimePlan && (
+          <SectionCard id="time-plan-previous" title="Previous Time Plan">
+            <TimePlanStack
+              topLevelInfo={topLevelInfo}
+              timePlans={[loaderData.previousTimePlan]}
+            />
+          </SectionCard>
+        )}
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.JOURNALS,
+        ) &&
+          (loaderData.journal || sortedSubJournals.length > 0) && (
+            <SectionCard id="time-plan-journal" title="Journal For This Plan">
+              {loaderData.journal && (
+                <JournalStack
                   topLevelInfo={topLevelInfo}
-                  showOptions={{
-                    showStatus: true,
-                    showParent: true,
-                    showActionableDate: true,
-                    showDueDate: true,
-                    showHandleMarkDone: false,
-                    showHandleMarkNotDone: false,
-                  }}
-                  bigPlans={loaderData.completedNontargetBigPlans}
+                  journals={[loaderData.journal]}
                 />
-              </SectionCardNew>
-            )}
+              )}
 
-          {sortedSubTimePlans.length > 0 && (
-            <SectionCardNew id="time-plan-lower" title="Lower Time Plans">
-              <TimePlanStack
-                topLevelInfo={topLevelInfo}
-                timePlans={sortedSubTimePlans}
-              />
-            </SectionCardNew>
+              {sortedSubJournals.length > 0 && (
+                <JournalStack
+                  topLevelInfo={topLevelInfo}
+                  journals={sortedSubJournals}
+                />
+              )}
+            </SectionCard>
           )}
-
-          {loaderData.higherTimePlan && (
-            <SectionCardNew id="time-plan-higher" title="Higher Time Plan">
-              <TimePlanStack
-                topLevelInfo={topLevelInfo}
-                timePlans={[loaderData.higherTimePlan]}
-              />
-            </SectionCardNew>
-          )}
-
-          {loaderData.previousTimePlan && (
-            <SectionCardNew id="time-plan-previous" title="Previous Time Plan">
-              <TimePlanStack
-                topLevelInfo={topLevelInfo}
-                timePlans={[loaderData.previousTimePlan]}
-              />
-            </SectionCardNew>
-          )}
-
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.JOURNALS,
-          ) &&
-            (loaderData.journal || sortedSubJournals.length > 0) && (
-              <SectionCardNew
-                id="time-plan-journal"
-                title="Journal For This Plan"
-              >
-                {loaderData.journal && (
-                  <JournalStack
-                    topLevelInfo={topLevelInfo}
-                    journals={[loaderData.journal]}
-                  />
-                )}
-
-                {sortedSubJournals.length > 0 && (
-                  <JournalStack
-                    topLevelInfo={topLevelInfo}
-                    journals={sortedSubJournals}
-                  />
-                )}
-              </SectionCardNew>
-            )}
-        </NestingAwareBlock>
-      </Form>
+      </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />

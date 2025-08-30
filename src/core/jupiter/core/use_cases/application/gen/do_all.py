@@ -6,6 +6,9 @@ from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import 
     UserWorkspaceLink,
 )
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -51,7 +54,7 @@ class GenDoAllUseCase(SysBackgroundMutationUseCase[GenDoAllArgs, None]):
         for workspace in workspaces:
             progress_reporter = self._progress_reporter_factory.new_reporter(context)
             user = users_by_id[users_id_by_workspace_id[workspace.ref_id]]
-            gen_targets = workspace.infer_sync_targets_for_enabled_features(None)
+            gen_targets = infer_sync_targets_for_enabled_features(user, workspace, None)
 
             await gen_service.do_it(
                 ctx=ctx,

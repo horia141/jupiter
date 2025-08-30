@@ -2,7 +2,7 @@
 
 import typing
 from collections import defaultdict
-from typing import Final, Sequence
+from typing import Final, Sequence, cast
 
 from jupiter.core.domain.application.gen.gen_log import GenLog
 from jupiter.core.domain.application.gen.gen_log_entry import GenLogEntry
@@ -10,6 +10,9 @@ from jupiter.core.domain.concept.chores.chore import Chore
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.habits.habit import Habit
 from jupiter.core.domain.concept.habits.habit_collection import HabitCollection
+from jupiter.core.domain.concept.habits.service.streak_recorder_service import (
+    HabitStreakRecorderService,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
@@ -17,6 +20,13 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
+)
+from jupiter.core.domain.concept.journals.journal import Journal
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.journals.journal_source import JournalSource
+from jupiter.core.domain.concept.journals.journal_stats import (
+    JournalStats,
+    JournalStatsRepository,
 )
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
@@ -36,6 +46,9 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task import Slack
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
+from jupiter.core.domain.concept.time_plans.time_plan_source import TimePlanSource
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.vacations.vacation import Vacation
 from jupiter.core.domain.concept.vacations.vacation_collection import VacationCollection
@@ -59,8 +72,13 @@ from jupiter.core.domain.core.time_events.time_event_full_days_block import (
 )
 from jupiter.core.domain.core.time_events.time_event_namespace import TimeEventNamespace
 from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
 from jupiter.core.domain.storage_engine import DomainStorageEngine
-from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.sync_target import (
+    SyncTarget,
+)
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
@@ -101,7 +119,7 @@ class GenService:
         """Execute the service's action."""
         big_diff = list(
             set(gen_targets).difference(
-                workspace.infer_sync_targets_for_enabled_features(gen_targets)
+                infer_sync_targets_for_enabled_features(user, workspace, gen_targets)
             )
         )
         if len(big_diff) > 0:
@@ -189,9 +207,15 @@ class GenService:
             ).load_by_parent(
                 workspace.ref_id,
             )
+            journal_collection = await uow.get_for(JournalCollection).load_by_parent(
+                workspace.ref_id,
+            )
             working_mem_collection = await uow.get_for(
                 WorkingMemCollection
             ).load_by_parent(
+                workspace.ref_id,
+            )
+            time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
                 workspace.ref_id,
             )
             habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -277,6 +301,62 @@ class GenService:
                     all_notes_by_working_mem_ref_id=all_notes_by_working_mem_ref_id,
                     all_inbox_tasks_by_working_mem_ref_id_and_timeline=all_inbox_tasks_by_working_mem_ref_id_and_timeline,
                     today=today,
+                    gen_even_if_not_modified=gen_even_if_not_modified,
+                    gen_log_entry=gen_log_entry,
+                )
+
+        if (
+            workspace.is_feature_available(WorkspaceFeature.TIME_PLANS)
+            and SyncTarget.TIME_PLANS in gen_targets
+        ):
+            async with progress_reporter.section("Generating time plans"):
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_time_plans = await uow.get_for(TimePlan).find_all_generic(
+                        parent_ref_id=time_plan_domain.ref_id,
+                        allow_archived=False,
+                    )
+
+                all_time_plans_by_timeline = {}
+                for time_plan in all_time_plans:
+                    all_time_plans_by_timeline[time_plan.timeline] = time_plan
+
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        allow_archived=True,
+                        source=[InboxTaskSource.TIME_PLAN],
+                        source_entity_ref_id=(
+                            [tp.ref_id for tp in all_time_plans]
+                            if all_time_plans
+                            else NoFilter()
+                        ),
+                    )
+
+                all_inbox_tasks_by_timeline = {}
+                for inbox_task in all_inbox_tasks:
+                    if (
+                        inbox_task.source_entity_ref_id is None
+                        or inbox_task.recurring_timeline is None
+                    ):
+                        raise Exception(
+                            f"Expected that inbox task with id='{inbox_task.ref_id}'",
+                        )
+                    all_inbox_tasks_by_timeline[inbox_task.recurring_timeline] = (
+                        inbox_task
+                    )
+
+                gen_log_entry = await self._generate_time_plans_and_planning_tasks_for_time_plan_domain(
+                    ctx,
+                    progress_reporter=progress_reporter,
+                    user=user,
+                    inbox_task_collection=inbox_task_collection,
+                    note_collection=note_collection,
+                    all_projects_by_ref_id=all_projects_by_ref_id,
+                    today=today,
+                    period_filter=frozenset(period) if period else None,
+                    time_plan_domain=time_plan_domain,
+                    all_time_plans_by_timeline=all_time_plans_by_timeline,
+                    all_inbox_tasks_by_timeline=all_inbox_tasks_by_timeline,
                     gen_even_if_not_modified=gen_even_if_not_modified,
                     gen_log_entry=gen_log_entry,
                 )
@@ -397,6 +477,63 @@ class GenService:
                         gen_even_if_not_modified=gen_even_if_not_modified,
                         gen_log_entry=gen_log_entry,
                     )
+
+        if (
+            workspace.is_feature_available(WorkspaceFeature.JOURNALS)
+            and SyncTarget.JOURNALS in gen_targets
+        ):
+            async with progress_reporter.section("Generating journals"):
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_journals = await uow.get_for(Journal).find_all_generic(
+                        parent_ref_id=journal_collection.ref_id,
+                        allow_archived=False,
+                    )
+
+                all_journals_by_timeline = {}
+                for journal in all_journals:
+                    all_journals_by_timeline[journal.timeline] = journal
+
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    all_inbox_tasks = await uow.get_for(InboxTask).find_all_generic(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        allow_archived=True,
+                        source=[InboxTaskSource.JOURNAL],
+                        source_entity_ref_id=(
+                            [j.ref_id for j in all_journals]
+                            if all_journals
+                            else NoFilter()
+                        ),
+                    )
+
+                all_writing_tasks_by_timeline = {}
+                for inbox_task in all_inbox_tasks:
+                    if (
+                        inbox_task.source_entity_ref_id is None
+                        or inbox_task.recurring_timeline is None
+                    ):
+                        raise Exception(
+                            f"Expected that inbox task with id='{inbox_task.ref_id}'",
+                        )
+                    all_writing_tasks_by_timeline[inbox_task.recurring_timeline] = (
+                        inbox_task
+                    )
+
+                gen_log_entry = await self._generate_journals_and_writing_tasks_for_journal_collection(
+                    ctx,
+                    progress_reporter=progress_reporter,
+                    workspace=workspace,
+                    user=user,
+                    inbox_task_collection=inbox_task_collection,
+                    note_collection=note_collection,
+                    all_projects_by_ref_id=all_projects_by_ref_id,
+                    today=today,
+                    period_filter=frozenset(period) if period else None,
+                    journal_collection=journal_collection,
+                    all_journals_by_timeline=all_journals_by_timeline,
+                    all_writing_tasks_by_timeline=all_writing_tasks_by_timeline,
+                    gen_even_if_not_modified=gen_even_if_not_modified,
+                    gen_log_entry=gen_log_entry,
+                )
 
         if (
             workspace.is_feature_available(WorkspaceFeature.METRICS)
@@ -848,6 +985,164 @@ class GenService:
 
         return gen_log_entry
 
+    async def _generate_time_plans_and_planning_tasks_for_time_plan_domain(
+        self,
+        ctx: DomainContext,
+        progress_reporter: ProgressReporter,
+        user: User,
+        inbox_task_collection: InboxTaskCollection,
+        note_collection: NoteCollection,
+        all_projects_by_ref_id: dict[EntityId, Project],
+        today: ADate,
+        period_filter: frozenset[RecurringTaskPeriod] | None,
+        time_plan_domain: TimePlanDomain,
+        all_time_plans_by_timeline: dict[str, TimePlan],
+        all_inbox_tasks_by_timeline: dict[str, InboxTask],
+        gen_even_if_not_modified: bool,
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
+        for period in time_plan_domain.periods:
+            if period_filter is not None and period not in period_filter:
+                continue
+
+            if time_plan_domain.generation_approach.should_do_nothing:
+                continue
+
+            real_today = today.add_days(
+                time_plan_domain.generation_in_advance_days[period]
+            )
+
+            schedule = schedules.get_schedule(
+                period,
+                EntityName(f"Make {period.value} plan for"),
+                real_today.to_timestamp_at_end_of_day(),
+            )
+
+            if not schedule.should_keep:
+                continue
+
+            found_time_plan = all_time_plans_by_timeline.get(schedule.timeline, None)
+            found_planning_task = all_inbox_tasks_by_timeline.get(
+                schedule.timeline, None
+            )
+
+            if (
+                found_time_plan
+                and found_time_plan.source is not TimePlanSource.GENERATED
+            ):
+                continue
+
+            if time_plan_domain.generation_approach.should_generate_a_time_plan:
+                if found_time_plan:
+                    if (
+                        not gen_even_if_not_modified
+                        and found_time_plan.last_modified_time
+                        >= time_plan_domain.last_modified_time
+                    ):
+                        continue
+
+                    found_time_plan = found_time_plan.update_link_to_time_plan_domain(
+                        ctx,
+                        today=real_today,
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        await uow.get_for(TimePlan).save(found_time_plan)
+                        await progress_reporter.mark_updated(found_time_plan)
+                    gen_log_entry = gen_log_entry.add_entity_updated(
+                        ctx,
+                        found_time_plan,
+                    )
+                else:
+                    time_plan = TimePlan.new_time_plan_generated(
+                        ctx,
+                        time_plan_domain_ref_id=time_plan_domain.ref_id,
+                        today=real_today,
+                        period=period,
+                        timeline=schedule.timeline,
+                        start_date=schedule.first_day,
+                        end_date=schedule.end_day,
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        time_plan = await uow.get_for(TimePlan).create(time_plan)
+                        await progress_reporter.mark_created(time_plan)
+                    gen_log_entry = gen_log_entry.add_entity_created(
+                        ctx,
+                        time_plan,
+                    )
+
+                    new_note = Note.new_note(
+                        ctx,
+                        note_collection_ref_id=note_collection.ref_id,
+                        domain=NoteDomain.TIME_PLAN,
+                        source_entity_ref_id=time_plan.ref_id,
+                        content=[],
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        new_note = await uow.get_for(Note).create(new_note)
+
+                    found_time_plan = time_plan
+
+            if time_plan_domain.generation_approach.should_generate_a_planning_task:
+                if time_plan_domain.planning_task_project_ref_id is None:
+                    raise Exception("Planning task project ref id is not set")
+                if time_plan_domain.planning_task_gen_params is None:
+                    raise Exception("Planning task gen params is not set")
+                project = all_projects_by_ref_id[
+                    time_plan_domain.planning_task_project_ref_id
+                ]
+                gen_params = time_plan_domain.planning_task_gen_params
+
+                if found_planning_task:
+                    if (
+                        not gen_even_if_not_modified
+                        and found_planning_task.last_modified_time
+                        >= time_plan_domain.last_modified_time
+                    ):
+                        continue
+
+                    found_planning_task = found_planning_task.update_link_to_time_plan(
+                        ctx,
+                        project_ref_id=project.ref_id,
+                        eisen=gen_params.eisen,
+                        difficulty=gen_params.difficulty,
+                        due_date=cast(TimePlan, found_time_plan).start_date,
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        await uow.get_for(InboxTask).save(found_planning_task)
+                        await progress_reporter.mark_updated(found_planning_task)
+                    gen_log_entry = gen_log_entry.add_entity_updated(
+                        ctx,
+                        found_planning_task,
+                    )
+                else:
+                    inbox_task = InboxTask.new_inbox_task_for_time_plan(
+                        ctx,
+                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                        name=schedule.full_name,
+                        eisen=gen_params.eisen,
+                        difficulty=gen_params.difficulty,
+                        actionable_date=schedule.actionable_date,
+                        due_date=cast(TimePlan, found_time_plan).start_date,
+                        project_ref_id=project.ref_id,
+                        time_plan_ref_id=cast(TimePlan, found_time_plan).ref_id,
+                        recurring_task_timeline=schedule.timeline,
+                        recurring_task_gen_right_now=real_today.to_timestamp_at_end_of_day(),
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        inbox_task = await uow.get_for(InboxTask).create(inbox_task)
+                        await progress_reporter.mark_created(inbox_task)
+                    gen_log_entry = gen_log_entry.add_entity_created(
+                        ctx,
+                        inbox_task,
+                    )
+
+        return gen_log_entry
+
     async def _generate_inbox_tasks_for_habit(
         self,
         ctx: DomainContext,
@@ -885,14 +1180,14 @@ class GenService:
         if not schedule.should_keep:
             return gen_log_entry
 
-        all_found_tasks_by_repeat_index: dict[int | None, InboxTask] = {
-            ft.recurring_repeat_index: ft
+        all_found_tasks_by_repeat_index: dict[int, InboxTask] = {
+            cast(int, ft.recurring_repeat_index): ft
             for ft in all_inbox_tasks_by_habit_ref_id_and_timeline.get(
                 (habit.ref_id, schedule.timeline),
                 [],
             )
         }
-        repeat_idx_to_keep: set[int | None] = set()
+        repeat_idx_to_keep: set[int] = set()
 
         task_ranges: Sequence[tuple[ADate | None, ADate]]
         if habit.repeats_in_period_count is not None:
@@ -906,27 +1201,28 @@ class GenService:
         else:
             task_ranges = [(schedule.actionable_date, schedule.due_date)]
 
+        remaining_tasks: set[InboxTask] = set()
+
         for task_idx in range(habit.repeats_in_period_count or 1):
-            real_task_idx = (
-                task_idx if habit.repeats_in_period_count is not None else None
-            )
-            found_task = all_found_tasks_by_repeat_index.get(real_task_idx, None)
+            found_task = all_found_tasks_by_repeat_index.get(task_idx, None)
 
             if found_task:
                 repeat_idx_to_keep.add(task_idx)
-
                 if (
                     not gen_even_if_not_modified
                     and found_task.last_modified_time >= habit.last_modified_time
                 ):
-                    return gen_log_entry
+                    remaining_tasks.add(found_task)
+                    continue
 
                 found_task = found_task.update_link_to_habit(
                     ctx,
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
-                    repeat_index=real_task_idx,
+                    is_key=habit.is_key,
+                    repeat_index=task_idx,
+                    repeats_in_period_count=habit.repeats_in_period_count,
                     actionable_date=task_ranges[task_idx][0],
                     due_date=task_ranges[task_idx][1],
                     eisen=habit.gen_params.eisen,
@@ -934,8 +1230,10 @@ class GenService:
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    await uow.get_for(InboxTask).save(found_task)
+                    found_task = await uow.get_for(InboxTask).save(found_task)
                     await progress_reporter.mark_updated(found_task)
+
+                remaining_tasks.add(found_task)
                 gen_log_entry = gen_log_entry.add_entity_updated(
                     ctx,
                     found_task,
@@ -948,12 +1246,14 @@ class GenService:
                     project_ref_id=project.ref_id,
                     habit_ref_id=habit.ref_id,
                     recurring_task_timeline=schedule.timeline,
-                    recurring_task_repeat_index=real_task_idx,
+                    recurring_task_repeat_index=task_idx,
                     recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                    is_key=habit.is_key,
                     eisen=habit.gen_params.eisen,
                     difficulty=habit.gen_params.difficulty,
                     actionable_date=task_ranges[task_idx][0],
                     due_date=task_ranges[task_idx][1],
+                    repeats_in_period_count=habit.repeats_in_period_count,
                 )
 
                 async with self._domain_storage_engine.get_unit_of_work() as uow:
@@ -961,6 +1261,8 @@ class GenService:
                         inbox_task,
                     )
                     await progress_reporter.mark_created(inbox_task)
+
+                remaining_tasks.add(inbox_task)
                 gen_log_entry = gen_log_entry.add_entity_created(
                     ctx,
                     inbox_task,
@@ -978,6 +1280,16 @@ class GenService:
                     ctx,
                     task,
                 )
+
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            streak_recorder_service = HabitStreakRecorderService()
+            await streak_recorder_service.upsert(
+                ctx=ctx,
+                uow=uow,
+                today=today,
+                habit=habit,
+                inbox_tasks=remaining_tasks,
+            )
 
         return gen_log_entry
 
@@ -1046,6 +1358,7 @@ class GenService:
                 project_ref_id=project.ref_id,
                 name=schedule.full_name,
                 timeline=schedule.timeline,
+                is_key=chore.is_key,
                 actionable_date=schedule.actionable_date,
                 due_date=schedule.due_date,
                 eisen=chore.gen_params.eisen,
@@ -1069,6 +1382,7 @@ class GenService:
                 chore_ref_id=chore.ref_id,
                 recurring_task_timeline=schedule.timeline,
                 recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                is_key=chore.is_key,
                 eisen=chore.gen_params.eisen,
                 difficulty=chore.gen_params.difficulty,
                 actionable_date=schedule.actionable_date,
@@ -1083,6 +1397,171 @@ class GenService:
                 ctx,
                 inbox_task,
             )
+
+        return gen_log_entry
+
+    async def _generate_journals_and_writing_tasks_for_journal_collection(
+        self,
+        ctx: DomainContext,
+        progress_reporter: ProgressReporter,
+        workspace: Workspace,
+        user: User,
+        inbox_task_collection: InboxTaskCollection,
+        note_collection: NoteCollection,
+        all_projects_by_ref_id: dict[EntityId, Project],
+        today: ADate,
+        period_filter: frozenset[RecurringTaskPeriod] | None,
+        journal_collection: JournalCollection,
+        all_journals_by_timeline: dict[str, Journal],
+        all_writing_tasks_by_timeline: dict[str, InboxTask],
+        gen_even_if_not_modified: bool,
+        gen_log_entry: GenLogEntry,
+    ) -> GenLogEntry:
+        for period in journal_collection.periods:
+            if period_filter is not None and period not in period_filter:
+                continue
+
+            if journal_collection.generation_approach.should_do_nothing:
+                continue
+
+            real_today = today.add_days(
+                journal_collection.generation_in_advance_days[period]
+            )
+
+            schedule = schedules.get_schedule(
+                period,
+                EntityName(f"Write {period.value} journal for"),
+                real_today.to_timestamp_at_end_of_day(),
+            )
+
+            if not schedule.should_keep:
+                continue
+
+            found_journal = all_journals_by_timeline.get(schedule.timeline, None)
+            found_writing_task = all_writing_tasks_by_timeline.get(
+                schedule.timeline, None
+            )
+
+            if found_journal and found_journal.source is not JournalSource.GENERATED:
+                continue
+
+            if journal_collection.generation_approach.should_generate_a_journal:
+                if found_journal:
+                    if (
+                        not gen_even_if_not_modified
+                        and found_journal.last_modified_time
+                        >= journal_collection.last_modified_time
+                    ):
+                        continue
+
+                    found_journal = found_journal.update_link_to_journal_collection(
+                        ctx,
+                        right_now=real_today,
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        await uow.get_for(Journal).save(found_journal)
+                        await progress_reporter.mark_updated(found_journal)
+                    gen_log_entry = gen_log_entry.add_entity_updated(
+                        ctx,
+                        found_journal,
+                    )
+                else:
+                    journal = Journal.new_journal_generated(
+                        ctx,
+                        journal_collection_ref_id=journal_collection.ref_id,
+                        right_now=real_today,
+                        period=period,
+                        timeline=schedule.timeline,
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        journal = await uow.get_for(Journal).create(journal)
+                        await progress_reporter.mark_created(journal)
+                    gen_log_entry = gen_log_entry.add_entity_created(
+                        ctx,
+                        journal,
+                    )
+
+                    new_note = Note.new_note(
+                        ctx,
+                        note_collection_ref_id=note_collection.ref_id,
+                        domain=NoteDomain.JOURNAL,
+                        source_entity_ref_id=journal.ref_id,
+                        content=[],
+                    )
+
+                    new_journal_stats = JournalStats.new_stats(
+                        ctx,
+                        journal_ref_id=journal.ref_id,
+                        today=real_today,
+                        period=period,
+                        sources=workspace.infer_sources_for_enabled_features(None),
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        new_note = await uow.get_for(Note).create(new_note)
+                        new_journal_stats = await uow.get(
+                            JournalStatsRepository
+                        ).create(new_journal_stats)
+
+                    found_journal = journal
+
+            if journal_collection.generation_approach.should_generate_a_writing_task:
+                if journal_collection.writing_task_gen_params is None:
+                    raise Exception("Writing task gen params is not set")
+                project = all_projects_by_ref_id[
+                    journal_collection.writing_task_project_ref_id
+                ]
+                gen_params = journal_collection.writing_task_gen_params
+
+                if found_writing_task:
+                    if (
+                        not gen_even_if_not_modified
+                        and found_writing_task.last_modified_time
+                        >= journal_collection.last_modified_time
+                    ):
+                        continue
+
+                    found_writing_task = found_writing_task.update_link_to_journal(
+                        ctx,
+                        project_ref_id=project.ref_id,
+                        eisen=gen_params.eisen,
+                        difficulty=gen_params.difficulty,
+                        due_date=schedule.due_date,
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        await uow.get_for(InboxTask).save(found_writing_task)
+                        await progress_reporter.mark_updated(found_writing_task)
+                    gen_log_entry = gen_log_entry.add_entity_updated(
+                        ctx,
+                        found_writing_task,
+                    )
+                else:
+                    inbox_task = InboxTask.new_inbox_task_for_journal(
+                        ctx,
+                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                        name=schedule.full_name,
+                        eisen=gen_params.eisen,
+                        difficulty=gen_params.difficulty,
+                        actionable_date=schedule.due_date.add_days(
+                            -journal_collection.generation_in_advance_days[period]
+                        ),
+                        due_date=schedule.due_date,
+                        project_ref_id=project.ref_id,
+                        journal_ref_id=cast(Journal, found_journal).ref_id,
+                        recurring_task_timeline=schedule.timeline,
+                        recurring_task_gen_right_now=real_today.to_timestamp_at_end_of_day(),
+                    )
+
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
+                        inbox_task = await uow.get_for(InboxTask).create(inbox_task)
+                        await progress_reporter.mark_created(inbox_task)
+                    gen_log_entry = gen_log_entry.add_entity_created(
+                        ctx,
+                        inbox_task,
+                    )
 
         return gen_log_entry
 

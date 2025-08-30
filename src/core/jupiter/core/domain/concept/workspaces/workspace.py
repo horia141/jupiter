@@ -5,6 +5,8 @@ from collections.abc import Iterable
 
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
+from jupiter.core.domain.application.home.home_config import HomeConfig
+from jupiter.core.domain.application.stats.stats_log import StatsLog
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.concept.docs.doc_collection import DocCollection
@@ -38,7 +40,6 @@ from jupiter.core.domain.features import (
     WorkspaceFeatureFlagsControls,
 )
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
-from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     ContainsOne,
@@ -60,6 +61,7 @@ class Workspace(RootEntity):
     feature_flags: WorkspaceFeatureFlags
 
     inbox_task_collection = ContainsOne(InboxTaskCollection, workspace_ref_id=IsRefId())
+    home_config = ContainsOne(HomeConfig, workspace_ref_id=IsRefId())
     working_mem_collection = ContainsOne(
         WorkingMemCollection, workspace_ref_id=IsRefId()
     )
@@ -84,6 +86,7 @@ class Workspace(RootEntity):
 
     gc_log = ContainsOne(GCLog, workspace_ref_id=IsRefId())
     gen_log = ContainsOne(GenLog, workspace_ref_id=IsRefId())
+    stats_log = ContainsOne(StatsLog, workspace_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action
@@ -252,6 +255,14 @@ class Workspace(RootEntity):
                 and self.is_feature_available(WorkspaceFeature.WORKING_MEM)
             ):
                 inferred_sources.append(source)
+            elif source is InboxTaskSource.TIME_PLAN and self.is_feature_available(
+                WorkspaceFeature.TIME_PLANS
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.JOURNAL and self.is_feature_available(
+                WorkspaceFeature.JOURNALS
+            ):
+                inferred_sources.append(source)
             elif source is InboxTaskSource.HABIT and self.is_feature_available(
                 WorkspaceFeature.HABITS
             ):
@@ -291,84 +302,6 @@ class Workspace(RootEntity):
             ):
                 inferred_sources.append(source)
         return inferred_sources
-
-    def infer_sync_targets_for_enabled_features(
-        self, sync_targets: Iterable[SyncTarget] | None = None
-    ) -> list[SyncTarget]:
-        """Filter and complete a set of sources according to the enabled features."""
-        # Keep in sync with ts:webui:inferSyncTargetsForEnabledFeatures
-        all_sync_targets = sync_targets or [s for s in SyncTarget]
-        inferred_sync_targets: list[SyncTarget] = []
-        for sync_target in all_sync_targets:
-            if sync_target is SyncTarget.INBOX_TASKS and self.is_feature_available(
-                WorkspaceFeature.INBOX_TASKS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.WORKING_MEM and self.is_feature_available(
-                WorkspaceFeature.WORKING_MEM
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.TIME_PLANS and self.is_feature_available(
-                WorkspaceFeature.TIME_PLANS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.SCHEDULES and self.is_feature_available(
-                WorkspaceFeature.SCHEDULE
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.HABITS and self.is_feature_available(
-                WorkspaceFeature.HABITS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.CHORES and self.is_feature_available(
-                WorkspaceFeature.CHORES
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.BIG_PLANS and self.is_feature_available(
-                WorkspaceFeature.BIG_PLANS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.JOURNALS and self.is_feature_available(
-                WorkspaceFeature.JOURNALS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.DOCS and self.is_feature_available(
-                WorkspaceFeature.DOCS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.VACATIONS and self.is_feature_available(
-                WorkspaceFeature.VACATIONS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.PROJECTS and self.is_feature_available(
-                WorkspaceFeature.PROJECTS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.PERSONS and self.is_feature_available(
-                WorkspaceFeature.PERSONS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.SMART_LISTS and self.is_feature_available(
-                WorkspaceFeature.SMART_LISTS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.METRICS and self.is_feature_available(
-                WorkspaceFeature.METRICS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.PERSONS and self.is_feature_available(
-                WorkspaceFeature.PERSONS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.SLACK_TASKS and self.is_feature_available(
-                WorkspaceFeature.SLACK_TASKS
-            ):
-                inferred_sync_targets.append(sync_target)
-            elif sync_target is SyncTarget.EMAIL_TASKS and self.is_feature_available(
-                WorkspaceFeature.EMAIL_TASKS
-            ):
-                inferred_sync_targets.append(sync_target)
-        return inferred_sync_targets
 
 
 class WorkspaceNotFoundError(EntityNotFoundError):

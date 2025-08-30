@@ -1,5 +1,6 @@
 """Use case for removing a project."""
 
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import Project
@@ -20,6 +21,7 @@ from jupiter.core.domain.concept.push_integrations.group.push_integration_group 
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
@@ -27,6 +29,7 @@ from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -68,6 +71,30 @@ class ProjectRemoveUseCase(
             raise InputValidationError("The root project cannot be archived")
 
         if args.backup_project_ref_id:
+            time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
+                workspace.ref_id
+            )
+            if time_plan_domain.planning_task_project_ref_id == args.ref_id:
+                time_plan_domain = (
+                    time_plan_domain.change_planning_task_project_if_required(
+                        context.domain_context,
+                        args.backup_project_ref_id,
+                    )
+                )
+                await uow.get_for(TimePlanDomain).save(time_plan_domain)
+
+            journal_collection = await uow.get_for(JournalCollection).load_by_parent(
+                workspace.ref_id
+            )
+            if journal_collection.writing_task_project_ref_id == args.ref_id:
+                journal_collection = (
+                    journal_collection.change_writing_task_project_if_required(
+                        context.domain_context,
+                        args.backup_project_ref_id,
+                    )
+                )
+                await uow.get_for(JournalCollection).save(journal_collection)
+
             metric_collection = await uow.get_for(MetricCollection).load_by_parent(
                 workspace.ref_id
             )
@@ -126,9 +153,12 @@ class ProjectRemoveUseCase(
                 WorkingMemCollection
             ).load_by_parent(workspace.ref_id)
             if working_mem_collection.cleanup_project_ref_id == args.ref_id:
-                working_mem_collection = working_mem_collection.change_cleanup_project(
+                working_mem_collection = working_mem_collection.update(
                     context.domain_context,
-                    args.backup_project_ref_id,
+                    generation_period=UpdateAction.do_nothing(),
+                    cleanup_project_ref_id=UpdateAction.change_to(
+                        args.backup_project_ref_id
+                    ),
                 )
                 await uow.get_for(WorkingMemCollection).save(working_mem_collection)
 

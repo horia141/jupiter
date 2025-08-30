@@ -23,6 +23,7 @@ class MetricEntry:
         metric_ref_id (str):
         collection_time (str): A date or possibly a datetime for the application.
         value (float):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -35,6 +36,7 @@ class MetricEntry:
     metric_ref_id: str
     collection_time: str
     value: float
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -57,6 +59,12 @@ class MetricEntry:
 
         value = self.value
 
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
+
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
@@ -78,6 +86,8 @@ class MetricEntry:
                 "value": value,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -104,6 +114,15 @@ class MetricEntry:
 
         value = d.pop("value")
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -123,6 +142,7 @@ class MetricEntry:
             metric_ref_id=metric_ref_id,
             collection_time=collection_time,
             value=value,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

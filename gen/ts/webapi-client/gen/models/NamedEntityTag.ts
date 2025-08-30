@@ -7,6 +7,8 @@
  */
 export enum NamedEntityTag {
     SCORE_LOG_ENTRY = 'ScoreLogEntry',
+    HOME_TAB = 'HomeTab',
+    HOME_WIDGET = 'HomeWidget',
     INBOX_TASK = 'InboxTask',
     WORKING_MEM = 'WorkingMem',
     TIME_PLAN = 'TimePlan',
@@ -18,6 +20,7 @@ export enum NamedEntityTag {
     HABIT = 'Habit',
     CHORE = 'Chore',
     BIG_PLAN = 'BigPlan',
+    BIG_PLAN_MILESTONE = 'BigPlanMilestone',
     DOC = 'Doc',
     JOURNAL = 'Journal',
     VACATION = 'Vacation',

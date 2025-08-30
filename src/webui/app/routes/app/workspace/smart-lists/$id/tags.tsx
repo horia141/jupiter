@@ -3,25 +3,25 @@ import { ApiError } from "@jupiter/webapi-client";
 import ReorderIcon from "@mui/icons-material/Reorder";
 import TagIcon from "@mui/icons-material/Tag";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useNavigation } from "@remix-run/react";
+import { Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
-import { SmartListTagTag } from "~/components/smart-list-tag-tag";
+import { SmartListTagTag } from "~/components/domain/concept/smart-list/smart-list-tag-tag";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -29,6 +29,13 @@ import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
+import {
+  NavMultipleSpread,
+  NavSingle,
+  SectionActions,
+  ActionsExpansion,
+} from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -105,7 +112,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function SmartListViewTags() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const navigation = useNavigation();
-
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled =
     navigation.state === "idle" && !loaderData.smartList.archived;
 
@@ -125,32 +132,36 @@ export default function SmartListViewTags() {
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.smartList.archived}
       createLocation={`/app/workspace/smart-lists/${loaderData.smartList.ref_id}/tags/new`}
-      extraControls={[
-        <Button
-          key={loaderData.smartList.ref_id}
-          variant="outlined"
-          to={`/app/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`}
-          component={Link}
-          startIcon={<TuneIcon />}
-        >
-          {isBigScreen ? "Details" : ""}
-        </Button>,
-
-        <ButtonGroup key={loaderData.smartList.ref_id}>
-          <Button
-            variant="outlined"
-            to={`/app/workspace/smart-lists/${loaderData.smartList.ref_id}/items`}
-            component={Link}
-            startIcon={<ReorderIcon />}
-          >
-            Items
-          </Button>
-
-          <Button variant="contained" startIcon={<TagIcon />}>
-            Tags
-          </Button>
-        </ButtonGroup>,
-      ]}
+      actions={
+        <SectionActions
+          id="smart-list-tags"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          expansion={ActionsExpansion.ALWAYS_SHOW}
+          actions={[
+            NavSingle({
+              text: isBigScreen ? "Details" : "",
+              icon: <TuneIcon />,
+              link: `/app/workspace/smart-lists/${loaderData.smartList.ref_id}/items/details`,
+            }),
+            NavMultipleSpread({
+              navs: [
+                NavSingle({
+                  text: "Items",
+                  icon: <ReorderIcon />,
+                  link: `/app/workspace/smart-lists/${loaderData.smartList.ref_id}/items`,
+                }),
+                NavSingle({
+                  text: "Tags",
+                  icon: <TagIcon />,
+                  link: `/app/workspace/smart-lists/${loaderData.smartList.ref_id}/tags`,
+                  highlight: true,
+                }),
+              ],
+            }),
+          ]}
+        />
+      }
       returnLocation="/app/workspace/smart-lists"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>

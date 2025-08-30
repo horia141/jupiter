@@ -15,11 +15,13 @@ class GetSummariesArgs:
 
     Attributes:
         allow_archived (Union[None, Unset, bool]):
+        include_user (Union[None, Unset, bool]):
         include_workspace (Union[None, Unset, bool]):
         include_schedule_streams (Union[None, Unset, bool]):
         include_vacations (Union[None, Unset, bool]):
         include_projects (Union[None, Unset, bool]):
         include_inbox_tasks (Union[None, Unset, bool]):
+        include_journals_last_year (Union[None, Unset, bool]):
         include_habits (Union[None, Unset, bool]):
         include_chores (Union[None, Unset, bool]):
         include_big_plans (Union[None, Unset, bool]):
@@ -29,11 +31,13 @@ class GetSummariesArgs:
     """
 
     allow_archived: Union[None, Unset, bool] = UNSET
+    include_user: Union[None, Unset, bool] = UNSET
     include_workspace: Union[None, Unset, bool] = UNSET
     include_schedule_streams: Union[None, Unset, bool] = UNSET
     include_vacations: Union[None, Unset, bool] = UNSET
     include_projects: Union[None, Unset, bool] = UNSET
     include_inbox_tasks: Union[None, Unset, bool] = UNSET
+    include_journals_last_year: Union[None, Unset, bool] = UNSET
     include_habits: Union[None, Unset, bool] = UNSET
     include_chores: Union[None, Unset, bool] = UNSET
     include_big_plans: Union[None, Unset, bool] = UNSET
@@ -48,6 +52,12 @@ class GetSummariesArgs:
             allow_archived = UNSET
         else:
             allow_archived = self.allow_archived
+
+        include_user: Union[None, Unset, bool]
+        if isinstance(self.include_user, Unset):
+            include_user = UNSET
+        else:
+            include_user = self.include_user
 
         include_workspace: Union[None, Unset, bool]
         if isinstance(self.include_workspace, Unset):
@@ -78,6 +88,12 @@ class GetSummariesArgs:
             include_inbox_tasks = UNSET
         else:
             include_inbox_tasks = self.include_inbox_tasks
+
+        include_journals_last_year: Union[None, Unset, bool]
+        if isinstance(self.include_journals_last_year, Unset):
+            include_journals_last_year = UNSET
+        else:
+            include_journals_last_year = self.include_journals_last_year
 
         include_habits: Union[None, Unset, bool]
         if isinstance(self.include_habits, Unset):
@@ -120,6 +136,8 @@ class GetSummariesArgs:
         field_dict.update({})
         if allow_archived is not UNSET:
             field_dict["allow_archived"] = allow_archived
+        if include_user is not UNSET:
+            field_dict["include_user"] = include_user
         if include_workspace is not UNSET:
             field_dict["include_workspace"] = include_workspace
         if include_schedule_streams is not UNSET:
@@ -130,6 +148,8 @@ class GetSummariesArgs:
             field_dict["include_projects"] = include_projects
         if include_inbox_tasks is not UNSET:
             field_dict["include_inbox_tasks"] = include_inbox_tasks
+        if include_journals_last_year is not UNSET:
+            field_dict["include_journals_last_year"] = include_journals_last_year
         if include_habits is not UNSET:
             field_dict["include_habits"] = include_habits
         if include_chores is not UNSET:
@@ -157,6 +177,15 @@ class GetSummariesArgs:
             return cast(Union[None, Unset, bool], data)
 
         allow_archived = _parse_allow_archived(d.pop("allow_archived", UNSET))
+
+        def _parse_include_user(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        include_user = _parse_include_user(d.pop("include_user", UNSET))
 
         def _parse_include_workspace(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -202,6 +231,15 @@ class GetSummariesArgs:
             return cast(Union[None, Unset, bool], data)
 
         include_inbox_tasks = _parse_include_inbox_tasks(d.pop("include_inbox_tasks", UNSET))
+
+        def _parse_include_journals_last_year(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        include_journals_last_year = _parse_include_journals_last_year(d.pop("include_journals_last_year", UNSET))
 
         def _parse_include_habits(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -259,11 +297,13 @@ class GetSummariesArgs:
 
         get_summaries_args = cls(
             allow_archived=allow_archived,
+            include_user=include_user,
             include_workspace=include_workspace,
             include_schedule_streams=include_schedule_streams,
             include_vacations=include_vacations,
             include_projects=include_projects,
             include_inbox_tasks=include_inbox_tasks,
+            include_journals_last_year=include_journals_last_year,
             include_habits=include_habits,
             include_chores=include_chores,
             include_big_plans=include_big_plans,

@@ -1,26 +1,22 @@
-import { WorkspaceFeature } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button, IconButton } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocsHelpSubject } from "~/components/docs-help";
-import EntityIconComponent from "~/components/entity-icon";
-import { EntityNameComponent } from "~/components/entity-name";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import EntityIconComponent from "~/components/infra/entity-icon";
+import { EntityNameComponent } from "~/components/infra/entity-name";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -28,6 +24,8 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
+import { SectionActions, NavSingle } from "~/components/infra/section-actions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -58,40 +56,24 @@ export default function Metrics() {
   const shouldShowABranch = useTrunkNeedsToShowBranch();
   const shouldShowALeafToo = useTrunkNeedsToShowLeaf();
 
-  const isBigScreen = useBigScreen();
-
   return (
     <TrunkPanel
       key={"metrics"}
       createLocation="/app/workspace/metrics/new"
-      extraControls={[
-        <>
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <>
-              {isBigScreen ? (
-                <Button
-                  variant="outlined"
-                  to={`/app/workspace/metrics/settings`}
-                  component={Link}
-                  startIcon={<TuneIcon />}
-                >
-                  Settings
-                </Button>
-              ) : (
-                <IconButton
-                  to={`/app/workspace/metrics/settings`}
-                  component={Link}
-                >
-                  <TuneIcon />
-                </IconButton>
-              )}
-            </>
-          )}
-        </>,
-      ]}
+      actions={
+        <SectionActions
+          id="metrics"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              link: `/app/workspace/metrics/settings`,
+              icon: <TuneIcon />,
+            }),
+          ]}
+        />
+      }
       returnLocation="/app/workspace"
     >
       <NestingAwareBlock
@@ -113,6 +95,7 @@ export default function Metrics() {
                 {entry.metric.icon && (
                   <EntityIconComponent icon={entry.metric.icon} />
                 )}
+                <IsKeyTag isKey={entry.metric.is_key} />
                 <EntityNameComponent name={entry.metric.name} />
               </EntityLink>
             </EntityCard>

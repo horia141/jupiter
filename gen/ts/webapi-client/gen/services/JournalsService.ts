@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { JournalArchiveArgs } from '../models/JournalArchiveArgs';
-import type { JournalChangePeriodsArgs } from '../models/JournalChangePeriodsArgs';
 import type { JournalChangeTimeConfigArgs } from '../models/JournalChangeTimeConfigArgs';
 import type { JournalCreateArgs } from '../models/JournalCreateArgs';
 import type { JournalCreateResult } from '../models/JournalCreateResult';
@@ -15,8 +14,10 @@ import type { JournalLoadForDateAndPeriodResult } from '../models/JournalLoadFor
 import type { JournalLoadResult } from '../models/JournalLoadResult';
 import type { JournalLoadSettingsArgs } from '../models/JournalLoadSettingsArgs';
 import type { JournalLoadSettingsResult } from '../models/JournalLoadSettingsResult';
+import type { JournalRefreshStatsArgs } from '../models/JournalRefreshStatsArgs';
+import type { JournalRegenArgs } from '../models/JournalRegenArgs';
 import type { JournalRemoveArgs } from '../models/JournalRemoveArgs';
-import type { JournalUpdateReportArgs } from '../models/JournalUpdateReportArgs';
+import type { JournalUpdateSettingsArgs } from '../models/JournalUpdateSettingsArgs';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 export class JournalsService {
@@ -34,28 +35,6 @@ export class JournalsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/journal-archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-    /**
-     * THe use case for changing periods for journals.
-     * THe use case for changing periods for journals.
-     * @param requestBody The input data
-     * @returns any Successful response / Empty body
-     * @throws ApiError
-     */
-    public journalChangePeriods(
-        requestBody?: JournalChangePeriodsArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/journal-change-periods',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -198,6 +177,50 @@ export class JournalsService {
         });
     }
     /**
+     * Use case for refreshing stats for a journal.
+     * Use case for refreshing stats for a journal.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public journalRefreshStats(
+        requestBody?: JournalRefreshStatsArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/journal-refresh-stats',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * A use case for regenerating journals.
+     * A use case for regenerating journals.
+     * @param requestBody The input data
+     * @returns any Successful response / Empty body
+     * @throws ApiError
+     */
+    public journalRegen(
+        requestBody?: JournalRegenArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/journal-regen',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
      * Use case for removing a journal.
      * Use case for removing a journal.
      * @param requestBody The input data
@@ -220,18 +243,18 @@ export class JournalsService {
         });
     }
     /**
-     * Use case for updating a journal entry.
-     * Use case for updating a journal entry.
+     * Command for updating the settings for journals in general.
+     * Command for updating the settings for journals in general.
      * @param requestBody The input data
      * @returns any Successful response / Empty body
      * @throws ApiError
      */
-    public journalUpdateReport(
-        requestBody?: JournalUpdateReportArgs,
+    public journalUpdateSettings(
+        requestBody?: JournalUpdateSettingsArgs,
     ): CancelablePromise<any> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/journal-update-report',
+            url: '/journal-update-settings',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

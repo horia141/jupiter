@@ -22,6 +22,7 @@ class SmartListTag:
         name (str): The name for an entity which acts as both name and unique identifier.
         smart_list_ref_id (str):
         tag_name (str): The base value object for any kind of tag tag.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -33,6 +34,7 @@ class SmartListTag:
     name: str
     smart_list_ref_id: str
     tag_name: str
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -52,6 +54,12 @@ class SmartListTag:
         smart_list_ref_id = self.smart_list_ref_id
 
         tag_name = self.tag_name
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -73,6 +81,8 @@ class SmartListTag:
                 "tag_name": tag_name,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -97,6 +107,15 @@ class SmartListTag:
 
         tag_name = d.pop("tag_name")
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -115,6 +134,7 @@ class SmartListTag:
             name=name,
             smart_list_ref_id=smart_list_ref_id,
             tag_name=tag_name,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

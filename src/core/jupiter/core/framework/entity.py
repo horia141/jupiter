@@ -27,6 +27,7 @@ FIRST_VERSION = 1
 
 
 _EntityT = TypeVar("_EntityT", bound="Entity")
+_ArchivalReasonT = TypeVar("_ArchivalReasonT", bound=EnumValue)
 
 
 @dataclass(frozen=True)
@@ -36,9 +37,10 @@ class Entity(Concept):
     ref_id: EntityId
     version: int = dataclasses.field(compare=False, hash=False)
     archived: bool
+    archival_reason: str | None = dataclasses.field(compare=False, hash=False)
     created_time: Timestamp
     last_modified_time: Timestamp = dataclasses.field(compare=False, hash=False)
-    archived_time: Timestamp | None
+    archived_time: Timestamp | None = dataclasses.field(compare=False, hash=False)
     events: list[Event] = dataclasses.field(compare=False, hash=False)
 
     @classmethod
@@ -52,6 +54,7 @@ class Entity(Concept):
             ref_id=BAD_REF_ID,
             version=FIRST_VERSION,
             archived=False,
+            archival_reason=None,
             created_time=ctx.action_timestamp,
             last_modified_time=ctx.action_timestamp,
             archived_time=None,
@@ -89,19 +92,21 @@ class Entity(Concept):
     def mark_archived(
         self: _EntityT,
         ctx: DomainContext,
+        reason: _ArchivalReasonT,
     ) -> _EntityT:
         """Archive the root."""
         archived_entity = self._new_version(
             ctx=ctx,
             archived=True,
             archived_time=ctx.action_timestamp,
+            archival_reason=str(reason.value),
         )
         archived_entity.events.append(
             Event(
                 source=ctx.event_source,
                 entity_version=archived_entity.version,
                 timestamp=ctx.action_timestamp,
-                frame_args={},
+                frame_args={"reason": (str(reason.value), str)},
                 kind=EventKind.ARCHIVE,
                 name="mark_archived",
             )
@@ -136,6 +141,14 @@ class Entity(Concept):
 
         assert found is not None
         return found
+
+    def get_archival_reason(
+        self, the_type: type[_ArchivalReasonT]
+    ) -> _ArchivalReasonT | None:
+        """Get the archival reason for the entity."""
+        if self.archival_reason is None:
+            return None
+        return the_type(self.archival_reason)
 
 
 @dataclass_transform(frozen_default=True)

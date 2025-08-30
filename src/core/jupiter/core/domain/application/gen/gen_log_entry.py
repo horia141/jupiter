@@ -12,7 +12,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     CrownEntity,
-    LeafEntity,
+    LeafSupportEntity,
     ParentLink,
     create_entity_action,
     entity,
@@ -23,7 +23,7 @@ from jupiter.core.framework.repository import LeafEntityRepository
 
 
 @entity
-class GenLogEntry(LeafEntity):
+class GenLogEntry(LeafSupportEntity):
     """A particular entry in the task generation log."""
 
     gen_log: ParentLink

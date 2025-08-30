@@ -5,11 +5,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -20,27 +15,25 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import {
-  Form,
   useActionData,
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntitySummaryLink } from "~/components/entity-summary-link";
-import { EventSourceTag } from "~/components/event-source-tag";
+import { EntitySummaryLink } from "~/components/infra/entity-summary-link";
+import { EventSourceTag } from "~/components/infra/event-source-tag";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
-import { FieldError } from "~/components/infra/errors";
+import { FieldError, GlobalError } from "~/components/infra/errors";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
-import { ScheduleStreamMultiSelect } from "~/components/schedule-stream-multi-select";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimeDiffTag } from "~/components/time-diff-tag";
+import { ScheduleStreamMultiSelect } from "~/components/domain/concept/schedule/schedule-stream-multi-select";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 import {
   noErrorNoData,
   validationErrorToUIErrorInfo,
@@ -49,7 +42,13 @@ import { selectZod } from "~/logic/select";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  SectionActions,
+  ActionSingle,
+  ActionsExpansion,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -109,8 +108,6 @@ export default function CalendarSettings() {
 
   const inputsEnabled = navigation.state === "idle";
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   const query = useSearchParams();
 
   const scheduleStreamsByRefId = new Map(
@@ -122,60 +119,61 @@ export default function CalendarSettings() {
       key="calendar-settings"
       returnLocation={`/app/workspace/calendar?${query}`}
     >
-      <Form method="post">
-        <Card>
-          <CardContent>
-            <FormControl fullWidth>
-              <InputLabel id="scheduleStreamRefId">Schedule Streams</InputLabel>
-              <ScheduleStreamMultiSelect
-                labelId="scheduleStreamRefIds"
-                label="Schedule Streams"
-                name="scheduleStreamRefIds"
+      <GlobalError actionResult={actionData} />
+
+      <SectionCard
+        title="External Calendar Sync"
+        actions={
+          <SectionActions
+            id="calendar-external-sync"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            expansion={ActionsExpansion.ALWAYS_SHOW}
+            actions={[
+              ActionSingle({
+                text: "Sync",
+                value: "sync",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="scheduleStreamRefId">Schedule Streams</InputLabel>
+          <ScheduleStreamMultiSelect
+            labelId="scheduleStreamRefIds"
+            label="Schedule Streams"
+            name="scheduleStreamRefIds"
+            readOnly={!inputsEnabled}
+            allScheduleStreams={loaderData.scheduleStreams.filter(
+              (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
+            )}
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/filter_schedule_stream_ref_id"
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={
+              <Switch
+                name="syncEvenIfNotModified"
                 readOnly={!inputsEnabled}
-                allScheduleStreams={loaderData.scheduleStreams.filter(
-                  (ss) => ss.source === ScheduleSource.EXTERNAL_ICAL,
-                )}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/filter_schedule_stream_ref_id"
-              />
-
-              <FormControl fullWidth>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      name="syncEvenIfNotModified"
-                      readOnly={!inputsEnabled}
-                      disabled={!inputsEnabled}
-                      defaultChecked={false}
-                    />
-                  }
-                  label="Sync Even If Not Modified"
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/sync_even_if_not_modified"
-                />
-              </FormControl>
-            </FormControl>
-          </CardContent>
-
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
                 disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="sync"
-              >
-                Sync
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        </Card>
-      </Form>
+                defaultChecked={false}
+              />
+            }
+            label="Sync Even If Not Modified"
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/sync_even_if_not_modified"
+          />
+        </FormControl>
+      </SectionCard>
 
       <StandardDivider title="Previous Runs" size="large" />
 
@@ -191,7 +189,7 @@ export default function CalendarSettings() {
                 with {entry.entity_records.length}
                 {entry.even_more_entity_records ? "+" : ""} entities synced
                 <TimeDiffTag
-                  today={today}
+                  today={topLevelInfo.today}
                   labelPrefix="from"
                   collectionTime={entry.created_time}
                 />
@@ -228,7 +226,10 @@ export default function CalendarSettings() {
                     <EntityCard
                       key={`entities-${entry.ref_id}-${record.ref_id}`}
                     >
-                      <EntitySummaryLink today={today} summary={record} />
+                      <EntitySummaryLink
+                        today={topLevelInfo.today}
+                        summary={record}
+                      />
                     </EntityCard>
                   ))}
                 </>

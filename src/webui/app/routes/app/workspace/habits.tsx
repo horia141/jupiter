@@ -1,65 +1,149 @@
-import type { HabitFindResultEntry, Project } from "@jupiter/webapi-client";
-import { WorkspaceFeature } from "@jupiter/webapi-client";
+import type {
+  ADate,
+  HabitFindResultEntry,
+  HabitLoadResult,
+  Project,
+} from "@jupiter/webapi-client";
+import { WidgetDimension, WorkspaceFeature } from "@jupiter/webapi-client";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
+import { DateTime } from "luxon";
+import { z } from "zod";
+import { parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultyTag } from "~/components/difficulty-tag";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EisenTag } from "~/components/eisen-tag";
-import { EntityNameComponent } from "~/components/entity-name";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { TopLevelInfoContext } from "~/top-level-context";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { DifficultyTag } from "~/components/domain/core/difficulty-tag";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EisenTag } from "~/components/domain/core/eisen-tag";
+import { EntityNameComponent } from "~/components/infra/entity-name";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { PeriodTag } from "~/components/period-tag";
-import { ProjectTag } from "~/components/project-tag";
+import { PeriodTag } from "~/components/domain/core/period-tag";
+import { ProjectTag } from "~/components/domain/concept/project/project-tag";
 import { sortHabitsNaturally } from "~/logic/domain/habit";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeyTag } from "~/components/domain/core/is-key-tag";
+import { HabitKeyHabitStreakWidget } from "~/components/domain/concept/habit/habit-key-habit-streak-widget";
+import { WidgetProps } from "~/components/domain/application/home/common";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
+const QuerySchema = z.object({
+  includeStreakMarksEarliestDate: z.string().optional(),
+  includeStreakMarksLatestDate: z.string().optional(),
+});
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
+  const query = parseQuery(request, QuerySchema);
+
   const response = await apiClient.habits.habitFind({
     allow_archived: false,
     include_notes: false,
     include_project: true,
     include_inbox_tasks: false,
   });
-  return json(response.entries);
+
+  let earliestDate = query.includeStreakMarksEarliestDate;
+  let latestDate = query.includeStreakMarksLatestDate;
+  if (earliestDate === undefined) {
+    earliestDate = DateTime.now().minus({ days: 365 }).toISODate();
+    latestDate = DateTime.now().toISODate();
+  }
+
+  const keyHabitRefIds = response.entries
+    .filter((e) => e.habit.is_key)
+    .map((e) => e.habit.ref_id);
+
+  let keyHabitResults: HabitLoadResult[] = [];
+  if (keyHabitRefIds.length > 0) {
+    keyHabitResults = await Promise.all(
+      keyHabitRefIds.map((refId) =>
+        apiClient.habits.habitLoad({
+          ref_id: refId,
+          allow_archived: false,
+          include_streak_marks_earliest_date: earliestDate,
+          include_streak_marks_latest_date: latestDate,
+        }),
+      ),
+    );
+  }
+
+  return json({
+    habits: response.entries,
+    keyHabitStreaks: keyHabitResults.map((h) => ({
+      habitRefId: h.habit.ref_id,
+      streakMarkEarliestDate: h.streak_mark_earliest_date,
+      streakMarkLatestDate: h.streak_mark_latest_date,
+      streakMarks: h.streak_marks,
+    })),
+  });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Habits() {
-  const entries = useLoaderDataSafeForAnimation<typeof loader>();
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const sortedHabits = sortHabitsNaturally(entries.map((e) => e.habit));
+  const sortedHabits = sortHabitsNaturally(
+    loaderData.habits.map((e) => e.habit),
+  );
   const entriesByRefId = new Map<string, HabitFindResultEntry>();
-  for (const entry of entries) {
+  for (const entry of loaderData.habits) {
     entriesByRefId.set(entry.habit.ref_id, entry);
   }
+
+  const rightNow = DateTime.local({ zone: topLevelInfo.user.timezone });
+
+  const widgetProps: WidgetProps = {
+    rightNow,
+    timezone: topLevelInfo.user.timezone,
+    topLevelInfo,
+    habitStreak: {
+      earliestDate:
+        loaderData.keyHabitStreaks[0]?.streakMarkEarliestDate ??
+        topLevelInfo.today,
+      latestDate:
+        loaderData.keyHabitStreaks[0]?.streakMarkLatestDate ??
+        topLevelInfo.today,
+      currentToday: topLevelInfo.today,
+      entries: loaderData.keyHabitStreaks.map((h) => ({
+        habit: entriesByRefId.get(h.habitRefId)!.habit,
+        streakMarks: h.streakMarks,
+      })),
+      label: "Latest Streak",
+      showNav: true,
+      getNavUrl: (earliestDate: ADate, latestDate: ADate) => {
+        return `/app/workspace/habits?includeStreakMarksEarliestDate=${earliestDate}&includeStreakMarksLatestDate=${latestDate}`;
+      },
+    },
+    geometry: {
+      row: 0,
+      col: 0,
+      dimension: WidgetDimension.DIM_3X1,
+    },
+  };
 
   return (
     <TrunkPanel
@@ -77,6 +161,10 @@ export default function Habits() {
           />
         )}
 
+        {loaderData.keyHabitStreaks.length > 0 && (
+          <HabitKeyHabitStreakWidget {...widgetProps} />
+        )}
+
         <EntityStack>
           {sortedHabits.map((habit) => {
             const entry = entriesByRefId.get(
@@ -88,6 +176,7 @@ export default function Habits() {
                 entityId={`habit-${habit.ref_id}`}
               >
                 <EntityLink to={`/app/workspace/habits/${habit.ref_id}`}>
+                  <IsKeyTag isKey={habit.is_key} />
                   <EntityNameComponent name={habit.name} />
                   {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,

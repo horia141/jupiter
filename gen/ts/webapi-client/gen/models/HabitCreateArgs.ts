@@ -18,6 +18,7 @@ export type HabitCreateArgs = {
     name: HabitName;
     period: RecurringTaskPeriod;
     project_ref_id?: (EntityId | null);
+    is_key: boolean;
     eisen: Eisen;
     difficulty: Difficulty;
     actionable_from_day?: (RecurringTaskDueAtDay | null);

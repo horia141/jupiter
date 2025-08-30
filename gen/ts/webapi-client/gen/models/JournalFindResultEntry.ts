@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { InboxTask } from './InboxTask';
 import type { Journal } from './Journal';
+import type { JournalStats } from './JournalStats';
 import type { Note } from './Note';
 /**
  * Result part.
@@ -11,6 +12,7 @@ import type { Note } from './Note';
 export type JournalFindResultEntry = {
     journal: Journal;
     note?: (Note | null);
+    journal_stats?: (JournalStats | null);
     writing_task?: (InboxTask | null);
 };
 

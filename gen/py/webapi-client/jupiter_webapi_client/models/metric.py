@@ -26,6 +26,8 @@ class Metric:
         last_modified_time (str): A timestamp in the application.
         name (str): THe metric name.
         metric_collection_ref_id (str):
+        is_key (bool):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         icon (Union[None, Unset, str]):
         collection_params (Union['RecurringTaskGenParams', None, Unset]):
@@ -39,6 +41,8 @@ class Metric:
     last_modified_time: str
     name: str
     metric_collection_ref_id: str
+    is_key: bool
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     icon: Union[None, Unset, str] = UNSET
     collection_params: Union["RecurringTaskGenParams", None, Unset] = UNSET
@@ -61,6 +65,14 @@ class Metric:
         name = self.name
 
         metric_collection_ref_id = self.metric_collection_ref_id
+
+        is_key = self.is_key
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -101,8 +113,11 @@ class Metric:
                 "last_modified_time": last_modified_time,
                 "name": name,
                 "metric_collection_ref_id": metric_collection_ref_id,
+                "is_key": is_key,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if icon is not UNSET:
@@ -132,6 +147,17 @@ class Metric:
         name = d.pop("name")
 
         metric_collection_ref_id = d.pop("metric_collection_ref_id")
+
+        is_key = d.pop("is_key")
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -193,6 +219,8 @@ class Metric:
             last_modified_time=last_modified_time,
             name=name,
             metric_collection_ref_id=metric_collection_ref_id,
+            is_key=is_key,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             icon=icon,
             collection_params=collection_params,

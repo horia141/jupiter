@@ -1,11 +1,6 @@
 import type { ProjectSummary, ReportResult } from "@jupiter/webapi-client";
 import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormLabel,
   InputLabel,
@@ -26,8 +21,8 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeToolErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
-import { PeriodSelect } from "~/components/period-select";
-import { ShowReport } from "~/components/show-report";
+import { PeriodSelect } from "~/components/domain/core/period-select";
+import { ShowReport } from "~/components/domain/application/search/show-report";
 import type { ActionResult } from "~/logic/action-result";
 import {
   isNoErrorSomeData,
@@ -40,6 +35,11 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const QuerySchema = z.object({
   today: z
@@ -146,82 +146,89 @@ export default function Report() {
   }
 
   return (
-    <ToolPanel method="get">
-      <Card>
-        <GlobalError actionResult={loaderData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="today" shrink>
-                Today
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="Today"
-                name="today"
-                defaultValue={
-                  isNoErrorSomeData(loaderData)
-                    ? (loaderData.data.report?.period_result.today ??
-                      DateTime.local({
-                        zone: topLevelInfo.user.timezone,
-                      }).toISODate())
-                    : DateTime.local({
-                        zone: topLevelInfo.user.timezone,
-                      }).toISODate()
-                }
-                readOnly={!inputsEnabled}
-              />
+    <ToolPanel>
+      <GlobalError actionResult={loaderData} />
 
-              <FieldError actionResult={loaderData} fieldName="/today" />
-            </FormControl>
+      <SectionCard
+        title="Report"
+        method="get"
+        actions={
+          <SectionActions
+            id="report-actions"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Run Report",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="today" shrink>
+            Today
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="Today"
+            name="today"
+            defaultValue={
+              isNoErrorSomeData(loaderData)
+                ? (loaderData.data.report?.period_result.today ??
+                  DateTime.local({
+                    zone: topLevelInfo.user.timezone,
+                  }).toISODate())
+                : DateTime.local({
+                    zone: topLevelInfo.user.timezone,
+                  }).toISODate()
+            }
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
 
-            <Stack
-              spacing={2}
-              useFlexGap
-              direction={isBigScreen ? "row" : "column"}
-            >
-              <FormControl fullWidth>
-                <FormLabel id="period">Period</FormLabel>
-                <PeriodSelect
-                  labelId="period"
-                  label="Period"
-                  name="period"
-                  inputsEnabled={inputsEnabled}
-                  value={period}
-                  onChange={handleChangePeriod}
-                />
-                <FieldError actionResult={loaderData} fieldName="/status" />
-              </FormControl>
+          <FieldError actionResult={loaderData} fieldName="/today" />
+        </FormControl>
 
-              <FormControl fullWidth>
-                <FormLabel id="breakdownPeriod">Breakdown Period</FormLabel>
-                <PeriodSelect
-                  labelId="breakdownPeriod"
-                  label="Breakdown Period"
-                  name="breakdownPeriod"
-                  inputsEnabled={inputsEnabled}
-                  allowNonePeriod
-                  value={breakdownPeriod}
-                  onChange={handleChangeBreakdownPeriod}
-                />
-                <FieldError
-                  actionResult={loaderData}
-                  fieldName="/breakdown_period"
-                />
-              </FormControl>
-            </Stack>
-          </Stack>
-        </CardContent>
+        <Stack
+          spacing={2}
+          useFlexGap
+          direction={isBigScreen ? "row" : "column"}
+        >
+          <FormControl fullWidth>
+            <FormLabel id="period">Period</FormLabel>
+            <PeriodSelect
+              labelId="period"
+              label="Period"
+              name="period"
+              inputsEnabled={inputsEnabled}
+              value={period}
+              onChange={handleChangePeriod}
+            />
+            <FieldError actionResult={loaderData} fieldName="/status" />
+          </FormControl>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button variant="contained" disabled={!inputsEnabled} type="submit">
-              Run Report
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+          <FormControl fullWidth>
+            <FormLabel id="breakdownPeriod">Breakdown Period</FormLabel>
+            <PeriodSelect
+              labelId="breakdownPeriod"
+              label="Breakdown Period"
+              name="breakdownPeriod"
+              inputsEnabled={inputsEnabled}
+              allowNonePeriod
+              value={breakdownPeriod}
+              onChange={handleChangeBreakdownPeriod}
+            />
+            <FieldError
+              actionResult={loaderData}
+              fieldName="/breakdown_period"
+            />
+          </FormControl>
+        </Stack>
+      </SectionCard>
 
       {isNoErrorSomeData(loaderData) &&
         loaderData.data.allProjects !== undefined &&

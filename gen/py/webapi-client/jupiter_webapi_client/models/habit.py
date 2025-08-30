@@ -27,8 +27,10 @@ class Habit:
         name (str): The habit name.
         habit_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
+        is_key (bool):
         gen_params (RecurringTaskGenParams): Parameters for metric collection.
         suspended (bool):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         repeats_strategy (Union[HabitRepeatsStrategy, None, Unset]):
         repeats_in_period_count (Union[None, Unset, int]):
@@ -42,8 +44,10 @@ class Habit:
     name: str
     habit_collection_ref_id: str
     project_ref_id: str
+    is_key: bool
     gen_params: "RecurringTaskGenParams"
     suspended: bool
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     repeats_strategy: Union[HabitRepeatsStrategy, None, Unset] = UNSET
     repeats_in_period_count: Union[None, Unset, int] = UNSET
@@ -66,9 +70,17 @@ class Habit:
 
         project_ref_id = self.project_ref_id
 
+        is_key = self.is_key
+
         gen_params = self.gen_params.to_dict()
 
         suspended = self.suspended
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -102,10 +114,13 @@ class Habit:
                 "name": name,
                 "habit_collection_ref_id": habit_collection_ref_id,
                 "project_ref_id": project_ref_id,
+                "is_key": is_key,
                 "gen_params": gen_params,
                 "suspended": suspended,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if repeats_strategy is not UNSET:
@@ -136,9 +151,20 @@ class Habit:
 
         project_ref_id = d.pop("project_ref_id")
 
+        is_key = d.pop("is_key")
+
         gen_params = RecurringTaskGenParams.from_dict(d.pop("gen_params"))
 
         suspended = d.pop("suspended")
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -184,8 +210,10 @@ class Habit:
             name=name,
             habit_collection_ref_id=habit_collection_ref_id,
             project_ref_id=project_ref_id,
+            is_key=is_key,
             gen_params=gen_params,
             suspended=suspended,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             repeats_strategy=repeats_strategy,
             repeats_in_period_count=repeats_in_period_count,

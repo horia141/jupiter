@@ -1,5 +1,4 @@
 import { ApiError } from "@jupiter/webapi-client";
-import { Card, CardContent, FormControl } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -9,10 +8,11 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocEditor } from "~/components/doc-editor";
+import { DocEditor } from "~/components/domain/concept/doc/doc-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { SectionCard } from "~/components/infra/section-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -107,24 +107,21 @@ export default function Doc() {
   return (
     <LeafPanel
       key={`doc-${loaderData.doc.ref_id}`}
+      fakeKey={`doc-${loaderData.doc.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.doc.archived}
       returnLocation="/app/workspace/docs"
       initialExpansionState={LeafPanelExpansionState.FULL}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <FormControl fullWidth>
-            <DocEditor
-              initialDoc={loaderData.doc}
-              initialNote={loaderData.note}
-              inputsEnabled={inputsEnabled}
-            />
-          </FormControl>
-        </CardContent>
-      </Card>
+      <GlobalError actionResult={actionData} />
+      <SectionCard title="Doc">
+        <DocEditor
+          initialDoc={loaderData.doc}
+          initialNote={loaderData.note}
+          inputsEnabled={inputsEnabled}
+        />
+      </SectionCard>
     </LeafPanel>
   );
 }

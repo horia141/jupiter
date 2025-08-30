@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.habits.habit_name import HabitName
 from jupiter.core.domain.concept.habits.habit_repeats_strategy import (
     HabitRepeatsStrategy,
 )
+from jupiter.core.domain.concept.habits.habit_streak_mark import HabitStreakMark
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.core.notes.note import Note
@@ -23,6 +24,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.record import ContainsManyRecords
 from jupiter.core.framework.update_action import UpdateAction
 
 
@@ -33,6 +35,7 @@ class Habit(LeafEntity):
     habit_collection: ParentLink
     project_ref_id: EntityId
     name: HabitName
+    is_key: bool
     gen_params: RecurringTaskGenParams
     suspended: bool
     repeats_strategy: HabitRepeatsStrategy | None
@@ -42,6 +45,10 @@ class Habit(LeafEntity):
         InboxTask, source=InboxTaskSource.HABIT, source_entity_ref_id=IsRefId()
     )
     note = OwnsAtMostOne(Note, domain=NoteDomain.HABIT, source_entity_ref_id=IsRefId())
+    streak_marks = ContainsManyRecords(
+        HabitStreakMark,
+        habit_ref_id=IsRefId(),
+    )
 
     @staticmethod
     @create_entity_action
@@ -50,10 +57,11 @@ class Habit(LeafEntity):
         habit_collection_ref_id: EntityId,
         project_ref_id: EntityId,
         name: HabitName,
+        is_key: bool,
         gen_params: RecurringTaskGenParams,
+        suspended: bool,
         repeats_strategy: HabitRepeatsStrategy | None,
         repeats_in_period_count: int | None,
-        suspended: bool,
     ) -> "Habit":
         """Create a habit."""
         if repeats_in_period_count is not None:
@@ -77,10 +85,11 @@ class Habit(LeafEntity):
             habit_collection=ParentLink(habit_collection_ref_id),
             project_ref_id=project_ref_id,
             name=name,
+            is_key=is_key,
             gen_params=gen_params,
+            suspended=suspended,
             repeats_strategy=repeats_strategy,
             repeats_in_period_count=repeats_in_period_count,
-            suspended=suspended,
         )
 
     @update_entity_action
@@ -89,6 +98,7 @@ class Habit(LeafEntity):
         ctx: DomainContext,
         name: UpdateAction[HabitName],
         project_ref_id: UpdateAction[EntityId],
+        is_key: UpdateAction[bool],
         gen_params: UpdateAction[RecurringTaskGenParams],
         repeats_in_period_count: UpdateAction[int | None],
         repeats_strategy: UpdateAction[HabitRepeatsStrategy | None],
@@ -137,6 +147,7 @@ class Habit(LeafEntity):
             ctx,
             name=name.or_else(self.name),
             project_ref_id=project_ref_id.or_else(self.project_ref_id),
+            is_key=is_key.or_else(self.is_key),
             gen_params=the_gen_params,
             repeats_strategy=repeats_strategy.or_else(self.repeats_strategy),
             repeats_in_period_count=repeats_in_period_count.or_else(

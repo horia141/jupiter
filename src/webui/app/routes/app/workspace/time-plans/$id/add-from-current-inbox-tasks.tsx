@@ -15,13 +15,12 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { InboxTaskCard } from "~/components/inbox-task-card";
+import { InboxTaskCard } from "~/components/domain/concept/inbox-task/inbox-task-card";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -31,10 +30,10 @@ import {
   FilterFewOptionsCompact,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
+import { SectionCard } from "~/components/infra/section-card";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import type { InboxTaskParent } from "~/logic/domain/inbox-task";
 import {
@@ -132,6 +131,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       include_notes: false,
       include_time_event_blocks: false,
       filter_just_workable: true,
+      filter_just_user: true,
       filter_sources: query.bigPlanRefId
         ? [InboxTaskSource.BIG_PLAN]
         : undefined,
@@ -277,8 +277,6 @@ export default function TimePlanAddFromCurrentInboxTasks() {
     loaderData.allProjects?.map((p) => [p.ref_id, p]),
   );
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   useEffect(() => {
     setSelectedView(inferDefaultSelectedView(topLevelInfo.workspace));
   }, [topLevelInfo]);
@@ -286,6 +284,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
   return (
     <LeafPanel
       key={`time-plan-${id}/add-from-current-inbox-tasks`}
+      fakeKey={`time-plan-${id}/add-from-current-inbox-tasks`}
       returnLocation={`/app/workspace/time-plans/${id}`}
       returnLocationDiscriminator="add-from-current-inbox-tasks"
       inputsEnabled={inputsEnabled}
@@ -296,7 +295,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
       ]}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-plan-current-inbox-tasks"
         title="Current Inbox Tasks"
         actions={
@@ -387,7 +386,6 @@ export default function TimePlanAddFromCurrentInboxTasks() {
 
         {selectedView === View.MERGED && (
           <InboxTaskList
-            today={today}
             topLevelInfo={topLevelInfo}
             inboxTasks={filteredInboxTasks}
             alreadyIncludedInboxTaskRefIds={alreadyIncludedInboxTaskRefIds}
@@ -422,7 +420,6 @@ export default function TimePlanAddFromCurrentInboxTasks() {
                   <StandardDivider title={fullProjectName} size="large" />
 
                   <InboxTaskList
-                    today={today}
                     topLevelInfo={topLevelInfo}
                     inboxTasks={theInboxTasks}
                     alreadyIncludedInboxTaskRefIds={
@@ -447,7 +444,7 @@ export default function TimePlanAddFromCurrentInboxTasks() {
           type="hidden"
           value={Array.from(targetInboxTaskRefIds).join(",")}
         />
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }
@@ -463,7 +460,6 @@ export const ErrorBoundary = makeLeafErrorBoundary(
 );
 
 interface InboxTaskListProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   alreadyIncludedInboxTaskRefIds: Set<string>;
@@ -478,7 +474,6 @@ function InboxTaskList(props: InboxTaskListProps) {
       {props.inboxTasks.map((inboxTask) => (
         <InboxTaskCard
           key={`inbox-task-${inboxTask.ref_id}`}
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTask={inboxTask}
           allowSelect

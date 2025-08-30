@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from ..models.inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
     from ..models.inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
     from ..models.inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
+    from ..models.inbox_task_update_args_is_key import InboxTaskUpdateArgsIsKey
     from ..models.inbox_task_update_args_name import InboxTaskUpdateArgsName
     from ..models.inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
     from ..models.inbox_task_update_args_status import InboxTaskUpdateArgsStatus
@@ -28,6 +29,7 @@ class InboxTaskUpdateArgs:
         status (InboxTaskUpdateArgsStatus):
         project_ref_id (InboxTaskUpdateArgsProjectRefId):
         big_plan_ref_id (InboxTaskUpdateArgsBigPlanRefId):
+        is_key (InboxTaskUpdateArgsIsKey):
         eisen (InboxTaskUpdateArgsEisen):
         difficulty (InboxTaskUpdateArgsDifficulty):
         actionable_date (InboxTaskUpdateArgsActionableDate):
@@ -39,6 +41,7 @@ class InboxTaskUpdateArgs:
     status: "InboxTaskUpdateArgsStatus"
     project_ref_id: "InboxTaskUpdateArgsProjectRefId"
     big_plan_ref_id: "InboxTaskUpdateArgsBigPlanRefId"
+    is_key: "InboxTaskUpdateArgsIsKey"
     eisen: "InboxTaskUpdateArgsEisen"
     difficulty: "InboxTaskUpdateArgsDifficulty"
     actionable_date: "InboxTaskUpdateArgsActionableDate"
@@ -55,6 +58,8 @@ class InboxTaskUpdateArgs:
         project_ref_id = self.project_ref_id.to_dict()
 
         big_plan_ref_id = self.big_plan_ref_id.to_dict()
+
+        is_key = self.is_key.to_dict()
 
         eisen = self.eisen.to_dict()
 
@@ -73,6 +78,7 @@ class InboxTaskUpdateArgs:
                 "status": status,
                 "project_ref_id": project_ref_id,
                 "big_plan_ref_id": big_plan_ref_id,
+                "is_key": is_key,
                 "eisen": eisen,
                 "difficulty": difficulty,
                 "actionable_date": actionable_date,
@@ -89,6 +95,7 @@ class InboxTaskUpdateArgs:
         from ..models.inbox_task_update_args_difficulty import InboxTaskUpdateArgsDifficulty
         from ..models.inbox_task_update_args_due_date import InboxTaskUpdateArgsDueDate
         from ..models.inbox_task_update_args_eisen import InboxTaskUpdateArgsEisen
+        from ..models.inbox_task_update_args_is_key import InboxTaskUpdateArgsIsKey
         from ..models.inbox_task_update_args_name import InboxTaskUpdateArgsName
         from ..models.inbox_task_update_args_project_ref_id import InboxTaskUpdateArgsProjectRefId
         from ..models.inbox_task_update_args_status import InboxTaskUpdateArgsStatus
@@ -104,6 +111,8 @@ class InboxTaskUpdateArgs:
 
         big_plan_ref_id = InboxTaskUpdateArgsBigPlanRefId.from_dict(d.pop("big_plan_ref_id"))
 
+        is_key = InboxTaskUpdateArgsIsKey.from_dict(d.pop("is_key"))
+
         eisen = InboxTaskUpdateArgsEisen.from_dict(d.pop("eisen"))
 
         difficulty = InboxTaskUpdateArgsDifficulty.from_dict(d.pop("difficulty"))
@@ -118,6 +127,7 @@ class InboxTaskUpdateArgs:
             status=status,
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan_ref_id,
+            is_key=is_key,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,

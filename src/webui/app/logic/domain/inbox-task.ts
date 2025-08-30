@@ -1,4 +1,4 @@
-import type {
+import {
   BigPlan,
   Chore,
   Eisen,
@@ -12,17 +12,16 @@ import type {
   Project,
   RecurringTaskPeriod,
   SlackTask,
-} from "@jupiter/webapi-client";
-import {
   Difficulty,
   InboxTaskSource,
   InboxTaskStatus,
 } from "@jupiter/webapi-client";
 import type { DateTime } from "luxon";
 
-import { aDateToDate, compareADate } from "./adate";
-import { compareDifficulty } from "./difficulty";
-import { compareEisen } from "./eisen";
+import { aDateToDate, compareADate } from "~/logic/domain/adate";
+import { compareDifficulty } from "~/logic/domain/difficulty";
+import { compareEisen } from "~/logic/domain/eisen";
+import { compareIsKey } from "~/logic/domain/is-key";
 
 export interface InboxTaskOptimisticState {
   status: InboxTaskStatus;
@@ -70,6 +69,7 @@ interface InboxTaskFilterOptions {
   dueDateEnd?: DateTime;
   allowPeriodsIfHabit?: RecurringTaskPeriod[];
   allowPeriodsIfChore?: RecurringTaskPeriod[];
+  allowPeriodsForRecurringTasks?: RecurringTaskPeriod[];
 }
 
 export function filterInboxTasksForDisplay(
@@ -172,7 +172,7 @@ export function filterInboxTasksForDisplay(
     if (options.dueDateEnd !== undefined) {
       if (
         inboxTask.due_date &&
-        aDateToDate(inboxTask.due_date) >= options.dueDateEnd
+        aDateToDate(inboxTask.due_date) > options.dueDateEnd
       ) {
         return false;
       }
@@ -190,6 +190,13 @@ export function filterInboxTasksForDisplay(
       const entry = entriesByRefId[inboxTask.ref_id];
       const chore = entry.chore as Chore;
       if (!options.allowPeriodsIfChore.includes(chore.gen_params.period)) {
+        return false;
+      }
+    }
+
+    if (options.allowPeriodsForRecurringTasks) {
+      const inferredPeriod = inferPeriodForRecurringTask(inboxTask);
+      if (!options.allowPeriodsForRecurringTasks.includes(inferredPeriod)) {
         return false;
       }
     }
@@ -225,12 +232,9 @@ export function sortInboxTasksNaturally(
     return (
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date) ||
+      compareIsKey(i1.is_key, i2.is_key) ||
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 *
-        compareDifficulty(
-          i1.difficulty ?? Difficulty.EASY,
-          i2.difficulty ?? Difficulty.EASY,
-        )
+      -1 * compareDifficulty(i1.difficulty, i2.difficulty)
     );
   });
 }
@@ -248,12 +252,9 @@ export function sortInboxTasksByEisenAndDifficulty(
 
   return [...inboxTasks].sort((i1, i2) => {
     return (
+      compareIsKey(i1.is_key, i2.is_key) ||
       -1 * compareEisen(i1.eisen, i2.eisen) ||
-      -1 *
-        compareDifficulty(
-          i1.difficulty ?? Difficulty.EASY,
-          i2.difficulty ?? Difficulty.EASY,
-        ) ||
+      -1 * compareDifficulty(i1.difficulty, i2.difficulty) ||
       (cleanOptions.dueDateAscending ? 1 : -1) *
         compareADate(i1.due_date, i2.due_date)
     );
@@ -277,6 +278,7 @@ export function canInboxTaskBeInStatus(
 
       return true;
     case InboxTaskSource.WORKING_MEM_CLEANUP:
+    case InboxTaskSource.TIME_PLAN:
     case InboxTaskSource.HABIT:
     case InboxTaskSource.CHORE:
     case InboxTaskSource.JOURNAL:
@@ -303,4 +305,24 @@ export function doesInboxTaskAllowChangingBigPlan(
   source: InboxTaskSource,
 ): boolean {
   return source === InboxTaskSource.USER || source === InboxTaskSource.BIG_PLAN;
+}
+
+function inferPeriodForRecurringTask(
+  inboxTask: InboxTask,
+): RecurringTaskPeriod {
+  const timeline = inboxTask.recurring_timeline!;
+  const parts = timeline.split(",");
+  if (parts.length === 5) {
+    return RecurringTaskPeriod.DAILY;
+  } else if (parts.length === 4) {
+    return RecurringTaskPeriod.WEEKLY;
+  } else if (parts.length === 3) {
+    return RecurringTaskPeriod.MONTHLY;
+  } else if (parts.length === 2) {
+    return RecurringTaskPeriod.QUARTERLY;
+  } else if (parts.length === 1) {
+    return RecurringTaskPeriod.YEARLY;
+  } else {
+    throw new Error(`Invalid timeline: ${timeline}`);
+  }
 }

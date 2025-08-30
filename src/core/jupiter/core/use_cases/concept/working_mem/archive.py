@@ -1,6 +1,7 @@
 """The command for archiving a working mem."""
 
 from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -43,5 +44,10 @@ class WorkingMemArchiveUseCase(
                 "Cannot archive a working mem that is less than 14 days old."
             )
         await generic_crown_archiver(
-            context.domain_context, uow, progress_reporter, WorkingMem, args.ref_id
+            context.domain_context,
+            uow,
+            progress_reporter,
+            WorkingMem,
+            args.ref_id,
+            ArchivalReason.USER,
         )

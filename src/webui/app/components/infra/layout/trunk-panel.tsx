@@ -2,12 +2,18 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { Box, Button, ButtonGroup, IconButton, styled } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  IconButton,
+  Stack,
+  styled,
+} from "@mui/material";
 import { Link, useLocation } from "@remix-run/react";
-import { AnimatePresence, motion, useIsPresent } from "framer-motion";
+import { motion, useIsPresent } from "framer-motion";
 import type { PropsWithChildren } from "react";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { extractTrunkFromPath } from "~/rendering/routes";
 import {
@@ -17,16 +23,15 @@ import {
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useHydrated } from "~/rendering/use-hidrated";
 import {
+  useLeafNeedsToShowLeaflet,
   useTrunkNeedsToShowBranch,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
-
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
 interface TrunkPanelProps {
   createLocation?: string;
-  extraControls?: JSX.Element[];
   actions?: JSX.Element;
   returnLocation: string;
 }
@@ -37,6 +42,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
   const isHydrated = useHydrated();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
+  const shouldShowALeaflet = useLeafNeedsToShowLeaflet();
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
   const shouldShowABranch = useTrunkNeedsToShowBranch();
 
@@ -87,7 +93,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       handleScroll(
         theRef,
         extractTrunkFromPath(location.pathname),
-        shouldShowABranch || shouldShowALeaf,
+        shouldShowABranch || shouldShowALeaf || shouldShowALeaflet,
       );
     }
 
@@ -105,6 +111,7 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
     handleScroll,
     shouldShowABranch,
     shouldShowALeaf,
+    shouldShowALeaflet,
   ]);
 
   function handleScrollTop() {
@@ -143,55 +150,51 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
       }}
       transition={{ duration: 0.5 }}
     >
-      {!shouldShowABranch && (isBigScreen || !shouldShowALeaf) && (
-        <TrunkPanelControls id="trunk-panel-controls">
-          <TrunkPanelControlsInner isbigscreen={isBigScreen ? "true" : "false"}>
-            <ButtonGroup size="small">
-              <IconButton onClick={handleScrollTop}>
-                <ArrowUpwardIcon />
+      {!shouldShowABranch &&
+        (isBigScreen || !(shouldShowALeaf || shouldShowALeaflet)) && (
+          <TrunkPanelControls id="trunk-panel-controls">
+            <TrunkPanelControlsInner
+              isbigscreen={isBigScreen ? "true" : "false"}
+            >
+              <ButtonGroup size="small">
+                <IconButton onClick={handleScrollTop}>
+                  <ArrowUpwardIcon />
+                </IconButton>
+                <IconButton onClick={handleScrollBottom}>
+                  <ArrowDownwardIcon />
+                </IconButton>
+              </ButtonGroup>
+
+              {props.createLocation && (
+                <Button
+                  id="trunk-new-leaf-entity"
+                  variant="contained"
+                  to={props.createLocation}
+                  component={Link}
+                >
+                  <AddIcon />
+                </Button>
+              )}
+
+              {props.actions}
+
+              <IconButton sx={{ marginLeft: "auto" }}>
+                <Link to={props.returnLocation}>
+                  <CloseIcon />
+                </Link>
               </IconButton>
-              <IconButton onClick={handleScrollBottom}>
-                <ArrowDownwardIcon />
-              </IconButton>
-            </ButtonGroup>
-
-            {props.createLocation && (
-              <Button
-                id="trunk-new-leaf-entity"
-                variant="contained"
-                to={props.createLocation}
-                component={Link}
-              >
-                <AddIcon />
-              </Button>
-            )}
-
-            {props.extraControls && (
-              <TrunkPanelExtraControls
-                isBigScreen={isBigScreen}
-                controls={props.extraControls}
-              />
-            )}
-
-            {props.actions}
-
-            <IconButton sx={{ marginLeft: "auto" }}>
-              <Link to={props.returnLocation}>
-                <CloseIcon />
-              </Link>
-            </IconButton>
-          </TrunkPanelControlsInner>
-        </TrunkPanelControls>
-      )}
+            </TrunkPanelControlsInner>
+          </TrunkPanelControls>
+        )}
 
       <TrunkPanelContent
         id="trunk-panel-content"
         ref={containerRef}
         isbigscreen={isBigScreen ? "true" : "false"}
         hasbranch={shouldShowABranch ? "true" : "false"}
-        hasleaf={shouldShowALeaf ? "true" : "false"}
+        hasleaf={shouldShowALeaf || shouldShowALeaflet ? "true" : "false"}
       >
-        {props.children}
+        <Stack spacing={2}>{props.children}</Stack>
       </TrunkPanelContent>
     </TrunkPanelFrame>
   );
@@ -227,92 +230,6 @@ const TrunkPanelControlsInner = styled(Box)<TrunkPanelControlsInnerProps>(
   }),
 );
 
-interface TrunkPanelExtraControlsProps {
-  isBigScreen: boolean;
-  controls: JSX.Element[];
-}
-
-function TrunkPanelExtraControls({
-  isBigScreen,
-  controls,
-}: TrunkPanelExtraControlsProps) {
-  const [showFullControls, setShowFullControls] = useState(false);
-
-  if (isBigScreen) {
-    return (
-      <>
-        {controls.map((c, i) => (
-          <Fragment key={i}>{c}</Fragment>
-        ))}
-      </>
-    );
-  } else if (controls.length === 0) {
-    return null;
-  } else if (controls.length === 1) {
-    return controls[0];
-  }
-
-  return (
-    <>
-      {!showFullControls && (
-        <Button variant="outlined" onClick={() => setShowFullControls(true)}>
-          <MoreHorizIcon />
-        </Button>
-      )}
-      <AnimatePresence>
-        {showFullControls && (
-          <TrunkPanelExtraControlsFrame
-            key="trunk-panel-extra-controls"
-            initial={{ opacity: 1, x: "100vw" }}
-            animate={{ opacity: 1, x: "0vw" }}
-            exit={{ opacity: 1, x: "100vw" }}
-            transition={{ duration: 0.4 }}
-          >
-            <TrunkPanelExtraControlsOuterContainer>
-              <TrunkPanelExtraControlsInnerContainer>
-                {controls.map((c, i) => (
-                  <Fragment key={i}>{c}</Fragment>
-                ))}
-              </TrunkPanelExtraControlsInnerContainer>
-            </TrunkPanelExtraControlsOuterContainer>
-            <IconButton
-              onClick={() => setShowFullControls(false)}
-              sx={{ marginLeft: "auto" }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </TrunkPanelExtraControlsFrame>
-        )}
-      </AnimatePresence>
-    </>
-  );
-}
-
-const TrunkPanelExtraControlsFrame = styled(motion.div)(() => ({
-  position: "absolute",
-  left: "0px",
-  right: "0px",
-  height: "3rem",
-  backgroundColor: "white",
-  width: "100vw",
-  display: "flex",
-  paddingLeft: "0.5rem",
-  paddingRight: "0.5rem",
-  alignItems: "center",
-  zIndex: "1002",
-}));
-
-const TrunkPanelExtraControlsOuterContainer = styled(Box)(() => ({
-  width: "calc(100vw - 1rem - 1rem - 16px)",
-  overflowX: "scroll",
-}));
-
-const TrunkPanelExtraControlsInnerContainer = styled(Box)(() => ({
-  display: "flex",
-  gap: "1rem",
-  width: "fit-content",
-}));
-
 interface TrunkPanelContentProps {
   isbigscreen: string;
   hasbranch: string;
@@ -337,13 +254,13 @@ const TrunkPanelContent = styled("div")<TrunkPanelContentProps>(
       hasbranch === "false"
         ? isbigscreen === "true"
           ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
-          : "0px"
+          : "0.25rem"
         : "0px",
     paddingRight:
       hasbranch === "false"
         ? isbigscreen === "true"
           ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
-          : "0px"
+          : "0.25rem"
         : "0px",
     height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"

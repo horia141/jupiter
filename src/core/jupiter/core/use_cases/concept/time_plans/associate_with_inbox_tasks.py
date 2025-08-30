@@ -135,8 +135,8 @@ class TimePlanAssociateWithInboxTasksUseCase(
                     context.domain_context,
                     time_plan_ref_id=args.ref_id,
                     big_plan_ref_id=big_plan.ref_id,
-                    kind=args.kind,
-                    feasability=args.feasability,
+                    kind=TimePlanActivityKind.MAKE_PROGRESS,
+                    feasability=TimePlanActivityFeasability.NICE_TO_HAVE,
                 )
                 new_time_plan_activity = await generic_creator(
                     uow, progress_reporter, new_time_plan_activity

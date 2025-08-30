@@ -7,5 +7,5 @@
  */
 export enum TimePlanSource {
     USER = 'user',
-    RECURRING = 'recurring',
+    GENERATED = 'generated',
 }

@@ -1,4 +1,4 @@
-import { SlimChip } from "./chips";
+import { SlimChip } from "~/components/infra/chips";
 
 interface LinkTagProps {
   color:

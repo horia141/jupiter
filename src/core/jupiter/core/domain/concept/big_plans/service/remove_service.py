@@ -1,6 +1,8 @@
 """Shared module for removing a big plan."""
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
+from jupiter.core.domain.concept.big_plans.big_plan_stats import BigPlanStatsRepository
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
@@ -41,6 +43,13 @@ class BigPlanRemoveService:
             allow_archived=True,
         )
 
+        milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
+            parent_ref_id=big_plan.ref_id,
+            allow_archived=True,
+        )
+        for milestone in milestones:
+            await uow.get_for(BigPlanMilestone).remove(milestone.ref_id)
+
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -53,15 +62,18 @@ class BigPlanRemoveService:
             source_entity_ref_id=ref_id,
         )
 
-        time_plan_activities_for_inbox_tasks = await uow.get(
-            TimePlanActivityRespository
-        ).find_all_generic(
-            target=TimePlanActivityTarget.INBOX_TASK,
-            target_ref_id=[it.ref_id for it in inbox_tasks_to_remove],
-            allow_archived=True,
-        )
-        for time_plan_activity in time_plan_activities_for_inbox_tasks:
-            await uow.get(TimePlanActivityRespository).remove(time_plan_activity.ref_id)
+        if len(inbox_tasks_to_remove) > 0:
+            time_plan_activities_for_inbox_tasks = await uow.get(
+                TimePlanActivityRespository
+            ).find_all_generic(
+                target=TimePlanActivityTarget.INBOX_TASK,
+                target_ref_id=[it.ref_id for it in inbox_tasks_to_remove],
+                allow_archived=True,
+            )
+            for time_plan_activity in time_plan_activities_for_inbox_tasks:
+                await uow.get(TimePlanActivityRespository).remove(
+                    time_plan_activity.ref_id
+                )
 
         for inbox_task in inbox_tasks_to_remove:
             await uow.get_for(InboxTask).remove(inbox_task.ref_id)
@@ -81,6 +93,8 @@ class BigPlanRemoveService:
         )
         for time_plan_activity in time_plan_activities_for_big_plan:
             await uow.get(TimePlanActivityRespository).remove(time_plan_activity.ref_id)
+
+        await uow.get(BigPlanStatsRepository).remove(big_plan.ref_id)
 
         big_plan = await uow.get_for(BigPlan).remove(ref_id)
         await reporter.mark_removed(big_plan)

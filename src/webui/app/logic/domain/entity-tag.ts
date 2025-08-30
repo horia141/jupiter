@@ -4,6 +4,10 @@ export function entityTagName(entityTag: NamedEntityTag): string {
   switch (entityTag) {
     case NamedEntityTag.SCORE_LOG_ENTRY:
       return "Score Log Entry";
+    case NamedEntityTag.HOME_TAB:
+      return "Home Tab";
+    case NamedEntityTag.HOME_WIDGET:
+      return "Home Widget";
     case NamedEntityTag.INBOX_TASK:
       return "Inbox Task";
     case NamedEntityTag.WORKING_MEM:
@@ -26,6 +30,8 @@ export function entityTagName(entityTag: NamedEntityTag): string {
       return "Chore";
     case NamedEntityTag.BIG_PLAN:
       return "Big Plan";
+    case NamedEntityTag.BIG_PLAN_MILESTONE:
+      return "Big Plan Milestone";
     case NamedEntityTag.JOURNAL:
       return "Journal";
     case NamedEntityTag.DOC:

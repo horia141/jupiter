@@ -26,6 +26,7 @@ class EventSource(EnumValue):
     APP = "app"
     GC_CRON = "gc-cron"
     GEN_CRON = "gen-cron"
+    STATS_CRON = "stats-cron"
     SCHEDULE_EXTERNAL_SYNC_CRON = "schedule-external-sync-cron"
 
 

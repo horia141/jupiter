@@ -4,7 +4,6 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Stack,
   Typography,
 } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
@@ -28,8 +27,8 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-input";
+import { SectionCard } from "~/components/infra/section-card";
+import { ScheduleStreamColorInput } from "~/components/domain/concept/schedule/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -88,11 +87,12 @@ export default function ScheduleStreamNew() {
   return (
     <LeafPanel
       key="schedule-stream/new"
+      fakeKey="schedule-stream/new"
       returnLocation={`/app/workspace/calendar/schedule/stream?${query}`}
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="schedule-stream-properties"
         title="Properties"
         actions={
@@ -110,37 +110,32 @@ export default function ScheduleStreamNew() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Typography variant="body1">
-            In Google Calendar be sure to use the secret address in iCal format.
-          </Typography>
-          <Divider />
-          <FormControl fullWidth>
-            <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
-            <OutlinedInput
-              label="sourceIcalUrl"
-              name="sourceIcalUrl"
-              readOnly={!inputsEnabled}
-            />
-            <FieldError
-              actionResult={actionData}
-              fieldName="/source_ical_url"
-            />
-          </FormControl>
+        <Typography variant="body1">
+          In Google Calendar be sure to use the secret address in iCal format.
+        </Typography>
+        <Divider />
+        <FormControl fullWidth>
+          <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
+          <OutlinedInput
+            label="sourceIcalUrl"
+            name="sourceIcalUrl"
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/source_ical_url" />
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="color">Color</InputLabel>
-            <ScheduleStreamColorInput
-              labelId="color"
-              label="Color"
-              name="color"
-              value={ScheduleStreamColor.BLUE}
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/color" />
-          </FormControl>
-        </Stack>
-      </SectionCardNew>
+        <FormControl fullWidth>
+          <InputLabel id="color">Color</InputLabel>
+          <ScheduleStreamColorInput
+            labelId="color"
+            label="Color"
+            name="color"
+            value={ScheduleStreamColor.BLUE}
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/color" />
+        </FormControl>
+      </SectionCard>
     </LeafPanel>
   );
 }

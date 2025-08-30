@@ -1,7 +1,14 @@
 """The command for doing garbage collection for all workspaces."""
 
 from jupiter.core.domain.application.gc.service.gc_service import GCService
+from jupiter.core.domain.concept.user.user import User
+from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
+    UserWorkspaceLink,
+)
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -29,6 +36,14 @@ class GCDoAllUseCase(SysBackgroundMutationUseCase[GCDoAllArgs, None]):
         """Execute the command's action."""
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             workspaces = await uow.get_for(Workspace).find_all(allow_archived=False)
+            users = await uow.get_for(User).find_all(allow_archived=False)
+            users_by_id = {u.ref_id: u for u in users}
+            user_workspace_links = await uow.get_for(UserWorkspaceLink).find_all(
+                allow_archived=False
+            )
+            users_id_by_workspace_id = {
+                uwl.workspace_ref_id: uwl.user_ref_id for uwl in user_workspace_links
+            }
 
         ctx = DomainContext.from_sys(
             EventSource.GC_CRON, self._time_provider.get_current_time()
@@ -41,7 +56,8 @@ class GCDoAllUseCase(SysBackgroundMutationUseCase[GCDoAllArgs, None]):
 
         for workspace in workspaces:
             progress_reporter = self._progress_reporter_factory.new_reporter(context)
-            gc_targets = workspace.infer_sync_targets_for_enabled_features(None)
+            user = users_by_id[users_id_by_workspace_id[workspace.ref_id]]
+            gc_targets = infer_sync_targets_for_enabled_features(user, workspace, None)
             await gc_service.do_it(ctx, progress_reporter, workspace, gc_targets)
 
             async with self._search_storage_engine.get_unit_of_work() as search_uow:

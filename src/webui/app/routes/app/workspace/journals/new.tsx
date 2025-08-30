@@ -1,16 +1,10 @@
 import { ApiError, RecurringTaskPeriod } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormLabel,
   InputLabel,
   OutlinedInput,
 } from "@mui/material";
-import { Stack } from "@mui/system";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -25,7 +19,7 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { PeriodSelect } from "~/components/period-select";
+import { PeriodSelect } from "~/components/domain/core/period-select";
 import {
   aGlobalError,
   validationErrorToUIErrorInfo,
@@ -33,6 +27,11 @@ import {
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -84,60 +83,62 @@ export default function NewJournal() {
 
   return (
     <LeafPanel
-      key={"journasl/new"}
+      key="journals/new"
+      fakeKey={"journasl/new"}
       returnLocation="/app/workspace/journals"
       inputsEnabled={inputsEnabled}
     >
       <GlobalError actionResult={actionData} />
-      <Card>
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="rightNow" shrink margin="dense">
-                The Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="rightNow"
-                name="rightNow"
-                readOnly={!inputsEnabled}
-                defaultValue={DateTime.local({
-                  zone: topLevelInfo.user.timezone,
-                }).toISODate()}
-              />
+      <SectionCard
+        title="New Journal"
+        actionsPosition={ActionsPosition.BELOW}
+        actions={
+          <SectionActions
+            id="journal-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "journal-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="rightNow" shrink margin="dense">
+            The Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="rightNow"
+            name="rightNow"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+            defaultValue={DateTime.local({
+              zone: topLevelInfo.user.timezone,
+            }).toISODate()}
+          />
 
-              <FieldError actionResult={actionData} fieldName="/right_now" />
-            </FormControl>
+          <FieldError actionResult={actionData} fieldName="/right_now" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <FormLabel id="period">Period</FormLabel>
-              <PeriodSelect
-                labelId="period"
-                label="Period"
-                name="period"
-                inputsEnabled={inputsEnabled}
-                defaultValue={RecurringTaskPeriod.WEEKLY}
-              />
-              <FieldError actionResult={actionData} fieldName="/period" />
-            </FormControl>
-          </Stack>
-        </CardContent>
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="journal-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="create"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        <FormControl fullWidth>
+          <FormLabel id="period">Period</FormLabel>
+          <PeriodSelect
+            labelId="period"
+            label="Period"
+            name="period"
+            inputsEnabled={inputsEnabled}
+            defaultValue={RecurringTaskPeriod.WEEKLY}
+          />
+          <FieldError actionResult={actionData} fieldName="/period" />
+        </FormControl>
+      </SectionCard>
     </LeafPanel>
   );
 }

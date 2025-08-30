@@ -4,8 +4,8 @@ import type { EntryContext } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { renderToPipeableStream } from "react-dom/server";
 
-import { GLOBAL_PROPERTIES } from "./global-properties-server";
-import { ENV_HEADER, HOSTING_HEADER, VERSION_HEADER } from "./names";
+import { GLOBAL_PROPERTIES } from "~/global-properties-server";
+import { ENV_HEADER, HOSTING_HEADER, VERSION_HEADER } from "~/names";
 
 const ABORT_DELAY = 5000;
 

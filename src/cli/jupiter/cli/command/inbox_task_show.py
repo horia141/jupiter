@@ -63,6 +63,8 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase, InboxTaskFindR
             )
             inbox_task_text.append(" ")
             inbox_task_text.append(entity_id_to_rich_text(inbox_task.ref_id))
+            if inbox_task.is_key:
+                inbox_task_text.append(" 🔑")
             inbox_task_text.append(f" {inbox_task.name}")
 
             inbox_task_info_text = Text("")

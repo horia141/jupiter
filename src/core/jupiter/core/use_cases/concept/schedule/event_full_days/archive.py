@@ -3,6 +3,7 @@
 from jupiter.core.domain.concept.schedule.schedule_event_full_days import (
     ScheduleEventFullDays,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.infra.generic_crown_archiver import generic_crown_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -49,4 +50,5 @@ class ScheduleEventFullDaysArchiveUseCase(
             progress_reporter,
             ScheduleEventFullDays,
             args.ref_id,
+            ArchivalReason.USER,
         )

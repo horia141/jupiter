@@ -6,14 +6,19 @@ export function EntityStack(props: PropsWithChildren) {
   return <AnimatePresence>{props.children}</AnimatePresence>;
 }
 
-export function EntityStack2(props: PropsWithChildren) {
+interface EntityStackProps {
+  id?: string;
+}
+
+export function EntityStack2(props: PropsWithChildren<EntityStackProps>) {
   return (
     <Stack
+      id={props.id}
       spacing={2}
       sx={{
-        marginTop: "-16px",
+        marginTop: "-8px",
         "& > :first-child": {
-          marginTop: "16px",
+          marginTop: "8px",
         },
       }}
     >

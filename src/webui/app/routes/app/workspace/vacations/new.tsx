@@ -1,15 +1,5 @@
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-} from "@mui/material";
-import { Stack } from "@mui/system";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -17,14 +7,21 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
 
@@ -68,75 +65,71 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewVacation() {
   const navigation = useNavigation();
   const actionData = useActionData<typeof action>();
-
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
-      key={"vacations/new"}
+      key="vacations/new"
+      fakeKey={"vacations/new"}
       returnLocation="/app/workspace/vacations"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actionsPosition={ActionsPosition.BELOW}
+        actions={
+          <SectionActions
+            id="vacation-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput label="Name" name="name" readOnly={!inputsEnabled} />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="startDate" shrink margin="dense">
-                Start Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="startDate"
-                name="startDate"
-                readOnly={!inputsEnabled}
-              />
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink>
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
 
-              <FieldError actionResult={actionData} fieldName="/start_date" />
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="endDate" shrink margin="dense">
-                End Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="endDate"
-                name="endDate"
-                readOnly={!inputsEnabled}
-              />
-
-              <FieldError actionResult={actionData} fieldName="/end_date" />
-            </FormControl>
-          </Stack>
-        </CardContent>
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="vacation-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="create"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        <FormControl fullWidth>
+          <InputLabel id="endDate" shrink>
+            End Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="endDate"
+            name="endDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/end_date" />
+        </FormControl>
+      </SectionCard>
     </LeafPanel>
   );
 }

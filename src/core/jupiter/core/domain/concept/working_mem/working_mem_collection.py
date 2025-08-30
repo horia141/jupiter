@@ -14,6 +14,7 @@ from jupiter.core.framework.entity import (
     update_entity_action,
 )
 from jupiter.core.framework.errors import InputValidationError
+from jupiter.core.framework.update_action import UpdateAction
 
 
 @entity
@@ -49,30 +50,25 @@ class WorkingMemCollection(TrunkEntity):
         )
 
     @update_entity_action
-    def change_generation_period(
+    def update(
         self,
         ctx: DomainContext,
-        generation_period: RecurringTaskPeriod,
+        generation_period: UpdateAction[RecurringTaskPeriod],
+        cleanup_project_ref_id: UpdateAction[EntityId],
     ) -> "WorkingMemCollection":
         """Change the generation period."""
         if (
-            generation_period != RecurringTaskPeriod.DAILY
-            and generation_period != RecurringTaskPeriod.WEEKLY
+            generation_period.should_change
+            and generation_period.just_the_value != RecurringTaskPeriod.DAILY
+            and generation_period.just_the_value != RecurringTaskPeriod.WEEKLY
         ):
-            raise InputValidationError(f"Invalid period: {generation_period}")
+            raise InputValidationError(
+                f"Invalid period: {generation_period.just_the_value}"
+            )
         return self._new_version(
             ctx,
-            generation_period=generation_period,
-        )
-
-    @update_entity_action
-    def change_cleanup_project(
-        self,
-        ctx: DomainContext,
-        cleanup_project_ref_id: EntityId,
-    ) -> "WorkingMemCollection":
-        """Change the cleanup project."""
-        return self._new_version(
-            ctx,
-            cleanup_project_ref_id=cleanup_project_ref_id,
+            generation_period=generation_period.or_else(self.generation_period),
+            cleanup_project_ref_id=cleanup_project_ref_id.or_else(
+                self.cleanup_project_ref_id
+            ),
         )

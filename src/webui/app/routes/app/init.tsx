@@ -9,12 +9,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -23,39 +17,41 @@ import {
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from "@remix-run/react";
+import { useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getGuestApiClient } from "~/api-clients.server";
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import {
   UserFeatureFlagsEditor,
   WorkspaceFeatureFlagsEditor,
-} from "~/components/feature-flags-editor";
-import { EntityActionHeader } from "~/components/infra/entity-actions-header";
+} from "~/components/domain/application/workspace/feature-flags-editor";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LifecyclePanel } from "~/components/infra/layout/lifecycle-panel";
 import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { Logo } from "~/components/logo";
-import { Password } from "~/components/password";
-import { TimezoneSelect } from "~/components/timezone-select";
-import { Title } from "~/components/title";
+import { Logo } from "~/components/infra/logo";
+import { Password } from "~/components/domain/application/auth/password";
+import { TimezoneSelect } from "~/components/domain/core/timezone-select";
+import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { AUTH_TOKEN_NAME } from "~/names";
 import { commitSession, getSession } from "~/sessions";
+import {
+  ActionsExpansion,
+  ActionSingle,
+  NavMultipleCompact,
+  NavSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
+import { EMPTY_CONTEXT } from "~/top-level-context";
 
 const WorkspaceInitFormSchema = z.object({
   userEmailAddress: z.string(),
@@ -157,228 +153,191 @@ export default function WorkspaceInit() {
       </SmartAppBar>
 
       <LifecyclePanel>
-        <Form method="post">
-          <Card>
-            <GlobalError actionResult={actionData} />
-            <CardHeader title="New Account & Workspace" />
-            <CardContent>
+        <GlobalError actionResult={actionData} />
+        <SectionCard
+          title="New Account & Workspace"
+          actionsPosition={ActionsPosition.BELOW}
+          actions={
+            <SectionActions
+              id="init"
+              topLevelInfo={EMPTY_CONTEXT}
+              inputsEnabled={inputsEnabled}
+              expansion={ActionsExpansion.ALWAYS_SHOW}
+              actions={[
+                ActionSingle({
+                  text: "Create",
+                  value: "create",
+                  highlight: true,
+                }),
+                NavMultipleCompact({
+                  navs: [
+                    NavSingle({
+                      text: "Login",
+                      link: "/app/login",
+                    }),
+                    NavSingle({
+                      text: "Reset Password",
+                      link: "/app/reset-password",
+                    }),
+                    NavSingle({
+                      text: "Pick Server",
+                      link: "/app/pick-server/desktop",
+                      disabled:
+                        globalProperties.frontDoorInfo.appShell !==
+                        AppShell.DESKTOP_ELECTRON,
+                    }),
+                  ],
+                }),
+              ]}
+            />
+          }
+        >
+          <FormControl fullWidth>
+            <InputLabel id="userEmailAddress">Your Email Address</InputLabel>
+            <OutlinedInput
+              type="email"
+              autoComplete="email"
+              label="Your Email Address"
+              name="userEmailAddress"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/user_email_address"
+            />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="userName">Your Name</InputLabel>
+            <OutlinedInput
+              label="Your Name"
+              name="userName"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/user_name" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="authPassword">Password</InputLabel>
+            <Password
+              label="Password"
+              name="authPassword"
+              autoComplete="new-password"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/auth_password" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="authPasswordRepeat">Password Repeat</InputLabel>
+            <Password
+              label="Password Repeat"
+              name="authPasswordRepeat"
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/auth_password_repeat"
+            />
+          </FormControl>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Advanced</Typography>
+            </AccordionSummary>
+
+            <AccordionDetails>
               <Stack spacing={2} useFlexGap>
                 <FormControl fullWidth>
-                  <InputLabel id="userEmailAddress">
-                    Your Email Address
-                  </InputLabel>
-                  <OutlinedInput
-                    type="email"
-                    autoComplete="email"
-                    label="Your Email Address"
-                    name="userEmailAddress"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/user_email_address"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="userName">Your Name</InputLabel>
-                  <OutlinedInput
-                    label="Your Name"
-                    name="userName"
-                    readOnly={!inputsEnabled}
-                    defaultValue={""}
-                  />
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/user_name"
-                  />
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel id="authPassword">Password</InputLabel>
-                  <Password
-                    label="Password"
-                    name="authPassword"
-                    autoComplete="new-password"
+                  <TimezoneSelect
+                    id="userTimezone"
+                    name="userTimezone"
                     inputsEnabled={inputsEnabled}
                   />
+
                   <FieldError
                     actionResult={actionData}
-                    fieldName="/auth_password"
+                    fieldName="/user_timezone"
                   />
                 </FormControl>
 
                 <FormControl fullWidth>
-                  <InputLabel id="authPasswordRepeat">
-                    Password Repeat
-                  </InputLabel>
-                  <Password
-                    label="Password Repeat"
-                    name="authPasswordRepeat"
-                    inputsEnabled={inputsEnabled}
+                  <InputLabel id="workspaceName">Workspace Name</InputLabel>
+                  <OutlinedInput
+                    label="Workspace Name"
+                    name="workspaceName"
+                    readOnly={!inputsEnabled}
+                    defaultValue={loaderData.defaultWorkspaceName}
                   />
                   <FieldError
                     actionResult={actionData}
-                    fieldName="/auth_password_repeat"
+                    fieldName="/app/workspace_name"
                   />
                 </FormControl>
 
-                <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Advanced</Typography>
-                  </AccordionSummary>
+                <FormControl fullWidth>
+                  <InputLabel id="name">Root Project Name</InputLabel>
+                  <OutlinedInput
+                    label="Root Project Name"
+                    name="workspaceRootProjectName"
+                    readOnly={!inputsEnabled}
+                    defaultValue={loaderData.defaultRootProjectName}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/app/workspace_root_project_name"
+                  />
+                </FormControl>
 
-                  <AccordionDetails>
-                    <Stack spacing={2} useFlexGap>
-                      <FormControl fullWidth>
-                        <TimezoneSelect
-                          id="userTimezone"
-                          name="userTimezone"
-                          inputsEnabled={inputsEnabled}
-                        />
+                <FormControl fullWidth>
+                  <InputLabel id="name">First Schedule Stream Name</InputLabel>
+                  <OutlinedInput
+                    label="First Schdule Stream Name"
+                    name="workspaceFirstScheduleStreamName"
+                    readOnly={!inputsEnabled}
+                    defaultValue={loaderData.defaultFirstScheduleStreamName}
+                  />
+                  <FieldError
+                    actionResult={actionData}
+                    fieldName="/app/workspace_first_schedule_stream_name"
+                  />
+                </FormControl>
 
-                        <FieldError
-                          actionResult={actionData}
-                          fieldName="/user_timezone"
-                        />
-                      </FormControl>
-
-                      <FormControl fullWidth>
-                        <InputLabel id="workspaceName">
-                          Workspace Name
-                        </InputLabel>
-                        <OutlinedInput
-                          label="Workspace Name"
-                          name="workspaceName"
-                          readOnly={!inputsEnabled}
-                          defaultValue={loaderData.defaultWorkspaceName}
-                        />
-                        <FieldError
-                          actionResult={actionData}
-                          fieldName="/app/workspace_name"
-                        />
-                      </FormControl>
-
-                      <FormControl fullWidth>
-                        <InputLabel id="name">Root Project Name</InputLabel>
-                        <OutlinedInput
-                          label="Root Project Name"
-                          name="workspaceRootProjectName"
-                          readOnly={!inputsEnabled}
-                          defaultValue={loaderData.defaultRootProjectName}
-                        />
-                        <FieldError
-                          actionResult={actionData}
-                          fieldName="/app/workspace_root_project_name"
-                        />
-                      </FormControl>
-
-                      <FormControl fullWidth>
-                        <InputLabel id="name">
-                          First Schedule Stream Name
-                        </InputLabel>
-                        <OutlinedInput
-                          label="First Schdule Stream Name"
-                          name="workspaceFirstScheduleStreamName"
-                          readOnly={!inputsEnabled}
-                          defaultValue={
-                            loaderData.defaultFirstScheduleStreamName
-                          }
-                        />
-                        <FieldError
-                          actionResult={actionData}
-                          fieldName="/app/workspace_first_schedule_stream_name"
-                        />
-                      </FormControl>
-
-                      {/* <FormControl fullWidth>
+                {/* <FormControl fullWidth>
                         <FormControlLabel
                           control={<Switch name="forAppReview" />}
                           label="For App Review"
                         />
                       </FormControl> */}
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-
-                <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Feature Flags</Typography>
-                  </AccordionSummary>
-
-                  <AccordionDetails>
-                    <UserFeatureFlagsEditor
-                      name="userFeatureFlags"
-                      inputsEnabled={inputsEnabled}
-                      featureFlagsControls={loaderData.userFeatureFlagControls}
-                      defaultFeatureFlags={loaderData.defaultUserFeatureFlags}
-                      hosting={globalProperties.hosting}
-                    />
-                    <WorkspaceFeatureFlagsEditor
-                      name="workspaceFeatureFlags"
-                      inputsEnabled={inputsEnabled}
-                      featureFlagsControls={
-                        loaderData.workspaceFeatureFlagControls
-                      }
-                      defaultFeatureFlags={
-                        loaderData.defaultWorkspaceFeatureFlags
-                      }
-                      hosting={globalProperties.hosting}
-                    />
-                  </AccordionDetails>
-                </Accordion>
               </Stack>
-            </CardContent>
+            </AccordionDetails>
+          </Accordion>
 
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                >
-                  Create
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
-        </Form>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Feature Flags</Typography>
+            </AccordionSummary>
 
-        <EntityActionHeader>
-          <ButtonGroup>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/login`}
-              component={Link}
-            >
-              Login
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/reset-password`}
-              component={Link}
-            >
-              Reset Password
-            </Button>
-          </ButtonGroup>
-
-          {globalProperties.frontDoorInfo.appShell ===
-            AppShell.DESKTOP_ELECTRON && (
-            <Button
-              id="pick-another-server"
-              variant="outlined"
-              disabled={!inputsEnabled}
-              to={`/app/pick-server/desktop`}
-              component={Link}
-              sx={{ marginLeft: "auto" }}
-            >
-              Pick Server
-            </Button>
-          )}
-        </EntityActionHeader>
+            <AccordionDetails>
+              <UserFeatureFlagsEditor
+                name="userFeatureFlags"
+                inputsEnabled={inputsEnabled}
+                featureFlagsControls={loaderData.userFeatureFlagControls}
+                defaultFeatureFlags={loaderData.defaultUserFeatureFlags}
+                hosting={globalProperties.hosting}
+              />
+              <WorkspaceFeatureFlagsEditor
+                name="workspaceFeatureFlags"
+                inputsEnabled={inputsEnabled}
+                featureFlagsControls={loaderData.workspaceFeatureFlagControls}
+                defaultFeatureFlags={loaderData.defaultWorkspaceFeatureFlags}
+                hosting={globalProperties.hosting}
+              />
+            </AccordionDetails>
+          </Accordion>
+        </SectionCard>
       </LifecyclePanel>
     </StandaloneContainer>
   );

@@ -8,4 +8,10 @@ class TimePlanSource(EnumValue):
     """The source of a time plan."""
 
     USER = "user"
-    RECURRING = "recurring"
+    GENERATED = "generated"
+
+    @property
+    def allow_user_changes(self) -> bool:
+        """Whether the user can change the time plan."""
+        # Keep synced with ts:time-plan-source.ts
+        return self == TimePlanSource.USER

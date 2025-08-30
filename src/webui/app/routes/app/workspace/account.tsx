@@ -1,11 +1,6 @@
 import { ApiError, UserFeature } from "@jupiter/webapi-client";
 import {
   Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
@@ -13,12 +8,11 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { json, redirect, redirectDocument } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
@@ -27,18 +21,23 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { UserFeatureFlagsEditor } from "~/components/feature-flags-editor";
+import { UserFeatureFlagsEditor } from "~/components/domain/application/workspace/feature-flags-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { TimezoneSelect } from "~/components/timezone-select";
+import { TimezoneSelect } from "~/components/domain/core/timezone-select";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
@@ -48,7 +47,11 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
   }),
   z.object({
     intent: z.literal("change-feature-flags"),
-    featureFlags: z.array(z.nativeEnum(UserFeature)),
+    featureFlags: z
+      .nativeEnum(UserFeature)
+      .optional()
+      .or(z.array(z.nativeEnum(UserFeature)))
+      .transform((v) => (v ? (Array.isArray(v) ? v : [v]) : [])),
   }),
   z.object({
     intent: z.literal("close-account"),
@@ -72,6 +75,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const apiClient = await getLoggedInApiClient(request);
   const form = await parseForm(request, UpdateFormSchema);
 
+  // We do a hard redirect for all actions here, because changing these
+  // vary basic properties of the properties, most assuredly will
+  // modify topLevelInfo which will need to invalidate all the
+  // routes. Since there's some caching over there, we take this
+  // simple approach.
+
   try {
     switch (form.intent) {
       case "update": {
@@ -86,7 +95,7 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         });
 
-        return redirect(`/app/workspace/account`);
+        return redirect(`/app/workspace/account?invalidateTopLevel=true`);
       }
 
       case "change-feature-flags": {
@@ -94,13 +103,13 @@ export async function action({ request }: ActionFunctionArgs) {
           feature_flags: form.featureFlags,
         });
 
-        return redirect(`/app/workspace/account`);
+        return redirect(`/app/workspace/account?invalidateTopLevel=true`);
       }
 
       case "close-account": {
         await apiClient.application.closeAccount({});
 
-        return redirect(`/app/init`);
+        return redirectDocument(`/app/init`);
       }
 
       default:
@@ -134,144 +143,132 @@ export default function Account() {
   const [showCloseAccountDialog, setShowCloseAccountDialog] = useState(false);
 
   return (
-    <TrunkPanel key={"account"} returnLocation="/app/workspace">
+    <TrunkPanel
+      key={`account/${loaderData.user.version}`}
+      returnLocation="/app/workspace"
+    >
       <ToolPanel>
-        <Stack useFlexGap gap={2}>
-          <Card>
-            <GlobalError actionResult={actionData} />
+        <GlobalError actionResult={actionData} />
 
-            <CardHeader title="Account" />
-            <CardContent>
-              <Stack spacing={2} useFlexGap>
-                <FormControl fullWidth>
-                  <InputLabel id="emailAddress">Your Email Address</InputLabel>
-                  <OutlinedInput
-                    type="email"
-                    autoComplete="email"
-                    label="Your Email Address"
-                    name="emailAddress"
-                    disabled={true}
-                    defaultValue={loaderData.user.email_address}
-                  />
-                </FormControl>
+        <SectionCard
+          title="Account"
+          actions={
+            <SectionActions
+              id="account-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Save",
+                  value: "update",
+                  highlight: true,
+                }),
+              ]}
+            />
+          }
+        >
+          <FormControl fullWidth>
+            <InputLabel id="emailAddress">Your Email Address</InputLabel>
+            <OutlinedInput
+              type="email"
+              autoComplete="email"
+              label="Your Email Address"
+              name="emailAddress"
+              disabled={true}
+              defaultValue={loaderData.user.email_address ?? ""}
+            />
+          </FormControl>
 
-                <FormControl fullWidth>
-                  <TextField
-                    name="name"
-                    label="Your Name"
-                    defaultValue={loaderData.user.name}
-                    disabled={!inputsEnabled}
-                  />
-                  <FieldError actionResult={actionData} fieldName="/name" />
-                </FormControl>
-                <FormControl fullWidth>
-                  <TimezoneSelect
-                    id="timezone"
-                    name="timezone"
-                    inputsEnabled={inputsEnabled}
-                    initialValue={loaderData.user.timezone}
-                  />
-
-                  <FieldError actionResult={actionData} fieldName="/timezone" />
-                </FormControl>
-              </Stack>
-            </CardContent>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="update"
-                >
-                  Save
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
-
-          <Card>
-            <GlobalError
-              intent="change-feature-flags"
-              actionResult={actionData}
+          <FormControl fullWidth>
+            <TextField
+              name="name"
+              label="Your Name"
+              defaultValue={loaderData.user.name ?? ""}
+              disabled={!inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
+          <FormControl fullWidth>
+            <TimezoneSelect
+              id="timezone"
+              name="timezone"
+              inputsEnabled={inputsEnabled}
+              initialValue={loaderData.user.timezone ?? ""}
             />
 
-            <CardHeader title="Feature Flags" />
+            <FieldError actionResult={actionData} fieldName="/timezone" />
+          </FormControl>
+        </SectionCard>
 
-            <CardContent>
-              <UserFeatureFlagsEditor
-                name="featureFlags"
-                inputsEnabled={inputsEnabled}
-                featureFlagsControls={topLevelInfo.userFeatureFlagControls}
-                defaultFeatureFlags={loaderData.user.feature_flags}
-                hosting={globalProperties.hosting}
-              />
-            </CardContent>
+        <SectionCard
+          title="Feature Flags"
+          actions={
+            <SectionActions
+              id="feature-flags-actions"
+              topLevelInfo={topLevelInfo}
+              inputsEnabled={inputsEnabled}
+              actions={[
+                ActionSingle({
+                  text: "Change Feature Flags",
+                  value: "change-feature-flags",
+                  highlight: true,
+                }),
+              ]}
+            />
+          }
+        >
+          <GlobalError
+            intent="change-feature-flags"
+            actionResult={actionData}
+          />
+          <UserFeatureFlagsEditor
+            name="featureFlags"
+            inputsEnabled={inputsEnabled}
+            featureFlagsControls={topLevelInfo.userFeatureFlagControls}
+            defaultFeatureFlags={loaderData.user.feature_flags}
+            hosting={globalProperties.hosting}
+          />
+        </SectionCard>
 
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="change-feature-flags"
-                >
-                  Change Feature Flags
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
+        <SectionCard title="Dangerous">
+          <GlobalError intent="close-account" actionResult={actionData} />
+          <Dialog
+            onClose={() => setShowCloseAccountDialog(false)}
+            open={showCloseAccountDialog}
+            disablePortal
+          >
+            <DialogTitle>Are You Sure?</DialogTitle>
+            <DialogContent>
+              <Typography variant="body1">
+                Are you sure you want to close your account? This action is
+                irreversible.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                id="close-account"
+                variant="contained"
+                disabled={!inputsEnabled}
+                type="submit"
+                name="intent"
+                value="close-account"
+                color="error"
+              >
+                Close Account
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-          <Card>
-            <GlobalError intent="close-account" actionResult={actionData} />
-
-            <CardHeader title="Dangerous" />
-
-            <Dialog
-              onClose={() => setShowCloseAccountDialog(false)}
-              open={showCloseAccountDialog}
-              disablePortal
-            >
-              <DialogTitle>Are You Sure?</DialogTitle>
-              <DialogContent>
-                <Typography variant="body1">
-                  Are you sure you want to close your account? This action is
-                  irreversible.
-                </Typography>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  id="close-account"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  type="submit"
-                  name="intent"
-                  value="close-account"
-                  color="error"
-                >
-                  Close Account
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            <CardActions>
-              <ButtonGroup>
-                <Button
-                  id="close-account-initialize"
-                  variant="contained"
-                  disabled={!inputsEnabled}
-                  onClick={() => setShowCloseAccountDialog(true)}
-                  color="error"
-                >
-                  Close Account
-                </Button>
-              </ButtonGroup>
-            </CardActions>
-          </Card>
-        </Stack>
+          <Button
+            id="close-account-initialize"
+            variant="contained"
+            disabled={!inputsEnabled}
+            onClick={() => setShowCloseAccountDialog(true)}
+            color="error"
+          >
+            Close Account
+          </Button>
+        </SectionCard>
       </ToolPanel>
     </TrunkPanel>
   );

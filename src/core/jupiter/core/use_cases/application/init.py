@@ -3,6 +3,8 @@
 from jupiter.core.domain.application.gamification.score_log import ScoreLog
 from jupiter.core.domain.application.gc.gc_log import GCLog
 from jupiter.core.domain.application.gen.gen_log import GenLog
+from jupiter.core.domain.application.home.home_config import HomeConfig
+from jupiter.core.domain.application.stats.stats_log import StatsLog
 from jupiter.core.domain.concept.auth.auth import Auth
 from jupiter.core.domain.concept.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.concept.auth.password_new_plain import PasswordNewPlain
@@ -15,6 +17,9 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
     InboxTaskCollection,
 )
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.journals.journal_generation_approach import (
+    JournalGenerationApproach,
+)
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.project import Project
@@ -42,6 +47,9 @@ from jupiter.core.domain.concept.smart_lists.smart_list_collection import (
     SmartListCollection,
 )
 from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
+from jupiter.core.domain.concept.time_plans.time_plan_generation_approach import (
+    TimePlanGenerationApproach,
+)
 from jupiter.core.domain.concept.user.user import User
 from jupiter.core.domain.concept.user.user_name import UserName
 from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import (
@@ -184,6 +192,12 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_workspace = await uow.get_for(Workspace).create(new_workspace)
 
+            new_home_config = HomeConfig.new_home_config(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+            )
+            new_home_config = await uow.get_for(HomeConfig).create(new_home_config)
+
             new_vacation_collection = VacationCollection.new_vacation_collection(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
@@ -232,7 +246,15 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             new_time_plan_domain = TimePlanDomain.new_time_plan_domain(
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
-                days_until_gc=7,
+                periods={RecurringTaskPeriod.QUARTERLY, RecurringTaskPeriod.WEEKLY},
+                generation_approach=TimePlanGenerationApproach.BOTH_PLAN_AND_TASK,
+                generation_in_advance_days={
+                    RecurringTaskPeriod.QUARTERLY: 14,
+                    RecurringTaskPeriod.WEEKLY: 3,
+                },
+                planning_task_project_ref_id=new_root_project.ref_id,
+                planning_task_eisen=Eisen.IMPORTANT,
+                planning_task_difficulty=Difficulty.MEDIUM,
             )
             new_time_plan_domain = await uow.get_for(TimePlanDomain).create(
                 new_time_plan_domain
@@ -294,9 +316,13 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ctx=context.domain_context,
                 workspace_ref_id=new_workspace.ref_id,
                 periods={RecurringTaskPeriod.WEEKLY},
+                generation_approach=JournalGenerationApproach.BOTH_JOURNAL_AND_TASK,
+                generation_in_advance_days={
+                    RecurringTaskPeriod.WEEKLY: 3,
+                },
+                writing_task_project_ref_id=new_root_project.ref_id,
                 writing_task_eisen=Eisen.IMPORTANT,
                 writing_task_difficulty=Difficulty.MEDIUM,
-                writing_project_ref_id=new_root_project.ref_id,
             )
             journal_collection = await uow.get_for(JournalCollection).create(
                 journal_collection,
@@ -391,6 +417,12 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 workspace_ref_id=new_workspace.ref_id,
             )
             new_gen_log = await uow.get_for(GenLog).create(new_gen_log)
+
+            new_stats_log = StatsLog.new_stats_log(
+                ctx=context.domain_context,
+                workspace_ref_id=new_workspace.ref_id,
+            )
+            new_stats_log = await uow.get_for(StatsLog).create(new_stats_log)
 
             new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
                 ctx=context.domain_context,

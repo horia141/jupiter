@@ -2,7 +2,12 @@
 
 from jupiter.core.domain.application.gc.service.gc_service import GCService
 from jupiter.core.domain.features import FeatureUnavailableError
-from jupiter.core.domain.sync_target import SyncTarget
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
+from jupiter.core.domain.sync_target import (
+    SyncTarget,
+)
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -32,16 +37,17 @@ class GCDoUseCase(AppLoggedInMutationUseCase[GCDoArgs, None]):
         args: GCDoArgs,
     ) -> None:
         """Execute the command's action."""
+        user = context.user
         workspace = context.workspace
         gc_targets = (
             args.gc_targets
             if args.gc_targets is not None
-            else workspace.infer_sync_targets_for_enabled_features(None)
+            else infer_sync_targets_for_enabled_features(user, workspace, None)
         )
 
         gc_targets_diff = list(
             set(gc_targets).difference(
-                workspace.infer_sync_targets_for_enabled_features(gc_targets)
+                infer_sync_targets_for_enabled_features(user, workspace, gc_targets)
             )
         )
         if len(gc_targets_diff) > 0:

@@ -15,52 +15,40 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FlareIcon from "@mui/icons-material/Flare";
 import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  FormGroup,
-  Stack,
-  Tab,
-  Tabs,
-  Typography,
-  styled,
-} from "@mui/material";
+import { Box, Stack, Tab, Tabs, Typography, styled } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Link, Outlet, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { DateTime } from "luxon";
 import { Fragment, memo, useContext, useState } from "react";
 import { z } from "zod";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
-import { InboxTaskCard } from "~/components/inbox-task-card";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { InboxTaskStatusTag } from "~/components/inbox-task-status-tag";
-import { InboxTasksNoNothingCard } from "~/components/inbox-tasks-no-nothing-card";
-import { InboxTasksNoTasksCard } from "~/components/inbox-tasks-no-tasks-card";
+import type { InboxTaskShowOptions } from "~/components/domain/concept/inbox-task/inbox-task-card";
+import { InboxTaskCard } from "~/components/domain/concept/inbox-task/inbox-task-card";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
+import { InboxTaskStatusTag } from "~/components/domain/concept/inbox-task/inbox-task-status-tag";
+import { InboxTasksNoNothingCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-nothing-card";
+import { InboxTasksNoTasksCard } from "~/components/domain/concept/inbox-task/inbox-tasks-no-tasks-card";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
-import { StandardDivider } from "~/components/standard-divider";
-import { TabPanel } from "~/components/tab-panel";
+import {
+  FilterFewOptionsCompact,
+  SectionActions,
+  FilterFewOptionsSpread,
+} from "~/components/infra/section-actions";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TabPanel } from "~/components/infra/tab-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import type { SomeErrorNoData } from "~/logic/action-result";
+import { aDateToDate } from "~/logic/domain/adate";
 import { eisenIcon, eisenName } from "~/logic/domain/eisen";
 import type {
   InboxTaskOptimisticState,
@@ -113,15 +101,6 @@ const EISENS = [
   Eisen.URGENT,
   Eisen.IMPORTANT,
   Eisen.REGULAR,
-];
-
-const INBOX_TASK_STATUSES = [
-  InboxTaskStatus.NOT_STARTED,
-  InboxTaskStatus.NOT_STARTED_GEN,
-  InboxTaskStatus.IN_PROGRESS,
-  InboxTaskStatus.BLOCKED,
-  InboxTaskStatus.NOT_DONE,
-  InboxTaskStatus.DONE,
 ];
 
 export const handle = {
@@ -286,26 +265,9 @@ export default function InboxTasks() {
     }, 0);
   }
 
-  const [showViewsDialog, setShowViewsDialog] = useState(false);
-  const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [selectedActionableTime, setSelectedActionableTime] = useState(
     ActionableTime.NOW,
   );
-  const [showEisenBoard, setShowEisenBoard] = useState({
-    [Eisen.IMPORTANT_AND_URGENT]: true,
-    [Eisen.URGENT]: true,
-    [Eisen.IMPORTANT]: true,
-    [Eisen.REGULAR]: true,
-  });
-  const [collapseInboxTaskStatusColumn, setCollapseInboxTaskStatusColumn] =
-    useState({
-      [InboxTaskStatus.NOT_STARTED]: false,
-      [InboxTaskStatus.NOT_STARTED_GEN]: false,
-      [InboxTaskStatus.IN_PROGRESS]: false,
-      [InboxTaskStatus.BLOCKED]: false,
-      [InboxTaskStatus.NOT_DONE]: false,
-      [InboxTaskStatus.DONE]: false,
-    });
 
   const shouldDoAGc = figureOutIfGcIsRecommended(
     entries,
@@ -313,81 +275,66 @@ export default function InboxTasks() {
     globalProperties.inboxTasksToAskForGC,
   );
 
-  let extraControls = [];
-  if (isBigScreen) {
-    extraControls = [
-      <ButtonGroup key="first">
-        <Button
-          variant={selectedView === View.SWIFTVIEW ? "contained" : "outlined"}
-          startIcon={<FlareIcon />}
-          onClick={() => setSelectedView(View.SWIFTVIEW)}
-        >
-          SwiftView
-        </Button>
-        <Button
-          variant={
-            selectedView === View.KANBAN_BY_EISEN ? "contained" : "outlined"
-          }
-          startIcon={<ViewKanbanIcon />}
-          onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-        >
-          Kanban by Eisen
-        </Button>
-        <Button
-          variant={selectedView === View.KANBAN ? "contained" : "outlined"}
-          startIcon={<ViewKanbanIcon />}
-          onClick={() => setSelectedView(View.KANBAN)}
-        >
-          Kanban
-        </Button>
-        <Button
-          variant={selectedView === View.LIST ? "contained" : "outlined"}
-          startIcon={<ViewListIcon />}
-          onClick={() => setSelectedView(View.LIST)}
-        >
-          List
-        </Button>
-      </ButtonGroup>,
-      <Button
-        key="first"
-        variant="outlined"
-        startIcon={<FilterAltIcon />}
-        onClick={() => setShowFilterDialog(true)}
-      >
-        Filters
-      </Button>,
-    ];
-  } else {
-    extraControls = [
-      <Button
-        key="first"
-        variant="outlined"
-        startIcon={<ViewKanbanIcon />}
-        onClick={() => setShowViewsDialog(true)}
-      >
-        Views
-      </Button>,
-      <Button
-        key="first"
-        variant="outlined"
-        startIcon={<FilterAltIcon />}
-        onClick={() => setShowFilterDialog(true)}
-      >
-        Filters
-      </Button>,
-    ];
-  }
-
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone }).endOf(
-    "day",
-  );
-
   return (
     <TrunkPanel
       key={"inbox-tasks"}
       createLocation="/app/workspace/inbox-tasks/new"
-      extraControls={extraControls}
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="inbox-tasks-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            FilterFewOptionsSpread(
+              "View",
+              selectedView,
+              [
+                {
+                  value: View.SWIFTVIEW,
+                  text: "SwiftView",
+                  icon: <FlareIcon />,
+                },
+                {
+                  value: View.KANBAN_BY_EISEN,
+                  text: "Kanban by Eisen",
+                  icon: <ViewKanbanIcon />,
+                  gatedOn: WorkspaceFeature.PROJECTS,
+                },
+                {
+                  value: View.KANBAN,
+                  text: "Kanban",
+                  icon: <ViewKanbanIcon />,
+                },
+                { value: View.LIST, text: "List", icon: <ViewListIcon /> },
+              ],
+              (selected) => setSelectedView(selected),
+            ),
+            FilterFewOptionsCompact(
+              "Actionable",
+              selectedActionableTime,
+              [
+                {
+                  value: ActionableTime.NOW,
+                  text: "From Now",
+                  icon: <FlareIcon />,
+                },
+                {
+                  value: ActionableTime.ONE_WEEK,
+                  text: "From One Week",
+                  icon: <FlareIcon />,
+                },
+                {
+                  value: ActionableTime.ONE_MONTH,
+                  text: "From One Month",
+                  icon: <FlareIcon />,
+                },
+              ],
+              (selected) => setSelectedActionableTime(selected),
+            ),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         {shouldDoAGc && (
@@ -410,165 +357,8 @@ export default function InboxTasks() {
           />
         </>
 
-        <Dialog
-          onClose={() => setShowViewsDialog(false)}
-          open={showViewsDialog}
-        >
-          <DialogTitle>Views</DialogTitle>
-          <DialogContent>
-            <Stack spacing={1} useFlexGap>
-              <ButtonGroup orientation="vertical">
-                <Button
-                  variant={
-                    selectedView === View.SWIFTVIEW ? "contained" : "outlined"
-                  }
-                  startIcon={<FlareIcon />}
-                  onClick={() => setSelectedView(View.SWIFTVIEW)}
-                >
-                  SwiftView
-                </Button>
-                <Button
-                  variant={
-                    selectedView === View.KANBAN_BY_EISEN
-                      ? "contained"
-                      : "outlined"
-                  }
-                  startIcon={<ViewKanbanIcon />}
-                  onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-                >
-                  Kanban by Eisen
-                </Button>
-                <Button
-                  variant={
-                    selectedView === View.KANBAN ? "contained" : "outlined"
-                  }
-                  startIcon={<ViewKanbanIcon />}
-                  onClick={() => setSelectedView(View.KANBAN)}
-                >
-                  Kanban
-                </Button>
-                <Button
-                  variant={
-                    selectedView === View.LIST ? "contained" : "outlined"
-                  }
-                  startIcon={<ViewListIcon />}
-                  onClick={() => setSelectedView(View.LIST)}
-                >
-                  List
-                </Button>
-              </ButtonGroup>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowViewsDialog(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-          onClose={() => setShowFilterDialog(false)}
-          open={showFilterDialog}
-        >
-          <DialogTitle>Filters</DialogTitle>
-          <DialogContent>
-            <Stack spacing={1} useFlexGap>
-              <StandardDivider title="Actionable From" size="large" />
-              <ButtonGroup
-                orientation={isBigScreen ? "horizontal" : "vertical"}
-              >
-                <Button
-                  variant={
-                    selectedActionableTime === ActionableTime.NOW
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() => setSelectedActionableTime(ActionableTime.NOW)}
-                >
-                  From Now
-                </Button>
-                <Button
-                  variant={
-                    selectedActionableTime === ActionableTime.ONE_WEEK
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() =>
-                    setSelectedActionableTime(ActionableTime.ONE_WEEK)
-                  }
-                >
-                  From One Week
-                </Button>
-                <Button
-                  variant={
-                    selectedActionableTime === ActionableTime.ONE_MONTH
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() =>
-                    setSelectedActionableTime(ActionableTime.ONE_MONTH)
-                  }
-                >
-                  From One Month
-                </Button>
-              </ButtonGroup>
-              {selectedView === View.KANBAN_BY_EISEN && (
-                <>
-                  <StandardDivider title="Show Eisen" size="large" />
-                  <FormGroup>
-                    {EISENS.map((eisen) => (
-                      <FormControlLabel
-                        key={eisen}
-                        label={eisenName(eisen)}
-                        control={
-                          <Checkbox
-                            checked={showEisenBoard[eisen]}
-                            onChange={(e) =>
-                              setShowEisenBoard((c) => ({
-                                ...c,
-                                [eisen]: e.target.checked,
-                              }))
-                            }
-                          />
-                        }
-                      />
-                    ))}
-                  </FormGroup>
-                </>
-              )}
-              {(selectedView === View.KANBAN_BY_EISEN ||
-                selectedView === View.KANBAN) && (
-                <>
-                  <StandardDivider title="Collapse Columns" size="large" />
-                  <FormGroup>
-                    {INBOX_TASK_STATUSES.map((status) => (
-                      <FormControlLabel
-                        key={status}
-                        label={inboxTaskStatusName(status)}
-                        control={
-                          <Checkbox
-                            checked={collapseInboxTaskStatusColumn[status]}
-                            onChange={(e) =>
-                              setCollapseInboxTaskStatusColumn((c) => ({
-                                ...c,
-                                [status]: e.target.checked,
-                              }))
-                            }
-                          />
-                        }
-                      />
-                    ))}
-                  </FormGroup>
-                </>
-              )}
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
-
         {selectedView === View.SWIFTVIEW && (
           <SwiftView
-            today={today}
             topLevelInfo={topLevelInfo}
             isBigScreen={isBigScreen}
             inboxTasks={sortedInboxTasks}
@@ -585,7 +375,6 @@ export default function InboxTasks() {
             {isBigScreen && (
               <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <BigScreenKanbanByEisen
-                  today={today}
                   topLevelInfo={topLevelInfo}
                   inboxTasks={sortedInboxTasks}
                   optimisticUpdates={optimisticUpdates}
@@ -593,22 +382,17 @@ export default function InboxTasks() {
                   moreInfoByRefId={entriesByRefId}
                   actionableTime={selectedActionableTime}
                   draggedInboxTaskId={draggedInboxTaskId}
-                  showEisenBoard={showEisenBoard}
-                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
               </DragDropContext>
             )}
 
             {!isBigScreen && (
               <SmallScreenKanbanByEisen
-                today={today}
                 topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                showEisenBoard={showEisenBoard}
-                collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 onCardMarkDone={handleCardMarkDone}
                 onCardMarkNotDone={handleCardMarkNotDone}
               />
@@ -621,7 +405,6 @@ export default function InboxTasks() {
             {isBigScreen && (
               <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <BigScreenKanban
-                  today={today}
                   topLevelInfo={topLevelInfo}
                   inboxTasks={sortedInboxTasks}
                   optimisticUpdates={optimisticUpdates}
@@ -629,20 +412,17 @@ export default function InboxTasks() {
                   moreInfoByRefId={entriesByRefId}
                   actionableTime={selectedActionableTime}
                   draggedInboxTaskId={draggedInboxTaskId}
-                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
               </DragDropContext>
             )}
 
             {!isBigScreen && (
               <SmallScreenKanban
-                today={today}
                 topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 onCardMarkDone={handleCardMarkDone}
                 onCardMarkNotDone={handleCardMarkNotDone}
               />
@@ -652,7 +432,6 @@ export default function InboxTasks() {
 
         {selectedView === View.LIST && (
           <List
-            today={today}
             topLevelInfo={topLevelInfo}
             inboxTasks={sortedInboxTasks}
             optimisticUpdates={optimisticUpdates}
@@ -681,7 +460,6 @@ const GCSection = styled(Box)(({ theme }) => ({
 }));
 
 interface SwiftViewProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   isBigScreen: boolean;
   inboxTasks: Array<InboxTask>;
@@ -693,10 +471,18 @@ interface SwiftViewProps {
 }
 
 function SwiftView(props: SwiftViewProps) {
-  const endOfTheWeek = props.today.endOf("week").endOf("day");
-  const endOfTheMonth = props.today.endOf("month").endOf("day");
-  const endOfTheQuarter = props.today.endOf("quarter").endOf("day");
-  const endOfTheYear = props.today.endOf("year").endOf("day");
+  const endOfTheWeek = aDateToDate(props.topLevelInfo.today)
+    .endOf("week")
+    .endOf("day");
+  const endOfTheMonth = aDateToDate(props.topLevelInfo.today)
+    .endOf("month")
+    .endOf("day");
+  const endOfTheQuarter = aDateToDate(props.topLevelInfo.today)
+    .endOf("quarter")
+    .endOf("day");
+  const endOfTheYear = aDateToDate(props.topLevelInfo.today)
+    .endOf("year")
+    .endOf("day");
   const actionableTime = actionableTimeToDateTime(
     props.actionableTime,
     props.topLevelInfo.user.timezone,
@@ -718,7 +504,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateEnd: props.today,
+      dueDateEnd: aDateToDate(props.topLevelInfo.today),
       allowPeriodsIfHabit: [RecurringTaskPeriod.DAILY],
     },
   );
@@ -814,7 +600,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateEnd: props.today,
+      dueDateEnd: aDateToDate(props.topLevelInfo.today),
       allowPeriodsIfChore: [RecurringTaskPeriod.DAILY],
     },
   );
@@ -904,7 +690,9 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
         InboxTaskSource.BIG_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
         InboxTaskSource.PERSON_CATCH_UP,
@@ -919,7 +707,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateEnd: props.today,
+      dueDateEnd: aDateToDate(props.topLevelInfo.today),
     },
   );
 
@@ -931,7 +719,9 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
         InboxTaskSource.BIG_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
         InboxTaskSource.PERSON_CATCH_UP,
@@ -946,7 +736,7 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      dueDateStart: props.today,
+      dueDateStart: aDateToDate(props.topLevelInfo.today),
       dueDateEnd: endOfTheWeek,
     },
   );
@@ -959,7 +749,9 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
         InboxTaskSource.BIG_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
         InboxTaskSource.PERSON_CATCH_UP,
@@ -987,7 +779,9 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
         InboxTaskSource.BIG_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
         InboxTaskSource.PERSON_CATCH_UP,
@@ -1015,7 +809,9 @@ function SwiftView(props: SwiftViewProps) {
       allowSources: [
         InboxTaskSource.USER,
         InboxTaskSource.WORKING_MEM_CLEANUP,
+        InboxTaskSource.TIME_PLAN,
         InboxTaskSource.BIG_PLAN,
+        InboxTaskSource.JOURNAL,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_BIRTHDAY,
         InboxTaskSource.PERSON_CATCH_UP,
@@ -1041,7 +837,6 @@ function SwiftView(props: SwiftViewProps) {
       <AnimatePresence>
         <InboxTaskStack
           key="habit-due-today"
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showStatus: true,
@@ -1061,7 +856,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-week"
           showOptions={{
@@ -1082,7 +876,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-month"
           showOptions={{
@@ -1104,7 +897,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-quarter"
           showOptions={{
@@ -1126,7 +918,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="habit-due-this-year"
           showOptions={{
@@ -1154,7 +945,6 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-today"
           showOptions={{
@@ -1175,7 +965,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-week"
           showOptions={{
@@ -1196,7 +985,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-month"
           showOptions={{
@@ -1218,7 +1006,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-quarter"
           showOptions={{
@@ -1240,7 +1027,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="chore-due-this-year"
           showOptions={{
@@ -1268,7 +1054,6 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-today"
           showOptions={{
@@ -1290,7 +1075,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-week"
           showOptions={{
@@ -1312,7 +1096,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-month"
           showOptions={{
@@ -1335,7 +1118,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-quarter"
           showOptions={{
@@ -1358,7 +1140,6 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           key="rest-due-this-year"
           showOptions={{
@@ -1512,7 +1293,6 @@ function SwiftView(props: SwiftViewProps) {
 }
 
 interface BigScreenKanbanByEisenProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1520,12 +1300,9 @@ interface BigScreenKanbanByEisenProps {
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   actionableTime: ActionableTime;
   draggedInboxTaskId?: string;
-  showEisenBoard: { [key in Eisen]: boolean };
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
 }
 
 function BigScreenKanbanByEisen({
-  today,
   topLevelInfo,
   inboxTasks,
   optimisticUpdates,
@@ -1533,8 +1310,6 @@ function BigScreenKanbanByEisen({
   moreInfoByRefId,
   actionableTime,
   draggedInboxTaskId,
-  showEisenBoard,
-  collapseInboxTaskStatusColumn,
 }: BigScreenKanbanByEisenProps) {
   return (
     <>
@@ -1547,7 +1322,7 @@ function BigScreenKanbanByEisen({
       )}
       {inboxTasks.length > 0 && (
         <>
-          {EISENS.filter((e) => showEisenBoard[e]).map((e) => {
+          {EISENS.map((e) => {
             return (
               <Fragment key={e}>
                 <StandardDivider
@@ -1555,7 +1330,6 @@ function BigScreenKanbanByEisen({
                   size="large"
                 />
                 <KanbanBoard
-                  today={today}
                   topLevelInfo={topLevelInfo}
                   inboxTasks={inboxTasks}
                   optimisticUpdates={optimisticUpdates}
@@ -1564,7 +1338,6 @@ function BigScreenKanbanByEisen({
                   actionableTime={actionableTime}
                   allowEisen={e}
                   draggedInboxTaskId={draggedInboxTaskId}
-                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
                 />
               </Fragment>
             );
@@ -1576,7 +1349,6 @@ function BigScreenKanbanByEisen({
 }
 
 interface BigScreenKanbanProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1585,11 +1357,9 @@ interface BigScreenKanbanProps {
   actionableTime: ActionableTime;
   allowEisen?: Eisen;
   draggedInboxTaskId?: string;
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
 }
 
 function BigScreenKanban({
-  today,
   topLevelInfo,
   inboxTasks,
   optimisticUpdates,
@@ -1598,7 +1368,6 @@ function BigScreenKanban({
   actionableTime,
   allowEisen,
   draggedInboxTaskId,
-  collapseInboxTaskStatusColumn,
 }: BigScreenKanbanProps) {
   return (
     <>
@@ -1611,7 +1380,6 @@ function BigScreenKanban({
       )}
       {inboxTasks.length > 0 && (
         <KanbanBoard
-          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
@@ -1620,7 +1388,6 @@ function BigScreenKanban({
           actionableTime={actionableTime}
           allowEisen={allowEisen}
           draggedInboxTaskId={draggedInboxTaskId}
-          collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
         />
       )}
     </>
@@ -1628,7 +1395,6 @@ function BigScreenKanban({
 }
 
 interface KanbanBoardProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1637,11 +1403,9 @@ interface KanbanBoardProps {
   actionableTime: ActionableTime;
   allowEisen?: Eisen;
   draggedInboxTaskId?: string;
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
 }
 
 function KanbanBoard({
-  today,
   topLevelInfo,
   inboxTasks,
   inboxTasksByRefId,
@@ -1650,20 +1414,17 @@ function KanbanBoard({
   allowEisen,
   optimisticUpdates,
   draggedInboxTaskId,
-  collapseInboxTaskStatusColumn,
 }: KanbanBoardProps) {
   return (
     <Grid container spacing={2}>
       <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
-          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED]}
           allowStatus={InboxTaskStatus.NOT_STARTED}
           allowEisen={allowEisen}
           showOptions={{
@@ -1679,16 +1440,12 @@ function KanbanBoard({
 
       <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
-          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={
-            collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED_GEN]
-          }
           allowStatus={InboxTaskStatus.NOT_STARTED_GEN}
           allowEisen={allowEisen}
           showOptions={{
@@ -1704,14 +1461,12 @@ function KanbanBoard({
 
       <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
-          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.IN_PROGRESS]}
           allowStatus={InboxTaskStatus.IN_PROGRESS}
           allowEisen={allowEisen}
           showOptions={{
@@ -1727,14 +1482,12 @@ function KanbanBoard({
 
       <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
-          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.BLOCKED]}
           allowStatus={InboxTaskStatus.BLOCKED}
           allowEisen={allowEisen}
           showOptions={{
@@ -1750,14 +1503,12 @@ function KanbanBoard({
 
       <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
-          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_DONE]}
           allowStatus={InboxTaskStatus.NOT_DONE}
           allowEisen={allowEisen}
           showOptions={{
@@ -1773,14 +1524,12 @@ function KanbanBoard({
 
       <Grid size={{ xs: 2 }} sx={{ position: "relative" }}>
         <InboxTasksColumn
-          today={today}
           topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
           moreInfoByRefId={moreInfoByRefId}
           actionableTime={actionableTime}
-          collapsed={collapseInboxTaskStatusColumn[InboxTaskStatus.DONE]}
           allowStatus={InboxTaskStatus.DONE}
           allowEisen={allowEisen}
           showOptions={{
@@ -1798,14 +1547,11 @@ function KanbanBoard({
 }
 
 interface SmallScreenKanbanByEisenProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   actionableTime: ActionableTime;
-  showEisenBoard: { [key in Eisen]: boolean };
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
   onCardMarkDone?: (it: InboxTask) => void;
   onCardMarkNotDone?: (it: InboxTask) => void;
 }
@@ -1886,33 +1632,23 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
         variant="fullWidth"
         onChange={(_, newValue) => setSmallScreenSelectedTab(newValue)}
       >
-        {props.showEisenBoard[Eisen.IMPORTANT_AND_URGENT] && (
-          <Tab
-            sx={{ minWidth: "25%" }}
-            icon={eisenIcon(Eisen.IMPORTANT_AND_URGENT)}
-          />
-        )}
-        {props.showEisenBoard[Eisen.URGENT] && (
-          <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.URGENT)} />
-        )}
-        {props.showEisenBoard[Eisen.IMPORTANT] && (
-          <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.IMPORTANT)} />
-        )}
-        {props.showEisenBoard[Eisen.REGULAR] && (
-          <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.REGULAR)} />
-        )}
+        <Tab
+          sx={{ minWidth: "25%" }}
+          icon={eisenIcon(Eisen.IMPORTANT_AND_URGENT)}
+        />
+        <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.URGENT)} />
+        <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.IMPORTANT)} />
+        <Tab sx={{ minWidth: "25%" }} icon={eisenIcon(Eisen.REGULAR)} />
       </Tabs>
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
         <SmallScreenKanban
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={importantAndUrgentTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.IMPORTANT_AND_URGENT}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1920,14 +1656,12 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={1}>
         <SmallScreenKanban
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={urgentTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.URGENT}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1935,14 +1669,12 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={2}>
         <SmallScreenKanban
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={importantTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.IMPORTANT}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1950,14 +1682,12 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={3}>
         <SmallScreenKanban
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           inboxTasks={regularTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
           allowEisen={Eisen.REGULAR}
           actionableTime={props.actionableTime}
-          collapseInboxTaskStatusColumn={props.collapseInboxTaskStatusColumn}
           onCardMarkDone={props.onCardMarkDone}
           onCardMarkNotDone={props.onCardMarkNotDone}
         />
@@ -1967,14 +1697,12 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 }
 
 interface SmallScreenKanbanProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   allowEisen?: Eisen;
   actionableTime: ActionableTime;
-  collapseInboxTaskStatusColumn: { [key in InboxTaskStatus]: boolean };
   onCardMarkDone?: (it: InboxTask) => void;
   onCardMarkNotDone?: (it: InboxTask) => void;
 }
@@ -2083,50 +1811,36 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
         variant="scrollable"
         onChange={(_, newValue) => setSmallScreenSelectedTab(newValue)}
       >
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_STARTED] && (
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED)}
-          />
-        )}
-        {!props.collapseInboxTaskStatusColumn[
-          InboxTaskStatus.NOT_STARTED_GEN
-        ] && (
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED_GEN)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED_GEN)}
-          />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.IN_PROGRESS] && (
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.IN_PROGRESS)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.IN_PROGRESS)}
-          />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.BLOCKED] && (
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.BLOCKED)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.BLOCKED)}
-          />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.NOT_DONE] && (
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_DONE)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.NOT_DONE)}
-          />
-        )}
-        {!props.collapseInboxTaskStatusColumn[InboxTaskStatus.DONE] && (
-          <Tab
-            icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.DONE)}</p>}
-            iconPosition="top"
-            label={inboxTaskStatusName(InboxTaskStatus.DONE)}
-          />
-        )}
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_STARTED_GEN)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.NOT_STARTED_GEN)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.IN_PROGRESS)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.IN_PROGRESS)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.BLOCKED)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.BLOCKED)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.NOT_DONE)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.NOT_DONE)}
+        />
+        <Tab
+          icon={<p>{inboxTaskStatusIcon(InboxTaskStatus.DONE)}</p>}
+          iconPosition="top"
+          label={inboxTaskStatusName(InboxTaskStatus.DONE)}
+        />
       </Tabs>
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
@@ -2138,7 +1852,6 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2166,7 +1879,6 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2194,7 +1906,6 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2222,7 +1933,6 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2250,7 +1960,6 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2278,7 +1987,6 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
-          today={props.today}
           topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
@@ -2301,7 +2009,6 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 }
 
 interface ListProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -2311,7 +2018,6 @@ interface ListProps {
 }
 
 function List({
-  today,
   topLevelInfo,
   inboxTasks,
   moreInfoByRefId,
@@ -2329,7 +2035,6 @@ function List({
         />
       )}
       <InboxTaskStack
-        today={today}
         topLevelInfo={topLevelInfo}
         showOptions={{
           showStatus: true,
@@ -2354,14 +2059,13 @@ function List({
 }
 
 interface InboxTasksColumnProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   inboxTasksByRefId: { [key: string]: InboxTask };
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   actionableTime: ActionableTime;
-  collapsed: boolean;
+  collapsed?: boolean;
   allowStatus: InboxTaskStatus;
   allowEisen?: Eisen;
   showOptions: InboxTaskShowOptions;
@@ -2481,7 +2185,6 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
           >
             {!props.collapsed && (
               <InboxTaskColumnTasks
-                today={props.today}
                 topLevelInfo={props.topLevelInfo}
                 inboxTasks={filteredInboxTasks}
                 moreInfoByRefId={props.moreInfoByRefId}
@@ -2518,7 +2221,6 @@ const InboxTasksColumnHighDiv = styled("div")<InboxTasksColumnHighDivProps>(
 );
 
 interface InboxTaskColumnTasksProps {
-  today: DateTime;
   topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -2546,7 +2248,6 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
                 {...provided.dragHandleProps}
               >
                 <InboxTaskCard
-                  today={props.today}
                   topLevelInfo={props.topLevelInfo}
                   compact
                   showOptions={{

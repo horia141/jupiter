@@ -1,36 +1,32 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError, NoteDomain } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isRootProject } from "~/logic/domain/project";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation as useLoaderDataForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard } from "~/components/infra/section-card";
+import {
+  SectionActions,
+  ActionSingle,
+} from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -167,6 +163,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function Project() {
   const loaderData = useLoaderDataForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const navigation = useNavigation();
 
   const inputsEnabled =
@@ -194,90 +191,83 @@ export default function Project() {
 
   return (
     <LeafPanel
-      key={`projects-${loaderData.project.ref_id}`}
+      key={`project-${loaderData.project.ref_id}`}
+      fakeKey={`projects-${loaderData.project.ref_id}`}
       showArchiveAndRemoveButton={!isRootProject(loaderData.project)}
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.project.archived}
       returnLocation="/app/workspace/projects"
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="parentProjectRefId"
-                label="Parent Project"
-                inputsEnabled={
-                  inputsEnabled && !isRootProject(loaderData.project)
-                }
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                value={selectedProject}
-                onChange={setSelectedProject}
-              />
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={
+          <SectionActions
+            id="project-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+              ActionSingle({
+                text: "Change Parent",
+                value: "change-parent",
+                highlight: false,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <ProjectSelect
+            name="parentProjectRefId"
+            label="Parent Project"
+            inputsEnabled={inputsEnabled && !isRootProject(loaderData.project)}
+            disabled={false}
+            allProjects={loaderData.allProjects}
+            value={selectedProject}
+            onChange={setSelectedProject}
+          />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/parent_project_ref_id"
-              />
-            </FormControl>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/parent_project_ref_id"
+          />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.project.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-          </Stack>
-        </CardContent>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="name"
+            name="name"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.project.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled || isRootProject(loaderData.project)}
-              type="submit"
-              name="intent"
-              value="change-parent"
-            >
-              Change Parent
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="project-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -286,7 +276,7 @@ export default function Project() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

@@ -5,6 +5,8 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.big_plan_status import BigPlanStatus
+from ..models.difficulty import Difficulty
+from ..models.eisen import Eisen
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="BigPlan")
@@ -24,6 +26,10 @@ class BigPlan:
         big_plan_collection_ref_id (str):
         project_ref_id (str): A generic entity id.
         status (BigPlanStatus): The status of a big plan.
+        is_key (bool):
+        eisen (Eisen): The Eisenhower status of a particular task.
+        difficulty (Difficulty): The difficulty of a particular task.
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         actionable_date (Union[None, Unset, str]):
         due_date (Union[None, Unset, str]):
@@ -40,6 +46,10 @@ class BigPlan:
     big_plan_collection_ref_id: str
     project_ref_id: str
     status: BigPlanStatus
+    is_key: bool
+    eisen: Eisen
+    difficulty: Difficulty
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     actionable_date: Union[None, Unset, str] = UNSET
     due_date: Union[None, Unset, str] = UNSET
@@ -65,6 +75,18 @@ class BigPlan:
         project_ref_id = self.project_ref_id
 
         status = self.status.value
+
+        is_key = self.is_key
+
+        eisen = self.eisen.value
+
+        difficulty = self.difficulty.value
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -109,8 +131,13 @@ class BigPlan:
                 "big_plan_collection_ref_id": big_plan_collection_ref_id,
                 "project_ref_id": project_ref_id,
                 "status": status,
+                "is_key": is_key,
+                "eisen": eisen,
+                "difficulty": difficulty,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if actionable_date is not UNSET:
@@ -144,6 +171,21 @@ class BigPlan:
         project_ref_id = d.pop("project_ref_id")
 
         status = BigPlanStatus(d.pop("status"))
+
+        is_key = d.pop("is_key")
+
+        eisen = Eisen(d.pop("eisen"))
+
+        difficulty = Difficulty(d.pop("difficulty"))
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -200,6 +242,10 @@ class BigPlan:
             big_plan_collection_ref_id=big_plan_collection_ref_id,
             project_ref_id=project_ref_id,
             status=status,
+            is_key=is_key,
+            eisen=eisen,
+            difficulty=difficulty,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             actionable_date=actionable_date,
             due_date=due_date,

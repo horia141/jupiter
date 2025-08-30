@@ -17,11 +17,15 @@ class HabitLoadArgs:
         ref_id (str): A generic entity id.
         allow_archived (bool):
         inbox_task_retrieve_offset (Union[None, Unset, int]):
+        include_streak_marks_earliest_date (Union[None, Unset, str]):
+        include_streak_marks_latest_date (Union[None, Unset, str]):
     """
 
     ref_id: str
     allow_archived: bool
     inbox_task_retrieve_offset: Union[None, Unset, int] = UNSET
+    include_streak_marks_earliest_date: Union[None, Unset, str] = UNSET
+    include_streak_marks_latest_date: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -35,6 +39,18 @@ class HabitLoadArgs:
         else:
             inbox_task_retrieve_offset = self.inbox_task_retrieve_offset
 
+        include_streak_marks_earliest_date: Union[None, Unset, str]
+        if isinstance(self.include_streak_marks_earliest_date, Unset):
+            include_streak_marks_earliest_date = UNSET
+        else:
+            include_streak_marks_earliest_date = self.include_streak_marks_earliest_date
+
+        include_streak_marks_latest_date: Union[None, Unset, str]
+        if isinstance(self.include_streak_marks_latest_date, Unset):
+            include_streak_marks_latest_date = UNSET
+        else:
+            include_streak_marks_latest_date = self.include_streak_marks_latest_date
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -45,6 +61,10 @@ class HabitLoadArgs:
         )
         if inbox_task_retrieve_offset is not UNSET:
             field_dict["inbox_task_retrieve_offset"] = inbox_task_retrieve_offset
+        if include_streak_marks_earliest_date is not UNSET:
+            field_dict["include_streak_marks_earliest_date"] = include_streak_marks_earliest_date
+        if include_streak_marks_latest_date is not UNSET:
+            field_dict["include_streak_marks_latest_date"] = include_streak_marks_latest_date
 
         return field_dict
 
@@ -64,10 +84,34 @@ class HabitLoadArgs:
 
         inbox_task_retrieve_offset = _parse_inbox_task_retrieve_offset(d.pop("inbox_task_retrieve_offset", UNSET))
 
+        def _parse_include_streak_marks_earliest_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        include_streak_marks_earliest_date = _parse_include_streak_marks_earliest_date(
+            d.pop("include_streak_marks_earliest_date", UNSET)
+        )
+
+        def _parse_include_streak_marks_latest_date(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        include_streak_marks_latest_date = _parse_include_streak_marks_latest_date(
+            d.pop("include_streak_marks_latest_date", UNSET)
+        )
+
         habit_load_args = cls(
             ref_id=ref_id,
             allow_archived=allow_archived,
             inbox_task_retrieve_offset=inbox_task_retrieve_offset,
+            include_streak_marks_earliest_date=include_streak_marks_earliest_date,
+            include_streak_marks_latest_date=include_streak_marks_latest_date,
         )
 
         habit_load_args.additional_properties = d

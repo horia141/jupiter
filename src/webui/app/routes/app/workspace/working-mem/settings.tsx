@@ -4,17 +4,7 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  FormControl,
-  FormLabel,
-  Stack,
-} from "@mui/material";
+import { FormControl, FormLabel } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -28,23 +18,25 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { PeriodSelect } from "~/components/period-select";
-import { ProjectSelect } from "~/components/project-select";
+import { PeriodSelect } from "~/components/domain/core/period-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { SectionCard } from "~/components/infra/section-card";
 
 const UpdateFormSchema = z.discriminatedUnion("intent", [
   z.object({
-    intent: z.literal("change-generation-period"),
+    intent: z.literal("update"),
     generationPeriod: z.nativeEnum(RecurringTaskPeriod),
-  }),
-  z.object({
-    intent: z.literal("change-cleanup-project"),
-    cleanupProject: z.string(),
+    cleanupProject: z.string().optional(),
   }),
 ]);
 
@@ -75,20 +67,23 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     switch (form.intent) {
-      case "change-generation-period": {
-        await apiClient.workingMem.workingMemChangeGenerationPeriod({
-          generation_period: form.generationPeriod,
+      case "update": {
+        await apiClient.workingMem.workingMemUpdateSettings({
+          generation_period: {
+            should_change: true,
+            value: form.generationPeriod,
+          },
+          cleanup_project_ref_id: {
+            should_change: form.cleanupProject !== undefined,
+            value: form.cleanupProject,
+          },
         });
 
         return redirect(`/app/workspace/working-mem/settings`);
       }
 
-      case "change-cleanup-project": {
-        await apiClient.workingMem.workingMemChangeCleanUpProject({
-          cleanup_project_ref_id: form.cleanupProject,
-        });
-
-        return redirect(`/app/workspace/working-mem/settings`);
+      default: {
+        throw new Error(`Unknown intent: ${form.intent}`);
       }
     }
   } catch (error) {
@@ -117,86 +112,71 @@ export default function MetricsSettings() {
 
   return (
     <LeafPanel
-      key={"working-mem/settings"}
+      key="working-mem/settings"
+      fakeKey={"working-mem/settings"}
       returnLocation="/app/workspace/working-mem"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
+      <GlobalError actionResult={actionData} />
+
+      <SectionCard
+        title="Settings"
+        actions={
+          <SectionActions
+            id="working-mem-settings"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
         <GlobalError actionResult={actionData} />
 
-        <CardHeader title="Clean Up Project" />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <FormLabel id="generationPeriod">Generation Period</FormLabel>
-              <PeriodSelect
-                labelId="generationPeriod"
-                label="Generation Period"
-                name="generationPeriod"
-                inputsEnabled={inputsEnabled}
-                defaultValue={loaderData.generationPeriod}
-                allowedValues={[
-                  RecurringTaskPeriod.DAILY,
-                  RecurringTaskPeriod.WEEKLY,
-                ]}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_period"
-              />
-            </FormControl>
+        <FormControl fullWidth>
+          <FormLabel id="generationPeriod">Generation Period</FormLabel>
+          <PeriodSelect
+            labelId="generationPeriod"
+            label="Generation Period"
+            name="generationPeriod"
+            inputsEnabled={inputsEnabled}
+            defaultValue={loaderData.generationPeriod}
+            allowedValues={[
+              RecurringTaskPeriod.DAILY,
+              RecurringTaskPeriod.WEEKLY,
+            ]}
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_period"
+          />
+        </FormControl>
 
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="cleanupProject"
-                  label="Clean Up Project"
-                  inputsEnabled={inputsEnabled}
-                  allProjects={loaderData.allProjects}
-                  disabled={false}
-                  defaultValue={loaderData.cleanupProject.ref_id}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/cleanup_project_ref_id"
-                />
-              </FormControl>
-            )}
-          </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="change-generation-period"
-            >
-              Change Generation Period
-            </Button>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="change-cleanup-project"
-              >
-                Change Cleanup Project
-              </Button>
-            )}
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="cleanupProject"
+              label="Clean Up Project"
+              inputsEnabled={inputsEnabled}
+              allProjects={loaderData.allProjects}
+              disabled={false}
+              defaultValue={loaderData.cleanupProject.ref_id}
+            />
+            <FieldError
+              actionResult={actionData}
+              fieldName="/cleanup_project_ref_id"
+            />
+          </FormControl>
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

@@ -17,6 +17,7 @@ export type InboxTask = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
+    archival_reason?: (string | null);
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
@@ -25,6 +26,7 @@ export type InboxTask = {
     source: InboxTaskSource;
     project_ref_id: EntityId;
     status: InboxTaskStatus;
+    is_key: boolean;
     eisen: Eisen;
     difficulty: Difficulty;
     actionable_date?: (ADate | null);

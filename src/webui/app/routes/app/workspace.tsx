@@ -24,26 +24,25 @@ import { AnimatePresence, useAnimate } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { CommunityLink } from "~/components/community-link";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import { CommunityLink } from "~/components/infra/community-link";
+import { DocsHelp, DocsHelpSubject } from "~/components/infra/docs-help";
 import {
   ScoreSnackbarManager,
   useScoreActionSingleton,
-} from "~/components/gamification/score-snackbar-manager";
+} from "~/components/domain/application/gamification/score-snackbar-manager";
 import { makeRootErrorBoundary } from "~/components/infra/error-boundary";
 import { WorkspaceContainer } from "~/components/infra/layout/workspace-container";
 import { SmartAppBar } from "~/components/infra/smart-appbar";
-import { ReleaseUpdateWidget } from "~/components/release-update-widget";
-import SearchBox from "~/components/search-box";
-import Sidebar from "~/components/sidebar";
-import { Title } from "~/components/title";
+import { ReleaseUpdateWidget } from "~/components/infra/release-update-widget";
+import SearchBox from "~/components/infra/search-box";
+import Sidebar from "~/components/infra/sidebar";
+import { Title } from "~/components/infra/title";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import editorJsTweaks from "~/styles/editorjs-tweaks.css";
-import { TopLevelInfoContext } from "~/top-level-context";
+import { TopLevelInfoProvider } from "~/components/infra/top-level-info-provider";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: editorJsTweaks },
@@ -72,8 +71,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = ({ nextUrl }) => {
+  return nextUrl.searchParams.has("invalidateTopLevel");
+};
 
 // @secureFn
 export default function Workspace() {
@@ -125,16 +125,14 @@ export default function Workspace() {
     };
   }, []);
 
-  const topLevelInfo = {
-    userFeatureFlagControls: loaderData.userFeatureFlagControls,
-    workspaceFeatureFlagControls: loaderData.workspaceFeatureFlagControls,
-    user: loaderData.user,
-    userScoreOverview: loaderData.userScoreOverview,
-    workspace: loaderData.workspace,
-  };
-
   return (
-    <TopLevelInfoContext.Provider value={topLevelInfo}>
+    <TopLevelInfoProvider
+      user={loaderData.user}
+      workspace={loaderData.workspace}
+      userFeatureFlagControls={loaderData.userFeatureFlagControls}
+      workspaceFeatureFlagControls={loaderData.workspaceFeatureFlagControls}
+      userScoreOverview={loaderData.userScoreOverview}
+    >
       <WorkspaceContainer>
         <SmartAppBar>
           <IconButton
@@ -283,7 +281,6 @@ export default function Workspace() {
 
         <Sidebar
           showSidebar={showSidebar}
-          topLevelInfo={topLevelInfo}
           onClickForNavigation={() => {
             if (isBigScreen) return;
             setShowSidebar(false);
@@ -297,7 +294,7 @@ export default function Workspace() {
         <ScoreSnackbarManager scoreAction={scoreAction} />
         <ReleaseUpdateWidget />
       </WorkspaceContainer>
-    </TopLevelInfoContext.Provider>
+    </TopLevelInfoProvider>
   );
 }
 

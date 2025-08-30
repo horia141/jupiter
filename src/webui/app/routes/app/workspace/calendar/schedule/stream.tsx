@@ -1,25 +1,27 @@
-import { Button } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useSearchParams } from "@remix-run/react";
+import { Outlet, useNavigation, useSearchParams } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { z } from "zod";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNameComponent } from "~/components/entity-name";
+import { EntityNameComponent } from "~/components/infra/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
-import { ScheduleStreamColorTag } from "~/components/schedule-stream-color-tag";
+import { ScheduleStreamColorTag } from "~/components/domain/concept/schedule/schedule-stream-color-tag";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
 
@@ -44,6 +46,9 @@ export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 export default function ScheduleStreamViewAll() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const [query] = useSearchParams();
+  const topLevelInfo = useContext(TopLevelInfoContext);
+  const navigation = useNavigation();
+  const inputsEnabled = navigation.state === "idle";
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
@@ -52,16 +57,19 @@ export default function ScheduleStreamViewAll() {
       key="calendar-schedule-stream"
       createLocation={`/app/workspace/calendar/schedule/stream/new?${query}`}
       returnLocation={`/app/workspace/calendar?${query}`}
-      extraControls={[
-        <Button
-          key="mock"
-          variant="outlined"
-          to={`/app/workspace/calendar/schedule/stream/new-external?${query}`}
-          component={Link}
-        >
-          New External
-        </Button>,
-      ]}
+      actions={
+        <SectionActions
+          id="calendar-schedule-stream"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavSingle({
+              text: "New External",
+              link: `/app/workspace/calendar/schedule/stream/new-external?${query}`,
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>

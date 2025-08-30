@@ -1,8 +1,19 @@
-import type { TimePlan } from "@jupiter/webapi-client";
-import { TimePlanSource } from "@jupiter/webapi-client";
+import type { ADate, TimePlan } from "@jupiter/webapi-client";
 
-import { compareADate } from "./adate";
-import { comparePeriods } from "./period";
+import { aDateToDate, compareADate } from "~/logic/domain/adate";
+import { comparePeriods } from "~/logic/domain/period";
+
+export function findTimePlansThatAreActive(
+  timePlans: Array<TimePlan>,
+  today: ADate,
+): TimePlan[] {
+  const todayDate = aDateToDate(today);
+  return timePlans.filter((timePlan) => {
+    const startDate = aDateToDate(timePlan.start_date);
+    const endDate = aDateToDate(timePlan.end_date);
+    return startDate <= todayDate && todayDate <= endDate;
+  });
+}
 
 export function sortTimePlansNaturally(timePlans: Array<TimePlan>): TimePlan[] {
   return [...timePlans].sort((j1, j2) => {
@@ -19,13 +30,4 @@ export function sortTimePlansNaturally(timePlans: Array<TimePlan>): TimePlan[] {
       comparePeriods(j1.period, j2.period)
     );
   });
-}
-
-export function timePlanSourceName(source: TimePlanSource) {
-  switch (source) {
-    case TimePlanSource.USER:
-      return "User";
-    case TimePlanSource.RECURRING:
-      return "Recurring";
-  }
 }

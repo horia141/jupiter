@@ -1,14 +1,14 @@
-import { Card, CardContent, CardHeader, Stack } from "@mui/material";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { ScoreHistory } from "~/components/gamification/score-history";
-import { ScoreOverview } from "~/components/gamification/score-overview";
+import { ScoreHistory } from "~/components/domain/application/gamification/score-history";
+import { ScoreOverview } from "~/components/domain/application/gamification/score-overview";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
+import { SectionCard } from "~/components/infra/section-card";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -36,24 +36,16 @@ export default function Gamification() {
   return (
     <TrunkPanel key={"gamification"} returnLocation="/app/workspace">
       <ToolPanel>
-        <Stack useFlexGap gap={2}>
-          {loaderData.userScoreOverview && (
-            <Card>
-              <CardHeader title="💪 Scores Overview" />
-              <CardContent>
-                <ScoreOverview scoreOverview={loaderData.userScoreOverview} />
-              </CardContent>
-            </Card>
-          )}
-          {loaderData.userScoreHistory && (
-            <Card>
-              <CardHeader title="💪 Scores History" />
-              <CardContent>
-                <ScoreHistory scoreHistory={loaderData.userScoreHistory} />
-              </CardContent>
-            </Card>
-          )}
-        </Stack>
+        {loaderData.userScoreOverview && (
+          <SectionCard title="💪 Scores Overview">
+            <ScoreOverview scoreOverview={loaderData.userScoreOverview} />
+          </SectionCard>
+        )}
+        {loaderData.userScoreHistory && (
+          <SectionCard title="💪 Scores History">
+            <ScoreHistory scoreHistory={loaderData.userScoreHistory} />
+          </SectionCard>
+        )}
       </ToolPanel>
     </TrunkPanel>
   );

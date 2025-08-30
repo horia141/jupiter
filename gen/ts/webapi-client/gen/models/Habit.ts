@@ -14,12 +14,14 @@ export type Habit = {
     ref_id: EntityId;
     version: number;
     archived: boolean;
+    archival_reason?: (string | null);
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time?: (Timestamp | null);
     name: HabitName;
     habit_collection_ref_id: string;
     project_ref_id: EntityId;
+    is_key: boolean;
     gen_params: RecurringTaskGenParams;
     suspended: boolean;
     repeats_strategy?: (HabitRepeatsStrategy | null);

@@ -14,6 +14,8 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 )
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.core.domain.concept.journals.journal import Journal
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.metrics.metric import Metric
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person import Person
@@ -31,6 +33,8 @@ from jupiter.core.domain.concept.push_integrations.slack.slack_task import Slack
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.time_plans.time_plan import TimePlan
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.concept.working_mem.working_mem import WorkingMem
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
@@ -50,6 +54,7 @@ from jupiter.core.domain.features import (
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.entity import NoFilter
+from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case_io import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -72,6 +77,7 @@ class InboxTaskFindArgs(UseCaseArgsBase):
     include_notes: bool
     include_time_event_blocks: bool
     filter_just_workable: bool | None
+    filter_just_user: bool | None
     filter_just_generated: bool | None
     filter_ref_ids: list[EntityId] | None
     filter_project_ref_ids: list[EntityId] | None
@@ -88,9 +94,11 @@ class InboxTaskFindResultEntry(UseCaseResultBase):
     project: Project
     time_event_blocks: list[TimeEventInDayBlock] | None
     working_mem: WorkingMem | None
+    time_plan: TimePlan | None
     habit: Habit | None
     chore: Chore | None
     big_plan: BigPlan | None
+    journal: Journal | None
     metric: Metric | None
     person: Person | None
     slack_task: SlackTask | None
@@ -119,6 +127,11 @@ class InboxTaskFindUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
+        if args.filter_just_user and args.filter_just_generated:
+            raise InputValidationError(
+                "Cannot filter for both user tasks and generated tasks at the same time"
+            )
+
         if (
             not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.filter_project_ref_ids is not None
@@ -130,7 +143,9 @@ class InboxTaskFindUseCase(
             if args.filter_sources is not None
             else workspace.infer_sources_for_enabled_features(None)
         )
-        if args.filter_just_generated:
+        if args.filter_just_user:
+            filter_sources = self._filter_sources_for_user_tasks(filter_sources)
+        elif args.filter_just_generated:
             filter_sources = self._filter_sources_for_generated_tasks(filter_sources)
 
         big_diff = list(
@@ -157,6 +172,9 @@ class InboxTaskFindUseCase(
         working_mem_collection = await uow.get_for(WorkingMemCollection).load_by_parent(
             workspace.ref_id
         )
+        time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
+            workspace.ref_id,
+        )
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -164,6 +182,9 @@ class InboxTaskFindUseCase(
             workspace.ref_id,
         )
         big_plan_collection = await uow.get_for(BigPlanCollection).load_by_parent(
+            workspace.ref_id,
+        )
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
@@ -212,6 +233,17 @@ class InboxTaskFindUseCase(
         )
         working_mems_by_ref_id = {wm.ref_id: wm for wm in working_mems}
 
+        time_plans = await uow.get_for(TimePlan).find_all(
+            parent_ref_id=time_plan_domain.ref_id,
+            allow_archived=True,
+            filter_ref_ids=[
+                it.source_entity_ref_id_for_sure
+                for it in inbox_tasks
+                if it.source == InboxTaskSource.TIME_PLAN
+            ],
+        )
+        time_plans_by_ref_id = {tp.ref_id: tp for tp in time_plans}
+
         habits = await uow.get_for(Habit).find_all(
             parent_ref_id=habit_collection.ref_id,
             allow_archived=True,
@@ -244,6 +276,17 @@ class InboxTaskFindUseCase(
             ],
         )
         big_plans_by_ref_id = {bp.ref_id: bp for bp in big_plans}
+
+        journals = await uow.get_for(Journal).find_all(
+            parent_ref_id=journal_collection.ref_id,
+            allow_archived=True,
+            filter_ref_ids=[
+                it.source_entity_ref_id_for_sure
+                for it in inbox_tasks
+                if it.source == InboxTaskSource.JOURNAL
+            ],
+        )
+        journals_by_ref_id = {j.ref_id: j for j in journals}
 
         metrics = await uow.get_for(Metric).find_all(
             parent_ref_id=metric_collection.ref_id,
@@ -332,6 +375,11 @@ class InboxTaskFindUseCase(
                         if it.source == InboxTaskSource.WORKING_MEM_CLEANUP
                         else None
                     ),
+                    time_plan=(
+                        time_plans_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.TIME_PLAN
+                        else None
+                    ),
                     habit=(
                         habits_by_ref_id[it.source_entity_ref_id_for_sure]
                         if it.source == InboxTaskSource.HABIT
@@ -345,6 +393,11 @@ class InboxTaskFindUseCase(
                     big_plan=(
                         big_plans_by_ref_id[it.source_entity_ref_id_for_sure]
                         if it.source == InboxTaskSource.BIG_PLAN
+                        else None
+                    ),
+                    journal=(
+                        journals_by_ref_id[it.source_entity_ref_id_for_sure]
+                        if it.source == InboxTaskSource.JOURNAL
                         else None
                     ),
                     metric=(
@@ -381,3 +434,8 @@ class InboxTaskFindUseCase(
         self, sources: list[InboxTaskSource]
     ) -> list[InboxTaskSource]:
         return [s for s in sources if not s.allow_user_changes]
+
+    def _filter_sources_for_user_tasks(
+        self, sources: list[InboxTaskSource]
+    ) -> list[InboxTaskSource]:
+        return [s for s in sources if s.allow_user_changes]

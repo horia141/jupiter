@@ -1,39 +1,39 @@
 import type { MetricEntry } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button, IconButton, styled } from "@mui/material";
+import { styled } from "@mui/material";
 import { ResponsiveLine } from "@nivo/line";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet, useNavigation } from "@remix-run/react";
+import { Outlet, useNavigation } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNameComponent } from "~/components/entity-name";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNameComponent } from "~/components/infra/entity-name";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeBranchErrorBoundary } from "~/components/infra/error-boundary";
 import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
-import { TimeDiffTag } from "~/components/time-diff-tag";
+import { TimeDiffTag } from "~/components/domain/core/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -84,25 +84,38 @@ export async function action({ request, params }: LoaderFunctionArgs) {
   const { id } = parseParams(params, ParamsSchema);
   const form = await parseForm(request, UpdateFormSchema);
 
-  switch (form.intent) {
-    case "archive": {
-      await apiClient.metrics.metricArchive({
-        ref_id: id,
-      });
+  try {
+    switch (form.intent) {
+      case "archive": {
+        await apiClient.metrics.metricArchive({
+          ref_id: id,
+        });
 
-      return redirect(`/app/workspace/metrics`);
+        return redirect(`/app/workspace/metrics`);
+      }
+
+      case "remove": {
+        await apiClient.metrics.metricRemove({
+          ref_id: id,
+        });
+
+        return redirect(`/app/workspace/metrics`);
+      }
+
+      default:
+        throw new Response("Bad Intent", { status: 500 });
+    }
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === StatusCodes.UNPROCESSABLE_ENTITY
+    ) {
+      return json(validationErrorToUIErrorInfo(error.body));
     }
 
-    case "remove": {
-      await apiClient.metrics.metricRemove({
-        ref_id: id,
-      });
-
-      return redirect(`/app/workspace/metrics`);
-    }
+    throw error;
   }
 }
-
 export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
@@ -117,10 +130,6 @@ export default function Metric() {
     return -compareADate(e1.collection_time, e2.collection_time);
   });
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
-  const isBigScreen = useBigScreen();
-
   return (
     <BranchPanel
       showArchiveAndRemoveButton
@@ -128,28 +137,21 @@ export default function Metric() {
       entityArchived={loaderData.metric.archived}
       key={`metric-${loaderData.metric.ref_id}`}
       createLocation={`/app/workspace/metrics/${loaderData.metric.ref_id}/entries/new`}
-      extraControls={[
-        isBigScreen ? (
-          <Button
-            key={loaderData.metric.ref_id}
-            variant="outlined"
-            to={`/app/workspace/metrics/${loaderData.metric.ref_id}/details`}
-            component={Link}
-            startIcon={<TuneIcon />}
-          >
-            Details
-          </Button>
-        ) : (
-          <IconButton
-            key={loaderData.metric.ref_id}
-            to={`/app/workspace/metrics/${loaderData.metric.ref_id}/details`}
-            component={Link}
-          >
-            <TuneIcon />
-          </IconButton>
-        ),
-      ]}
       returnLocation="/app/workspace/metrics"
+      actions={
+        <SectionActions
+          id={`metric-${loaderData.metric.ref_id}-actions`}
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={inputsEnabled}
+          actions={[
+            NavSingle({
+              text: "Details",
+              icon: <TuneIcon />,
+              link: `/app/workspace/metrics/${loaderData.metric.ref_id}/details`,
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <MetricGraph sortedMetricEntries={sortedEntries} />
@@ -174,7 +176,7 @@ export default function Metric() {
               >
                 <EntityNameComponent name={metricEntryName(entry)} />
                 <TimeDiffTag
-                  today={today}
+                  today={topLevelInfo.today}
                   labelPrefix="Collected"
                   collectionTime={entry.collection_time}
                 />

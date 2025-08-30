@@ -16,7 +16,7 @@ from jupiter.core.framework.entity import (
     create_entity_action,
     entity,
 )
-from jupiter.core.framework.record import ContainsRecords
+from jupiter.core.framework.record import ContainsManyRecords
 from jupiter.core.framework.repository import TrunkEntityRepository
 
 
@@ -27,7 +27,7 @@ class ScoreLog(TrunkEntity):
     user: ParentLink
 
     entries = ContainsMany(ScoreLogEntry, score_log_ref_id=IsRefId())
-    period_bests = ContainsRecords(ScorePeriodBest, score_log_ref_id=IsRefId())
+    period_bests = ContainsManyRecords(ScorePeriodBest, score_log_ref_id=IsRefId())
 
     @staticmethod
     @create_entity_action

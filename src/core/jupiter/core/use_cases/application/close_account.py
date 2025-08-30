@@ -6,6 +6,7 @@ from jupiter.core.domain.concept.user_workspace_link.user_workspace_link import 
     UserWorkspaceLinkRepository,
 )
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.infra.generic_full_archiver import generic_full_archiver
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.secure import secure_class
@@ -48,9 +49,16 @@ class CloseAccountUseCase(
                 uow,
                 UserWorkspaceLink,
                 user_workspace_link.ref_id,
+                ArchivalReason.USER,
             )
 
             await generic_full_archiver(
-                context.domain_context, uow, Workspace, workspace.ref_id
+                context.domain_context,
+                uow,
+                Workspace,
+                workspace.ref_id,
+                ArchivalReason.USER,
             )
-            await generic_full_archiver(context.domain_context, uow, User, user.ref_id)
+            await generic_full_archiver(
+                context.domain_context, uow, User, user.ref_id, ArchivalReason.USER
+            )

@@ -16,8 +16,11 @@ from jupiter.core.domain.concept.schedule.schedule_stream_color import (
 from jupiter.core.domain.concept.schedule.schedule_stream_name import ScheduleStreamName
 from jupiter.core.domain.concept.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.concept.vacations.vacation_name import VacationName
+from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.entity_icon import EntityIcon
+from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.repository import Repository
 from jupiter.core.framework.value import CompositeValue, value
 
@@ -59,11 +62,22 @@ class InboxTaskSummary(CompositeValue):
 
 
 @value
+class JournalSummary(CompositeValue):
+    """Summary information about a journal."""
+
+    ref_id: EntityId
+    name: EntityName
+
+
+@value
 class HabitSummary(CompositeValue):
     """Summary information about a habit."""
 
     ref_id: EntityId
     name: HabitName
+    is_key: bool
+    period: RecurringTaskPeriod
+    project_ref_id: EntityId
 
 
 @value
@@ -81,6 +95,7 @@ class BigPlanSummary(CompositeValue):
     ref_id: EntityId
     name: BigPlanName
     project_ref_id: EntityId
+    is_key: bool
 
 
 @value
@@ -98,6 +113,7 @@ class MetricSummary(CompositeValue):
 
     ref_id: EntityId
     name: MetricName
+    is_key: bool
     icon: EntityIcon | None
 
 
@@ -143,6 +159,16 @@ class FastInfoRepository(Repository, abc.ABC):
         allow_archived: bool,
     ) -> list[InboxTaskSummary]:
         """Find all summaries about inbox tasks."""
+
+    @abc.abstractmethod
+    async def find_all_journal_summaries(
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool,
+        filter_start_date: ADate,
+        filter_end_date: ADate,
+    ) -> list[JournalSummary]:
+        """Find all summaries about journals."""
 
     @abc.abstractmethod
     async def find_all_habit_summaries(

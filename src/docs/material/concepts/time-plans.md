@@ -18,6 +18,29 @@ journals are backward looking, time plans are forward looking.
 
 ![Journals](../assets/time-plans-overview.png)
 
+## Auto-Generation
+
+Time plans can be configured to be generated automatically, via the 
+[task gen mechanism](tasks-generation.md). The mechanism is simple: a few
+days in advance of the time period a plan would target, a new plan is
+generated, with an optional planning inbox task attached to it.
+
+There are a number of settings you can control:
+* The periods you are using for planning. A typical scenario would be
+  yearly and weekly plans.
+* Whether to generate time plans and planning tasks, just time plans, or
+  nothing at all.
+* The eisenhower, difficulty, and [project](projects.md) to use for generating tasks.
+* How many days in advance to generate for each period.
+
+Note that time plans are always for a given period, even if you generate
+them in advance. The tasks associated with them have a due date set to the
+start of the planning period, as you should finish your plans before the
+period.
+
+Also note that if there's a time plan you created targeting that same
+period and date combination, a new one _won't_ be generated.
+
 ## Properties
 
 Time plans are written on a particular _day_ for a particular _period interval_.

@@ -60,6 +60,14 @@ export function oneMoreThanPeriod(
   }
 }
 
+export function allHigherPeriods(
+  period: RecurringTaskPeriod,
+): RecurringTaskPeriod[] {
+  return Object.values(RecurringTaskPeriod).filter(
+    (p) => comparePeriods(p, period) >= 0,
+  );
+}
+
 export function comparePeriods(
   period1: RecurringTaskPeriod,
   period2: RecurringTaskPeriod,

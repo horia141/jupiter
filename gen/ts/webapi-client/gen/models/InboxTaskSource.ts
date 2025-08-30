@@ -8,6 +8,7 @@
 export enum InboxTaskSource {
     USER = 'user',
     WORKING_MEM_CLEANUP = 'working-mem-cleanup',
+    TIME_PLAN = 'time-plan',
     HABIT = 'habit',
     CHORE = 'chore',
     BIG_PLAN = 'big-plan',

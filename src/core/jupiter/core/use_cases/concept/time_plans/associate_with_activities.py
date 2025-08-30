@@ -127,7 +127,7 @@ class TimePlanAssociateWithActivitiesUseCase(
                                 time_plan_ref_id=args.ref_id,
                                 big_plan_ref_id=big_plan.ref_id,
                                 kind=TimePlanActivityKind.MAKE_PROGRESS,
-                                feasability=args.feasability,
+                                feasability=TimePlanActivityFeasability.NICE_TO_HAVE,
                             )
                         )
                         new_big_plan_time_plan_activity = await generic_creator(

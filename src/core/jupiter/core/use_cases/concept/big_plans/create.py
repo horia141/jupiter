@@ -3,6 +3,10 @@
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.concept.big_plans.big_plan_name import BigPlanName
+from jupiter.core.domain.concept.big_plans.big_plan_stats import (
+    BigPlanStats,
+    BigPlanStatsRepository,
+)
 from jupiter.core.domain.concept.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.concept.projects.project import Project, ProjectRepository
 from jupiter.core.domain.concept.projects.project_collection import ProjectCollection
@@ -15,6 +19,8 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
     TimePlanActivityKind,
 )
 from jupiter.core.domain.core.adate import ADate
+from jupiter.core.domain.core.difficulty import Difficulty
+from jupiter.core.domain.core.eisen import Eisen
 from jupiter.core.domain.features import (
     FeatureUnavailableError,
     WorkspaceFeature,
@@ -47,6 +53,9 @@ class BigPlanCreateArgs(UseCaseArgsBase):
     time_plan_ref_id: EntityId | None
     time_plan_activity_kind: TimePlanActivityKind | None
     time_plan_activity_feasability: TimePlanActivityFeasability | None
+    is_key: bool
+    eisen: Eisen
+    difficulty: Difficulty
     project_ref_id: EntityId | None
     actionable_date: ADate | None
     due_date: ADate | None
@@ -113,10 +122,21 @@ class BigPlanCreateUseCase(
             project_ref_id=project_ref_id,
             name=args.name,
             status=BigPlanStatus.NOT_STARTED,
+            is_key=args.is_key,
+            eisen=args.eisen,
+            difficulty=args.difficulty,
             actionable_date=args.actionable_date,
             due_date=args.due_date,
         )
         new_big_plan = await generic_creator(uow, progress_reporter, new_big_plan)
+
+        new_big_plan_stats = BigPlanStats.new_stats(
+            context.domain_context,
+            big_plan_ref_id=new_big_plan.ref_id,
+        )
+        new_big_plan_stats = await uow.get(BigPlanStatsRepository).create(
+            new_big_plan_stats
+        )
 
         new_time_plan_activity = None
         if time_plan:

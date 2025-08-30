@@ -21,6 +21,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
 from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
 from jupiter.core.domain.concept.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.concept.persons.person_collection import PersonCollection
 from jupiter.core.domain.concept.projects.errors import ProjectInSignificantUseError
@@ -35,10 +36,12 @@ from jupiter.core.domain.concept.push_integrations.group.push_integration_group 
 from jupiter.core.domain.concept.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.core.domain.concept.time_plans.time_plan_domain import TimePlanDomain
 from jupiter.core.domain.concept.working_mem.working_mem_collection import (
     WorkingMemCollection,
 )
 from jupiter.core.domain.concept.workspaces.workspace import Workspace
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
@@ -58,12 +61,29 @@ class ProjectArchiveService:
         progress_reporter: ProgressReporter,
         workspace: Workspace,
         project: Project,
+        archival_reason: ArchivalReason,
     ) -> None:
         """Archive the project."""
         if project.is_root:
             raise Exception("The root project cannot be archived")
 
         # test it's not the workspace default project nor a metric collection project nor a person catchup one
+        time_plan_domain = await uow.get_for(TimePlanDomain).load_by_parent(
+            workspace.ref_id
+        )
+        if time_plan_domain.planning_task_project_ref_id == project.ref_id:
+            raise ProjectInSignificantUseError(
+                "The project is being used as the time plan default one"
+            )
+
+        journal_collection = await uow.get_for(JournalCollection).load_by_parent(
+            workspace.ref_id
+        )
+        if journal_collection.writing_task_project_ref_id == project.ref_id:
+            raise ProjectInSignificantUseError(
+                "The project is being used as the journal default one"
+            )
+
         metric_collection = await uow.get_for(MetricCollection).load_by_parent(
             workspace.ref_id
         )
@@ -71,6 +91,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the metric collection default one"
             )
+
         person_collection = await uow.get_for(PersonCollection).load_by_parent(
             workspace.ref_id
         )
@@ -82,6 +103,7 @@ class ProjectArchiveService:
         push_integration_group = await uow.get_for(PushIntegrationGroup).load_by_parent(
             workspace.ref_id,
         )
+
         slack_task_collection = await uow.get_for(SlackTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
@@ -89,6 +111,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the Slack task collection default one"
             )
+
         email_task_collection = await uow.get_for(EmailTaskCollection).load_by_parent(
             push_integration_group.ref_id,
         )
@@ -96,6 +119,7 @@ class ProjectArchiveService:
             raise ProjectInSignificantUseError(
                 "The project is being used as the email task collection default one"
             )
+
         working_mem_collection = await uow.get_for(WorkingMemCollection).load_by_parent(
             workspace.ref_id
         )
@@ -115,7 +139,9 @@ class ProjectArchiveService:
         )
         inbox_task_archive_service = InboxTaskArchiveService()
         for it in inbox_tasks:
-            await inbox_task_archive_service.do_it(ctx, uow, progress_reporter, it)
+            await inbox_task_archive_service.do_it(
+                ctx, uow, progress_reporter, it, archival_reason
+            )
 
         # archive chores
         chore_collection = await uow.get_for(ChoreCollection).load_by_parent(
@@ -128,7 +154,9 @@ class ProjectArchiveService:
         )
         chore_archive_service = ChoreArchiveService()
         for chore in chores:
-            await chore_archive_service.do_it(ctx, uow, progress_reporter, chore)
+            await chore_archive_service.do_it(
+                ctx, uow, progress_reporter, chore, archival_reason
+            )
 
         # archive habits
         habit_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -141,7 +169,9 @@ class ProjectArchiveService:
         )
         habit_archive_service = HabitArchiveService()
         for habit in habits:
-            await habit_archive_service.do_it(ctx, uow, progress_reporter, habit)
+            await habit_archive_service.do_it(
+                ctx, uow, progress_reporter, habit, archival_reason
+            )
 
         # archive big plans
         big_plan_collection = await uow.get_for(HabitCollection).load_by_parent(
@@ -154,12 +184,14 @@ class ProjectArchiveService:
         )
         big_plan_archive_service = BigPlanArchiveService()
         for big_plan in big_plans:
-            await big_plan_archive_service.do_it(ctx, uow, progress_reporter, big_plan)
+            await big_plan_archive_service.do_it(
+                ctx, uow, progress_reporter, big_plan, archival_reason
+            )
 
         # archive note
         note_archive_service = NoteArchiveService()
         await note_archive_service.archive_for_source(
-            ctx, uow, NoteDomain.PROJECT, project.ref_id
+            ctx, uow, NoteDomain.PROJECT, project.ref_id, archival_reason
         )
 
         # archive child projects
@@ -172,7 +204,9 @@ class ProjectArchiveService:
             parent_project_ref_id=[project.ref_id],
         )
         for child_project in child_projects:
-            await self.do_it(ctx, uow, progress_reporter, workspace, child_project)
+            await self.do_it(
+                ctx, uow, progress_reporter, workspace, child_project, archival_reason
+            )
 
         # remove from parent project list
         parent_project = await uow.get_for(Project).load_by_id(
@@ -182,6 +216,6 @@ class ProjectArchiveService:
         await uow.get_for(Project).save(parent_project)
 
         # archive project
-        project = project.mark_archived(ctx)
+        project = project.mark_archived(ctx, archival_reason)
         await uow.get_for(Project).save(project)
         await progress_reporter.mark_updated(project)

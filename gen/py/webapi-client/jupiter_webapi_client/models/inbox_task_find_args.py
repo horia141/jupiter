@@ -19,6 +19,7 @@ class InboxTaskFindArgs:
         include_notes (bool):
         include_time_event_blocks (bool):
         filter_just_workable (Union[None, Unset, bool]):
+        filter_just_user (Union[None, Unset, bool]):
         filter_just_generated (Union[None, Unset, bool]):
         filter_ref_ids (Union[None, Unset, list[str]]):
         filter_project_ref_ids (Union[None, Unset, list[str]]):
@@ -30,6 +31,7 @@ class InboxTaskFindArgs:
     include_notes: bool
     include_time_event_blocks: bool
     filter_just_workable: Union[None, Unset, bool] = UNSET
+    filter_just_user: Union[None, Unset, bool] = UNSET
     filter_just_generated: Union[None, Unset, bool] = UNSET
     filter_ref_ids: Union[None, Unset, list[str]] = UNSET
     filter_project_ref_ids: Union[None, Unset, list[str]] = UNSET
@@ -49,6 +51,12 @@ class InboxTaskFindArgs:
             filter_just_workable = UNSET
         else:
             filter_just_workable = self.filter_just_workable
+
+        filter_just_user: Union[None, Unset, bool]
+        if isinstance(self.filter_just_user, Unset):
+            filter_just_user = UNSET
+        else:
+            filter_just_user = self.filter_just_user
 
         filter_just_generated: Union[None, Unset, bool]
         if isinstance(self.filter_just_generated, Unset):
@@ -106,6 +114,8 @@ class InboxTaskFindArgs:
         )
         if filter_just_workable is not UNSET:
             field_dict["filter_just_workable"] = filter_just_workable
+        if filter_just_user is not UNSET:
+            field_dict["filter_just_user"] = filter_just_user
         if filter_just_generated is not UNSET:
             field_dict["filter_just_generated"] = filter_just_generated
         if filter_ref_ids is not UNSET:
@@ -136,6 +146,15 @@ class InboxTaskFindArgs:
             return cast(Union[None, Unset, bool], data)
 
         filter_just_workable = _parse_filter_just_workable(d.pop("filter_just_workable", UNSET))
+
+        def _parse_filter_just_user(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        filter_just_user = _parse_filter_just_user(d.pop("filter_just_user", UNSET))
 
         def _parse_filter_just_generated(data: object) -> Union[None, Unset, bool]:
             if data is None:
@@ -224,6 +243,7 @@ class InboxTaskFindArgs:
             include_notes=include_notes,
             include_time_event_blocks=include_time_event_blocks,
             filter_just_workable=filter_just_workable,
+            filter_just_user=filter_just_user,
             filter_just_generated=filter_just_generated,
             filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids,

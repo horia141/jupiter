@@ -30,8 +30,8 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventSourceLink } from "~/components/time-event-source-link";
+import { SectionCard } from "~/components/infra/section-card";
+import { TimeEventSourceLink } from "~/components/domain/application/calendar/time-event-source-link";
 import { birthdayTimeEventName } from "~/logic/domain/time-event";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -127,6 +127,7 @@ export default function TimeEventFullDaysBlockViewOne() {
   return (
     <LeafPanel
       key={`time-event-full-days-block-${loaderData.fullDaysBlock.ref_id}`}
+      fakeKey={`time-event-full-days-block-${loaderData.fullDaysBlock.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityNotEditable={!corePropertyEditable}
@@ -134,7 +135,7 @@ export default function TimeEventFullDaysBlockViewOne() {
       returnLocation={`/app/workspace/calendar?${query}`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-event-full-days-block-properties"
         title="Properties"
         actions={
@@ -156,84 +157,80 @@ export default function TimeEventFullDaysBlockViewOne() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="name"
-                name="name"
-                readOnly={true}
-                defaultValue={name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            <TimeEventSourceLink timeEvent={loaderData.fullDaysBlock} />
-          </Box>
-
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.25rem" }}>
           <FormControl fullWidth>
-            <InputLabel id="startDate" shrink margin="dense">
-              Start Date
-            </InputLabel>
+            <InputLabel id="name">Name</InputLabel>
             <OutlinedInput
-              type="date"
-              notched
-              label="startDate"
-              name="startDate"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.fullDaysBlock.start_date}
+              label="name"
+              name="name"
+              readOnly={true}
+              defaultValue={name}
             />
-
-            <FieldError actionResult={actionData} fieldName="/start_date" />
+            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
 
-          <Stack spacing={2} direction="row">
-            <ButtonGroup variant="outlined" disabled={!corePropertyEditable}>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationDays === 1 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(1)}
-              >
-                1D
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationDays === 3 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(3)}
-              >
-                3d
-              </Button>
-              <Button
-                disabled={!inputsEnabled}
-                variant={durationDays === 7 ? "contained" : "outlined"}
-                onClick={() => setDurationDays(7)}
-              >
-                7d
-              </Button>
-            </ButtonGroup>
+          <TimeEventSourceLink timeEvent={loaderData.fullDaysBlock} />
+        </Box>
 
-            <FormControl fullWidth>
-              <InputLabel id="durationDays" shrink margin="dense">
-                Duration (Days)
-              </InputLabel>
-              <OutlinedInput
-                type="number"
-                label="Duration (Days)"
-                name="durationDays"
-                readOnly={!inputsEnabled || !corePropertyEditable}
-                value={durationDays}
-                onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
-              />
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink margin="dense">
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            name="startDate"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            disabled={!inputsEnabled || !corePropertyEditable}
+            defaultValue={loaderData.fullDaysBlock.start_date}
+          />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/duration_days"
-              />
-            </FormControl>
-          </Stack>
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
+
+        <Stack spacing={2} direction="row">
+          <ButtonGroup variant="outlined" disabled={!corePropertyEditable}>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationDays === 1 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(1)}
+            >
+              1D
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationDays === 3 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(3)}
+            >
+              3d
+            </Button>
+            <Button
+              disabled={!inputsEnabled}
+              variant={durationDays === 7 ? "contained" : "outlined"}
+              onClick={() => setDurationDays(7)}
+            >
+              7d
+            </Button>
+          </ButtonGroup>
+
+          <FormControl fullWidth>
+            <InputLabel id="durationDays" shrink margin="dense">
+              Duration (Days)
+            </InputLabel>
+            <OutlinedInput
+              type="number"
+              label="Duration (Days)"
+              name="durationDays"
+              readOnly={!inputsEnabled || !corePropertyEditable}
+              value={durationDays}
+              onChange={(e) => setDurationDays(parseInt(e.target.value, 10))}
+            />
+
+            <FieldError actionResult={actionData} fieldName="/duration_days" />
+          </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
     </LeafPanel>
   );
 }

@@ -27,11 +27,11 @@ import {
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { CheckboxAsString, parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { BigPlanStack } from "~/components/big-plan-stack";
-import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
+import { BigPlanStack } from "~/components/domain/concept/big-plan/big-plan-stack";
+import { InboxTaskPropertiesEditor } from "~/components/domain/concept/inbox-task/inbox-task-properties-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -41,10 +41,10 @@ import {
   NavSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
+import { SectionCard } from "~/components/infra/section-card";
+import { TimeEventInDayBlockStack } from "~/components/domain/application/calendar/time-event-in-day-block-stack";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
@@ -72,6 +72,7 @@ const UpdateFormTargetInboxTaskSchema = {
   targetInboxTaskName: z.string(),
   targetInboxTaskProject: z.string().optional(),
   targetInboxTaskBigPlan: z.string().optional(),
+  targetInboxTaskIsKey: CheckboxAsString,
   targetInboxTaskStatus: z.nativeEnum(InboxTaskStatus),
   targetInboxTaskEisen: z.nativeEnum(Eisen),
   targetInboxTaskDifficulty: z.nativeEnum(Difficulty),
@@ -275,6 +276,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
                 ? form.targetInboxTaskBigPlan
                 : undefined,
           },
+          is_key: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.targetInboxTaskIsKey,
+              }
+            : { should_change: false },
           eisen: corePropertyEditable
             ? {
                 should_change: true,
@@ -384,6 +391,7 @@ export default function TimePlanActivity() {
   return (
     <LeafPanel
       key={`time-plan-${id}/activity-${activityId}`}
+      fakeKey={`time-plan-${id}/activity-${activityId}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.timePlanActivity.archived}
@@ -391,7 +399,7 @@ export default function TimePlanActivity() {
       initialExpansionState={LeafPanelExpansionState.MEDIUM}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-plan-activity-properties"
         title="Properties"
         actions={
@@ -434,7 +442,7 @@ export default function TimePlanActivity() {
             <FieldError actionResult={actionData} fieldName="/feasability" />
           </FormControl>
         </Stack>
-      </SectionCardNew>
+      </SectionCard>
 
       {loaderData.targetInboxTask && (
         <>
@@ -447,7 +455,9 @@ export default function TimePlanActivity() {
             rootProject={loaderData.rootProject}
             allProjects={loaderData.allProjects}
             allBigPlans={loaderData.allBigPlans}
-            inputsEnabled={inputsEnabled}
+            inputsEnabled={
+              inputsEnabled && !loaderData.targetInboxTask.archived
+            }
             inboxTask={loaderData.targetInboxTask}
             inboxTaskInfo={loaderData.targetInboxTaskInfo!}
             actionData={actionData}
@@ -473,7 +483,7 @@ export default function TimePlanActivity() {
         WorkspaceFeature.BIG_PLANS,
       ) &&
         loaderData.targetBigPlan && (
-          <SectionCardNew
+          <SectionCard
             id="target"
             title="Big Plan"
             actions={
@@ -502,8 +512,11 @@ export default function TimePlanActivity() {
             <BigPlanStack
               topLevelInfo={topLevelInfo}
               showOptions={{
+                showDonePct: true,
                 showStatus: true,
-                showParent: true,
+                showProject: true,
+                showEisen: true,
+                showDifficulty: true,
                 showActionableDate: true,
                 showDueDate: true,
                 showHandleMarkDone: false,
@@ -511,7 +524,7 @@ export default function TimePlanActivity() {
               }}
               bigPlans={[loaderData.targetBigPlan]}
             />
-          </SectionCardNew>
+          </SectionCard>
         )}
     </LeafPanel>
   );

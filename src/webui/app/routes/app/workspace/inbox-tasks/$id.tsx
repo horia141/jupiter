@@ -13,7 +13,6 @@ import {
   TimePlanActivityTarget,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import { Button, ButtonGroup, Card, CardActions } from "@mui/material";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
@@ -25,17 +24,17 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { useContext } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { CheckboxAsString, parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { InboxTaskPropertiesEditor } from "~/components/entities/inbox-task-properties-editor";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { InboxTaskPropertiesEditor } from "~/components/domain/concept/inbox-task/inbox-task-properties-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { TimeEventInDayBlockStack } from "~/components/time-event-in-day-block-stack";
-import { TimePlanActivityList } from "~/components/time-plan-activity-list";
+import { SectionCard } from "~/components/infra/section-card";
+import { TimeEventInDayBlockStack } from "~/components/domain/application/calendar/time-event-in-day-block-stack";
+import { TimePlanActivityList } from "~/components/domain/concept/time-plan/time-plan-activity-list";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { isInboxTaskCoreFieldEditable } from "~/logic/domain/inbox-task";
@@ -49,6 +48,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import {
+  SectionActions,
+  ActionSingle,
+  NavSingle,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -58,6 +62,7 @@ const CommonParamsSchema = {
   source: z.nativeEnum(InboxTaskSource),
   name: z.string(),
   status: z.nativeEnum(InboxTaskStatus),
+  isKey: CheckboxAsString,
   project: z.string().optional(),
   bigPlan: z.string().optional(),
   eisen: z.nativeEnum(Eisen),
@@ -223,6 +228,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
                 ? form.bigPlan
                 : undefined,
           },
+          is_key: corePropertyEditable
+            ? {
+                should_change: true,
+                value: form.isKey,
+              }
+            : { should_change: false },
           eisen: corePropertyEditable
             ? {
                 should_change: true,
@@ -357,6 +368,7 @@ export default function InboxTask() {
   return (
     <LeafPanel
       key={`inbox-task-${inboxTask.ref_id}`}
+      fakeKey={`inbox-task-${inboxTask.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={inboxTask.archived}
@@ -376,23 +388,24 @@ export default function InboxTask() {
         actionData={actionData}
       />
 
-      <Card>
-        {!loaderData.info.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="inbox-task-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.info.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.info.note && (
           <>
             <EntityNoteEditor
@@ -401,7 +414,7 @@ export default function InboxTask() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
@@ -421,9 +434,23 @@ export default function InboxTask() {
         WorkspaceFeature.TIME_PLANS,
       ) &&
         timePlanActivities && (
-          <SectionCardNew
-            id="inbox-task-time-plan-activities"
-            title="Time Plan Activities"
+          <SectionCard
+            id="inbox-task-time-plans"
+            title="Time Plans"
+            actions={
+              <SectionActions
+                id="inbox-task-time-plans"
+                topLevelInfo={topLevelInfo}
+                inputsEnabled={inputsEnabled}
+                actions={[
+                  NavSingle({
+                    text: "Add",
+                    highlight: false,
+                    link: `/app/workspace/time-plans/add-inbox-task-to-plans?inboxTaskRefId=${loaderData.info.inbox_task.ref_id}`,
+                  }),
+                ]}
+              />
+            }
           >
             <TimePlanActivityList
               topLevelInfo={topLevelInfo}
@@ -434,8 +461,9 @@ export default function InboxTask() {
               activityDoneness={{}}
               timeEventsByRefId={timeEventsByRefId}
               fullInfo={false}
+              showTimePlanName={true}
             />
-          </SectionCardNew>
+          </SectionCard>
         )}
     </LeafPanel>
   );

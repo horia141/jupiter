@@ -5,6 +5,9 @@ from jupiter.core.domain.concept.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
 )
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import (
+    BigPlanMilestoneAlreadyExistsForDateError,
+)
 from jupiter.core.domain.concept.journals.journal import (
     JournalExistsForDatePeriodCombinationError,
 )
@@ -237,11 +240,24 @@ class TimePlanExistsForDatePeriodCombinationHandler(
         )
 
 
+class BigPlanMilestoneAlreadyExistsForDateHandler(
+    WebExceptionHandler[BigPlanMilestoneAlreadyExistsForDateError]
+):
+    """Handle big plan milestone already exists for date errors."""
+
+    def handle(
+        self, app: WebServiceApp, exception: BigPlanMilestoneAlreadyExistsForDateError
+    ) -> JSONResponse:
+        """Handle big plan milestone already exists for date errors."""
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content="Big plan milestone already exists for this date",
+        )
+
+
 class JournalExistsForDatePeriodCombinationHandler(
     WebExceptionHandler[JournalExistsForDatePeriodCombinationError]
 ):
-    """Handle journal exists for date period combination errors."""
-
     def handle(
         self, app: WebServiceApp, exception: JournalExistsForDatePeriodCombinationError
     ) -> JSONResponse:

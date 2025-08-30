@@ -1,24 +1,23 @@
-import { type EmailTask, WorkspaceFeature } from "@jupiter/webapi-client";
-import { Button } from "@mui/material";
+import { type EmailTask } from "@jupiter/webapi-client";
+import TuneIcon from "@mui/icons-material/Tune";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, Outlet } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { ADateTag } from "~/components/adate-tag";
-import { DifficultyTag } from "~/components/difficulty-tag";
-import { EisenTag } from "~/components/eisen-tag";
-import { EntityNameComponent } from "~/components/entity-name";
+import { ADateTag } from "~/components/domain/core/adate-tag";
+import { DifficultyTag } from "~/components/domain/core/difficulty-tag";
+import { EisenTag } from "~/components/domain/core/eisen-tag";
+import { EntityNameComponent } from "~/components/infra/entity-name";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { emailTaskNiceName } from "~/logic/domain/email-task";
-import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -26,6 +25,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { NavSingle, SectionActions } from "~/components/infra/section-actions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -55,23 +55,21 @@ export default function EmailTasks() {
   return (
     <TrunkPanel
       key={"email-tasks"}
-      extraControls={[
-        <>
-          {isWorkspaceFeatureAvailable(
-            topLevelInfo.workspace,
-            WorkspaceFeature.PROJECTS,
-          ) && (
-            <Button
-              variant="contained"
-              to="/app/workspace/push-integrations/email-tasks/settings"
-              component={Link}
-            >
-              Setings
-            </Button>
-          )}
-        </>,
-      ]}
       returnLocation="/app/workspace"
+      actions={
+        <SectionActions
+          id="email-tasks-actions"
+          topLevelInfo={topLevelInfo}
+          inputsEnabled={true}
+          actions={[
+            NavSingle({
+              text: "Settings",
+              icon: <TuneIcon />,
+              link: "/app/workspace/push-integrations/email-tasks/settings",
+            }),
+          ]}
+        />
+      }
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>

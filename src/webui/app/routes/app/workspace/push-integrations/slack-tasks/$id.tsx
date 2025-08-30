@@ -6,33 +6,26 @@ import {
   InboxTaskStatus,
 } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
   Select,
-  Stack,
 } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { DifficultySelect } from "~/components/difficulty-select";
-import { EisenhowerSelect } from "~/components/eisenhower-select";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { DifficultySelect } from "~/components/domain/core/difficulty-select";
+import { EisenhowerSelect } from "~/components/domain/core/eisenhower-select";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -44,6 +37,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -203,8 +201,6 @@ export default function SlackTask() {
 
   const cardActionFetcher = useFetcher();
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   function handleCardMarkDone(it: InboxTask) {
     cardActionFetcher.submit(
       {
@@ -233,235 +229,227 @@ export default function SlackTask() {
 
   return (
     <LeafPanel
-      key={`slack-tasks/${loaderData.slackTask.ref_id}`}
+      key={`slack-task-${loaderData.slackTask.ref_id}`}
+      fakeKey={`slack-tasks/${loaderData.slackTask.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.slackTask.archived}
       returnLocation="/app/workspace/push-integrations/slack-tasks"
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="user">User</InputLabel>
-              <OutlinedInput
-                label="User"
-                name="user"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.user}
-              />
-              <FieldError actionResult={actionData} fieldName="/user" />
-            </FormControl>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={
+          <SectionActions
+            id="slack-task-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="user">User</InputLabel>
+          <OutlinedInput
+            label="User"
+            name="user"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.slackTask.user}
+          />
+          <FieldError actionResult={actionData} fieldName="/user" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="channel">Channel</InputLabel>
-              <OutlinedInput
-                label="Channel"
-                name="channel"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.channel}
-              />
-              <FieldError actionResult={actionData} fieldName="/channel" />
-            </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="channel">Channel</InputLabel>
+          <OutlinedInput
+            label="Channel"
+            name="channel"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.slackTask.channel}
+          />
+          <FieldError actionResult={actionData} fieldName="/channel" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="message">Message</InputLabel>
-              <OutlinedInput
-                label="Message"
-                name="message"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.message}
-              />
-              <FieldError actionResult={actionData} fieldName="/message" />
-            </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="message">Message</InputLabel>
+          <OutlinedInput
+            label="Message"
+            name="message"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.slackTask.message}
+          />
+          <FieldError actionResult={actionData} fieldName="/message" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="generationName">Generation Name</InputLabel>
-              <OutlinedInput
-                label="Generation Name"
-                name="generationName"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.slackTask.generation_extra_info?.name}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_name"
-              />
-            </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="generationName">Generation Name</InputLabel>
+          <OutlinedInput
+            label="Generation Name"
+            name="generationName"
+            readOnly={!inputsEnabled}
+            defaultValue={loaderData.slackTask.generation_extra_info?.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/generation_name" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="generationStatus">Generation Status</InputLabel>
-              <Select
-                labelId="generationStatus"
-                name="generationStatus"
-                readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.status ||
-                  InboxTaskStatus.NOT_STARTED
-                }
-                label="Status"
-              >
-                {Object.values(InboxTaskStatus)
-                  .filter((s) => {
-                    return s !== InboxTaskStatus.NOT_STARTED_GEN;
-                  })
-                  .map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {inboxTaskStatusName(s)}
-                    </MenuItem>
-                  ))}
-              </Select>
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_status"
-              />
-            </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="generationStatus">Generation Status</InputLabel>
+          <Select
+            labelId="generationStatus"
+            name="generationStatus"
+            readOnly={!inputsEnabled}
+            defaultValue={
+              loaderData.slackTask.generation_extra_info?.status ||
+              InboxTaskStatus.NOT_STARTED
+            }
+            label="Status"
+          >
+            {Object.values(InboxTaskStatus)
+              .filter((s) => {
+                return s !== InboxTaskStatus.NOT_STARTED_GEN;
+              })
+              .map((s) => (
+                <MenuItem key={s} value={s}>
+                  {inboxTaskStatusName(s)}
+                </MenuItem>
+              ))}
+          </Select>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_status"
+          />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <FormLabel id="generationEisen">Generation Eisenhower</FormLabel>
-              <EisenhowerSelect
-                name="generationEisen"
-                inputsEnabled={inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.eisen ||
-                  Eisen.REGULAR
-                }
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_eisen"
-              />
-            </FormControl>
+        <FormControl fullWidth>
+          <FormLabel id="generationEisen">Generation Eisenhower</FormLabel>
+          <EisenhowerSelect
+            name="generationEisen"
+            inputsEnabled={inputsEnabled}
+            defaultValue={
+              loaderData.slackTask.generation_extra_info?.eisen || Eisen.REGULAR
+            }
+          />
+          <FieldError actionResult={actionData} fieldName="/generation_eisen" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <FormLabel id="generationDifficulty">
-                Generation Difficulty
-              </FormLabel>
-              <DifficultySelect
-                name="generationDifficulty"
-                inputsEnabled={inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.difficulty ||
-                  Difficulty.EASY
-                }
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_difficulty"
-              />
-            </FormControl>
+        <FormControl fullWidth>
+          <FormLabel id="generationDifficulty">Generation Difficulty</FormLabel>
+          <DifficultySelect
+            name="generationDifficulty"
+            inputsEnabled={inputsEnabled}
+            defaultValue={
+              loaderData.slackTask.generation_extra_info?.difficulty ||
+              Difficulty.EASY
+            }
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_difficulty"
+          />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="generationDifficulty">
-                Generation Difficulty
-              </InputLabel>
-              <Select
-                labelId="generationDifficulty"
-                name="generationDifficulty"
-                readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.difficulty ||
-                  "default"
-                }
-                label="Generation Difficulty"
-              >
-                <MenuItem value="default">Default</MenuItem>
-                {Object.values(Difficulty).map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {difficultyName(e)}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_difficulty"
-              />
-            </FormControl>
+        <FormControl fullWidth>
+          <InputLabel id="generationDifficulty">
+            Generation Difficulty
+          </InputLabel>
+          <Select
+            labelId="generationDifficulty"
+            name="generationDifficulty"
+            readOnly={!inputsEnabled}
+            defaultValue={
+              loaderData.slackTask.generation_extra_info?.difficulty ||
+              "default"
+            }
+            label="Generation Difficulty"
+          >
+            <MenuItem value="default">Default</MenuItem>
+            {Object.values(Difficulty).map((e) => (
+              <MenuItem key={e} value={e}>
+                {difficultyName(e)}
+              </MenuItem>
+            ))}
+          </Select>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_difficulty"
+          />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="generationActionableDate" shrink>
-                Generation Actionable From
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="generationActionableDate"
-                readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.actionable_date
-                    ? aDateToDate(
-                        loaderData.slackTask.generation_extra_info
-                          ?.actionable_date,
-                      ).toFormat("yyyy-MM-dd")
-                    : undefined
-                }
-                name="generationActionableDate"
-              />
+        <FormControl fullWidth>
+          <InputLabel id="generationActionableDate" shrink>
+            Generation Actionable From
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="generationActionableDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+            defaultValue={
+              loaderData.slackTask.generation_extra_info?.actionable_date
+                ? aDateToDate(
+                    loaderData.slackTask.generation_extra_info?.actionable_date,
+                  ).toFormat("yyyy-MM-dd")
+                : undefined
+            }
+            name="generationActionableDate"
+          />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_actionable_date"
-              />
-            </FormControl>
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_actionable_date"
+          />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="generationDueDate" shrink>
-                Generation Due At
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="generationDueDate"
-                readOnly={!inputsEnabled}
-                defaultValue={
-                  loaderData.slackTask.generation_extra_info?.due_date
-                    ? aDateToDate(
-                        loaderData.slackTask.generation_extra_info?.due_date,
-                      ).toFormat("yyyy-MM-dd")
-                    : undefined
-                }
-                name="generationDueDate"
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/generation_due_date"
-              />
-            </FormControl>
-          </Stack>
-        </CardContent>
+        <FormControl fullWidth>
+          <InputLabel id="generationDueDate" shrink>
+            Generation Due At
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="generationDueDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+            defaultValue={
+              loaderData.slackTask.generation_extra_info?.due_date
+                ? aDateToDate(
+                    loaderData.slackTask.generation_extra_info?.due_date,
+                  ).toFormat("yyyy-MM-dd")
+                : undefined
+            }
+            name="generationDueDate"
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/generation_due_date"
+          />
+        </FormControl>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      {loaderData.inboxTask && (
-        <InboxTaskStack
-          today={today}
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Inbox Task"
-          inboxTasks={[loaderData.inboxTask]}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+      <SectionCard title="Inbox Task">
+        {loaderData.inboxTask && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            label="Inbox Task"
+            inboxTasks={[loaderData.inboxTask]}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

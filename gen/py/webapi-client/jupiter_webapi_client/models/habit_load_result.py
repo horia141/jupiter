@@ -8,6 +8,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.habit import Habit
+    from ..models.habit_streak_mark import HabitStreakMark
     from ..models.inbox_task import InboxTask
     from ..models.note import Note
     from ..models.project import Project
@@ -26,6 +27,9 @@ class HabitLoadResult:
         inbox_tasks (list['InboxTask']):
         inbox_tasks_total_cnt (int):
         inbox_tasks_page_size (int):
+        streak_marks (list['HabitStreakMark']):
+        streak_mark_earliest_date (str): A date or possibly a datetime for the application.
+        streak_mark_latest_date (str): A date or possibly a datetime for the application.
         note (Union['Note', None, Unset]):
     """
 
@@ -34,6 +38,9 @@ class HabitLoadResult:
     inbox_tasks: list["InboxTask"]
     inbox_tasks_total_cnt: int
     inbox_tasks_page_size: int
+    streak_marks: list["HabitStreakMark"]
+    streak_mark_earliest_date: str
+    streak_mark_latest_date: str
     note: Union["Note", None, Unset] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -53,6 +60,15 @@ class HabitLoadResult:
 
         inbox_tasks_page_size = self.inbox_tasks_page_size
 
+        streak_marks = []
+        for streak_marks_item_data in self.streak_marks:
+            streak_marks_item = streak_marks_item_data.to_dict()
+            streak_marks.append(streak_marks_item)
+
+        streak_mark_earliest_date = self.streak_mark_earliest_date
+
+        streak_mark_latest_date = self.streak_mark_latest_date
+
         note: Union[None, Unset, dict[str, Any]]
         if isinstance(self.note, Unset):
             note = UNSET
@@ -70,6 +86,9 @@ class HabitLoadResult:
                 "inbox_tasks": inbox_tasks,
                 "inbox_tasks_total_cnt": inbox_tasks_total_cnt,
                 "inbox_tasks_page_size": inbox_tasks_page_size,
+                "streak_marks": streak_marks,
+                "streak_mark_earliest_date": streak_mark_earliest_date,
+                "streak_mark_latest_date": streak_mark_latest_date,
             }
         )
         if note is not UNSET:
@@ -80,6 +99,7 @@ class HabitLoadResult:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.habit import Habit
+        from ..models.habit_streak_mark import HabitStreakMark
         from ..models.inbox_task import InboxTask
         from ..models.note import Note
         from ..models.project import Project
@@ -99,6 +119,17 @@ class HabitLoadResult:
         inbox_tasks_total_cnt = d.pop("inbox_tasks_total_cnt")
 
         inbox_tasks_page_size = d.pop("inbox_tasks_page_size")
+
+        streak_marks = []
+        _streak_marks = d.pop("streak_marks")
+        for streak_marks_item_data in _streak_marks:
+            streak_marks_item = HabitStreakMark.from_dict(streak_marks_item_data)
+
+            streak_marks.append(streak_marks_item)
+
+        streak_mark_earliest_date = d.pop("streak_mark_earliest_date")
+
+        streak_mark_latest_date = d.pop("streak_mark_latest_date")
 
         def _parse_note(data: object) -> Union["Note", None, Unset]:
             if data is None:
@@ -123,6 +154,9 @@ class HabitLoadResult:
             inbox_tasks=inbox_tasks,
             inbox_tasks_total_cnt=inbox_tasks_total_cnt,
             inbox_tasks_page_size=inbox_tasks_page_size,
+            streak_marks=streak_marks,
+            streak_mark_earliest_date=streak_mark_earliest_date,
+            streak_mark_latest_date=streak_mark_latest_date,
             note=note,
         )
 

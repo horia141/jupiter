@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jupiter-webapi-client"
-version = "1.1.4"
+version = "1.2.0"
 description = "A client library for accessing Jupiter Webapi"
 authors = []
 readme = "README.md"

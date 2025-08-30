@@ -2,6 +2,7 @@
 
 from jupiter.core.domain.concept.big_plans.big_plan import BigPlan
 from jupiter.core.domain.concept.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.core.domain.concept.big_plans.big_plan_milestone import BigPlanMilestone
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import (
     InboxTask,
     InboxTaskRepository,
@@ -13,6 +14,7 @@ from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskS
 from jupiter.core.domain.concept.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
 from jupiter.core.domain.core.notes.service.note_archive_service import (
     NoteArchiveService,
@@ -39,6 +41,7 @@ class BigPlanArchiveService:
         uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         big_plan: BigPlan,
+        archival_reason: ArchivalReason,
     ) -> BigPlanArchiveServiceResult:
         """Execute the service's action."""
         if big_plan.archived:
@@ -47,6 +50,16 @@ class BigPlanArchiveService:
         big_plan_collection = await uow.get_for(BigPlanCollection).load_by_id(
             big_plan.big_plan_collection.ref_id,
         )
+
+        milestones = await uow.get_for(BigPlanMilestone).find_all_generic(
+            parent_ref_id=big_plan.ref_id,
+            allow_archived=False,
+        )
+
+        for milestone in milestones:
+            milestone = milestone.mark_archived(ctx, archival_reason)
+            await uow.get_for(BigPlanMilestone).save(milestone)
+            await progress_reporter.mark_updated(milestone)
 
         inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
             big_plan_collection.workspace.ref_id,
@@ -67,16 +80,16 @@ class BigPlanArchiveService:
             if inbox_task.archived:
                 continue
             await inbox_task_archive_service.do_it(
-                ctx, uow, progress_reporter, inbox_task
+                ctx, uow, progress_reporter, inbox_task, archival_reason
             )
             archived_inbox_tasks.append(inbox_task)
 
         note_archive_service = NoteArchiveService()
         await note_archive_service.archive_for_source(
-            ctx, uow, NoteDomain.BIG_PLAN, big_plan.ref_id
+            ctx, uow, NoteDomain.BIG_PLAN, big_plan.ref_id, archival_reason
         )
 
-        big_plan = big_plan.mark_archived(ctx)
+        big_plan = big_plan.mark_archived(ctx, archival_reason)
         await uow.get_for(BigPlan).save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 

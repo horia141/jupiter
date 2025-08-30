@@ -7,11 +7,6 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -32,14 +27,20 @@ import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { ActionsPosition, SectionCard } from "~/components/infra/section-card";
 
 const ParamsSchema = z.object({});
 
@@ -47,6 +48,7 @@ const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   period: z.nativeEnum(RecurringTaskPeriod),
+  isKey: CheckboxAsString,
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
   actionableFromDay: z.string().optional(),
@@ -84,6 +86,7 @@ export async function action({ request }: ActionFunctionArgs) {
       name: form.name,
       project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,
+      is_key: form.isKey,
       eisen: form.eisen,
       difficulty: form.difficulty,
       actionable_from_day: form.actionableFromDay
@@ -130,110 +133,122 @@ export default function NewChore() {
 
   return (
     <LeafPanel
-      key={"chores/new"}
+      key="chores/new"
+      fakeKey={"chores/new"}
       returnLocation="/app/workspace/chores"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.rootProject.ref_id}
-                />
-                <FieldError actionResult={actionData} fieldName="/project" />
-              </FormControl>
-            )}
-
-            <RecurringTaskGenParamsBlock
-              inputsEnabled={inputsEnabled}
-              allowSkipRule
-              period={RecurringTaskPeriod.DAILY}
-              eisen={Eisen.REGULAR}
-              difficulty={Difficulty.EASY}
-              actionableFromDay={null}
-              actionableFromMonth={null}
-              dueAtDay={null}
-              dueAtMonth={null}
-              skipRule={null}
-              actionData={actionData}
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Chore"
+        actionsPosition={ActionsPosition.BELOW}
+        actions={
+          <SectionActions
+            id="chore-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "chore-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack direction="row" useFlexGap spacing={1}>
+          <FormControl fullWidth sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
             />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <FormControlLabel
-                control={<Switch name="mustDo" readOnly={!inputsEnabled} />}
-                label="Must Do In Vacation"
-              />
-              <FieldError actionResult={actionData} fieldName="/must_do" />
-            </FormControl>
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={false}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
 
-            <FormControl fullWidth>
-              <InputLabel id="startAtDate" shrink>
-                Start At date [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="startAtDate"
-                name="startAtDate"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/start_at_date"
-              />
-            </FormControl>
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.rootProject.ref_id}
+            />
+            <FieldError actionResult={actionData} fieldName="/project" />
+          </FormControl>
+        )}
 
-            <FormControl fullWidth>
-              <InputLabel id="endAtDate" shrink>
-                End At Date [Optional]
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="endAtDate"
-                name="endAtDate"
-                readOnly={!inputsEnabled}
-              />
-              <FieldError actionResult={actionData} fieldName="/end_at_date" />
-            </FormControl>
-          </Stack>
-        </CardContent>
+        <RecurringTaskGenParamsBlock
+          inputsEnabled={inputsEnabled}
+          allowSkipRule
+          period={RecurringTaskPeriod.DAILY}
+          eisen={Eisen.REGULAR}
+          difficulty={Difficulty.EASY}
+          actionableFromDay={null}
+          actionableFromMonth={null}
+          dueAtDay={null}
+          dueAtMonth={null}
+          skipRule={null}
+          actionData={actionData}
+        />
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="chore-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={<Switch name="mustDo" readOnly={!inputsEnabled} />}
+            label="Must Do In Vacation"
+          />
+          <FieldError actionResult={actionData} fieldName="/must_do" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="startAtDate" shrink>
+            Start At date [Optional]
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startAtDate"
+            name="startAtDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/start_at_date" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="endAtDate" shrink>
+            End At Date [Optional]
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="endAtDate"
+            name="endAtDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/end_at_date" />
+        </FormControl>
+      </SectionCard>
     </LeafPanel>
   );
 }

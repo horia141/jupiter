@@ -1,5 +1,6 @@
 """Tests about time plans."""
 
+import datetime
 import re
 import time
 from collections.abc import Iterator
@@ -124,7 +125,7 @@ def create_time_plan(logged_in_client: AuthenticatedClient):
     def _create_time_plan(day: str, period: RecurringTaskPeriod) -> TimePlan:
         result = time_plan_create_sync(
             client=logged_in_client,
-            body=TimePlanCreateArgs(right_now=day, period=period),
+            body=TimePlanCreateArgs(today=day, period=period),
         )
         if result.status_code != 200:
             raise Exception(result.content)
@@ -182,6 +183,7 @@ def create_inbox_task(logged_in_client: AuthenticatedClient):
             client=logged_in_client,
             body=InboxTaskCreateArgs(
                 name=name,
+                is_key=False,
                 big_plan_ref_id=big_plan_id or UNSET,
                 due_date=due_date or UNSET,
                 eisen=Eisen.REGULAR,
@@ -204,6 +206,9 @@ def create_big_plan(logged_in_client: AuthenticatedClient):
             client=logged_in_client,
             body=BigPlanCreateArgs(
                 name=name,
+                is_key=False,
+                eisen=Eisen.REGULAR,
+                difficulty=Difficulty.EASY,
                 actionable_date=actionable_date or UNSET,
                 due_date=due_date or UNSET,
             ),
@@ -1674,6 +1679,365 @@ def test_time_plan_add_an_inbox_task_to_a_big_plan_updates_all_time_plans(
     expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
 
 
+def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    inbox_task = create_inbox_task("The Inbox Task")
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
+
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+
+def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_no_dates(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    inbox_task = create_inbox_task("The Inbox Task")
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
+
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
+
+
+def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_with_dates(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
+    inbox_task = create_inbox_task("The Inbox Task", due_date="2024-06-18")
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Daily plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
+
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Daily plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-18")
+
+
+def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_big_plan(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_big_plan,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan(
+        "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+    inbox_task = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
+
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
+
+
+def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_big_plan_no_dates(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_big_plan,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan("The Big Plan")
+    inbox_task = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
+
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
+
+
+def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_and_pulls_big_plan_but_overwrites_dates_leave_alone(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_big_plan,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan(
+        "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+    inbox_task = create_inbox_task("The Inbox Task", big_plan_id=big_plan.ref_id)
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator(
+        "button", has_text="Add And Override Dates"
+    ).click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
+
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
+
+
+def test_time_plan_add_an_inbox_task_to_multiple_already_existing_time_plans(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    time_plan1 = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    time_plan2 = create_time_plan("2024-06-25", RecurringTaskPeriod.WEEKLY)
+    inbox_task = create_inbox_task("The Inbox Task")
+
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-25"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task.ref_id}"))
+
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+    expect(page.locator("#inbox-task-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-25"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan1.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
+
+    page.goto(f"/app/workspace/time-plans/{time_plan2.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task")
+
+
+def test_time_plan_add_an_inbox_task_to_an_already_existing_time_plan_with_tasks_that_pull_in_some_more_big_plans(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_big_plan,
+    create_time_plan_activity_from_inbox_task,
+) -> None:
+    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan1 = create_big_plan(
+        "The Big Plan 1", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+    inbox_task1 = create_inbox_task("The Inbox Task 1", big_plan_id=big_plan1.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan1.ref_id)
+    big_plan2 = create_big_plan(
+        "The Big Plan 2", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+    inbox_task3 = create_inbox_task("The Inbox Task 3", big_plan_id=big_plan2.ref_id)
+    create_big_plan(
+        "The Big Plan 3", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+
+    # Add first inbox task
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task1.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task1.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task1.ref_id}"))
+
+    # Add third inbox task
+    page.goto(f"/app/workspace/inbox-tasks/{inbox_task3.ref_id}")
+
+    page.locator("#inbox-task-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-inbox-task-to-plans\?inboxTaskRefId={inbox_task3.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-inbox-task-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/inbox-tasks/{inbox_task3.ref_id}"))
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
+    expect(page.locator("#time-plan-activities")).not_to_contain_text(
+        "The Inbox Task 2"
+    )
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 3")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan 1")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan 2")
+    expect(page.locator("#time-plan-activities")).not_to_contain_text("The Big Plan 3")
+
+
 def test_time_plan_show_activity_doneness(
     page: Page,
     logged_in_client: AuthenticatedClient,
@@ -1814,6 +2178,255 @@ def test_time_plan_activity_archive_big_plan_with_inbox_task(
     expect(page.locator("#time-plan-activities")).not_to_contain_text("The Big Plan")
 
 
+def test_time_plan_periods_settings_standard(page: Page) -> None:
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("a", has_text="Create a quarterly time plan")).to_be_attached()
+    expect(page.locator("a", has_text="Create a weekly time plan")).to_be_attached()
+
+
+def test_time_plan_periods_settings_add_monthly(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Monthly").click()
+    page.locator("button", has_text="None").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("a", has_text="Create a monthly time plan")).to_be_attached()
+    expect(page.locator("a", has_text="Create a quarterly time plan")).to_be_attached()
+    expect(page.locator("a", has_text="Create a weekly time plan")).to_be_attached()
+
+
+def test_time_plan_generate_standard_config_via_gen(page: Page, new_user) -> None:
+    page.goto("/app/workspace/tools/gen")
+
+    page.locator("#generate").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_standard_config_via_save(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_different_config_add_monthly(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Monthly").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Monthly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make monthly plan for")
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_different_config_remove_quarterly(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Quarterly").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).not_to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_no_planning_tasks(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Only Plan").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).not_to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_no_nothing(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="None").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).not_to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_no_nothing_and_regenerate(page: Page) -> None:
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="None").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).not_to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Both Plan And Task").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_does_not_override_existing_time_plans(
+    page: Page, create_time_plan
+) -> None:
+    right_now = datetime.datetime.now(tz=datetime.timezone.utc)
+    _ = create_time_plan(right_now.strftime("%Y-%m-%d"), RecurringTaskPeriod.WEEKLY)
+
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all", has_text="Weekly plan for")).to_contain_text(
+        "User"
+    )
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+    expect(
+        page.locator("#time-plans-all", has_text="Quarterly plan for")
+    ).to_contain_text("Recurring")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_does_not_override_existing_time_plans_with_no_periods(
+    page: Page, create_time_plan
+) -> None:
+    right_now = datetime.datetime.now(tz=datetime.timezone.utc)
+    _ = create_time_plan(right_now.strftime("%Y-%m-%d"), RecurringTaskPeriod.WEEKLY)
+
+    page.goto("/app/workspace/time-plans/settings")
+
+    page.locator("button", has_text="Weekly").click()
+
+    page.locator("#time-plans-settings-save").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    expect(page.locator("#time-plans-all")).to_contain_text("Weekly plan for")
+    expect(page.locator("#time-plans-all", has_text="Weekly plan for")).to_contain_text(
+        "User"
+    )
+    expect(page.locator("#time-plans-all")).to_contain_text("Quarterly plan for")
+    expect(
+        page.locator("#time-plans-all", has_text="Quarterly plan for")
+    ).to_contain_text("Recurring")
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    expect(page.locator("html")).not_to_contain_text("Make weekly plan for")
+    expect(page.locator("html")).to_contain_text("Make quarterly plan for")
+
+
+def test_time_plan_generate_time_plan_is_not_editable(page: Page) -> None:
+    page.goto("/app/workspace/tools/gen")
+
+    page.locator("#generate").click()
+
+    page.goto("/app/workspace/time-plans")
+
+    page.locator("#time-plans-all", has_text="Weekly plan for").click()
+
+    expect(page.locator("input[name='rightNow']")).to_have_attribute("readonly", "")
+    expect(page.locator('button[id="period-daily"]')).to_be_disabled()
+    expect(page.locator('button[id="period-weekly"]')).to_be_disabled()
+    expect(page.locator('button[id="period-monthly"]')).to_be_disabled()
+    expect(page.locator('button[id="period-quarterly"]')).to_be_disabled()
+    expect(page.locator('button[id="period-yearly"]')).to_be_disabled()
+    expect(page.locator("#time-plan-change-time-config")).to_be_disabled()
+
+
+def test_time_plan_generate_planning_task_links_to_time_plan(page: Page) -> None:
+    page.goto("/app/workspace/tools/gen")
+
+    page.locator("#generate").click()
+
+    page.goto("/app/workspace/inbox-tasks")
+
+    page.locator("html", has_text="Make weekly plan for").click()
+
+    page.wait_for_url(re.compile(r"/app/workspace/inbox-tasks/\d+"))
+
+    page.locator("#leaf-panel").locator("a", has_text="Time Plan").click()
+
+    page.wait_for_url(re.compile(r"/app/workspace/time-plans/\d+"))
+
+    expect(page.locator('button[aria-pressed="true"]')).to_have_text("Weekly")
+
+
 def _mark_inbox_task_done(
     logged_in_client: AuthenticatedClient, inbox_task: InboxTask
 ) -> None:
@@ -1911,6 +2524,343 @@ def _clear_big_plan_dates(
             project_ref_id=BigPlanUpdateArgsProjectRefId(should_change=False),
         ),
     )
+
+
+def test_time_plan_add_big_plan_to_an_already_existing_time_plan(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan("The Big Plan")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+
+def test_time_plan_add_big_plan_to_an_already_existing_time_plan_no_dates(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan("The Big Plan")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
+
+
+def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_dates(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    create_time_plan("2024-06-18", RecurringTaskPeriod.DAILY)
+    big_plan = create_big_plan(
+        "The Big Plan", actionable_date="2024-06-18", due_date="2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Daily plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Daily plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-18")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-18")
+
+
+def test_time_plan_add_big_plan_to_an_already_existing_time_plan_and_override_dates(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan(
+        "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator(
+        "button", has_text="Add And Override Dates"
+    ).click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
+
+
+def test_time_plan_add_big_plan_to_multiple_already_existing_time_plans(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    time_plan1 = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    time_plan2 = create_time_plan("2024-06-25", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan("The Big Plan")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-25"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-25"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan1.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+
+    page.goto(f"/app/workspace/time-plans/{time_plan2.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+
+
+def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_tasks(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan(
+        "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+    create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 2")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
+
+
+def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_tasks_no_dates(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan("The Big Plan")
+    create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator("button", has_text="Add").click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 2")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-17")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-23")
+
+
+def test_time_plan_add_big_plan_to_an_already_existing_time_plan_with_inbox_tasks_but_overwrites_dates_leave_alone(
+    page: Page,
+    logged_in_client: AuthenticatedClient,
+    create_time_plan,
+    create_inbox_task,
+    create_big_plan,
+    create_time_plan_activity_from_big_plan,
+) -> None:
+    time_plan = create_time_plan("2024-06-18", RecurringTaskPeriod.WEEKLY)
+    big_plan = create_big_plan(
+        "The Big Plan", actionable_date="2024-06-10", due_date="2024-06-19"
+    )
+    create_inbox_task("The Inbox Task 1", big_plan_id=big_plan.ref_id)
+    create_inbox_task("The Inbox Task 2", big_plan_id=big_plan.ref_id)
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+
+    page.locator("#big-plan-time-plans").locator("a", has_text="Add").click()
+
+    page.wait_for_url(
+        re.compile(
+            rf"/app/workspace/time-plans/add-big-plan-to-plans\?bigPlanRefId={big_plan.ref_id}"
+        )
+    )
+
+    page.locator("#all-time-plans").locator(
+        "p", has_text="Weekly plan for 2024-06-18"
+    ).click()
+
+    page.locator("#add-big-plan-to-plans").locator(
+        "button", has_text="Add And Override Dates"
+    ).click()
+
+    page.wait_for_url(re.compile(rf"/app/workspace/big-plans/{big_plan.ref_id}"))
+
+    expect(page.locator("#big-plan-time-plans").locator("p")).to_contain_text(
+        "Weekly plan for 2024-06-18"
+    )
+
+    page.goto(f"/app/workspace/time-plans/{time_plan.ref_id}")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Big Plan")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 1")
+    expect(page.locator("#time-plan-activities")).to_contain_text("The Inbox Task 2")
+
+    page.goto(f"/app/workspace/big-plans/{big_plan.ref_id}")
+    expect(page.locator("input[name='actionableDate']")).to_have_value("2024-06-10")
+    expect(page.locator("input[name='dueDate']")).to_have_value("2024-06-19")
 
 
 # ideas

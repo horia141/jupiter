@@ -173,21 +173,23 @@ class SqliteScoreStatsRepository(
             )
         return record
 
-    async def remove(self, record: ScoreStats) -> None:
+    async def remove(
+        self, key: tuple[EntityId, RecurringTaskPeriod | None, str]
+    ) -> None:
         """Remove a score stats."""
         result = await self._connection.execute(
             delete(self._score_stats_table)
-            .where(self._score_stats_table.c.score_log_ref_id == record.key[0].as_int())
+            .where(self._score_stats_table.c.score_log_ref_id == key[0].as_int())
             .where(
-                self._score_stats_table.c.period == record.key[1].value
-                if record.key[1] is not None
+                self._score_stats_table.c.period == key[1].value
+                if key[1] is not None
                 else self._score_stats_table.c.period.is_(None)
             )
-            .where(self._score_stats_table.c.timeline == record.key[2])
+            .where(self._score_stats_table.c.timeline == key[2])
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(
-                f"The score stats {record.key[0]}:{record.key[1]}:{record.key[2]} does not exist"
+                f"The score stats {key[0]}:{key[1]}:{key[2]} does not exist"
             )
 
     async def load_by_key_optional(
@@ -210,11 +212,15 @@ class SqliteScoreStatsRepository(
             return None
         return self._row_to_entity(result)
 
-    async def find_all(self, prefix: EntityId) -> list[ScoreStats]:
+    async def find_all(self, prefix: EntityId | list[EntityId]) -> list[ScoreStats]:
         """Find all score stats for a score log."""
         result = await self._connection.execute(
             select(self._score_stats_table).where(
-                self._score_stats_table.c.score_log_ref_id == prefix.as_int()
+                self._score_stats_table.c.score_log_ref_id.in_(
+                    [prefix.as_int()]
+                    if isinstance(prefix, EntityId)
+                    else [p.as_int() for p in prefix]
+                )
             )
         )
         return [self._row_to_entity(row) for row in result]
@@ -343,25 +349,24 @@ class SqliteScorePeriodBestRepository(
             )
         return record
 
-    async def remove(self, record: ScorePeriodBest) -> None:
+    async def remove(
+        self, key: tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
+    ) -> None:
         """Remove a score period best."""
         result = await self._connection.execute(
             delete(self._score_period_best_table)
+            .where(self._score_period_best_table.c.score_log_ref_id == key[0].as_int())
             .where(
-                self._score_period_best_table.c.score_log_ref_id
-                == record.key[0].as_int()
-            )
-            .where(
-                self._score_period_best_table.c.period == record.key[1].value
-                if record.key[1] is not None
+                self._score_period_best_table.c.period == key[1].value
+                if key[1] is not None
                 else self._score_period_best_table.c.period.is_(None)
             )
-            .where(self._score_period_best_table.c.timeline == record.key[2])
-            .where(self._score_period_best_table.c.sub_period == record.key[3].value)
+            .where(self._score_period_best_table.c.timeline == key[2])
+            .where(self._score_period_best_table.c.sub_period == key[3].value)
         )
         if result.rowcount == 0:
             raise RecordNotFoundError(
-                f"The score period best {record.key[0]}:{record.key[1]}:{record.key[2]}:{record.key[3]} does not exist"
+                f"The score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
             )
 
     async def load_by_key_optional(
@@ -387,11 +392,17 @@ class SqliteScorePeriodBestRepository(
             return None
         return self._row_to_entity(result)
 
-    async def find_all(self, prefix: EntityId) -> list[ScorePeriodBest]:
+    async def find_all(
+        self, prefix: EntityId | list[EntityId]
+    ) -> list[ScorePeriodBest]:
         """Find all score period best for a score log."""
         result = await self._connection.execute(
             select(self._score_period_best_table).where(
-                self._score_period_best_table.c.score_log_ref_id == prefix.as_int()
+                self._score_period_best_table.c.score_log_ref_id.in_(
+                    [prefix.as_int()]
+                    if isinstance(prefix, EntityId)
+                    else [p.as_int() for p in prefix]
+                )
             )
         )
         return [self._row_to_entity(row) for row in result]

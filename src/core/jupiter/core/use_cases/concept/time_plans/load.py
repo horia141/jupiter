@@ -18,6 +18,9 @@ from jupiter.core.domain.concept.time_plans.time_plan import (
     TimePlanRepository,
 )
 from jupiter.core.domain.concept.time_plans.time_plan_activity import TimePlanActivity
+from jupiter.core.domain.concept.time_plans.time_plan_activity_doneness import (
+    TimePlanActivityDoneness,
+)
 from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
     TimePlanActivityKind,
 )
@@ -63,7 +66,7 @@ class TimePlanLoadResult(UseCaseResultBase):
     activities: list[TimePlanActivity]
     target_inbox_tasks: list[InboxTask] | None
     target_big_plans: list[BigPlan] | None
-    activity_doneness: dict[EntityId, bool] | None
+    activity_doneness: dict[EntityId, TimePlanActivityDoneness] | None
     completed_nontarget_inbox_tasks: list[InboxTask] | None
     completed_nottarget_big_plans: list[BigPlan] | None
     sub_period_time_plans: list[TimePlan] | None
@@ -188,7 +191,18 @@ class TimePlanLoadUseCase(
                 inbox_task = target_inbox_tasks_by_ref_id[activity.target_ref_id]
 
                 if activity.kind == TimePlanActivityKind.FINISH:
-                    activity_doneness[activity.ref_id] = inbox_task.is_completed
+                    if inbox_task.is_completed:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.DONE
+                        )
+                    elif inbox_task.is_working:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.WORKING
+                        )
+                    else:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.NOT_DONE
+                        )
                 elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
                     # A tricky business logic decision.
                     # It's quite often the case that we setup a time plan with an inbox
@@ -203,9 +217,18 @@ class TimePlanLoadUseCase(
                         and inbox_task.last_modified_time
                         <= time_plan.end_date.add_days(30).to_timestamp_at_end_of_day()
                     )
-                    activity_doneness[activity.ref_id] = (
-                        inbox_task.is_completed or modified_in_time_plan
-                    )
+                    if inbox_task.is_completed or modified_in_time_plan:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.DONE
+                        )
+                    elif inbox_task.is_working:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.WORKING
+                        )
+                    else:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.NOT_DONE
+                        )
 
                 if inbox_task.source == InboxTaskSource.BIG_PLAN:
                     activities_by_big_plan_ref_id[
@@ -217,13 +240,46 @@ class TimePlanLoadUseCase(
                     continue
 
                 if activity.target_ref_id not in target_big_plans_by_ref_id:
-                    activity_doneness[activity.ref_id] = True
+                    activity_doneness[activity.ref_id] = TimePlanActivityDoneness.DONE
                     continue
 
                 big_plan = target_big_plans_by_ref_id[activity.target_ref_id]
 
+                some_subactivity_is_working_or_done = (
+                    any(
+                        activity_doneness[a]
+                        in (
+                            TimePlanActivityDoneness.WORKING,
+                            TimePlanActivityDoneness.DONE,
+                        )
+                        for a in activities_by_big_plan_ref_id[big_plan.ref_id]
+                    )
+                    if len(activities_by_big_plan_ref_id[big_plan.ref_id]) > 0
+                    else False
+                )
+
+                all_subactivities_are_done = (
+                    all(
+                        activity_doneness[a] == TimePlanActivityDoneness.DONE
+                        for a in activities_by_big_plan_ref_id[big_plan.ref_id]
+                    )
+                    if len(activities_by_big_plan_ref_id[big_plan.ref_id]) > 0
+                    else False
+                )
+
                 if activity.kind == TimePlanActivityKind.FINISH:
-                    activity_doneness[activity.ref_id] = big_plan.is_completed
+                    if big_plan.is_completed:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.DONE
+                        )
+                    elif some_subactivity_is_working_or_done:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.WORKING
+                        )
+                    else:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.NOT_DONE
+                        )
                 elif activity.kind == TimePlanActivityKind.MAKE_PROGRESS:
                     # A tricky business logic decision.
                     # It's quite often the case that we setup a time plan with an inbox
@@ -238,19 +294,19 @@ class TimePlanLoadUseCase(
                         and big_plan.last_modified_time
                         <= time_plan.end_date.add_days(60).to_timestamp_at_end_of_day()
                     )
-                    all_subactivities_are_done = (
-                        all(
-                            activity_doneness[a]
-                            for a in activities_by_big_plan_ref_id[big_plan.ref_id]
+
+                    if big_plan.is_completed or all_subactivities_are_done:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.DONE
                         )
-                        if len(activities_by_big_plan_ref_id[big_plan.ref_id]) > 0
-                        else False
-                    )
-                    activity_doneness[activity.ref_id] = (
-                        big_plan.is_completed
-                        or modified_in_time_plan
-                        or all_subactivities_are_done
-                    )
+                    elif modified_in_time_plan or some_subactivity_is_working_or_done:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.WORKING
+                        )
+                    else:
+                        activity_doneness[activity.ref_id] = (
+                            TimePlanActivityDoneness.NOT_DONE
+                        )
 
         sub_period_time_plans = None
         higher_time_plan = None

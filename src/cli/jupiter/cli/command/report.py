@@ -134,15 +134,6 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
             global_tree = rich_tree.add(global_text)
 
             for print_period in RecurringTaskPeriod:
-                try:
-                    max_breakdown_streak_size = max(
-                        len(b.summary.streak_plot)
-                        for b in result.period_result.per_habit_breakdown
-                        if b.period == print_period
-                    )
-                except ValueError:
-                    max_breakdown_streak_size = 1
-
                 period_text = Text("").append(period_to_rich_text(print_period))
                 period_table = Table(
                     title=period_text,
@@ -152,7 +143,6 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
 
                 period_table.add_column("Id")
                 period_table.add_column("Name", width=64, no_wrap=True)
-                period_table.add_column("Streak")
                 habit_created_text = Text("🧭 Created")
                 period_table.add_column(habit_created_text, width=12, justify="right")
 
@@ -190,9 +180,6 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                     habit_name_text = Text("").append(
                         entity_name_to_rich_text(habit_item.name),
                     )
-                    habit_streak_text = Text(
-                        f"{habit_item.summary.streak_plot.rjust(max_breakdown_streak_size, '_')}",
-                    )
 
                     created_cnt_text = Text(f"{habit_item.summary.created_cnt}")
                     if habit_item.summary.created_cnt == 0:
@@ -217,7 +204,6 @@ class Report(LoggedInReadonlyCommand[ReportUseCase, ReportResult]):
                     period_table.add_row(
                         habit_id_text,
                         habit_name_text,
-                        habit_streak_text,
                         created_cnt_text,
                         not_started_cnt_text,
                         working_cnt_text,

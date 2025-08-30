@@ -48,6 +48,11 @@ The state evolution diagram is:
 
 ![Task states](../assets/concepts-task-states.png)
 
+Inbox tasks can be marked as _key inbox tasks_. This is first a user-level concept -
+it marks the inbox task as an important one for you, that is absolutely necessary
+to get right. In various other contexts it applies, helping with sorting,
+prioritization, etc.
+
 Tasks have an optional _actionable date_. Sometimes, it does not make sense to work
 on a task before a certain date. Think paying a bill which will be provided in a week. If a task
 has an actionable date, it won't be visible in the boards until a week before it.

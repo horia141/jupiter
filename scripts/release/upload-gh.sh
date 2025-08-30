@@ -94,7 +94,7 @@ gh release create ${RELEASE_TAG} --draft --verify-tag --title "v${RELEASE_VERSIO
 
 gh release upload ${RELEASE_TAG} --clobber .build-cache/release/${RELEASE_VERSION}/release-manifest.json
 
-if [ ! -f .build-cache/cloc/${RELEASE_VERSION} ]; then
+if [ ! -f .build-cache/cloc/${RELEASE_VERSION}/cloc.txt ]; then
     echo "Cloc file does not exist"
     exit 1
 fi
@@ -130,7 +130,7 @@ if [ "${MOBILE_ANDROID}" = true ]; then
     gh release upload ${RELEASE_TAG} --clobber .build-cache/mobile/android/v${RELEASE_VERSION}/build/app-${RELEASE_VERSION}.aab
 fi
 
-gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/docker-compose.yaml
+gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/compose.yaml
 gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/nginx.conf
 gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/webui.conf
 gh release upload ${RELEASE_TAG} --clobber infra/self-hosted/webui.nodomain.conf

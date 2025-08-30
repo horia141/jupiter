@@ -7,6 +7,7 @@ import type { InboxTask } from './InboxTask';
 import type { Note } from './Note';
 import type { TimePlan } from './TimePlan';
 import type { TimePlanActivity } from './TimePlanActivity';
+import type { TimePlanActivityDoneness } from './TimePlanActivityDoneness';
 /**
  * Result.
  */
@@ -16,7 +17,7 @@ export type TimePlanLoadResult = {
     activities: Array<TimePlanActivity>;
     target_inbox_tasks?: (Array<InboxTask> | null);
     target_big_plans?: (Array<BigPlan> | null);
-    activity_doneness?: (Record<string, boolean> | null);
+    activity_doneness?: (Record<string, TimePlanActivityDoneness> | null);
     completed_nontarget_inbox_tasks?: (Array<InboxTask> | null);
     completed_nottarget_big_plans?: (Array<BigPlan> | null);
     sub_period_time_plans?: (Array<TimePlan> | null);

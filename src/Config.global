@@ -1,4 +1,4 @@
-VERSION=1.2.0
+VERSION=1.3.0
 BUNDLE_ID=io.jupiter.app
 PUBLIC_NAME=Thrive
 HOSTED_GLOBAL_WEBUI_URL=https://app.get-thriving.com

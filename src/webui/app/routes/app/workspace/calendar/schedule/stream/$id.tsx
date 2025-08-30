@@ -4,16 +4,7 @@ import {
   ScheduleSource,
   ScheduleStreamColor,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -28,7 +19,7 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
@@ -36,8 +27,8 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { ScheduleStreamColorInput } from "~/components/schedule-stream-color-input";
+import { SectionCard } from "~/components/infra/section-card";
+import { ScheduleStreamColorInput } from "~/components/domain/concept/schedule/schedule-stream-color-input";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isCorePropertyEditable } from "~/logic/domain/schedule-stream";
 import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -201,6 +192,7 @@ export default function ScheduleStreamViewOne() {
   return (
     <LeafPanel
       key={`schedule-stream-${loaderData.scheduleStream.ref_id}`}
+      fakeKey={`schedule-stream-${loaderData.scheduleStream.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityNotEditable={!corePropertyEditable}
@@ -208,7 +200,7 @@ export default function ScheduleStreamViewOne() {
       returnLocation={`/app/workspace/calendar/schedule/stream?${query}`}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="schedule-stream-properties"
         title="Properties"
         actions={
@@ -233,62 +225,60 @@ export default function ScheduleStreamViewOne() {
           />
         }
       >
-        <Stack spacing={2} useFlexGap>
-          {loaderData.scheduleStream.source ===
-            ScheduleSource.EXTERNAL_ICAL && (
-            <FormControl fullWidth>
-              <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
-              <OutlinedInput
-                label="sourceIcalUrl"
-                name="sourceIcalUrl"
-                defaultValue={loaderData.scheduleStream.source_ical_url!}
-                readOnly={true}
-              />
-            </FormControl>
-          )}
-
+        {loaderData.scheduleStream.source === ScheduleSource.EXTERNAL_ICAL && (
           <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
+            <InputLabel id="sourceIcalUrl">Source iCal URL</InputLabel>
             <OutlinedInput
-              label="name"
-              name="name"
-              readOnly={!inputsEnabled || !corePropertyEditable}
-              defaultValue={loaderData.scheduleStream.name}
+              label="sourceIcalUrl"
+              name="sourceIcalUrl"
+              defaultValue={loaderData.scheduleStream.source_ical_url!}
+              readOnly={true}
             />
-            <FieldError actionResult={actionData} fieldName="/name" />
           </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="color">Color</InputLabel>
-            <ScheduleStreamColorInput
-              labelId="color"
-              label="Color"
-              name="color"
-              value={loaderData.scheduleStream.color}
-              readOnly={!inputsEnabled}
-            />
-            <FieldError actionResult={actionData} fieldName="/color" />
-          </FormControl>
-        </Stack>
-      </SectionCardNew>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
         )}
 
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="name"
+            name="name"
+            readOnly={!inputsEnabled || !corePropertyEditable}
+            defaultValue={loaderData.scheduleStream.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="color">Color</InputLabel>
+          <ScheduleStreamColorInput
+            labelId="color"
+            label="Color"
+            name="color"
+            value={loaderData.scheduleStream.color}
+            readOnly={!inputsEnabled}
+          />
+          <FieldError actionResult={actionData} fieldName="/color" />
+        </FormControl>
+      </SectionCard>
+
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="inbox-task-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -297,7 +287,7 @@ export default function ScheduleStreamViewOne() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
     </LeafPanel>
   );
 }

@@ -7,17 +7,7 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -28,18 +18,24 @@ import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { HabitRepeatStrategySelect } from "~/components/habit-repeat-strategy-select";
+import { HabitRepeatStrategySelect } from "~/components/domain/concept/habit/habit-repeat-strategy-select";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({});
 
@@ -47,6 +43,7 @@ const CreateFormSchema = z.object({
   name: z.string(),
   project: z.string().optional(),
   period: z.nativeEnum(RecurringTaskPeriod),
+  isKey: CheckboxAsString,
   eisen: z.nativeEnum(Eisen),
   difficulty: z.nativeEnum(Difficulty),
   actionableFromDay: z.string().optional(),
@@ -87,6 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
       name: form.name,
       project_ref_id: form.project !== undefined ? form.project : undefined,
       period: form.period,
+      is_key: form.isKey,
       eisen: form.eisen,
       difficulty: form.difficulty,
       actionable_from_day: form.actionableFromDay
@@ -144,111 +142,124 @@ export default function NewHabit() {
 
   return (
     <LeafPanel
-      key={"habits/new"}
+      key="habits/new"
+      fakeKey={"habits/new"}
       returnLocation="/app/workspace/habits"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={""}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Habit"
+        actionsPosition={ActionsPosition.BELOW}
+        actions={
+          <SectionActions
+            id="habit-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "habit-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack direction="row" useFlexGap spacing={1}>
+          <FormControl sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={""}
+            />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  defaultValue={loaderData.rootProject.ref_id}
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={false}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
+
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              defaultValue={loaderData.rootProject.ref_id}
+            />
+            <FieldError actionResult={actionData} fieldName="/project" />
+          </FormControl>
+        )}
+
+        <RecurringTaskGenParamsBlock
+          inputsEnabled={inputsEnabled}
+          allowSkipRule
+          period={selectedPeriod}
+          onChangePeriod={(newPeriod) => {
+            if (newPeriod === "none") {
+              setSelectedPeriod(RecurringTaskPeriod.DAILY);
+            } else {
+              setSelectedPeriod(newPeriod);
+            }
+          }}
+          eisen={Eisen.REGULAR}
+          difficulty={Difficulty.EASY}
+          actionableFromDay={null}
+          actionableFromMonth={null}
+          dueAtDay={null}
+          dueAtMonth={null}
+          skipRule={null}
+          actionData={actionData}
+        />
+
+        {selectedPeriod !== RecurringTaskPeriod.DAILY && (
+          <Stack direction="row" spacing={2}>
+            <FormControl sx={{ flexGrow: 3 }}>
+              <HabitRepeatStrategySelect
+                name="repeatsStrategy"
+                inputsEnabled={inputsEnabled}
+                allowNone
+                value={selectedRepeatsStrategy}
+                onChange={(newStrategy) =>
+                  setSelectedRepeatsStrategy(newStrategy)
+                }
+              />
+            </FormControl>
+            {selectedRepeatsStrategy !== "none" && (
+              <FormControl sx={{ flexGrow: 1 }}>
+                <InputLabel id="repeatsInPeriodCount">
+                  Repeats In Period [Optional]
+                </InputLabel>
+                <OutlinedInput
+                  label="Repeats In Period"
+                  name="repeatsInPeriodCount"
+                  readOnly={!inputsEnabled}
+                  sx={{ height: "100%" }}
                 />
-                <FieldError actionResult={actionData} fieldName="/project" />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/repeats_in_period_count"
+                />
               </FormControl>
             )}
-
-            <RecurringTaskGenParamsBlock
-              inputsEnabled={inputsEnabled}
-              allowSkipRule
-              period={selectedPeriod}
-              onChangePeriod={(newPeriod) => {
-                if (newPeriod === "none") {
-                  setSelectedPeriod(RecurringTaskPeriod.DAILY);
-                } else {
-                  setSelectedPeriod(newPeriod);
-                }
-              }}
-              eisen={Eisen.REGULAR}
-              difficulty={Difficulty.EASY}
-              actionableFromDay={null}
-              actionableFromMonth={null}
-              dueAtDay={null}
-              dueAtMonth={null}
-              skipRule={null}
-              actionData={actionData}
-            />
-
-            {selectedPeriod !== RecurringTaskPeriod.DAILY && (
-              <Stack direction="row" spacing={2}>
-                <FormControl sx={{ flexGrow: 3 }}>
-                  <HabitRepeatStrategySelect
-                    name="repeatsStrategy"
-                    inputsEnabled={inputsEnabled}
-                    allowNone
-                    value={selectedRepeatsStrategy}
-                    onChange={(newStrategy) =>
-                      setSelectedRepeatsStrategy(newStrategy)
-                    }
-                  />
-                </FormControl>
-                {selectedRepeatsStrategy !== "none" && (
-                  <FormControl sx={{ flexGrow: 1 }}>
-                    <InputLabel id="repeatsInPeriodCount">
-                      Repeats In Period [Optional]
-                    </InputLabel>
-                    <OutlinedInput
-                      label="Repeats In Period"
-                      name="repeatsInPeriodCount"
-                      readOnly={!inputsEnabled}
-                      sx={{ height: "100%" }}
-                    />
-                    <FieldError
-                      actionResult={actionData}
-                      fieldName="/repeats_in_period_count"
-                    />
-                  </FormControl>
-                )}
-              </Stack>
-            )}
           </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="habit-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

@@ -27,6 +27,7 @@ class ScoreLogEntry:
         task_ref_id (str): A generic entity id.
         success (bool):
         score (int):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
         difficulty (Union[Difficulty, None, Unset]):
         has_lucky_puppy_bonus (Union[None, Unset, bool]):
@@ -43,6 +44,7 @@ class ScoreLogEntry:
     task_ref_id: str
     success: bool
     score: int
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     difficulty: Union[Difficulty, None, Unset] = UNSET
     has_lucky_puppy_bonus: Union[None, Unset, bool] = UNSET
@@ -70,6 +72,12 @@ class ScoreLogEntry:
         success = self.success
 
         score = self.score
+
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
 
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
@@ -108,6 +116,8 @@ class ScoreLogEntry:
                 "score": score,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
         if difficulty is not UNSET:
@@ -141,6 +151,15 @@ class ScoreLogEntry:
         success = d.pop("success")
 
         score = d.pop("score")
+
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
 
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -189,6 +208,7 @@ class ScoreLogEntry:
             task_ref_id=task_ref_id,
             success=success,
             score=score,
+            archival_reason=archival_reason,
             archived_time=archived_time,
             difficulty=difficulty,
             has_lucky_puppy_bonus=has_lucky_puppy_bonus,

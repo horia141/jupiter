@@ -1,4 +1,8 @@
-import type { Vacation, VacationFindResultEntry } from "@jupiter/webapi-client";
+import type {
+  ADate,
+  Vacation,
+  VacationFindResultEntry,
+} from "@jupiter/webapi-client";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Box, IconButton, Typography, styled } from "@mui/material";
@@ -9,14 +13,13 @@ import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { Outlet, useNavigate } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useMemo, useState } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { ADateTag } from "~/components/adate-tag";
-import { DocsHelpSubject } from "~/components/docs-help";
-import { EntityNameComponent } from "~/components/entity-name";
-import { EntityNoNothingCard } from "~/components/entity-no-nothing-card";
+import { ADateTag } from "~/components/domain/core/adate-tag";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNameComponent } from "~/components/infra/entity-name";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
@@ -64,10 +67,6 @@ export default function Vacations() {
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone }).startOf(
-    "day",
-  );
-
   return (
     <TrunkPanel
       key={"vacations"}
@@ -75,7 +74,10 @@ export default function Vacations() {
       returnLocation="/app/workspace"
     >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <VacationCalendar today={today} sortedVacations={sortedVacations} />
+        <VacationCalendar
+          today={topLevelInfo.today}
+          sortedVacations={sortedVacations}
+        />
 
         {sortedVacations.length === 0 && (
           <EntityNoNothingCard
@@ -116,7 +118,7 @@ export default function Vacations() {
 }
 
 interface VacationCalendarProps {
-  today: DateTime;
+  today: ADate;
   sortedVacations: Array<Vacation>;
 }
 
@@ -124,7 +126,7 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
   const earliestDate =
     sortedVacations.length > 0
       ? aDateToDate(sortedVacations[sortedVacations.length - 1].start_date)
-      : today;
+      : aDateToDate(today);
   const latestDate =
     sortedVacations.length > 0
       ? aDateToDate(sortedVacations[0].end_date)
@@ -148,7 +150,7 @@ function VacationCalendar({ today, sortedVacations }: VacationCalendarProps) {
     }
 
     const data = [];
-    let currDate = earliestDate;
+    let currDate = earliestDate!;
 
     while (currDate.toISODate() <= latestDate.toISODate()) {
       data.push({

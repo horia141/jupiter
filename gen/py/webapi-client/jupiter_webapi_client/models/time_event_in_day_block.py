@@ -27,6 +27,7 @@ class TimeEventInDayBlock:
         start_date (str): A date or possibly a datetime for the application.
         start_time_in_day (str): The time in hh:mm format.
         duration_mins (int):
+        archival_reason (Union[None, Unset, str]):
         archived_time (Union[None, Unset, str]):
     """
 
@@ -42,6 +43,7 @@ class TimeEventInDayBlock:
     start_date: str
     start_time_in_day: str
     duration_mins: int
+    archival_reason: Union[None, Unset, str] = UNSET
     archived_time: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -70,6 +72,12 @@ class TimeEventInDayBlock:
 
         duration_mins = self.duration_mins
 
+        archival_reason: Union[None, Unset, str]
+        if isinstance(self.archival_reason, Unset):
+            archival_reason = UNSET
+        else:
+            archival_reason = self.archival_reason
+
         archived_time: Union[None, Unset, str]
         if isinstance(self.archived_time, Unset):
             archived_time = UNSET
@@ -94,6 +102,8 @@ class TimeEventInDayBlock:
                 "duration_mins": duration_mins,
             }
         )
+        if archival_reason is not UNSET:
+            field_dict["archival_reason"] = archival_reason
         if archived_time is not UNSET:
             field_dict["archived_time"] = archived_time
 
@@ -126,6 +136,15 @@ class TimeEventInDayBlock:
 
         duration_mins = d.pop("duration_mins")
 
+        def _parse_archival_reason(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        archival_reason = _parse_archival_reason(d.pop("archival_reason", UNSET))
+
         def _parse_archived_time(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -148,6 +167,7 @@ class TimeEventInDayBlock:
             start_date=start_date,
             start_time_in_day=start_time_in_day,
             duration_mins=duration_mins,
+            archival_reason=archival_reason,
             archived_time=archived_time,
         )
 

@@ -1,9 +1,16 @@
 """Use case for finding journals."""
 
 from jupiter.core.domain.concept.inbox_tasks.inbox_task import InboxTask
+from jupiter.core.domain.concept.inbox_tasks.inbox_task_collection import (
+    InboxTaskCollection,
+)
 from jupiter.core.domain.concept.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.concept.journals.journal import Journal
 from jupiter.core.domain.concept.journals.journal_collection import JournalCollection
+from jupiter.core.domain.concept.journals.journal_stats import (
+    JournalStats,
+    JournalStatsRepository,
+)
 from jupiter.core.domain.core.notes.note import Note
 from jupiter.core.domain.core.notes.note_collection import NoteCollection
 from jupiter.core.domain.core.notes.note_domain import NoteDomain
@@ -30,6 +37,7 @@ class JournalFindArgs(UseCaseArgsBase):
 
     allow_archived: bool
     include_notes: bool
+    include_journal_stats: bool
     include_writing_tasks: bool
     filter_ref_ids: list[EntityId] | None
 
@@ -40,6 +48,7 @@ class JournalFindResultEntry(UseCaseResultBase):
 
     journal: Journal
     note: Note | None
+    journal_stats: JournalStats | None
     writing_task: InboxTask | None
 
 
@@ -68,6 +77,9 @@ class JournalFindUseCase(
         journal_collection = await uow.get_for(JournalCollection).load_by_parent(
             workspace.ref_id,
         )
+        inbox_task_collection = await uow.get_for(InboxTaskCollection).load_by_parent(
+            workspace.ref_id,
+        )
         note_collection = await uow.get_for(NoteCollection).load_by_parent(
             workspace.ref_id,
         )
@@ -88,10 +100,20 @@ class JournalFindUseCase(
             for note in notes:
                 notes_by_journal_ref_id[note.source_entity_ref_id] = note
 
+        journal_stats_by_journal_ref_id = {}
+        if args.include_journal_stats:
+            journal_stats = await uow.get(JournalStatsRepository).find_all(
+                [journal.ref_id for journal in journals]
+            )
+            for journal_stat in journal_stats:
+                journal_stats_by_journal_ref_id[journal_stat.journal.ref_id] = (
+                    journal_stat
+                )
+
         writing_tasks_by_journal_ref_id = {}
         if args.include_writing_tasks:
             writing_tasks = await uow.get_for(InboxTask).find_all_generic(
-                parent_ref_id=note_collection.ref_id,
+                parent_ref_id=inbox_task_collection.ref_id,
                 source=[InboxTaskSource.JOURNAL],
                 allow_archived=args.allow_archived,
                 source_entity_ref_id=[journal.ref_id for journal in journals],
@@ -106,6 +128,9 @@ class JournalFindUseCase(
                 JournalFindResultEntry(
                     journal=journal,
                     note=notes_by_journal_ref_id.get(journal.ref_id, None),
+                    journal_stats=journal_stats_by_journal_ref_id.get(
+                        journal.ref_id, None
+                    ),
                     writing_task=writing_tasks_by_journal_ref_id.get(
                         journal.ref_id, None
                     ),

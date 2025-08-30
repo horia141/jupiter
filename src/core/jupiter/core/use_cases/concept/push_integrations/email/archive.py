@@ -4,6 +4,7 @@ from jupiter.core.domain.concept.push_integrations.email.email_task import Email
 from jupiter.core.domain.concept.push_integrations.email.service.archive_service import (
     EmailTaskArchiveService,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -44,5 +45,9 @@ class EmailTaskArchiveUseCase(
         email_task_archive_service = EmailTaskArchiveService()
 
         await email_task_archive_service.do_it(
-            context.domain_context, uow, progress_reporter, email_task
+            context.domain_context,
+            uow,
+            progress_reporter,
+            email_task,
+            ArchivalReason.USER,
         )

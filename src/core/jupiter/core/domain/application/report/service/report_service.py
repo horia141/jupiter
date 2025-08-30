@@ -65,27 +65,22 @@ from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import NoFilter
 from jupiter.core.framework.errors import InputValidationError
-from jupiter.core.utils.time_provider import TimeProvider
 
 
 class ReportService:
     """The domain service which constructs a report."""
 
     _storage_engine: Final[DomainStorageEngine]
-    _time_provider: Final[TimeProvider]
 
-    def __init__(
-        self, domain_storage_engine: DomainStorageEngine, time_provider: TimeProvider
-    ) -> None:
+    def __init__(self, domain_storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._storage_engine = domain_storage_engine
-        self._time_provider = time_provider
 
     async def do_it(
         self,
         user: User,
         workspace: Workspace,
-        today: ADate | None,
+        today: ADate,
         period: RecurringTaskPeriod,
         sources: list[InboxTaskSource] | None = None,
         breakdowns: list[ReportBreakdown] | None = None,
@@ -135,8 +130,6 @@ class ReportService:
             and filter_email_task_ref_ids is not None
         ):
             raise FeatureUnavailableError(WorkspaceFeature.EMAIL_TASKS)
-
-        today = today or self._time_provider.get_current_date()
 
         sources = (
             sources
@@ -710,58 +703,6 @@ class ReportService:
             else:
                 not_started_cnt += 1
 
-        # The streak computations here.
-        sorted_inbox_tasks = sorted(
-            (it for it in inbox_tasks if schedule.contains_timestamp(it.created_time)),
-            key=lambda it: (it.created_time, it.recurring_repeat_index),
-        )
-        used_skip_once = False
-        streak_plot = []
-
-        for inbox_task_idx, inbox_task in enumerate(sorted_inbox_tasks):
-            if inbox_task.status == InboxTaskStatus.DONE:
-                if inbox_task.recurring_repeat_index is None:
-                    streak_plot.append("X")
-                elif inbox_task.recurring_repeat_index == 0:
-                    streak_plot.append("1")
-                else:
-                    streak_plot[-1] = str(int(streak_plot[-1], base=10) + 1)
-            else:
-                if (
-                    inbox_task_idx != 0
-                    and inbox_task_idx != len(sorted_inbox_tasks) - 1
-                    and sorted_inbox_tasks[inbox_task_idx - 1].status
-                    == InboxTaskStatus.DONE
-                    and sorted_inbox_tasks[inbox_task_idx + 1].status
-                    == InboxTaskStatus.DONE
-                    and not used_skip_once
-                ):
-                    used_skip_once = True
-                    if inbox_task.recurring_repeat_index is None:
-                        streak_plot.append("x")
-                    elif inbox_task.recurring_repeat_index == 0:
-                        streak_plot.append("1")
-                    else:
-                        streak_plot[-1] = str(int(streak_plot[-1], base=10) + 1)
-                else:
-                    used_skip_once = False
-                    if inbox_task.recurring_repeat_index is None:
-                        streak_plot.append(
-                            (
-                                "."
-                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                                else "?"
-                            ),
-                        )
-                    elif inbox_task.recurring_repeat_index == 0:
-                        streak_plot.append(
-                            (
-                                "0"
-                                if inbox_task_idx < (len(sorted_inbox_tasks) - 1)
-                                else "?"
-                            ),
-                        )
-
         return RecurringTaskWorkSummary(
             created_cnt=created_cnt,
             not_started_cnt=not_started_cnt,
@@ -772,7 +713,7 @@ class ReportService:
             ),
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
-            streak_plot="".join(streak_plot),
+            streak_plot="",
         )
 
     @staticmethod

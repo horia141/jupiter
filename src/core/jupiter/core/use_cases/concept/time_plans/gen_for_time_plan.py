@@ -3,6 +3,10 @@
 from jupiter.core.domain.application.gen.service.gen_service import GenService
 from jupiter.core.domain.core.adate import ADate
 from jupiter.core.domain.core.recurring_task_period import RecurringTaskPeriod
+from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.infer_sync_targets import (
+    infer_sync_targets_for_enabled_features,
+)
 from jupiter.core.framework.use_case import (
     ProgressReporter,
 )
@@ -22,7 +26,7 @@ class TimePlanGenForTimePlanArgs(UseCaseArgsBase):
     period: list[RecurringTaskPeriod] | None
 
 
-@mutation_use_case()
+@mutation_use_case(WorkspaceFeature.TIME_PLANS)
 class TimePlanGenForTimePlanUseCase(
     AppLoggedInMutationUseCase[TimePlanGenForTimePlanArgs, None]
 ):
@@ -39,7 +43,7 @@ class TimePlanGenForTimePlanUseCase(
         workspace = context.workspace
         today = args.today
 
-        gen_targets = workspace.infer_sync_targets_for_enabled_features(None)
+        gen_targets = infer_sync_targets_for_enabled_features(user, workspace, None)
 
         gen_service = GenService(
             domain_storage_engine=self._domain_storage_engine,

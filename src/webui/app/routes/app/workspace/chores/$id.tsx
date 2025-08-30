@@ -9,11 +9,6 @@ import {
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
 import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -26,28 +21,33 @@ import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
 import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { DateTime } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm, parseParams, parseQuery } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
-import { InboxTaskStack } from "~/components/inbox-task-stack";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
+import { InboxTaskStack } from "~/components/domain/concept/inbox-task/inbox-task-stack";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
-import { RecurringTaskGenParamsBlock } from "~/components/recurring-task-gen-params-block";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
+import { RecurringTaskGenParamsBlock } from "~/components/domain/core/recurring-task-gen-params-block";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { basicShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { IsKeySelect } from "~/components/domain/core/is-key-select";
+import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -65,6 +65,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     intent: z.literal("update"),
     name: z.string(),
     project: z.string().optional(),
+    isKey: CheckboxAsString,
     period: z.nativeEnum(RecurringTaskPeriod),
     eisen: z.nativeEnum(Eisen),
     difficulty: z.nativeEnum(Difficulty),
@@ -144,6 +145,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           name: {
             should_change: true,
             value: form.name,
+          },
+          is_key: {
+            should_change: true,
+            value: form.isKey,
           },
           project_ref_id: {
             should_change: form.project ? true : false,
@@ -236,7 +241,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
           content: [],
         });
 
-        return redirect(`/app/workspace/chore/${id}`);
+        return redirect(`/app/workspace/chores/${id}`);
       }
 
       case "archive": {
@@ -270,8 +275,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction =
-  standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction = basicShouldRevalidate;
 
 export default function Chore() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
@@ -327,176 +331,175 @@ export default function Chore() {
     setSelectedProject(loaderData.project.ref_id);
   }, [loaderData]);
 
-  const today = DateTime.local({ zone: topLevelInfo.user.timezone });
-
   return (
     <LeafPanel
-      key={`chore-{loaderData.chore.ref_id}`}
+      key={`chore-${loaderData.chore.ref_id}`}
+      fakeKey={`chore-{loaderData.chore.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={loaderData.chore.archived}
       returnLocation="/app/workspace/chores"
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.chore.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS,
-            ) && (
-              <FormControl fullWidth>
-                <ProjectSelect
-                  name="project"
-                  label="Project"
-                  inputsEnabled={inputsEnabled}
-                  disabled={false}
-                  allProjects={loaderData.allProjects}
-                  value={selectedProject}
-                  onChange={setSelectedProject}
-                />
-                <FieldError actionResult={actionData} fieldName="/project" />
-              </FormControl>
-            )}
-
-            <RecurringTaskGenParamsBlock
-              inputsEnabled={inputsEnabled}
-              allowSkipRule
-              period={loaderData.chore.gen_params.period}
-              eisen={loaderData.chore.gen_params.eisen}
-              difficulty={loaderData.chore.gen_params.difficulty}
-              actionableFromDay={
-                loaderData.chore.gen_params.actionable_from_day
-              }
-              actionableFromMonth={
-                loaderData.chore.gen_params.actionable_from_month
-              }
-              dueAtDay={loaderData.chore.gen_params.due_at_day}
-              dueAtMonth={loaderData.chore.gen_params.due_at_month}
-              skipRule={loaderData.chore.gen_params.skip_rule}
-              actionData={actionData}
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={
+          <SectionActions
+            id="chore-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+              ActionSingle({
+                text: "Regen",
+                value: "regen",
+                highlight: false,
+              }),
+            ]}
+          />
+        }
+      >
+        <Stack direction="row" useFlexGap spacing={1}>
+          <FormControl fullWidth sx={{ flexGrow: 3 }}>
+            <InputLabel id="name">Name</InputLabel>
+            <OutlinedInput
+              label="Name"
+              name="name"
+              readOnly={!inputsEnabled}
+              defaultValue={loaderData.chore.name}
             />
+            <FieldError actionResult={actionData} fieldName="/name" />
+          </FormControl>
 
-            <FormControl fullWidth>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name="mustDo"
-                    readOnly={!inputsEnabled}
-                    defaultChecked={loaderData.chore.must_do}
-                  />
-                }
-                label="Must Do In Vacation"
-              />
-              <FieldError actionResult={actionData} fieldName="/must_do" />
-            </FormControl>
+          <FormControl sx={{ flexGrow: 1 }}>
+            <IsKeySelect
+              name="isKey"
+              defaultValue={loaderData.chore.is_key}
+              inputsEnabled={inputsEnabled}
+            />
+            <FieldError actionResult={actionData} fieldName="/is_key" />
+          </FormControl>
+        </Stack>
 
-            <Stack spacing={2} direction={isBigScreen ? "row" : "column"}>
-              <FormControl fullWidth>
-                <InputLabel id="startAtDate" shrink>
-                  Start At Date [Optional]
-                </InputLabel>
-                <OutlinedInput
-                  type="date"
-                  notched
-                  label="startAtDate"
-                  defaultValue={
-                    loaderData.chore.start_at_date
-                      ? aDateToDate(loaderData.chore.start_at_date).toFormat(
-                          "yyyy-MM-dd",
-                        )
-                      : undefined
-                  }
-                  name="startAtDate"
-                  readOnly={!inputsEnabled}
-                />
-
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/start_at_date"
-                />
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel id="endAtDate" shrink>
-                  End At Date [Optional]
-                </InputLabel>
-                <OutlinedInput
-                  type="date"
-                  notched
-                  label="endAtDate"
-                  defaultValue={
-                    loaderData.chore.end_at_date
-                      ? aDateToDate(loaderData.chore.end_at_date).toFormat(
-                          "yyyy-MM-dd",
-                        )
-                      : undefined
-                  }
-                  name="endAtDate"
-                  readOnly={!inputsEnabled}
-                />
-
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/end_at_date"
-                />
-              </FormControl>
-            </Stack>
-          </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="regen"
-            >
-              Regen
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!loaderData.note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS,
+        ) && (
+          <FormControl fullWidth>
+            <ProjectSelect
+              name="project"
+              label="Project"
+              inputsEnabled={inputsEnabled}
+              disabled={false}
+              allProjects={loaderData.allProjects}
+              value={selectedProject}
+              onChange={setSelectedProject}
+            />
+            <FieldError actionResult={actionData} fieldName="/project" />
+          </FormControl>
         )}
 
+        <RecurringTaskGenParamsBlock
+          inputsEnabled={inputsEnabled}
+          allowSkipRule
+          period={loaderData.chore.gen_params.period}
+          eisen={loaderData.chore.gen_params.eisen}
+          difficulty={loaderData.chore.gen_params.difficulty}
+          actionableFromDay={loaderData.chore.gen_params.actionable_from_day}
+          actionableFromMonth={
+            loaderData.chore.gen_params.actionable_from_month
+          }
+          dueAtDay={loaderData.chore.gen_params.due_at_day}
+          dueAtMonth={loaderData.chore.gen_params.due_at_month}
+          skipRule={loaderData.chore.gen_params.skip_rule}
+          actionData={actionData}
+        />
+
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={
+              <Switch
+                name="mustDo"
+                readOnly={!inputsEnabled}
+                defaultChecked={loaderData.chore.must_do}
+              />
+            }
+            label="Must Do In Vacation"
+          />
+          <FieldError actionResult={actionData} fieldName="/must_do" />
+        </FormControl>
+
+        <Stack spacing={2} direction={isBigScreen ? "row" : "column"}>
+          <FormControl fullWidth>
+            <InputLabel id="startAtDate" shrink>
+              Start At Date [Optional]
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="startAtDate"
+              defaultValue={
+                loaderData.chore.start_at_date
+                  ? aDateToDate(loaderData.chore.start_at_date).toFormat(
+                      "yyyy-MM-dd",
+                    )
+                  : undefined
+              }
+              name="startAtDate"
+              readOnly={!inputsEnabled}
+              disabled={!inputsEnabled}
+            />
+
+            <FieldError actionResult={actionData} fieldName="/start_at_date" />
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel id="endAtDate" shrink>
+              End At Date [Optional]
+            </InputLabel>
+            <OutlinedInput
+              type="date"
+              notched
+              label="endAtDate"
+              defaultValue={
+                loaderData.chore.end_at_date
+                  ? aDateToDate(loaderData.chore.end_at_date).toFormat(
+                      "yyyy-MM-dd",
+                    )
+                  : undefined
+              }
+              name="endAtDate"
+              readOnly={!inputsEnabled}
+              disabled={!inputsEnabled}
+            />
+
+            <FieldError actionResult={actionData} fieldName="/end_at_date" />
+          </FormControl>
+        </Stack>
+      </SectionCard>
+
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="chore-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: loaderData.note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {loaderData.note && (
           <>
             <EntityNoteEditor
@@ -505,29 +508,29 @@ export default function Chore() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
-      {sortedInboxTasks.length > 0 && (
-        <InboxTaskStack
-          today={today}
-          topLevelInfo={topLevelInfo}
-          showOptions={{
-            showStatus: true,
-            showDueDate: true,
-            showHandleMarkDone: true,
-            showHandleMarkNotDone: true,
-          }}
-          label="Inbox Tasks"
-          inboxTasks={sortedInboxTasks}
-          withPages={{
-            retrieveOffsetParamName: "inboxTasksRetrieveOffset",
-            totalCnt: loaderData.inboxTasksTotalCnt,
-            pageSize: loaderData.inboxTasksPageSize,
-          }}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+      <SectionCard title="Inbox Tasks">
+        {sortedInboxTasks.length > 0 && (
+          <InboxTaskStack
+            topLevelInfo={topLevelInfo}
+            showOptions={{
+              showStatus: true,
+              showDueDate: true,
+              showHandleMarkDone: true,
+              showHandleMarkNotDone: true,
+            }}
+            inboxTasks={sortedInboxTasks}
+            withPages={{
+              retrieveOffsetParamName: "inboxTasksRetrieveOffset",
+              totalCnt: loaderData.inboxTasksTotalCnt,
+              pageSize: loaderData.inboxTasksPageSize,
+            }}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+      </SectionCard>
     </LeafPanel>
   );
 }

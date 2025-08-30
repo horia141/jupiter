@@ -12,11 +12,10 @@ import { z } from "zod";
 
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
-
-import { BranchPanel } from "./layout/branch-panel";
-import { LeafPanel } from "./layout/leaf-panel";
-import { ToolPanel } from "./layout/tool-panel";
-import { TrunkPanel } from "./layout/trunk-panel";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 
 export function makeRootErrorBoundary(labelsFor: { error?: () => string }) {
   function ErrorBoundary() {
@@ -104,6 +103,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
         return (
           <LeafPanel
             key="error"
+            fakeKey="error"
             inputsEnabled={true}
             returnLocation={resolvedReturnLocation}
           >
@@ -122,6 +122,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
       return (
         <LeafPanel
           key="error"
+          fakeKey="error"
           inputsEnabled={true}
           returnLocation={resolvedReturnLocation}
         >
@@ -145,6 +146,7 @@ export function makeLeafErrorBoundary<K extends z.ZodRawShape>(
     return (
       <LeafPanel
         key="error"
+        fakeKey="error"
         inputsEnabled={true}
         returnLocation={resolvedReturnLocation}
       >
@@ -294,18 +296,29 @@ export function makeToolErrorBoundary(labelFn: () => string) {
   function ErrorBoundary({ error }: { error: Error }) {
     const globalProperties = useContext(GlobalPropertiesContext);
 
+    if (error instanceof Error) {
+      return (
+        <ToolPanel key="error">
+          <Alert severity="error">
+            <AlertTitle>Danger</AlertTitle>
+            {labelFn()}
+
+            {isDevelopment(globalProperties.env) && (
+              <Box>
+                <pre>{error.message}</pre>
+                <pre>{error.stack}</pre>
+              </Box>
+            )}
+          </Alert>
+        </ToolPanel>
+      );
+    }
+
     return (
       <ToolPanel key="error">
         <Alert severity="error">
-          <AlertTitle>Danger</AlertTitle>
-          {labelFn()}
-
-          {isDevelopment(globalProperties.env) && (
-            <Box>
-              <pre>{error.message}</pre>
-              <pre>{error.stack}</pre>
-            </Box>
-          )}
+          <AlertTitle>Critical</AlertTitle>
+          Unknown error!
         </Alert>
       </ToolPanel>
     );

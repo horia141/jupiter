@@ -1,4 +1,9 @@
-import type { BigPlan, InboxTask, TimePlan } from "@jupiter/webapi-client";
+import type {
+  BigPlan,
+  InboxTask,
+  TimePlan,
+  TimePlanActivityDoneness,
+} from "@jupiter/webapi-client";
 import {
   ApiError,
   InboxTaskSource,
@@ -27,13 +32,13 @@ import {
   ActionSingle,
   SectionActions,
 } from "~/components/infra/section-actions";
-import { SectionCardNew } from "~/components/infra/section-card-new";
-import { StandardDivider } from "~/components/standard-divider";
-import { TimePlanActivityCard } from "~/components/time-plan-activity-card";
-import { TimePlanActivityFeasabilitySelect } from "~/components/time-plan-activity-feasability-select";
-import { TimePlanActivitKindSelect } from "~/components/time-plan-activity-kind-select";
-import { TimePlanCard } from "~/components/time-plan-card";
-import { TimePlanStack } from "~/components/time-plan-stack";
+import { SectionCard } from "~/components/infra/section-card";
+import { StandardDivider } from "~/components/infra/standard-divider";
+import { TimePlanActivityCard } from "~/components/domain/concept/time-plan/time-plan-activity-card";
+import { TimePlanActivityFeasabilitySelect } from "~/components/domain/concept/time-plan/time-plan-activity-feasability-select";
+import { TimePlanActivitKindSelect } from "~/components/domain/concept/time-plan/time-plan-activity-kind-select";
+import { TimePlanCard } from "~/components/domain/concept/time-plan/time-plan-card";
+import { TimePlanStack } from "~/components/domain/concept/time-plan/time-plan-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import {
   filterActivitiesByTargetStatus,
@@ -130,7 +135,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       otherTargetBigPlans: otherResult.target_big_plans,
       otherActivityDoneness: otherResult.activity_doneness as Record<
         string,
-        boolean
+        TimePlanActivityDoneness
       >,
       otherTimeEventForInboxTasks:
         otherTimeEventResult?.entries?.inbox_task_entries || [],
@@ -259,13 +264,14 @@ export default function TimePlanAddFromCurrentTimePlans() {
   return (
     <LeafPanel
       key={`time-plan-${id}/add-from-current-time-plans-${otherTimePlanId}`}
+      fakeKey={`time-plan-${id}/add-from-current-time-plans-${otherTimePlanId}`}
       returnLocation={`/app/workspace/time-plans/${id}`}
       returnLocationDiscriminator="add-from-current-time-plans"
       inputsEnabled={inputsEnabled}
       initialExpansionState={LeafPanelExpansionState.LARGE}
     >
       <GlobalError actionResult={actionData} />
-      <SectionCardNew
+      <SectionCard
         id="time-plan-current-activities"
         title="Current Activities"
         actions={
@@ -360,23 +366,24 @@ export default function TimePlanAddFromCurrentTimePlans() {
           type="hidden"
           value={Array.from(targetActivitiesRefIds).join(",")}
         />
-      </SectionCardNew>
+      </SectionCard>
 
       {loaderData.otherHigherTimePlan && (
-        <SectionCardNew
-          id="time-plan-higher-time-plan"
-          title="Higher Time Plan"
-        >
+        <SectionCard id="time-plan-higher-time-plan" title="Higher Time Plan">
           <TimePlanCard
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.otherHigherTimePlan}
             relativeToTimePlan={loaderData.mainTimePlan}
+            showOptions={{
+              showSource: true,
+              showPeriod: true,
+            }}
           />
-        </SectionCardNew>
+        </SectionCard>
       )}
 
       {loaderData.otherPreviousTimePlan && (
-        <SectionCardNew
+        <SectionCard
           id="time-plan-previous-time-plan"
           title="Previous Time Plan"
         >
@@ -384,12 +391,16 @@ export default function TimePlanAddFromCurrentTimePlans() {
             topLevelInfo={topLevelInfo}
             timePlan={loaderData.otherPreviousTimePlan}
             relativeToTimePlan={loaderData.mainTimePlan}
+            showOptions={{
+              showSource: true,
+              showPeriod: true,
+            }}
           />
-        </SectionCardNew>
+        </SectionCard>
       )}
 
       {loaderData.otherHigherTimePlanSubTimePlans && (
-        <SectionCardNew
+        <SectionCard
           id="time-plan-other-higher-time-plan"
           title="Sub Time Plans"
         >
@@ -398,7 +409,7 @@ export default function TimePlanAddFromCurrentTimePlans() {
             timePlans={loaderData.otherHigherTimePlanSubTimePlans}
             relativeToTimePlan={loaderData.mainTimePlan}
           />
-        </SectionCardNew>
+        </SectionCard>
       )}
     </LeafPanel>
   );

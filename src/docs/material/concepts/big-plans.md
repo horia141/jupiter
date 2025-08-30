@@ -32,6 +32,10 @@ The state evolution diagram is:
 
 ![Big plan states](../assets/concepts-big-plan-states.png)
 
+Big plans can be marked as _key big plans_. This is first a user-level concept - it
+marks the big plan as an important one for you, that is absolutely necessary to get
+right. In various other contexts it applies, helping with sorting, prioritization, etc.
+
 Big plans have an actionable date, much like _inbox tasks_. Conceptually, this is the the
 time from which you can start working on a particular big plan.
 
@@ -43,6 +47,29 @@ plan, if it has any.
 
 Between them, the actionable and due dates allow you to schedule the big plans in time in
 a more organized manner. There is a special view which allows for this.
+
+## Milestones
+
+Big plans have milestones attached to them. These have a name and a date when they
+are recorded (either need to happen, or finish, etc.).
+
+The milestone must occur before the start date and end date of the big plan if
+these exist. Once milestones are added, the start and end date can only be added
+before the earliest milestone, or after the latest one, respectively.
+
+## Stats
+
+Big plans have a notion of progress associated with them, which is quantified by a number
+ranging from `0` to `100`. 
+
+* Big plans that are not started are at `0`.
+* Big plans that are in progress or blocked are at `10` at a mimum and `95` at a maximum.
+  If there are any inbox tasks associated with the plan, the progress is proportional to the
+  number of completed tasks (done or not done) relative to the total number of tasks.
+* Big plans that are in a completed state (done or not done) are at `100` progress.
+
+This is a simple indicator of the progress done and yet do be done on a particular
+piece of work.
 
 ## Big Plans Page
 

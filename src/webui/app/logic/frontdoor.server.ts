@@ -2,9 +2,9 @@ import { AppDistribution, AppPlatform, AppShell } from "@jupiter/webapi-client";
 import { createCookie } from "@remix-run/node";
 import { UAParser } from "ua-parser-js";
 
-import { FRONTDOOR_COOKIE_NAME } from "../names";
-import type { FrontDoorInfo } from "./frontdoor";
-import { FRONT_DOOR_INFO_SCHEMA } from "./frontdoor";
+import { FRONTDOOR_COOKIE_NAME } from "~/names";
+import type { FrontDoorInfo } from "~/logic/frontdoor";
+import { FRONT_DOOR_INFO_SCHEMA } from "~/logic/frontdoor";
 
 export const frontDoorCookie = createCookie(FRONTDOOR_COOKIE_NAME, {
   maxAge: 60 * 60 * 24 * 365 * 20,

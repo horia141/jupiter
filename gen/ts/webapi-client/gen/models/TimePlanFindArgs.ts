@@ -9,6 +9,7 @@ import type { EntityId } from './EntityId';
 export type TimePlanFindArgs = {
     allow_archived: boolean;
     include_notes: boolean;
+    include_planning_tasks: boolean;
     filter_ref_ids?: (Array<EntityId> | null);
 };
 

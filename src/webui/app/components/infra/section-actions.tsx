@@ -66,6 +66,16 @@ interface ActionMultipleDesc {
   actions: Array<ActionSingleDesc>;
 }
 
+interface ButtonSingleDesc {
+  kind: "button-single";
+  text: string;
+  icon?: JSX.Element;
+  onClick: () => void;
+  highlight?: boolean;
+  gatedOn?: WorkspaceFeature;
+  disabled?: boolean;
+}
+
 interface FilterOption<K> {
   value: K;
   text: string;
@@ -96,10 +106,21 @@ type ActionDesc =
   | NavMultipleDesc // A group of buttons, as a navigation
   | ActionSingleDesc // A single button, as an action
   | ActionMultipleDesc // A group of buttons, as an action
+  | ButtonSingleDesc // A single button, as a button
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | FilterFewOptionsDesc<any> // A group to filter on, can be a navigation or a callback
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | FilterManyOptionsDesc<any>; // A group to filter on, with many options
+
+export function isSingleAction(
+  action: ActionDesc,
+): action is NavSingleDesc | ActionSingleDesc | ButtonSingleDesc {
+  return (
+    action.kind === "nav-single" ||
+    action.kind === "action-single" ||
+    action.kind === "button-single"
+  );
+}
 
 export function NavSingle(desc: Omit<NavSingleDesc, "kind">): NavSingleDesc {
   return {
@@ -143,6 +164,15 @@ export function ActionMultipleSpread(
   return {
     kind: "action-multiple",
     approach: "spread",
+    ...desc,
+  };
+}
+
+export function ButtonSingle(
+  desc: Omit<ButtonSingleDesc, "kind">,
+): ButtonSingleDesc {
+  return {
+    kind: "button-single",
     ...desc,
   };
 }
@@ -195,51 +225,74 @@ export function FilterManyOptions<K>(
   };
 }
 
+export enum ActionsExpansion {
+  ALWAYS_SHOW,
+  ALWAYS_COMPACT,
+  ADAPT,
+}
+
 interface SectionActionsProps {
   id: string;
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  expansion?: ActionsExpansion;
   actions: Array<ActionDesc>;
   extraActions?: Array<ActionDesc>;
 }
 
 export function SectionActions(props: SectionActionsProps) {
   const isBigScreen = useBigScreen();
+  const expansion = props.expansion ?? ActionsExpansion.ADAPT;
 
-  if (!isBigScreen) {
-    const allActions = props.actions.concat(props.extraActions ?? []);
-    return (
-      <SectionActionsWithDialog
-        id={props.id}
-        topLevelInfo={props.topLevelInfo}
-        inputsEnabled={props.inputsEnabled}
-        actions={allActions}
-      />
-    );
+  let actions: Array<ActionDesc>;
+  let extraActions: Array<ActionDesc>;
+
+  if (props.actions.length === 1 && props.extraActions?.length === 0) {
+    actions = props.actions;
+    extraActions = [];
+  } else if (expansion === ActionsExpansion.ALWAYS_COMPACT) {
+    actions = [];
+    extraActions = props.actions.concat(props.extraActions ?? []);
+  } else if (expansion === ActionsExpansion.ADAPT && !isBigScreen) {
+    if (isSingleAction(props.actions[0])) {
+      actions = props.actions.slice(0, 1);
+      extraActions = props.actions.concat(props.extraActions ?? []);
+    } else {
+      actions = [];
+      extraActions = props.actions.concat(props.extraActions ?? []);
+    }
+  } else {
+    actions = props.actions;
+    extraActions = props.extraActions ?? [];
   }
 
   return (
     <Stack
+      id={props.id}
       direction="row"
       spacing={1}
       sx={{ padding: "0.25rem", height: "fit-content" }}
     >
-      {props.actions.map((action, index) => (
+      {actions.map((action, index) => (
         <ActionView
           key={`action-${props.id}-${index}`}
           topLevelInfo={props.topLevelInfo}
+          isInDialog={false}
           inputsEnabled={props.inputsEnabled}
           orientation="horizontal"
           action={action}
         />
       ))}
 
-      <SectionActionsWithDialog
-        id={props.id}
-        topLevelInfo={props.topLevelInfo}
-        inputsEnabled={props.inputsEnabled}
-        actions={props.extraActions ?? []}
-      />
+      {((actions.length == 0 && extraActions.length > 0) ||
+        extraActions.length > 1) && (
+        <SectionActionsWithDialog
+          id={props.id}
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
+          actions={extraActions}
+        />
+      )}
     </Stack>
   );
 }
@@ -284,6 +337,7 @@ function SectionActionsWithDialog(props: SectionActionsWithDialogProps) {
                 key={`action-${props.id}-${index}`}
                 topLevelInfo={props.topLevelInfo}
                 inputsEnabled={props.inputsEnabled}
+                isInDialog={true}
                 orientation="vertical"
                 action={action}
               />
@@ -303,6 +357,7 @@ function SectionActionsWithDialog(props: SectionActionsWithDialogProps) {
 interface ActionViewProps {
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  isInDialog: boolean;
   orientation: "horizontal" | "vertical";
   action: ActionDesc;
 }
@@ -314,6 +369,7 @@ function ActionView(props: ActionViewProps) {
         <NavSingleView
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
+          isInDialog={props.isInDialog}
           action={props.action}
         />
       );
@@ -324,6 +380,7 @@ function ActionView(props: ActionViewProps) {
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
           orientation={props.orientation}
+          isInDialog={props.isInDialog}
           action={props.action}
         />
       );
@@ -333,6 +390,7 @@ function ActionView(props: ActionViewProps) {
         <ActionSingleView
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
+          isInDialog={props.isInDialog}
           action={props.action}
         />
       );
@@ -343,6 +401,17 @@ function ActionView(props: ActionViewProps) {
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
           orientation={props.orientation}
+          isInDialog={props.isInDialog}
+          action={props.action}
+        />
+      );
+
+    case "button-single":
+      return (
+        <ButtonSingleView
+          topLevelInfo={props.topLevelInfo}
+          inputsEnabled={props.inputsEnabled}
+          isInDialog={props.isInDialog}
           action={props.action}
         />
       );
@@ -353,6 +422,7 @@ function ActionView(props: ActionViewProps) {
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
           orientation={props.orientation}
+          isInDialog={props.isInDialog}
           action={props.action}
         />
       );
@@ -363,6 +433,7 @@ function ActionView(props: ActionViewProps) {
           topLevelInfo={props.topLevelInfo}
           inputsEnabled={props.inputsEnabled}
           orientation={props.orientation}
+          isInDialog={props.isInDialog}
           action={props.action}
         />
       );
@@ -372,10 +443,13 @@ function ActionView(props: ActionViewProps) {
 interface NavSingleViewProps {
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  isInDialog: boolean;
   action: NavSingleDesc;
 }
 
 function NavSingleView(props: NavSingleViewProps) {
+  const isBigScreen = useBigScreen();
+
   if (props.action.gatedOn) {
     const workspace = props.topLevelInfo.workspace;
     if (!isWorkspaceFeatureAvailable(workspace, props.action.gatedOn)) {
@@ -395,7 +469,7 @@ function NavSingleView(props: NavSingleViewProps) {
       startIcon={props.action.icon}
       to={props.action.link}
     >
-      {props.action.text}
+      {getRealText(props.action.text, props.isInDialog, isBigScreen)}
     </Button>
   );
 }
@@ -403,6 +477,7 @@ function NavSingleView(props: NavSingleViewProps) {
 interface NavMultipleViewProps {
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  isInDialog: boolean;
   orientation: "horizontal" | "vertical";
   action: NavMultipleDesc;
 }
@@ -417,6 +492,8 @@ function NavMultipleView(props: NavMultipleViewProps) {
 }
 
 function NavMultipleSpreadView(props: NavMultipleViewProps) {
+  const isBigScreen = useBigScreen();
+
   return (
     <ButtonGroup orientation={props.orientation}>
       {props.action.navs.map((nav, index) => {
@@ -440,7 +517,7 @@ function NavMultipleSpreadView(props: NavMultipleViewProps) {
             startIcon={nav.icon}
             to={nav.link}
           >
-            {nav.text}
+            {getRealText(nav.text, props.isInDialog, isBigScreen)}
           </Button>
         );
       })}
@@ -499,7 +576,11 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
           startIcon={realActions[selectedIndex].icon}
           to={realActions[selectedIndex].link}
         >
-          {realActions[selectedIndex].text}
+          {getRealText(
+            realActions[selectedIndex].text || "",
+            props.isInDialog,
+            isBigScreen,
+          )}
         </Button>
         <Button
           id="section-action-nav-multiple-compact-button"
@@ -546,10 +627,13 @@ function NavMultipleCompactView(props: NavMultipleViewProps) {
 interface ActionSingleViewProps {
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  isInDialog: boolean;
   action: ActionSingleDesc;
 }
 
 function ActionSingleView(props: ActionSingleViewProps) {
+  const isBigScreen = useBigScreen();
+
   if (props.action.gatedOn) {
     const workspace = props.topLevelInfo.workspace;
     if (!isWorkspaceFeatureAvailable(workspace, props.action.gatedOn)) {
@@ -571,7 +655,7 @@ function ActionSingleView(props: ActionSingleViewProps) {
       value={props.action.value}
       id={props.action.id}
     >
-      {props.action.text}
+      {getRealText(props.action.text || "", props.isInDialog, isBigScreen)}
     </Button>
   );
 }
@@ -579,6 +663,7 @@ function ActionSingleView(props: ActionSingleViewProps) {
 interface ActionMultipleViewProps {
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  isInDialog: boolean;
   orientation: "horizontal" | "vertical";
   action: ActionMultipleDesc;
 }
@@ -593,6 +678,8 @@ function ActionMultipleView(props: ActionMultipleViewProps) {
 }
 
 function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
+  const isBigScreen = useBigScreen();
+
   return (
     <ButtonGroup orientation={props.orientation}>
       {props.action.actions.map((action, index) => {
@@ -618,7 +705,7 @@ function ActionMultipleSpreadView(props: ActionMultipleViewProps) {
             value={action.value}
             id={action.id}
           >
-            {action.text}
+            {getRealText(action.text || "", props.isInDialog, isBigScreen)}
           </Button>
         );
       })}
@@ -675,7 +762,11 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
           value={realActions[selectedIndex].value}
           id={realActions[selectedIndex].id}
         >
-          {realActions[selectedIndex].text}
+          {getRealText(
+            realActions[selectedIndex].text || "",
+            props.isInDialog,
+            isBigScreen,
+          )}
         </Button>
         <Button
           size="small"
@@ -727,9 +818,39 @@ function ActionMultipleCompactView(props: ActionMultipleViewProps) {
   );
 }
 
+interface ButtonSingleViewProps {
+  topLevelInfo: TopLevelInfo;
+  inputsEnabled: boolean;
+  isInDialog: boolean;
+  action: ButtonSingleDesc;
+}
+
+function ButtonSingleView(props: ButtonSingleViewProps) {
+  const isBigScreen = useBigScreen();
+
+  if (props.action.gatedOn) {
+    const workspace = props.topLevelInfo.workspace;
+    if (!isWorkspaceFeatureAvailable(workspace, props.action.gatedOn)) {
+      return <></>;
+    }
+  }
+
+  return (
+    <Button
+      variant={props.action.highlight ? "contained" : "outlined"}
+      disabled={!props.inputsEnabled || props.action.disabled}
+      startIcon={props.action.icon}
+      onClick={props.action.onClick}
+    >
+      {getRealText(props.action.text || "", props.isInDialog, isBigScreen)}
+    </Button>
+  );
+}
+
 interface FilterFewOptionsViewProps<K> {
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  isInDialog: boolean;
   orientation: "horizontal" | "vertical";
   action: FilterFewOptionsDesc<K>;
 }
@@ -744,6 +865,7 @@ function FilterFewOptionsView<K>(props: FilterFewOptionsViewProps<K>) {
 }
 
 function FilterFewOptionsSpreadView<K>(props: FilterFewOptionsViewProps<K>) {
+  const isBigScreen = useBigScreen();
   const [selected, setSelected] = useState<K>(props.action.defaultOption);
 
   const realOptions: FilterOption<K>[] = [];
@@ -786,7 +908,7 @@ function FilterFewOptionsSpreadView<K>(props: FilterFewOptionsViewProps<K>) {
               props.action.onSelect(option.value);
             }}
           >
-            {option.text}
+            {getRealText(option.text, props.isInDialog, isBigScreen)}
           </Button>
         );
       })}
@@ -855,6 +977,7 @@ function FilterFewOptionsCompactView<K>(props: FilterFewOptionsViewProps<K>) {
 interface FilterManyOptionsViewProps<K> {
   topLevelInfo: TopLevelInfo;
   inputsEnabled: boolean;
+  isInDialog: boolean;
   orientation: "horizontal" | "vertical";
   action: FilterManyOptionsDesc<K>;
 }
@@ -920,4 +1043,20 @@ function FilterManyOptionsView<K>(props: FilterManyOptionsViewProps<K>) {
       )}
     />
   );
+}
+
+function getRealText(text: string, isInDialog: boolean, isBigScreen: boolean) {
+  if (isBigScreen || isInDialog) {
+    return text;
+  }
+
+  if (text.length <= 4) {
+    return text;
+  }
+
+  if (text.toLowerCase() === "create" || text.toLowerCase() === "new") {
+    return text;
+  }
+
+  return `${text.slice(0, 3)}...`;
 }

@@ -61,12 +61,12 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         user = context.user
         workspace = context.workspace
 
-        report_service = ReportService(self._domain_storage_engine, self._time_provider)
+        report_service = ReportService(self._domain_storage_engine)
 
         report_period_result = await report_service.do_it(
             user=user,
             workspace=workspace,
-            today=args.today,
+            today=args.today or self._time_provider.get_current_date(),
             period=args.period,
             sources=args.sources,
             breakdowns=args.breakdowns,

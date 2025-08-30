@@ -13,6 +13,7 @@ from jupiter.core.domain.concept.time_plans.time_plan_activity_kind import (
 from jupiter.core.domain.concept.time_plans.time_plan_activity_target import (
     TimePlanActivityTarget,
 )
+from jupiter.core.domain.core.archival_reason import ArchivalReason
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.entity_name import EntityName
 from jupiter.core.framework.context import DomainContext
@@ -152,6 +153,6 @@ class TimePlanActivityRespository(LeafEntityRepository[TimePlanActivity], abc.AB
         self,
         target: TimePlanActivityTarget,
         target_ref_id: EntityId,
-        allow_archived: bool = False,
+        allow_archived: bool | ArchivalReason | list[ArchivalReason] = False,
     ) -> list[EntityId]:
         """Find all time plan ids with a certain entity in their activity set."""

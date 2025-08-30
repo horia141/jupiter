@@ -1,15 +1,5 @@
 import { ApiError, NoteDomain, WorkspaceFeature } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -20,11 +10,11 @@ import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
-import { EntityNoteEditor } from "~/components/entity-note-editor";
+import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { TimeEventFullDaysBlockStack } from "~/components/time-event-full-days-block-stack";
+import { TimeEventFullDaysBlockStack } from "~/components/domain/application/calendar/time-event-full-days-block-stack";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -32,6 +22,11 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { SectionCard } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
 
 const ParamsSchema = z.object({
   id: z.string(),
@@ -175,98 +170,96 @@ export default function Vacation() {
   return (
     <LeafPanel
       key={`vacation-${vacation.ref_id}`}
+      fakeKey={`vacation-${vacation.ref_id}`}
       showArchiveAndRemoveButton
       inputsEnabled={inputsEnabled}
       entityArchived={vacation.archived}
       returnLocation="/app/workspace/vacations"
     >
-      <Card sx={{ marginBottom: "1rem" }}>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="name"
-                name="name"
-                readOnly={!inputsEnabled}
-                defaultValue={vacation.name}
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="Properties"
+        actions={
+          <SectionActions
+            id="vacation-properties"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Save",
+                value: "update",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="name"
+            name="name"
+            readOnly={!inputsEnabled}
+            defaultValue={vacation.name}
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="startDate" shrink>
-                Start Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="startDate"
-                defaultValue={aDateToDate(vacation.start_date).toFormat(
-                  "yyyy-MM-dd",
-                )}
-                name="startDate"
-                readOnly={!inputsEnabled}
-              />
+        <FormControl fullWidth>
+          <InputLabel id="startDate" shrink>
+            Start Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="startDate"
+            defaultValue={aDateToDate(vacation.start_date).toFormat(
+              "yyyy-MM-dd",
+            )}
+            name="startDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
 
-              <FieldError actionResult={actionData} fieldName="/start_date" />
-            </FormControl>
+          <FieldError actionResult={actionData} fieldName="/start_date" />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="endDate" shrink>
-                End Date
-              </InputLabel>
-              <OutlinedInput
-                type="date"
-                notched
-                label="endDate"
-                defaultValue={aDateToDate(vacation.end_date).toFormat(
-                  "yyyy-MM-dd",
-                )}
-                name="endDate"
-                readOnly={!inputsEnabled}
-              />
+        <FormControl fullWidth>
+          <InputLabel id="endDate" shrink>
+            End Date
+          </InputLabel>
+          <OutlinedInput
+            type="date"
+            notched
+            label="endDate"
+            defaultValue={aDateToDate(vacation.end_date).toFormat("yyyy-MM-dd")}
+            name="endDate"
+            readOnly={!inputsEnabled}
+            disabled={!inputsEnabled}
+          />
 
-              <FieldError actionResult={actionData} fieldName="/end_date" />
-            </FormControl>
-          </Stack>
-        </CardContent>
+          <FieldError actionResult={actionData} fieldName="/end_date" />
+        </FormControl>
+      </SectionCard>
 
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="vacation-update"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="update"
-            >
-              Save
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
-
-      <Card>
-        {!note && (
-          <CardActions>
-            <ButtonGroup>
-              <Button
-                id="vacation-create-note"
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="create-note"
-              >
-                Create Note
-              </Button>
-            </ButtonGroup>
-          </CardActions>
-        )}
-
+      <SectionCard
+        title="Note"
+        actions={
+          <SectionActions
+            id="chore-note"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                text: "Create Note",
+                value: "create-note",
+                highlight: false,
+                disabled: note !== null,
+              }),
+            ]}
+          />
+        }
+      >
         {note && (
           <>
             <EntityNoteEditor
@@ -275,7 +268,7 @@ export default function Vacation() {
             />
           </>
         )}
-      </Card>
+      </SectionCard>
 
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,

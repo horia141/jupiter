@@ -11,11 +11,13 @@ if TYPE_CHECKING:
     from ..models.chore_summary import ChoreSummary
     from ..models.habit_summary import HabitSummary
     from ..models.inbox_task_summary import InboxTaskSummary
+    from ..models.journal_summary import JournalSummary
     from ..models.metric_summary import MetricSummary
     from ..models.person_summary import PersonSummary
     from ..models.project_summary import ProjectSummary
     from ..models.schedule_stream_summary import ScheduleStreamSummary
     from ..models.smart_list_summary import SmartListSummary
+    from ..models.user import User
     from ..models.vacation_summary import VacationSummary
     from ..models.workspace import Workspace
 
@@ -28,12 +30,14 @@ class GetSummariesResult:
     """Get summaries result.
 
     Attributes:
+        user (Union['User', None, Unset]):
         workspace (Union['Workspace', None, Unset]):
         vacations (Union[None, Unset, list['VacationSummary']]):
         schedule_streams (Union[None, Unset, list['ScheduleStreamSummary']]):
         root_project (Union['ProjectSummary', None, Unset]):
         projects (Union[None, Unset, list['ProjectSummary']]):
         inbox_tasks (Union[None, Unset, list['InboxTaskSummary']]):
+        journals_last_year (Union[None, Unset, list['JournalSummary']]):
         habits (Union[None, Unset, list['HabitSummary']]):
         chores (Union[None, Unset, list['ChoreSummary']]):
         big_plans (Union[None, Unset, list['BigPlanSummary']]):
@@ -42,12 +46,14 @@ class GetSummariesResult:
         persons (Union[None, Unset, list['PersonSummary']]):
     """
 
+    user: Union["User", None, Unset] = UNSET
     workspace: Union["Workspace", None, Unset] = UNSET
     vacations: Union[None, Unset, list["VacationSummary"]] = UNSET
     schedule_streams: Union[None, Unset, list["ScheduleStreamSummary"]] = UNSET
     root_project: Union["ProjectSummary", None, Unset] = UNSET
     projects: Union[None, Unset, list["ProjectSummary"]] = UNSET
     inbox_tasks: Union[None, Unset, list["InboxTaskSummary"]] = UNSET
+    journals_last_year: Union[None, Unset, list["JournalSummary"]] = UNSET
     habits: Union[None, Unset, list["HabitSummary"]] = UNSET
     chores: Union[None, Unset, list["ChoreSummary"]] = UNSET
     big_plans: Union[None, Unset, list["BigPlanSummary"]] = UNSET
@@ -58,7 +64,16 @@ class GetSummariesResult:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.project_summary import ProjectSummary
+        from ..models.user import User
         from ..models.workspace import Workspace
+
+        user: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.user, Unset):
+            user = UNSET
+        elif isinstance(self.user, User):
+            user = self.user.to_dict()
+        else:
+            user = self.user
 
         workspace: Union[None, Unset, dict[str, Any]]
         if isinstance(self.workspace, Unset):
@@ -123,6 +138,18 @@ class GetSummariesResult:
 
         else:
             inbox_tasks = self.inbox_tasks
+
+        journals_last_year: Union[None, Unset, list[dict[str, Any]]]
+        if isinstance(self.journals_last_year, Unset):
+            journals_last_year = UNSET
+        elif isinstance(self.journals_last_year, list):
+            journals_last_year = []
+            for journals_last_year_type_0_item_data in self.journals_last_year:
+                journals_last_year_type_0_item = journals_last_year_type_0_item_data.to_dict()
+                journals_last_year.append(journals_last_year_type_0_item)
+
+        else:
+            journals_last_year = self.journals_last_year
 
         habits: Union[None, Unset, list[dict[str, Any]]]
         if isinstance(self.habits, Unset):
@@ -199,6 +226,8 @@ class GetSummariesResult:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
+        if user is not UNSET:
+            field_dict["user"] = user
         if workspace is not UNSET:
             field_dict["workspace"] = workspace
         if vacations is not UNSET:
@@ -211,6 +240,8 @@ class GetSummariesResult:
             field_dict["projects"] = projects
         if inbox_tasks is not UNSET:
             field_dict["inbox_tasks"] = inbox_tasks
+        if journals_last_year is not UNSET:
+            field_dict["journals_last_year"] = journals_last_year
         if habits is not UNSET:
             field_dict["habits"] = habits
         if chores is not UNSET:
@@ -232,15 +263,34 @@ class GetSummariesResult:
         from ..models.chore_summary import ChoreSummary
         from ..models.habit_summary import HabitSummary
         from ..models.inbox_task_summary import InboxTaskSummary
+        from ..models.journal_summary import JournalSummary
         from ..models.metric_summary import MetricSummary
         from ..models.person_summary import PersonSummary
         from ..models.project_summary import ProjectSummary
         from ..models.schedule_stream_summary import ScheduleStreamSummary
         from ..models.smart_list_summary import SmartListSummary
+        from ..models.user import User
         from ..models.vacation_summary import VacationSummary
         from ..models.workspace import Workspace
 
         d = dict(src_dict)
+
+        def _parse_user(data: object) -> Union["User", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                user_type_0 = User.from_dict(data)
+
+                return user_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["User", None, Unset], data)
+
+        user = _parse_user(d.pop("user", UNSET))
 
         def _parse_workspace(data: object) -> Union["Workspace", None, Unset]:
             if data is None:
@@ -363,6 +413,28 @@ class GetSummariesResult:
             return cast(Union[None, Unset, list["InboxTaskSummary"]], data)
 
         inbox_tasks = _parse_inbox_tasks(d.pop("inbox_tasks", UNSET))
+
+        def _parse_journals_last_year(data: object) -> Union[None, Unset, list["JournalSummary"]]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                journals_last_year_type_0 = []
+                _journals_last_year_type_0 = data
+                for journals_last_year_type_0_item_data in _journals_last_year_type_0:
+                    journals_last_year_type_0_item = JournalSummary.from_dict(journals_last_year_type_0_item_data)
+
+                    journals_last_year_type_0.append(journals_last_year_type_0_item)
+
+                return journals_last_year_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[None, Unset, list["JournalSummary"]], data)
+
+        journals_last_year = _parse_journals_last_year(d.pop("journals_last_year", UNSET))
 
         def _parse_habits(data: object) -> Union[None, Unset, list["HabitSummary"]]:
             if data is None:
@@ -497,12 +569,14 @@ class GetSummariesResult:
         persons = _parse_persons(d.pop("persons", UNSET))
 
         get_summaries_result = cls(
+            user=user,
             workspace=workspace,
             vacations=vacations,
             schedule_streams=schedule_streams,
             root_project=root_project,
             projects=projects,
             inbox_tasks=inbox_tasks,
+            journals_last_year=journals_last_year,
             habits=habits,
             chores=chores,
             big_plans=big_plans,

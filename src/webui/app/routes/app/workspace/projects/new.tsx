@@ -1,16 +1,6 @@
 import type { ProjectSummary } from "@jupiter/webapi-client";
 import { ApiError } from "@jupiter/webapi-client";
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -18,16 +8,23 @@ import { useActionData, useNavigation } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { parseForm } from "zodix";
+import { useContext } from "react";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
 import { makeLeafErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
-import { ProjectSelect } from "~/components/project-select";
+import { ProjectSelect } from "~/components/domain/concept/project/project-select";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
+import { SectionCard, ActionsPosition } from "~/components/infra/section-card";
+import {
+  ActionSingle,
+  SectionActions,
+} from "~/components/infra/section-actions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = z.object({});
 
@@ -81,64 +78,65 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 export default function NewProject() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const navigation = useNavigation();
 
   const inputsEnabled = navigation.state === "idle";
 
   return (
     <LeafPanel
-      key={"projects/new"}
+      key="projects/new"
+      fakeKey={"projects/new"}
       returnLocation="/app/workspace/projects"
       inputsEnabled={inputsEnabled}
     >
-      <Card>
-        <GlobalError actionResult={actionData} />
-        <CardContent>
-          <Stack spacing={2} useFlexGap>
-            <FormControl fullWidth>
-              <ProjectSelect
-                name="parentProjectRefId"
-                label="Parent Project"
-                inputsEnabled={inputsEnabled}
-                disabled={false}
-                allProjects={loaderData.allProjects}
-                defaultValue={loaderData.rootProject.ref_id}
-              />
-              <FieldError
-                actionResult={actionData}
-                fieldName="/parent_project_ref_id"
-              />
-            </FormControl>
+      <GlobalError actionResult={actionData} />
+      <SectionCard
+        title="New Project"
+        actionsPosition={ActionsPosition.BELOW}
+        actions={
+          <SectionActions
+            id="project-create"
+            topLevelInfo={topLevelInfo}
+            inputsEnabled={inputsEnabled}
+            actions={[
+              ActionSingle({
+                id: "project-create",
+                text: "Create",
+                value: "create",
+                highlight: true,
+              }),
+            ]}
+          />
+        }
+      >
+        <FormControl fullWidth>
+          <ProjectSelect
+            name="parentProjectRefId"
+            label="Parent Project"
+            inputsEnabled={inputsEnabled}
+            disabled={false}
+            allProjects={loaderData.allProjects}
+            defaultValue={loaderData.rootProject.ref_id}
+          />
+          <FieldError
+            actionResult={actionData}
+            fieldName="/parent_project_ref_id"
+          />
+        </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="name">Name</InputLabel>
-              <OutlinedInput
-                label="Name"
-                name="name"
-                readOnly={!inputsEnabled}
-                type="text"
-                placeholder="Project name"
-              />
-              <FieldError actionResult={actionData} fieldName="/name" />
-            </FormControl>
-          </Stack>
-        </CardContent>
-
-        <CardActions>
-          <ButtonGroup>
-            <Button
-              id="project-create"
-              variant="contained"
-              disabled={!inputsEnabled}
-              type="submit"
-              name="intent"
-              value="create"
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </CardActions>
-      </Card>
+        <FormControl fullWidth>
+          <InputLabel id="name">Name</InputLabel>
+          <OutlinedInput
+            label="Name"
+            name="name"
+            readOnly={!inputsEnabled}
+            type="text"
+            placeholder="Project name"
+          />
+          <FieldError actionResult={actionData} fieldName="/name" />
+        </FormControl>
+      </SectionCard>
     </LeafPanel>
   );
 }

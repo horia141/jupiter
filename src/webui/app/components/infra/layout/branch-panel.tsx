@@ -4,7 +4,6 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import {
   Box,
   Button,
@@ -14,12 +13,12 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Stack,
   styled,
 } from "@mui/material";
 import { Form, Link, useLocation } from "@remix-run/react";
-import { AnimatePresence, motion, useIsPresent } from "framer-motion";
+import { motion, useIsPresent } from "framer-motion";
 import {
-  Fragment,
   type PropsWithChildren,
   useCallback,
   useEffect,
@@ -44,7 +43,7 @@ interface BranchPanelProps {
   showArchiveAndRemoveButton?: boolean;
   inputsEnabled?: boolean;
   entityArchived?: boolean;
-  extraControls?: JSX.Element[];
+  actions?: JSX.Element;
   returnLocation: string;
 }
 
@@ -183,12 +182,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
                 </Button>
               )}
 
-              {props.extraControls && (
-                <TrunkPanelExtraControls
-                  isBigScreen={isBigScreen}
-                  controls={props.extraControls}
-                />
-              )}
+              {props.actions}
 
               {props.showArchiveAndRemoveButton && (
                 <>
@@ -259,7 +253,7 @@ export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
         isbigscreen={isBigScreen ? "true" : "false"}
         hasleaf={shouldShowALeaf ? "true" : "false"}
       >
-        {props.children}
+        <Stack spacing={2}>{props.children}</Stack>
       </BranchPanelContent>
     </BranchPanelFrame>
   );
@@ -295,92 +289,6 @@ const TrunkPanelControlsInner = styled(Box)<TrunkPanelControlsInnerProps>(
   }),
 );
 
-interface TrunkPanelExtraControlsProps {
-  isBigScreen: boolean;
-  controls: JSX.Element[];
-}
-
-function TrunkPanelExtraControls({
-  isBigScreen,
-  controls,
-}: TrunkPanelExtraControlsProps) {
-  const [showFullControls, setShowFullControls] = useState(false);
-
-  if (isBigScreen) {
-    return (
-      <>
-        {controls.map((c, i) => (
-          <Fragment key={i}>{c}</Fragment>
-        ))}
-      </>
-    );
-  } else if (controls.length === 0) {
-    return null;
-  } else if (controls.length === 1) {
-    return controls[0];
-  }
-
-  return (
-    <>
-      {!showFullControls && (
-        <Button variant="outlined" onClick={() => setShowFullControls(true)}>
-          <MoreHorizIcon />
-        </Button>
-      )}
-      <AnimatePresence>
-        {showFullControls && (
-          <TrunkPanelExtraControlsFrame
-            key="trunk-panel-extra-controls"
-            initial={{ opacity: 1, x: "100vw" }}
-            animate={{ opacity: 1, x: "0vw" }}
-            exit={{ opacity: 1, x: "100vw" }}
-            transition={{ duration: 0.4 }}
-          >
-            <TrunkPanelExtraControlsOuterContainer>
-              <TrunkPanelExtraControlsInnerContainer>
-                {controls.map((c, i) => (
-                  <Fragment key={i}>{c}</Fragment>
-                ))}
-              </TrunkPanelExtraControlsInnerContainer>
-            </TrunkPanelExtraControlsOuterContainer>
-            <IconButton
-              onClick={() => setShowFullControls(false)}
-              sx={{ marginLeft: "auto" }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </TrunkPanelExtraControlsFrame>
-        )}
-      </AnimatePresence>
-    </>
-  );
-}
-
-const TrunkPanelExtraControlsFrame = styled(motion.div)(() => ({
-  position: "absolute",
-  left: "0px",
-  right: "0px",
-  height: "3rem",
-  backgroundColor: "white",
-  width: "100vw",
-  display: "flex",
-  paddingLeft: "0.5rem",
-  paddingRight: "0.5rem",
-  alignItems: "center",
-  zIndex: "1002",
-}));
-
-const TrunkPanelExtraControlsOuterContainer = styled(Box)(() => ({
-  width: "calc(100vw - 1rem - 1rem - 16px)",
-  overflowX: "scroll",
-}));
-
-const TrunkPanelExtraControlsInnerContainer = styled(Box)(() => ({
-  display: "flex",
-  gap: "1rem",
-  width: "fit-content",
-}));
-
 interface BranchPanelContentProps {
   isbigscreen: string;
   hasleaf: string;
@@ -393,11 +301,11 @@ const BranchPanelContent = styled("div")<BranchPanelContentProps>(
     paddingLeft:
       isbigscreen === "true"
         ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
-        : "0px",
+        : "0.25rem",
     paddingRight:
       isbigscreen === "true"
         ? `calc((100vw - ${theme.breakpoints.values.lg}px) / 2)`
-        : "0px",
+        : "0.25rem",
     height: `calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"
     } - ${

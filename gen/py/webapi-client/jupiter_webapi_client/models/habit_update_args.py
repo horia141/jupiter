@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from ..models.habit_update_args_due_at_day import HabitUpdateArgsDueAtDay
     from ..models.habit_update_args_due_at_month import HabitUpdateArgsDueAtMonth
     from ..models.habit_update_args_eisen import HabitUpdateArgsEisen
+    from ..models.habit_update_args_is_key import HabitUpdateArgsIsKey
     from ..models.habit_update_args_name import HabitUpdateArgsName
     from ..models.habit_update_args_period import HabitUpdateArgsPeriod
     from ..models.habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
@@ -30,6 +31,7 @@ class HabitUpdateArgs:
         ref_id (str): A generic entity id.
         name (HabitUpdateArgsName):
         project_ref_id (HabitUpdateArgsProjectRefId):
+        is_key (HabitUpdateArgsIsKey):
         period (HabitUpdateArgsPeriod):
         eisen (HabitUpdateArgsEisen):
         difficulty (HabitUpdateArgsDifficulty):
@@ -45,6 +47,7 @@ class HabitUpdateArgs:
     ref_id: str
     name: "HabitUpdateArgsName"
     project_ref_id: "HabitUpdateArgsProjectRefId"
+    is_key: "HabitUpdateArgsIsKey"
     period: "HabitUpdateArgsPeriod"
     eisen: "HabitUpdateArgsEisen"
     difficulty: "HabitUpdateArgsDifficulty"
@@ -63,6 +66,8 @@ class HabitUpdateArgs:
         name = self.name.to_dict()
 
         project_ref_id = self.project_ref_id.to_dict()
+
+        is_key = self.is_key.to_dict()
 
         period = self.period.to_dict()
 
@@ -91,6 +96,7 @@ class HabitUpdateArgs:
                 "ref_id": ref_id,
                 "name": name,
                 "project_ref_id": project_ref_id,
+                "is_key": is_key,
                 "period": period,
                 "eisen": eisen,
                 "difficulty": difficulty,
@@ -114,6 +120,7 @@ class HabitUpdateArgs:
         from ..models.habit_update_args_due_at_day import HabitUpdateArgsDueAtDay
         from ..models.habit_update_args_due_at_month import HabitUpdateArgsDueAtMonth
         from ..models.habit_update_args_eisen import HabitUpdateArgsEisen
+        from ..models.habit_update_args_is_key import HabitUpdateArgsIsKey
         from ..models.habit_update_args_name import HabitUpdateArgsName
         from ..models.habit_update_args_period import HabitUpdateArgsPeriod
         from ..models.habit_update_args_project_ref_id import HabitUpdateArgsProjectRefId
@@ -127,6 +134,8 @@ class HabitUpdateArgs:
         name = HabitUpdateArgsName.from_dict(d.pop("name"))
 
         project_ref_id = HabitUpdateArgsProjectRefId.from_dict(d.pop("project_ref_id"))
+
+        is_key = HabitUpdateArgsIsKey.from_dict(d.pop("is_key"))
 
         period = HabitUpdateArgsPeriod.from_dict(d.pop("period"))
 
@@ -152,6 +161,7 @@ class HabitUpdateArgs:
             ref_id=ref_id,
             name=name,
             project_ref_id=project_ref_id,
+            is_key=is_key,
             period=period,
             eisen=eisen,
             difficulty=difficulty,

@@ -10,6 +10,8 @@ class NamedEntityTag(EnumValue):
 
     SCORE_LOG_ENTRY = "ScoreLogEntry"  # ScoreLogEntry.__name__
 
+    HOME_TAB = "HomeTab"  # HomeTab.__name__
+    HOME_WIDGET = "HomeWidget"  # HomeWidget.__name__
     INBOX_TASK = "InboxTask"  # InboxTask.__name__
     WORKING_MEM = "WorkingMem"  # WorkingMem.__name__
     TIME_PLAN = "TimePlan"  # TimePlan.__name__
@@ -25,6 +27,7 @@ class NamedEntityTag(EnumValue):
     HABIT = "Habit"  # Habit.__name__
     CHORE = "Chore"  # Chore.__name__
     BIG_PLAN = "BigPlan"  # BigPlan.__name__
+    BIG_PLAN_MILESTONE = "BigPlanMilestone"  # BigPlanMilestone.__name__
     DOC = "Doc"  # Doc.__name__
     JOURNAL = "Journal"  # Journal.__name__
     VACATION = "Vacation"  # Vacation.__name__
