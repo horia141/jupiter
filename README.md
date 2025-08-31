@@ -1,4 +1,4 @@
-# The Thrive Goal Management System ![Release](https://img.shields.io/github/v/release/horia141/jupiter) ![Develop](https://github.com/horia141/jupiter/workflows/Develop/badge.svg) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+# The Thrive Goal Management System ![Release](https://img.shields.io/github/v/release/horia141/thrive) ![Develop](https://github.com/horia141/thrive/workflows/Develop/badge.svg) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Thrive is a tool for _life planning_. It provides goals management, task tracking,
 habit building, chores management, lists, metrics, a personal relationship manager, and

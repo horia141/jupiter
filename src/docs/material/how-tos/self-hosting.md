@@ -123,10 +123,10 @@ First, you need to download some configuration files to
 your machine. Putting these files in your home directory should be enough:
 
 ```bash
-wget https://github.com/horia141/jupiter/releases/latest/download/compose.yaml
-wget https://github.com/horia141/jupiter/releases/latest/download/nginx.conf
-wget https://github.com/horia141/jupiter/releases/latest/download/webui.conf
-wget https://github.com/horia141/jupiter/releases/latest/download/webui.nodomain.conf
+wget https://github.com/horia141/thrive/releases/latest/download/compose.yaml
+wget https://github.com/horia141/thrive/releases/latest/download/nginx.conf
+wget https://github.com/horia141/thrive/releases/latest/download/webui.conf
+wget https://github.com/horia141/thrive/releases/latest/download/webui.nodomain.conf
 ```
 
 It's instructive to inspect them, and you are free to modify them, but

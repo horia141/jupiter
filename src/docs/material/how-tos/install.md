@@ -17,7 +17,7 @@ mobile (iOS and Android) too.
 
 For MacOS, a simple way of installing the Thrive CLI is via a `dmg` archive published
 together with a release. You can check them
-[in the release page](https://github.com/horia141/jupiter/releases).
+[in the release page](https://github.com/horia141/thrive/releases).
 
 ![Releases](../assets/install-release.png)
 

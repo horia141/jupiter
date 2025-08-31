@@ -7,7 +7,7 @@ authors = ["Horia Coman <horia141@gmail.com>"]
 license = "MIT"
 homepage = "https://get-thriving.com"
 readme = "README.md"
-repository = "https://github.com/horia141/jupiter"
+repository = "https://github.com/horia141/thrive"
 documentation = "https://docs.get-thriving.com"
 
 [tool.poetry.dependencies]
