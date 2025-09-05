@@ -15,7 +15,7 @@ python = "^3.13"
 jupiter-core = {path = "../core", develop = true}
 rich = "^13.9.4"
 simpleaudio = "^1.0.4"
-beepy = "^1.0.7"
+beepy = "^1.0.9"
 
 [tool.poetry.group.dev.dependencies]
 types-requests = "^2.32.0"
