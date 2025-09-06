@@ -90,7 +90,10 @@ export default function Metrics() {
         )}
         <EntityStack>
           {loaderData.entries.map((entry) => (
-            <EntityCard key={entry.metric.ref_id}>
+            <EntityCard
+              entityId={`metric-${entry.metric.ref_id}`}
+              key={entry.metric.ref_id}
+            >
               <EntityLink to={`/app/workspace/metrics/${entry.metric.ref_id}`}>
                 {entry.metric.icon && (
                   <EntityIconComponent icon={entry.metric.icon} />

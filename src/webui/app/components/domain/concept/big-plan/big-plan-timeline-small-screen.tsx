@@ -127,6 +127,7 @@ export function BigPlanTimelineSmallScreen({
                 );
               })}
               <TimelineLink
+                id={`big-plan-${bigPlan.ref_id}`}
                 leftmargin={betterLeftMargin}
                 width={betterWidth}
                 to={`/app/workspace/big-plans/${bigPlan.ref_id}`}

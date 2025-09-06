@@ -5,7 +5,7 @@ from jupiter.core.framework.primitive import Primitive
 from jupiter.core.framework.realm import DatabaseRealm, RealmCodecRegistry
 from jupiter.core.framework.utils import is_primitive_type
 from jupiter.core.framework.value import AtomicValue, EnumValue
-from sqlalchemy import Select, Table
+from sqlalchemy import Select, Table, false
 
 
 def compile_query_relative_to(
@@ -29,11 +29,14 @@ def compile_query_relative_to(
             )
         elif isinstance(value, list):
             if len(value) == 0:
-                query_stmt = query_stmt.where(False)
+                query_stmt = query_stmt.where(false())
             else:
                 query_stmt = query_stmt.where(
                     getattr(table.c, key).in_(
-                        [realm_codec_registry.db_encode(v, DatabaseRealm) for v in value]
+                        [
+                            realm_codec_registry.db_encode(v, DatabaseRealm)
+                            for v in value
+                        ]
                     ),
                 )
         else:

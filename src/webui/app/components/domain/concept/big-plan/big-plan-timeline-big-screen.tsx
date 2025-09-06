@@ -95,7 +95,7 @@ export function BigPlanTimelineBigScreen({
             const milestones = bigPlanMilestonesByRefId.get(entry.ref_id) ?? [];
 
             return (
-              <TableRow key={entry.ref_id}>
+              <TableRow id={`big-plan-${entry.ref_id}`} key={entry.ref_id}>
                 <TableCell
                   sx={{
                     padding: "0px",

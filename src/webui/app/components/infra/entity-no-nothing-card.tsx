@@ -6,7 +6,7 @@ import {
   CardHeader,
   Typography,
 } from "@mui/material";
-import { Link } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 
 import type { DocsHelpSubject } from "~/components/infra/docs-help";
 import { DocsHelp } from "~/components/infra/docs-help";
@@ -14,7 +14,8 @@ import { DocsHelp } from "~/components/infra/docs-help";
 interface EntityNoNothingCardProps {
   title: string;
   message: string;
-  newEntityLocations: string;
+  newEntityLocations?: string;
+  newEntityAction?: string;
   helpSubject: DocsHelpSubject;
 }
 
@@ -31,14 +32,29 @@ export function EntityNoNothingCard(props: EntityNoNothingCardProps) {
         </Typography>
       </CardContent>
       <CardActions>
-        <Button
-          variant="contained"
-          size="small"
-          component={Link}
-          to={props.newEntityLocations}
-        >
-          Add New
-        </Button>
+        {props.newEntityLocations && (
+          <Button
+            variant="contained"
+            size="small"
+            component={Link}
+            to={props.newEntityLocations}
+          >
+            Add New
+          </Button>
+        )}
+        {props.newEntityAction && (
+          <Form method="post">
+            <Button
+              variant="contained"
+              size="small"
+              type="submit"
+              name="intent"
+              value={props.newEntityAction}
+            >
+              Add New
+            </Button>
+          </Form>
+        )}
       </CardActions>
     </Card>
   );

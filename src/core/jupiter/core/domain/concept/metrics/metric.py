@@ -13,6 +13,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.context import DomainContext
 from jupiter.core.framework.entity import (
     BranchEntity,
+    ContainsMany,
     IsRefId,
     OwnsAtMostOne,
     OwnsMany,
@@ -35,7 +36,7 @@ class Metric(BranchEntity):
     collection_params: RecurringTaskGenParams | None
     metric_unit: MetricUnit | None
 
-    entries = OwnsMany(MetricEntry, metric_ref_id=IsRefId())
+    entries = ContainsMany(MetricEntry, metric_ref_id=IsRefId())
     collection_tasks = OwnsMany(
         InboxTask, source=InboxTaskSource.METRIC, source_entity_ref_id=IsRefId()
     )

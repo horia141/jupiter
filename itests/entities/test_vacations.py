@@ -54,9 +54,7 @@ def create_vacation(logged_in_client: AuthenticatedClient):
     return _create_vacation
 
 
-def test_vacation_view_all(
-    logged_in_client: AuthenticatedClient, page: Page, create_vacation
-) -> None:
+def test_vacation_view_all(page: Page, create_vacation) -> None:
     vacation1 = create_vacation("First Vacation", 12, 10, 12, 15)
     vacation2 = create_vacation("Second Vacation", 12, 20, 12, 25)
     vacation3 = create_vacation("Third Vacation", 12, 22, 12, 27)

@@ -1,7 +1,6 @@
 import { ApiError, SyncTarget } from "@jupiter/webapi-client";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Button } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
@@ -13,6 +12,8 @@ import { z } from "zod";
 import { parseForm } from "zodix";
 
 import { getLoggedInApiClient } from "~/api-clients.server";
+import { DocsHelpSubject } from "~/components/infra/docs-help";
+import { EntityNoNothingCard } from "~/components/infra/entity-no-nothing-card";
 import { EntityNoteEditor } from "~/components/infra/entity-note-editor";
 import { makeTrunkErrorBoundary } from "~/components/infra/error-boundary";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -119,26 +120,23 @@ export default function WorkingMem() {
         shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
         <ToolPanel>
-          <SectionCard title="Working Mem">
-            {loaderData.entry && (
+          {loaderData.entry && (
+            <SectionCard title="Working Mem">
               <EntityNoteEditor
                 initialNote={loaderData.entry.note}
                 inputsEnabled={inputsEnabled}
               />
-            )}
+            </SectionCard>
+          )}
 
-            {!loaderData.entry && (
-              <Button
-                variant="contained"
-                disabled={!inputsEnabled}
-                type="submit"
-                name="intent"
-                value="generate-first-note"
-              >
-                Generate First WorkingMem.txt Note
-              </Button>
-            )}
-          </SectionCard>
+          {!loaderData.entry && (
+            <EntityNoNothingCard
+              title="You Have To Start Somewhere"
+              message="There are no working mems to show. You can create a new working mem."
+              newEntityAction="generate-first-note"
+              helpSubject={DocsHelpSubject.WORKING_MEM}
+            />
+          )}
         </ToolPanel>
       </NestingAwareBlock>
 

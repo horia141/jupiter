@@ -162,6 +162,7 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
       transition={{ duration: 1 }}
     >
       <StyledCard
+        id={`inbox-task-${props.inboxTask.ref_id}`}
         isselected={((props.allowSelect && props.selected) || false).toString()}
         enabled={inputsEnabled.toString()}
         onClick={() => props.onClick && props.onClick(props.inboxTask)}

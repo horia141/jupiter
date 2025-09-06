@@ -302,6 +302,7 @@ export function ViewAsCalendarTimeEventFullDaysCell(
       return (
         <Box
           ref={containerRef}
+          id={`schedule-event-full-days-${fullDaysEntry.event.ref_id}`}
           sx={{
             minWidth: "7rem",
             fontSize: "10px",
@@ -347,6 +348,7 @@ export function ViewAsCalendarTimeEventFullDaysCell(
       return (
         <Box
           ref={containerRef}
+          id={`person-birthday-event-${fullDaysEntry.person.ref_id}`}
           sx={{
             minWidth: "7rem",
             fontSize: "10px",
@@ -389,6 +391,7 @@ export function ViewAsCalendarTimeEventFullDaysCell(
       return (
         <Box
           ref={containerRef}
+          id={`vacation-event-${fullDaysEntry.time_event.ref_id}`}
           sx={{
             minWidth: "7rem",
             fontSize: "10px",
@@ -653,6 +656,7 @@ export function ViewAsCalendarTimeEventInDayCell(
       return (
         <Box
           ref={containerRef}
+          id={`schedule-event-in-day-block-${(props.entry.entry as ScheduleInDayEventEntry).event.ref_id}`}
           sx={{
             fontSize: "10px",
             position: "absolute",
@@ -736,6 +740,7 @@ export function ViewAsCalendarTimeEventInDayCell(
       return (
         <Box
           ref={containerRef}
+          id={`inbox-task-event-in-day-block-${(props.entry.entry as InboxTaskEntry).inbox_task.ref_id}`}
           sx={{
             fontSize: "10px",
             position: "absolute",
@@ -761,7 +766,7 @@ export function ViewAsCalendarTimeEventInDayCell(
           }}
         >
           <EntityLink
-            key={`time-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
+            key={`inbox-task-event-in-day-block-${props.entry.time_event_in_tz.ref_id}`}
             to={`/app/workspace/calendar/time-event/in-day-block/${props.entry.time_event_in_tz.ref_id}?${query}`}
             inline
             block={props.isAdding}
