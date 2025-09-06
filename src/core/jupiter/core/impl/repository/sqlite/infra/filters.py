@@ -29,12 +29,13 @@ def compile_query_relative_to(
             )
         elif isinstance(value, list):
             if len(value) == 0:
-                raise Exception("Invalid type of filter")
-            query_stmt = query_stmt.where(
-                getattr(table.c, key).in_(
-                    [realm_codec_registry.db_encode(v, DatabaseRealm) for v in value]
-                ),
-            )
+                query_stmt = query_stmt.where(False)
+            else:
+                query_stmt = query_stmt.where(
+                    getattr(table.c, key).in_(
+                        [realm_codec_registry.db_encode(v, DatabaseRealm) for v in value]
+                    ),
+                )
         else:
             raise Exception(f"Invalid type of filter {value}")
     return query_stmt
