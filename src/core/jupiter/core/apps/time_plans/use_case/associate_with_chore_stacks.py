@@ -106,6 +106,7 @@ class TimePlanAssociateWithChoreStacksUseCase(
             parent_ref_id=None,
             allow_archived=False,
             stack_ref_id=args.chore_stack_ref_ids,
+            suspended=False,
         )
         chores_by_stack_ref_id: dict[EntityId, list[Chore]] = {}
         for chore in member_chores:
@@ -204,6 +205,7 @@ class TimePlanAssociateWithChoreStacksUseCase(
                 parent_ref_id=None,
                 allow_archived=False,
                 stack_ref_id=args.chore_stack_ref_ids,
+                suspended=False,
             )
             chore_ref_ids = [chore.ref_id for chore in member_chores]
 

@@ -106,6 +106,7 @@ class TimePlanAssociateWithHabitStacksUseCase(
             parent_ref_id=None,
             allow_archived=False,
             stack_ref_id=args.habit_stack_ref_ids,
+            suspended=False,
         )
         habits_by_stack_ref_id: dict[EntityId, list[Habit]] = {}
         for habit in member_habits:
@@ -204,6 +205,7 @@ class TimePlanAssociateWithHabitStacksUseCase(
                 parent_ref_id=None,
                 allow_archived=False,
                 stack_ref_id=args.habit_stack_ref_ids,
+                suspended=False,
             )
             habit_ref_ids = [habit.ref_id for habit in member_habits]
 

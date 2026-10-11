@@ -38,6 +38,7 @@ export interface UpdateHabitArgs {
   schedulingParams: SchedulingParamsEdit;
   repeatsStrategy: HabitRepeatsStrategy | null;
   repeatsInPeriodCount: number | null;
+  suspended: boolean;
   // When the edit was made, standing in for the server's modification time
   // until the result arrives.
   modifiedTime: string;
@@ -77,6 +78,7 @@ export function updateHabitArgsFromForm(
       form.repeatsStrategy === null
         ? null
         : nullableIntFromForm(field("repeatsInPeriodCount")),
+    suspended: field("suspended") === "on",
     modifiedTime,
   };
 }
@@ -96,6 +98,7 @@ export const UPDATE_HABIT: TimePlanMutation<
     ...schedulingParamsToFormFields(args.schedulingParams),
     repeatsStrategy: args.repeatsStrategy ?? "none",
     repeatsInPeriodCount: args.repeatsInPeriodCount?.toString() ?? "",
+    ...(args.suspended ? { suspended: "on" } : {}),
   }),
   applyOptimistic: (entities, args) => {
     const habit = entities.habits[args.refId];
@@ -112,6 +115,7 @@ export const UPDATE_HABIT: TimePlanMutation<
       scheduling_params: schedulingParamsPatch(args.schedulingParams),
       repeats_strategy: args.repeatsStrategy,
       repeats_in_period_count: args.repeatsInPeriodCount,
+      suspended: args.suspended,
       last_modified_time: args.modifiedTime,
     };
     return {

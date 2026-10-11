@@ -145,6 +145,7 @@ class Habit(LeafEntity):
         scheduling_params: UpdateAction[SchedulingParams],
         repeats_in_period_count: UpdateAction[int | None],
         repeats_strategy: UpdateAction[HabitRepeatsStrategy | None],
+        suspended: UpdateAction[bool],
     ) -> "Habit":
         """Update the habit."""
         if gen_params.should_change:
@@ -204,6 +205,7 @@ class Habit(LeafEntity):
             repeats_in_period_count=repeats_in_period_count.or_else(
                 self.repeats_in_period_count,
             ),
+            suspended=suspended.or_else(self.suspended),
         )
 
     @update_entity_action

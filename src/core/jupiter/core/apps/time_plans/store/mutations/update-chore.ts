@@ -35,6 +35,7 @@ export interface UpdateChoreArgs {
   genParams: RecurringTaskGenParamsEdit;
   schedulingParams: SchedulingParamsEdit;
   mustDo: boolean;
+  suspended: boolean;
   // A chore always has a start date, so none means leave it alone.
   startAtDate: ADate | null;
   endAtDate: ADate | null;
@@ -69,6 +70,7 @@ export function updateChoreArgsFromForm(
     genParams: recurringTaskGenParamsFromForm(field),
     schedulingParams: schedulingParamsFromForm(field),
     mustDo: field("mustDo") === "on",
+    suspended: field("suspended") === "on",
     startAtDate: field("startAtDate") || null,
     endAtDate: field("endAtDate") || null,
     modifiedTime,
@@ -89,6 +91,7 @@ export const UPDATE_CHORE: TimePlanMutation<
     ...recurringTaskGenParamsToFormFields(args.genParams),
     ...schedulingParamsToFormFields(args.schedulingParams),
     ...(args.mustDo ? { mustDo: "on" } : {}),
+    ...(args.suspended ? { suspended: "on" } : {}),
     startAtDate: args.startAtDate ?? "",
     endAtDate: args.endAtDate ?? "",
   }),
@@ -106,6 +109,7 @@ export const UPDATE_CHORE: TimePlanMutation<
       gen_params: recurringTaskGenParamsPatch(chore.gen_params, args.genParams),
       scheduling_params: schedulingParamsPatch(args.schedulingParams),
       must_do: args.mustDo,
+      suspended: args.suspended,
       start_at_date: args.startAtDate ?? chore.start_at_date,
       end_at_date: args.endAtDate,
       last_modified_time: args.modifiedTime,

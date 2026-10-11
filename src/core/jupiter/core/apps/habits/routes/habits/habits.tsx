@@ -1178,24 +1178,18 @@ function HabitsByPeriodsStack(props: HabitsByPeriodsStackProps) {
     >
       {periods.map((period) => {
         const subset = props.habits.filter(
-          (h) => h.gen_params.period === period && !h.suspended,
+          (h) => h.gen_params.period === period,
         );
         return (
           <Box
             key={`period-${period}`}
-            sx={{ flexBasis: "16.6%", flexGrow: 1, minWidth: 0 }}
+            sx={{ flexBasis: "20%", flexGrow: 1, minWidth: 0 }}
           >
             <StandardDivider title={periodName(period)} size="large" />
             {props.renderStack(subset)}
           </Box>
         );
       })}
-
-      {/* 6th column */}
-      <Box sx={{ flexBasis: "16.6%", flexGrow: 1, minWidth: 0 }}>
-        <StandardDivider title="Suspended" size="large" />
-        {props.renderStack(props.habits.filter((h) => h.suspended))}
-      </Box>
     </Box>
   );
 }

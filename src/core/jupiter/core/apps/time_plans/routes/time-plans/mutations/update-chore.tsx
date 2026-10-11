@@ -31,6 +31,7 @@ const UpdateChoreFormSchema = z.object({
   dueAtMonth: z.string().optional(),
   skipRule: z.string().optional(),
   mustDo: CheckboxAsString,
+  suspended: CheckboxAsString,
   startAtDate: z.string().optional(),
   endAtDate: z.string().optional(),
   ...SchedulingParamsFormFields,
@@ -72,6 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
       due_at_day: { should_change: true, value: intOrNull(form.dueAtDay) },
       due_at_month: { should_change: true, value: intOrNull(form.dueAtMonth) },
       must_do: { should_change: true, value: form.mustDo },
+      suspended: { should_change: true, value: form.suspended },
       skip_rule: { should_change: true, value: form.skipRule || null },
       // A chore always has a start date, so an empty one is left alone.
       start_at_date: form.startAtDate

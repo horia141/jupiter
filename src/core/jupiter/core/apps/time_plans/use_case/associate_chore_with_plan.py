@@ -94,6 +94,11 @@ class TimePlanAssociateChoreWithPlanUseCase(
             AccessLevel.READER,
         )
 
+        if chore.suspended:
+            raise InputValidationError(
+                "Suspended chores cannot be added to a time plan"
+            )
+
         time_plans = await self.find_all_entities(
             uow,
             context.user.ref_id,

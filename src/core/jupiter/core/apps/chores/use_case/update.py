@@ -67,6 +67,7 @@ class ChoreUpdateArgs(JupiterUpdateCrownEntityArgs):
     schedulability: UpdateAction[Schedulability]
     scheduling_event_duration_mins: UpdateAction[int | None]
     scheduling_event_count: UpdateAction[int | None]
+    suspended: UpdateAction[bool]
 
 
 @use_case_result
@@ -219,6 +220,7 @@ class ChoreUpdateUseCase(
             must_do=args.must_do,
             start_at_date=args.start_at_date,
             end_at_date=args.end_at_date,
+            suspended=args.suspended,
         )
 
         chore = await uow.get_for(Chore).save(chore)

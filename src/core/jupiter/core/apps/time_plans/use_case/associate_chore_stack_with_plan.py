@@ -114,6 +114,7 @@ class TimePlanAssociateChoreStackWithPlanUseCase(
             parent_ref_id=None,
             allow_archived=False,
             stack_ref_id=chore_stack.ref_id,
+            suspended=False,
         )
 
         new_time_plan_activities = []
@@ -215,6 +216,7 @@ class TimePlanAssociateChoreStackWithPlanUseCase(
                 parent_ref_id=None,
                 allow_archived=False,
                 stack_ref_id=args.chore_stack_ref_id,
+                suspended=False,
             )
             chore_ref_ids = [chore.ref_id for chore in member_chores]
 

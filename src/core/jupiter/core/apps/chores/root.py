@@ -128,6 +128,7 @@ class Chore(LeafEntity):
         must_do: UpdateAction[bool],
         start_at_date: UpdateAction[ADate],
         end_at_date: UpdateAction[ADate | None],
+        suspended: UpdateAction[bool],
     ) -> "Chore":
         """Update the chore."""
         if gen_params.should_change:
@@ -163,6 +164,7 @@ class Chore(LeafEntity):
             must_do=must_do.or_else(self.must_do),
             start_at_date=the_start_at_date,
             end_at_date=the_end_at_date,
+            suspended=suspended.or_else(self.suspended),
         )
 
     @update_entity_action

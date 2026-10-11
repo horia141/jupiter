@@ -96,6 +96,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
     dueAtDay: z.string().optional(),
     dueAtMonth: z.string().optional(),
     mustDo: CheckboxAsString,
+    suspended: CheckboxAsString,
     skipRule: z.string().optional(),
     startAtDate: z.string().optional(),
     endAtDate: z.string().optional(),
@@ -325,6 +326,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           must_do: {
             should_change: true,
             value: form.mustDo,
+          },
+          suspended: {
+            should_change: true,
+            value: form.suspended,
           },
           skip_rule: {
             should_change: true,

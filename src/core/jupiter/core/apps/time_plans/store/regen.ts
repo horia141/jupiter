@@ -46,6 +46,7 @@ export function habitEditChangesGeneration(
 ): boolean {
   return (
     genParamsChanged(habit.gen_params, args.genParams) ||
+    habit.suspended !== args.suspended ||
     orNull(habit.repeats_strategy) !== args.repeatsStrategy ||
     orNull(habit.repeats_in_period_count) !== args.repeatsInPeriodCount
   );
@@ -59,6 +60,7 @@ export function choreEditChangesGeneration(
   return (
     genParamsChanged(chore.gen_params, args.genParams) ||
     chore.must_do !== args.mustDo ||
+    chore.suspended !== args.suspended ||
     (args.startAtDate !== null && chore.start_at_date !== args.startAtDate) ||
     orNull(chore.end_at_date) !== args.endAtDate
   );

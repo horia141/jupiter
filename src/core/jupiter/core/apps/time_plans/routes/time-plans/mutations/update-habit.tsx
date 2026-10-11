@@ -39,6 +39,7 @@ const UpdateHabitFormSchema = z.object({
     .or(z.literal("none"))
     .optional(),
   repeatsInPeriodCount: z.string().optional(),
+  suspended: CheckboxAsString,
   ...SchedulingParamsFormFields,
 });
 
@@ -65,6 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
         : { should_change: false },
       stack_ref_id: { should_change: true, value: form.stack || null },
       is_key: { should_change: true, value: form.isKey },
+      suspended: { should_change: true, value: form.suspended },
       eisen: { should_change: true, value: form.eisen },
       difficulty: { should_change: true, value: form.difficulty },
       actionable_from_day: {

@@ -44,6 +44,7 @@ describe("habitEditChangesGeneration", () => {
     gen_params: genParams,
     repeats_strategy: HabitRepeatsStrategy.ALL_SAME,
     repeats_in_period_count: 3,
+    suspended: false,
   } as unknown as Habit;
   const args: UpdateHabitArgs = {
     refId: "1",
@@ -59,6 +60,7 @@ describe("habitEditChangesGeneration", () => {
       eventCount: DEFAULT_SCHEDULING_EVENT_COUNT,
     },
     repeatsInPeriodCount: 3,
+    suspended: false,
     modifiedTime: "2026-09-14T10:00:00Z",
   };
 
@@ -94,6 +96,12 @@ describe("habitEditChangesGeneration", () => {
     ).toBe(true);
   });
 
+  it("is true when suspending or unsuspending", () => {
+    expect(
+      habitEditChangesGeneration(habit, { ...args, suspended: true }),
+    ).toBe(true);
+  });
+
   it("is true when the repeats change", () => {
     expect(
       habitEditChangesGeneration(habit, { ...args, repeatsInPeriodCount: 4 }),
@@ -114,6 +122,7 @@ describe("choreEditChangesGeneration", () => {
     name: "Dishes",
     gen_params: genParams,
     must_do: false,
+    suspended: false,
     start_at_date: "2026-01-01",
     end_at_date: null,
   } as unknown as Chore;
@@ -125,6 +134,7 @@ describe("choreEditChangesGeneration", () => {
     isKey: false,
     genParams: genParamsEdit,
     mustDo: false,
+    suspended: false,
     startAtDate: null,
     schedulingParams: {
       schedulability: Schedulability.SCHEDULABLE,
@@ -156,6 +166,9 @@ describe("choreEditChangesGeneration", () => {
     expect(choreEditChangesGeneration(chore, { ...args, mustDo: true })).toBe(
       true,
     );
+    expect(
+      choreEditChangesGeneration(chore, { ...args, suspended: true }),
+    ).toBe(true);
     expect(
       choreEditChangesGeneration(chore, { ...args, startAtDate: "2026-02-01" }),
     ).toBe(true);
