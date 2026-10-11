@@ -42,7 +42,6 @@ import {
 } from "#/core/common/sub/inbox_tasks/root";
 import { isWorkspaceFeatureAvailable } from "#/core/workspaces/root";
 import { sortChoresNaturally } from "#/core/apps/chores/root";
-import Check from "#/core/infra/component/check";
 import { DifficultyTag } from "#/core/common/component/difficulty-tag";
 import { EisenTag } from "#/core/common/component/eisen-tag";
 import { EntityNameComponent } from "#/core/common/component/entity-name";
@@ -73,6 +72,7 @@ import {
 } from "#/core/infra/component/use-nested-entities";
 import { TopLevelInfoContext } from "#/core/infra/top-level-context";
 import { IsKeyTag } from "#/core/common/component/is-key-tag";
+import { IsSuspendedTag } from "#/core/common/component/is-suspended-tag";
 import { GoalTag } from "#/core/apps/life_plan/sub/goals/components/tag";
 import { ChapterTag } from "#/core/apps/life_plan/sub/chapters/components/tag";
 import { sortGoalsNaturally } from "#/core/apps/life_plan/sub/goals/root";
@@ -637,7 +637,7 @@ function ChoreRow(props: ChoreRowProps) {
             WorkspaceFeature.LIFE_PLAN,
           ) &&
           entry.goal && <GoalTag goal={entry.goal as Goal} />}
-        <Check isDone={!chore.suspended} label="Active" />
+        <IsSuspendedTag isSuspended={chore.suspended} />
         {props.showPeriodTag && <PeriodTag period={chore.gen_params.period} />}
         {props.showStackTag !== false && entry.stack && (
           <ChoreStackTag choreStack={entry.stack} />
@@ -1084,24 +1084,18 @@ function ChoresByPeriodsStack(props: ChoresByPeriodsStackProps) {
     >
       {periods.map((period) => {
         const subset = props.chores.filter(
-          (c) => c.gen_params.period === period && !c.suspended,
+          (c) => c.gen_params.period === period,
         );
         return (
           <Box
             key={`period-${period}`}
-            sx={{ flexBasis: "16.6%", flexGrow: 1, minWidth: 0 }}
+            sx={{ flexBasis: "20%", flexGrow: 1, minWidth: 0 }}
           >
             <StandardDivider title={periodName(period)} size="large" />
             {props.renderStack(subset)}
           </Box>
         );
       })}
-
-      {/* 6th column */}
-      <Box sx={{ flexBasis: "16.6%", flexGrow: 1, minWidth: 0 }}>
-        <StandardDivider title="Suspended" size="large" />
-        {props.renderStack(props.chores.filter((c) => c.suspended))}
-      </Box>
     </Box>
   );
 }

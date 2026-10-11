@@ -68,6 +68,7 @@ class HabitUpdateArgs(JupiterUpdateCrownEntityArgs):
     schedulability: UpdateAction[Schedulability]
     scheduling_event_duration_mins: UpdateAction[int | None]
     scheduling_event_count: UpdateAction[int | None]
+    suspended: UpdateAction[bool]
 
 
 @use_case_result
@@ -219,6 +220,7 @@ class HabitUpdateUseCase(
             scheduling_params=habit_scheduling_params,
             repeats_strategy=args.repeats_strategy,
             repeats_in_period_count=args.repeats_in_period_count,
+            suspended=args.suspended,
         )
 
         habit = await uow.get_for(Habit).save(habit)

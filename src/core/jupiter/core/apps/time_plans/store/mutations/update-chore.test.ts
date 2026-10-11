@@ -63,7 +63,12 @@ function editorForm(fields: Record<string, string>): FormData {
 describe("updateChoreArgsFromForm", () => {
   it("reads the editor's fields", () => {
     const args = updateChoreArgsFromForm(
-      editorForm({ Aspect: "2", MustDo: "on", StartAtDate: "2026-02-01" }),
+      editorForm({
+        Aspect: "2",
+        MustDo: "on",
+        Suspended: "on",
+        StartAtDate: "2026-02-01",
+      }),
       MODIFIED,
       "targetChore",
     );
@@ -75,6 +80,7 @@ describe("updateChoreArgsFromForm", () => {
       stackRefId: "60",
       isKey: false,
       mustDo: true,
+      suspended: true,
       startAtDate: "2026-02-01",
       endAtDate: null,
     });

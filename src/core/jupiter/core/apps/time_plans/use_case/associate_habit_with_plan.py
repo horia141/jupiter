@@ -94,6 +94,11 @@ class TimePlanAssociateHabitWithPlanUseCase(
             AccessLevel.READER,
         )
 
+        if habit.suspended:
+            raise InputValidationError(
+                "Suspended habits cannot be added to a time plan"
+            )
+
         time_plans = await self.find_all_entities(
             uow,
             context.user.ref_id,

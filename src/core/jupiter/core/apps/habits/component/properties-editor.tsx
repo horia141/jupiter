@@ -20,7 +20,14 @@ import {
   RecurringTaskPeriod,
   WorkspaceFeature,
 } from "@jupiter/webapi-client";
-import { FormControl, InputLabel, OutlinedInput, Stack } from "@mui/material";
+import {
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Switch,
+} from "@mui/material";
 import { useMemo, useState } from "react";
 import { Launch as LaunchIcon } from "@mui/icons-material";
 
@@ -394,6 +401,21 @@ export function HabitPropertiesEditor(props: HabitPropertiesEditorProps) {
             )}
           </Stack>
         )}
+
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={
+              <Switch
+                name={constructFieldName(props.namePrefix, "suspended")}
+                readOnly={!props.inputsEnabled}
+                disabled={!props.inputsEnabled}
+                defaultChecked={props.habit.suspended}
+              />
+            }
+            label="Suspended"
+          />
+          <FieldError actionResult={props.actionData} fieldName="/suspended" />
+        </FormControl>
       </SectionCard>
       <EntityLocationMapSection location={props.location} />
     </>

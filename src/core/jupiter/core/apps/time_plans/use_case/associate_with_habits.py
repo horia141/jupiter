@@ -122,6 +122,7 @@ class TimePlanAssociateWithHabitsUseCase(
             ref_id=args.habit_ref_ids,
             minimum_access_level=AccessLevel.READER,
         )
+        habits = [habit for habit in habits if not habit.suspended]
 
         new_time_plan_actitivies = []
 

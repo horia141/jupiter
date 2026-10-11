@@ -67,6 +67,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "#/core/infra/component/use-nested-entities";
 import { IsKeyTag } from "#/core/common/component/is-key-tag";
+import { IsSuspendedTag } from "#/core/common/component/is-suspended-tag";
 import { HabitKeyHabitStreakWidget } from "#/core/apps/habits/component/key-habit-streak-widget";
 import { HabitInboxTasksWidget } from "#/core/apps/habits/component/inbox-tasks-widget";
 import { WidgetProps } from "#/core/home/component/common";
@@ -729,7 +730,7 @@ function HabitRow(props: HabitRowProps) {
             WorkspaceFeature.LIFE_PLAN,
           ) &&
           entry.goal && <GoalTag goal={entry.goal as Goal} />}
-        {habit.suspended && <span className="tag">Suspended</span>}
+        <IsSuspendedTag isSuspended={habit.suspended} />
         {props.showPeriodTag && <PeriodTag period={habit.gen_params.period} />}
         {props.showStackTag !== false && entry.stack && (
           <HabitStackTag habitStack={entry.stack} />
@@ -1178,24 +1179,18 @@ function HabitsByPeriodsStack(props: HabitsByPeriodsStackProps) {
     >
       {periods.map((period) => {
         const subset = props.habits.filter(
-          (h) => h.gen_params.period === period && !h.suspended,
+          (h) => h.gen_params.period === period,
         );
         return (
           <Box
             key={`period-${period}`}
-            sx={{ flexBasis: "16.6%", flexGrow: 1, minWidth: 0 }}
+            sx={{ flexBasis: "20%", flexGrow: 1, minWidth: 0 }}
           >
             <StandardDivider title={periodName(period)} size="large" />
             {props.renderStack(subset)}
           </Box>
         );
       })}
-
-      {/* 6th column */}
-      <Box sx={{ flexBasis: "16.6%", flexGrow: 1, minWidth: 0 }}>
-        <StandardDivider title="Suspended" size="large" />
-        {props.renderStack(props.habits.filter((h) => h.suspended))}
-      </Box>
     </Box>
   );
 }

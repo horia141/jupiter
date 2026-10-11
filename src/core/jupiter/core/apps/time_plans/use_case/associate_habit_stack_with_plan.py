@@ -114,6 +114,7 @@ class TimePlanAssociateHabitStackWithPlanUseCase(
             parent_ref_id=None,
             allow_archived=False,
             stack_ref_id=habit_stack.ref_id,
+            suspended=False,
         )
 
         new_time_plan_activities = []
@@ -215,6 +216,7 @@ class TimePlanAssociateHabitStackWithPlanUseCase(
                 parent_ref_id=None,
                 allow_archived=False,
                 stack_ref_id=args.habit_stack_ref_id,
+                suspended=False,
             )
             habit_ref_ids = [habit.ref_id for habit in member_habits]
 

@@ -100,6 +100,7 @@ class TimePlanAssociateWithChoresUseCase(
             ref_id=args.chore_ref_ids,
             minimum_access_level=AccessLevel.READER,
         )
+        chores = [chore for chore in chores if not chore.suspended]
 
         new_time_plan_actitivies = []
 

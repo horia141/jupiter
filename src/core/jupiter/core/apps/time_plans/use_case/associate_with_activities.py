@@ -193,9 +193,11 @@ class TimePlanAssociateWithActivitiesUseCase(
             if not activity.is_target_habit:
                 continue
 
-            await self.check_entity(
+            habit = await self.load_entity(
                 uow, context.user.ref_id, Habit, activity.target.ref_id
             )
+            if habit.suspended:
+                continue
 
             new_time_plan_activity = TimePlanActivity.new_activity_from_existing(
                 context.domain_context,
@@ -268,9 +270,11 @@ class TimePlanAssociateWithActivitiesUseCase(
             if not activity.is_target_chore:
                 continue
 
-            await self.check_entity(
+            chore = await self.load_entity(
                 uow, context.user.ref_id, Chore, activity.target.ref_id
             )
+            if chore.suspended:
+                continue
 
             new_time_plan_activity = TimePlanActivity.new_activity_from_existing(
                 context.domain_context,

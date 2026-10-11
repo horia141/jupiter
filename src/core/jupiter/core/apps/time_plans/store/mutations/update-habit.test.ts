@@ -77,7 +77,7 @@ function editorForm(fields: Record<string, string>): FormData {
 describe("updateHabitArgsFromForm", () => {
   it("reads the editor's fields", () => {
     const args = updateHabitArgsFromForm(
-      editorForm({ IsKey: "on", Stack: "41" }),
+      editorForm({ IsKey: "on", Stack: "41", Suspended: "on" }),
       MODIFIED,
       "targetHabit",
     );
@@ -104,6 +104,7 @@ describe("updateHabitArgsFromForm", () => {
       },
       repeatsStrategy: null,
       repeatsInPeriodCount: null,
+      suspended: true,
       modifiedTime: MODIFIED,
     });
   });

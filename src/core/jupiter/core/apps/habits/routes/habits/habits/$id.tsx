@@ -115,6 +115,7 @@ const UpdateFormSchema = z.discriminatedUnion("intent", [
       .or(z.literal("none"))
       .optional(),
     repeatsInPeriodCount: z.string().optional(),
+    suspended: CheckboxAsString,
     ...SchedulingParamsFormFields,
   }),
   z.object({
@@ -311,6 +312,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
           is_key: {
             should_change: true,
             value: form.isKey,
+          },
+          suspended: {
+            should_change: true,
+            value: form.suspended,
           },
           eisen: {
             should_change: true,

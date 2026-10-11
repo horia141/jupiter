@@ -94,6 +94,7 @@ class AspectReassignLinkedEntitiesService:
                 gen_params=UpdateAction.do_nothing(),
                 start_at_date=UpdateAction.do_nothing(),
                 end_at_date=UpdateAction.do_nothing(),
+                suspended=UpdateAction.do_nothing(),
                 must_do=UpdateAction.do_nothing(),
                 scheduling_params=UpdateAction.do_nothing(),
             )
@@ -138,6 +139,7 @@ class AspectReassignLinkedEntitiesService:
                 is_key=UpdateAction.do_nothing(),
                 gen_params=UpdateAction.do_nothing(),
                 repeats_in_period_count=UpdateAction.do_nothing(),
+                suspended=UpdateAction.do_nothing(),
                 repeats_strategy=UpdateAction.do_nothing(),
                 scheduling_params=UpdateAction.do_nothing(),
             )

@@ -369,6 +369,21 @@ export function ChorePropertiesEditor(props: ChorePropertiesEditorProps) {
           <FieldError actionResult={props.actionData} fieldName="/must_do" />
         </FormControl>
 
+        <FormControl fullWidth>
+          <FormControlLabel
+            control={
+              <Switch
+                name={constructFieldName(props.namePrefix, "suspended")}
+                readOnly={!props.inputsEnabled}
+                disabled={!props.inputsEnabled}
+                defaultChecked={props.chore.suspended}
+              />
+            }
+            label="Suspended"
+          />
+          <FieldError actionResult={props.actionData} fieldName="/suspended" />
+        </FormControl>
+
         <Stack spacing={2} direction={isBigScreen ? "row" : "column"}>
           <FormControl fullWidth>
             <InputLabel id="startAtDate" shrink>
