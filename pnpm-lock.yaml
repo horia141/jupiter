@@ -213,9 +213,9 @@ importers:
 
   src/desktop:
     dependencies:
-      '@braintree/sanitize-url':
-        specifier: ^7.1.2
-        version: 7.1.2
+      '@jupiter/shell':
+        specifier: workspace:*
+        version: link:../shell
       '@jupiter/webapi-client':
         specifier: workspace:*
         version: link:../../gen/ts/webapi-client
@@ -228,12 +228,6 @@ importers:
       electron-squirrel-startup:
         specifier: ^1.0.1
         version: 1.0.1
-      normalize-url:
-        specifier: ^9.0.1
-        version: 9.0.1
-      semver:
-        specifier: ^7.8.5
-        version: 7.8.5
     devDependencies:
       '@electron-forge/cli':
         specifier: ^8.0.1
@@ -283,6 +277,9 @@ importers:
       '@capacitor/app':
         specifier: ^8.1.2
         version: 8.1.2(@capacitor/core@8.5.2)
+      '@capacitor/browser':
+        specifier: ^8.0.5
+        version: 8.0.5(@capacitor/core@8.5.2)
       '@capacitor/core':
         specifier: ^8.5.2
         version: 8.5.2
@@ -295,9 +292,15 @@ importers:
       '@capacitor/keyboard':
         specifier: ^8.0.6
         version: 8.0.6(@capacitor/core@8.5.2)
+      '@capacitor/preferences':
+        specifier: ^8.0.1
+        version: 8.0.1(@capacitor/core@8.5.2)
       '@capacitor/splash-screen':
         specifier: ^8.0.2
         version: 8.0.2(@capacitor/core@8.5.2)
+      '@jupiter/shell':
+        specifier: workspace:*
+        version: link:../shell
       '@jupiter/webapi-client':
         specifier: workspace:*
         version: link:../../gen/ts/webapi-client
@@ -442,6 +445,19 @@ importers:
         specifier: ^8.3.2
         version: 8.3.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.44.1)(yaml@2.9.1)
 
+  src/shell:
+    dependencies:
+      vite:
+        specifier: ^8.3.2
+        version: 8.3.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.44.1)(yaml@2.9.1)
+      vite-plugin-handlebars:
+        specifier: ^2.0.3
+        version: 2.0.3(vite@8.3.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.44.1)(yaml@2.9.1))
+    devDependencies:
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.4)(vite@8.3.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.44.1)(yaml@2.9.1))
+
   src/webui:
     dependencies:
       '@calumk/editorjs-codecup':
@@ -453,6 +469,9 @@ importers:
       '@capacitor/app':
         specifier: ^8.1.2
         version: 8.1.2(@capacitor/core@8.5.2)
+      '@capacitor/browser':
+        specifier: ^8.0.5
+        version: 8.0.5(@capacitor/core@8.5.2)
       '@capacitor/core':
         specifier: ^8.5.2
         version: 8.5.2
@@ -1273,9 +1292,6 @@ packages:
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
 
-  '@braintree/sanitize-url@7.1.2':
-    resolution: {integrity: sha512-jigsZK+sMF/cuiB7sERuo9V7N9jx+dhmHHnQyDSVdpZwVutaBu7WvNYqMDLSgFgfB30n452TP3vjDAvFC973mA==}
-
   '@calumk/codecup@1.9.4':
     resolution: {integrity: sha512-WWdgRnlMVMl7ivW8mQ3vsjtIh/qQ+29CHm+6uhX6jXOnCS3lXs4IE4e1i301Bmvxdd6EJvizHAF8cVi+QsNAnw==}
 
@@ -1296,6 +1312,11 @@ packages:
     resolution: {integrity: sha512-ohz/OUq61Y1Fc6aVSt0uDrUdeOA7oTH4pkWDbv/8I3UrPjH7oPkzYhShuDRUjekNp9RBi198VSFdt0CetpEOzw==}
     engines: {node: '>=10.3.0'}
     hasBin: true
+
+  '@capacitor/browser@8.0.5':
+    resolution: {integrity: sha512-qqcEjUqs9kG1naF+tsD8rERuZ3wuIfXzvoIJEERHI4RNWwNSUqAHHduaKhkyb+t01VyVPa0ydx0mZ/eOskk2Ug==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
 
   '@capacitor/cli@5.7.8':
     resolution: {integrity: sha512-qN8LDlREMhrYhOvVXahoJVNkP8LP55/YPRJrzTAFrMqlNJC18L3CzgWYIblFPnuwfbH/RxbfoZT/ydkwgVpMrw==}
@@ -1322,6 +1343,11 @@ packages:
 
   '@capacitor/keyboard@8.0.6':
     resolution: {integrity: sha512-Bbe+9V0qaT6dzEFJEK7BUWR01l2+vZE8FM5ITF/WgKtx+G6eGZ6d5+YiSMRJBAK0VGjdO59v8yiQ10Doa5KyvQ==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
+  '@capacitor/preferences@8.0.1':
+    resolution: {integrity: sha512-T6no3ebi79XJCk91U3Jp/liJUwgBdvHR+s6vhvPkPxSuch7z3zx5Rv1bdWM6sWruNx+pViuEGqZvbfCdyBvcHQ==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
@@ -5411,10 +5437,6 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
 
-  normalize-url@9.0.1:
-    resolution: {integrity: sha512-ARftfC5HdUNu9jJeL8pHj8debUIHA2b91FizCoMzY4lG6dDX13jdvTK0TBe24IBDRf2HvJSzzwEPvmbkQWHRSg==}
-    engines: {node: '>=20'}
-
   notistack@3.0.2:
     resolution: {integrity: sha512-0R+/arLYbK5Hh7mEfR2adt0tyXJcCC9KkA2hc56FeWik2QN6Bm/S4uW+BjzDARsJth5u06nTjelSw/VSnB1YEA==}
     engines: {node: '>=12.0.0', npm: '>=6.0.0'}
@@ -7833,8 +7855,6 @@ snapshots:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
 
-  '@braintree/sanitize-url@7.1.2': {}
-
   '@calumk/codecup@1.9.4':
     dependencies:
       '@types/prismjs': 1.26.6
@@ -7872,6 +7892,10 @@ snapshots:
       - encoding
       - react-native-b4a
       - supports-color
+
+  '@capacitor/browser@8.0.5(@capacitor/core@8.5.2)':
+    dependencies:
+      '@capacitor/core': 8.5.2
 
   '@capacitor/cli@5.7.8':
     dependencies:
@@ -7931,6 +7955,10 @@ snapshots:
       '@capacitor/core': 8.5.2
 
   '@capacitor/keyboard@8.0.6(@capacitor/core@8.5.2)':
+    dependencies:
+      '@capacitor/core': 8.5.2
+
+  '@capacitor/preferences@8.0.1(@capacitor/core@8.5.2)':
     dependencies:
       '@capacitor/core': 8.5.2
 
@@ -12670,8 +12698,6 @@ snapshots:
       abbrev: 4.0.0
 
   normalize-path@3.0.0: {}
-
-  normalize-url@9.0.1: {}
 
   notistack@3.0.2(csstype@3.2.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:

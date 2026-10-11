@@ -15,11 +15,14 @@
   "dependencies": {
     "@capacitor/android": "^8.5.2",
     "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
     "@capacitor/core": "^8.5.2",
     "@capacitor/device": "^8.0.3",
     "@capacitor/ios": "^8.5.2",
     "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/preferences": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.2",
+    "@jupiter/shell": "workspace:*",
     "@jupiter/webapi-client": "workspace:*",
     "dotenv": "^18.0.5"
   },

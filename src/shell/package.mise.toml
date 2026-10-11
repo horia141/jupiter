@@ -1,0 +1,85 @@
+["package:src:shell:prepare"]
+hide = true
+run = "true"
+
+["package:src:shell:fix:prettier"]
+hide = true
+sources = [
+  "src/shell/**/*.ts",
+  "src/shell/**/*.tsx",
+  "src/shell/**/*.js",
+  "src/shell/**/*.jsx",
+  "src/shell/**/*.json",
+  "src/shell/**/*.md",
+]
+outputs = { auto = true }
+run = "npx prettier --write --list-different src/shell"
+
+["package:src:shell:fix:markdownlint"]
+hide = true
+sources = ["src/shell/README.md"]
+outputs = { auto = true }
+run = "./tasks/_resources/check/lint/markdownlint-cli2.sh --fix src/shell/README.md"
+
+["package:src:shell:fix"]
+description = "Fix src/shell module"
+depends = ["package:src:shell:fix:*"]
+run = "true"
+
+["package:src:shell:lint:toml"]
+hide = true
+sources = ["src/shell/package.mise.toml"]
+outputs = { auto = true }
+run = "npx eslint src/shell/package.mise.toml"
+
+["package:src:shell:lint:prettier"]
+hide = true
+sources = [
+  "src/shell/**/*.ts",
+  "src/shell/**/*.tsx",
+  "src/shell/**/*.js",
+  "src/shell/**/*.jsx",
+  "src/shell/**/*.json",
+  "src/shell/**/*.md",
+]
+outputs = { auto = true }
+run = "npx prettier --check src/shell"
+
+["package:src:shell:lint:markdownlint-readme"]
+hide = true
+sources = ["src/shell/README.md"]
+outputs = { auto = true }
+run = "./tasks/_resources/check/lint/markdownlint-cli2.sh src/shell/README.md"
+
+["package:src:shell:lint"]
+description = "Check src/shell module"
+depends = ["package:src:shell:lint:*"]
+run = "true"
+
+["package:src:shell:test:vitest"]
+hide = true
+sources = ["src/shell/**/*.js"]
+run = "cd src/shell && npx vitest run"
+
+["package:src:shell:test"]
+description = "Run tests"
+depends = ["package:src:shell:test:*"]
+run = "true"
+
+["package:src:shell:audit:pnpm-audit"]
+hide = true
+run = "cd src/shell && pnpm audit"
+
+["package:src:shell:audit"]
+description = "Audit src/shell module"
+depends = ["package:src:shell:audit:*"]
+run = "true"
+
+["package:src:shell:libyear:pnpm-libyear"]
+hide = true
+run = "cd src/shell && npx libyear --package-manager pnpm"
+
+["package:src:shell:libyear"]
+description = "Check src/shell libyear"
+depends = ["package:src:shell:libyear:*"]
+run = "true"

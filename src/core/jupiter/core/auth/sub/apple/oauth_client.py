@@ -47,9 +47,9 @@ _PEM_BODY_RE = re.compile(
 
 
 def _normalize_pem(raw: str) -> str:
-    """Rebuild a well-formed PKCS8 PEM from whatever an env var mangled it into.
+    r"""Rebuild a well-formed PKCS8 PEM from whatever an env var mangled it into.
 
-    Handles surrounding quotes, literal ``\\n`` sequences, CRLFs, newlines
+    Handles surrounding quotes, literal ``\n`` sequences, CRLFs, newlines
     collapsed into spaces, and a missing BEGIN/END header.
     """
     pem = raw.strip().strip("'\"").replace("\\n", "\n").replace("\r", "")

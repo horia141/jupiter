@@ -1,0 +1,33 @@
+<html lang="en" data-platform="{{platform}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>{{title}} - Loading</title>
+    <link rel="stylesheet" href="./shell.css" />
+  </head>
+  <body>
+    <header class="appbar">
+      <img src="../assets/logo.png" alt="" />
+      <span class="brand">{{title}}</span>
+    </header>
+
+    <main>
+      <div class="card">
+        <div class="card-title">Connecting</div>
+
+        <div class="card-text">
+          <p>{{title}} is loading. Hold on!</p>
+
+          <dl class="details">
+            <dt>Server</dt>
+            <dd id="server" class="pending">…</dd>
+          </dl>
+        </div>
+      </div>
+    </main>
+  </body>
+  <script type="module" src="./index.js"></script>
+</html>

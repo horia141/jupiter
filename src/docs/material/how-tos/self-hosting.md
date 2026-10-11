@@ -238,7 +238,7 @@ Discord, etc) for help.
 You can now access thrive by visiting the IP address or domain associated with
 your VPS.
 
-Currently only the webapp, desktop app, and PWA are supported ways of
+The webapp, desktop app, mobile apps, and PWA are all supported ways of
 interacting with yourself hosted version.
 
 Whereas the webapp and PWA have a straightforward interactin pattern - visit
@@ -254,6 +254,12 @@ screen,which will take you to something like this:
 You can enter the URL of your server (typically `https://your-domain.com`) and
 the app will reconfigure to speak with it instead of the global hosted server.
 You can always come back to the global one, or switch between several instances.
+
+If the app can't reach the server it's configured for, the error screen also
+has a "Change Server" button that takes you to the same picker.
+
+The mobile apps work the same way. Both the desktop and mobile apps only
+connect to `https://` servers, so your instance needs a certificate.
 
 ### Backups
 

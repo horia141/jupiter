@@ -1,4 +1,5 @@
 import { App as CapacitorApp } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { AppPlatform, AppShell } from "@jupiter/webapi-client";
 import type {
@@ -16,6 +17,7 @@ import { FrontDoorInfoContext } from "@jupiter/core/infra/frontdoor-info-context
 import { GoogleMapsApiKeyContext } from "@jupiter/core/infra/google-maps-api-key-context";
 import { OverdueThresholdsContext } from "@jupiter/core/infra/overdue-thresholds-context";
 import { ServiceLinksContext } from "@jupiter/core/infra/service-links-context";
+import { hasShellFeature, ShellFeature } from "@jupiter/core/frontdoor";
 import { loadFrontDoorInfo } from "@jupiter/core/frontdoor.server";
 
 import { ServicePropertiesContext } from "~/logic/config";
@@ -78,6 +80,45 @@ export default function App() {
       setupBackButton();
     }
   }, [loaderData.serviceProperties.frontDoorInfo, navigate]);
+
+  useEffect(() => {
+    // The mobile shell lets the webview go to any server, so a link to
+    // another site would open inside the app with no way back. Send those to
+    // the system browser instead.
+    if (
+      !hasShellFeature(
+        loaderData.serviceProperties.frontDoorInfo,
+        ShellFeature.EXTERNAL_BROWSER,
+      )
+    ) {
+      return;
+    }
+
+    function handleClick(event: MouseEvent) {
+      if (event.defaultPrevented || event.button !== 0) {
+        return;
+      }
+
+      const anchor = (event.target as Element | null)?.closest("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) {
+        return;
+      }
+
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        (url.protocol !== "http:" && url.protocol !== "https:") ||
+        url.origin === window.location.origin
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      Browser.open({ url: url.toString() });
+    }
+
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [loaderData.serviceProperties.frontDoorInfo]);
 
   return (
     <GlobalPropertiesContext.Provider value={loaderData.globalProperties}>

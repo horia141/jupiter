@@ -2,6 +2,7 @@
   "include": [
     "env.d.ts",
     "from-electron.d.ts",
+    "from-capacitor.d.ts",
     "**/*.ts",
     "**/*.tsx",
     "vite.config.mts",

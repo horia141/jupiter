@@ -1,0 +1,48 @@
+<html lang="en" data-platform="{{platform}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>{{title}} - Error</title>
+    <link rel="stylesheet" href="./shell.css" />
+  </head>
+  <body>
+    <header class="appbar">
+      <img src="../assets/logo.png" alt="" />
+      <span class="brand">{{title}}</span>
+    </header>
+
+    <main>
+      <div class="card">
+        <div class="card-title">Can't Connect</div>
+
+        <div class="card-text">
+          <p id="message">{{title}} couldn't load.</p>
+
+          <dl class="details">
+            <dt>Server</dt>
+            <dd id="server">…</dd>
+            <dt>Problem</dt>
+            <dd id="problem" class="pending" role="status">
+              Checking the server…
+            </dd>
+          </dl>
+        </div>
+
+        <div class="card-actions">
+          <button id="retry" class="contained" type="button">Retry</button>
+          <button id="change-server" class="outlined" type="button">
+            Change Server
+          </button>
+          <button id="use-global" class="outlined" type="button" hidden>
+            Use Global Server
+          </button>
+          <button id="exit" class="outlined" type="button" hidden>Exit</button>
+        </div>
+      </div>
+    </main>
+  </body>
+  <script type="module" src="./error.js"></script>
+</html>

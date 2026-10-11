@@ -1,27 +1,19 @@
+import { resolve } from "node:path";
+
+import { shellViteConfig } from "@jupiter/shell/vite";
 import { config } from "dotenv";
-import { defineConfig } from "vite";
-import handlebars from "vite-plugin-handlebars";
 
 config({
   path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"],
 });
 
-export default defineConfig({
-  root: "./src", // Source folder
+export default shellViteConfig({
+  platform: "desktop",
+  outDir: resolve(import.meta.dirname, "dist"),
+  adapter: resolve(import.meta.dirname, "src/adapter.js"),
+  // The pages are loaded from file://, so every URL has to be relative.
   base: "./",
-  build: {
-    outDir: "../dist", // Output folder
-    emptyOutDir: true, // Clean the output folder before building
-    rollupOptions: {
-      input: ["./src/index.html", "./src/error.html"],
-      preserveEntrySignatures: "strict",
-    },
-  },
-  plugins: [
-    handlebars({
-      context: {
-        title: process.env.PUBLIC_NAME,
-      },
-    }),
-  ],
+  title: process.env.PUBLIC_NAME as string,
+  clientVersion: process.env.VERSION as string,
+  isLocal: process.env.ENV === "local",
 });

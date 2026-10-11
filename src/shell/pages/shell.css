@@ -1,0 +1,306 @@
+/*
+ * Shared by the shells' local pages. Mirrors the webui's lifecycle pages.
+ * Pages set data-platform on <html> to "desktop" or "mobile"; mobile is the
+ * default here and desktop overrides follow at the end.
+ */
+:root {
+  --background: #fcfaf9;
+  --paper: #ffffff;
+  --text: #211e1d;
+  --text-secondary: #6b605a;
+  --divider: #e3dcd6;
+  --appbar: #b5455f;
+  --appbar-text: #ffffff;
+  --primary: #b5455f;
+  --primary-contrast: #ffffff;
+  --primary-outline: rgba(181, 69, 95, 0.5);
+  --primary-hover: rgba(181, 69, 95, 0.06);
+  --title-chip: rgba(181, 69, 95, 0.1);
+  --error: #b3382f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #171513;
+    --paper: #1f1c1a;
+    --text: #f3eeeb;
+    --text-secondary: #b3a79f;
+    --divider: #332e2b;
+    --appbar: #1f1c1a;
+    --appbar-text: #f3eeeb;
+    --primary: #e28da0;
+    --primary-contrast: #2a1418;
+    --primary-outline: rgba(226, 141, 160, 0.5);
+    --primary-hover: rgba(226, 141, 160, 0.08);
+    --title-chip: rgba(226, 141, 160, 0.14);
+    --error: #e38b82;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    "Inter Variable",
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  background-color: var(--background);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+.appbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: env(safe-area-inset-top) calc(env(safe-area-inset-right) + 16px) 0
+    calc(env(safe-area-inset-left) + 16px);
+  background-color: var(--appbar);
+  color: var(--appbar-text);
+}
+
+.appbar img {
+  width: 32px;
+  height: 32px;
+}
+
+.appbar .brand {
+  font-family:
+    "Fraunces Variable", Fraunces, "Iowan Old Style", "Palatino Linotype",
+    Palatino, Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.004em;
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 64px calc(env(safe-area-inset-right) + 16px)
+    calc(env(safe-area-inset-bottom) + 24px)
+    calc(env(safe-area-inset-left) + 16px);
+}
+
+.card {
+  background-color: var(--paper);
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card-title {
+  display: inline-block;
+  height: 48px;
+  padding: 0 32px 0 20px;
+  font-size: 24px;
+  font-weight: 500;
+  font-variant: small-caps;
+  letter-spacing: 0.005em;
+  line-height: 48px;
+  background-color: var(--title-chip);
+  border-radius: 9px 0 4px 0;
+}
+
+.card-content {
+  padding: 16px 4px 4px 4px;
+}
+
+.field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+}
+
+.field:focus-within {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.field.invalid {
+  border-color: var(--error);
+}
+
+.field label {
+  position: absolute;
+  top: -9px;
+  left: 10px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+  background-color: var(--paper);
+}
+
+.field:focus-within label {
+  color: var(--primary);
+}
+
+.field.invalid label {
+  color: var(--error);
+}
+
+.field input {
+  flex: 1;
+  min-width: 0;
+  padding: 16.5px 14px;
+  font: inherit;
+  line-height: 23px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.field input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.field .adornment {
+  margin-right: 8px;
+}
+
+.caption {
+  padding: 16px 10px 0 10px;
+  font-size: 12px;
+  line-height: 1.66;
+  color: var(--text);
+}
+
+.caption ul {
+  margin: 12px 0;
+  padding-left: 40px;
+}
+
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.error {
+  margin: 3px 14px 0 14px;
+  font-size: 12px;
+  line-height: 1.66;
+  color: var(--error);
+}
+
+.error:empty {
+  display: none;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 20px 20px 20px;
+}
+
+button {
+  min-height: 36.5px;
+  padding: 5px 17.6px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 24.5px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.contained {
+  color: var(--primary-contrast);
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.outlined {
+  color: var(--primary);
+  background-color: transparent;
+  border: 1px solid var(--primary-outline);
+}
+
+.outlined:active:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.adornment.outlined {
+  padding: 5px 15px;
+}
+
+.card-text {
+  padding: 16px 20px 0 20px;
+}
+
+.card-text:last-child {
+  padding-bottom: 20px;
+}
+
+.card-text p {
+  margin: 0 0 12px 0;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 0 0 4px 0;
+  padding: 12px 14px;
+  font-size: 14px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+}
+
+.details dt {
+  color: var(--text-secondary);
+}
+
+.details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.details dd.problem {
+  color: var(--error);
+}
+
+.details dd.pending {
+  color: var(--text-secondary);
+}
+
+/* Desktop: the webui's big-screen sizes, no safe areas, and mouse hover. */
+
+[data-platform="desktop"] .appbar {
+  min-height: 64px;
+  padding: 0 24px;
+}
+
+[data-platform="desktop"] main {
+  padding: 64px 16px;
+}
+
+[data-platform="desktop"] .outlined:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}

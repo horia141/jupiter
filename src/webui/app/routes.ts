@@ -81,7 +81,7 @@ export default [
       "lifecycle/login/local/login",
       "routes/app/lifecycle/login/local/login.tsx",
     ),
-    route("pick-server/desktop", "routes/app/pick-server/desktop.tsx"),
+    route("pick-server", "routes/app/pick-server.tsx"),
     route("lifecycle/logout", "routes/app/lifecycle/logout.tsx"),
     route("render-fix", "routes/app/render-fix.tsx"),
     route("workspace", "routes/app/workspace.tsx", [

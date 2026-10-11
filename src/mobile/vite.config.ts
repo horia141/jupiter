@@ -1,8 +1,9 @@
-import { config } from "dotenv";
-import { defineConfig } from "vite";
-import handlebars from "vite-plugin-handlebars";
+import { resolve } from "node:path";
 
-import { Env, Hosting } from "../../gen/ts/webapi-client/dist";
+import { shellViteConfig } from "@jupiter/shell/vite";
+import { config } from "dotenv";
+
+import { Env } from "../../gen/ts/webapi-client/dist/index.js";
 
 config({
   path: ["Config.project", "../Config.global", "../../secrets/Config.secrets"],
@@ -13,30 +14,16 @@ if (process.env.ENV === Env.LOCAL && process.env.BUILD_TARGET === "android") {
   hostedGlobalWebUiUrl = hostedGlobalWebUiUrl.replace("localhost", "10.0.2.2");
 }
 
-const frontDoorUrl = new URL(
-  process.env.FRONTDOOR_PATTERN as string,
-  hostedGlobalWebUiUrl,
-);
-
-export default defineConfig({
-  root: "./src", // Source folder
-  build: {
-    outDir: "../dist", // Output folder
-    emptyOutDir: true, // Clean the output folder before building
-    rollupOptions: {
-      input: ["./src/index.html", "./src/error.html"],
-      preserveEntrySignatures: "strict",
-    },
+export default shellViteConfig({
+  platform: "mobile",
+  outDir: resolve(import.meta.dirname, "dist"),
+  adapter: resolve(import.meta.dirname, "src/adapter.js"),
+  base: "/",
+  title: process.env.PUBLIC_NAME as string,
+  clientVersion: process.env.VERSION as string,
+  isLocal: process.env.ENV === Env.LOCAL,
+  config: {
+    hostedGlobalWebUiUrl,
+    frontDoorPattern: process.env.FRONTDOOR_PATTERN,
   },
-  plugins: [
-    handlebars({
-      context: {
-        android: process.env.BUILD_TARGET === "android",
-        ios: process.env.BUILD_TARGET === "ios",
-        title: process.env.PUBLIC_NAME,
-        clientVersion: process.env.VERSION,
-        webUiUrl: frontDoorUrl.toString(),
-      },
-    }),
-  ],
 });

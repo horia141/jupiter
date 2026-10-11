@@ -33,6 +33,12 @@ revert_package_json() {
     mv src/desktop/node_modules/@jupiter/webapi-client.bak src/desktop/node_modules/@jupiter/webapi-client
   fi
 
+  # if we swapped in a copy of node_modules/@jupiter/shell, put the link back
+  if [ -d src/desktop/node_modules/@jupiter/shell.bak ]; then
+    rm -rf src/desktop/node_modules/@jupiter/shell
+    mv src/desktop/node_modules/@jupiter/shell.bak src/desktop/node_modules/@jupiter/shell
+  fi
+
   # if src/assets/jupiter.icns is not a link, then we should revert it
   if [ ! -L src/desktop/assets/jupiter.icns ]; then
     rm -f src/desktop/assets/jupiter.icns
@@ -75,6 +81,12 @@ cp LICENSE src/desktop/LICENSE
 # before the build we fix this.
 mv src/desktop/node_modules/@jupiter/webapi-client src/desktop/node_modules/@jupiter/webapi-client.bak
 cp -r gen/ts/webapi-client src/desktop/node_modules/@jupiter/webapi-client
+
+# The main process imports the server check from @jupiter/shell at runtime,
+# and only needs its package.json and lib/.
+mv src/desktop/node_modules/@jupiter/shell src/desktop/node_modules/@jupiter/shell.bak
+mkdir -p src/desktop/node_modules/@jupiter/shell
+cp -r src/shell/package.json src/shell/lib src/desktop/node_modules/@jupiter/shell/
 
 mv src/desktop/assets/jupiter.icns .build-cache/jupiter.icns.bak
 cp assets/jupiter.icns src/desktop/assets/jupiter.icns

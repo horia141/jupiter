@@ -1,0 +1,66 @@
+<html lang="en" data-platform="{{platform}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>{{title}} - Pick Server</title>
+    <link rel="stylesheet" href="./shell.css" />
+  </head>
+  <body>
+    <header class="appbar">
+      <img src="../assets/logo.png" alt="" />
+      <span class="brand">{{title}}</span>
+    </header>
+
+    <main>
+      <form id="pick-server-form" class="card" novalidate>
+        <div class="card-title">Pick Server</div>
+
+        <div class="card-content">
+          <div id="server-url-field" class="field">
+            <label for="server-url">Server URL</label>
+            <input
+              id="server-url"
+              name="serverUrl"
+              type="url"
+              inputmode="url"
+              autocapitalize="off"
+              autocorrect="off"
+              autocomplete="url"
+              spellcheck="false"
+              enterkeyhint="go"
+              aria-describedby="server-url-error"
+            />
+            <button id="use-global" class="adornment outlined" type="button">
+              Use Global
+            </button>
+          </div>
+
+          <div class="caption">
+            Examples:
+            <ul>
+              <li><code>thrive-test.com</code> (assumes https)</li>
+              <li><code>https://my-thrive-instance.io</code></li>
+              <li><code>https://thrive.example.com:10000</code></li>
+              {{#if allowHttp}}
+              <li><code>localhost:8010</code> (local builds only)</li>
+              {{/if}}
+            </ul>
+          </div>
+
+          <p id="server-url-error" class="error" role="alert"></p>
+        </div>
+
+        <div class="card-actions">
+          <button id="connect" class="contained" type="submit">
+            Pick Server
+          </button>
+          <button id="go-back" class="outlined" type="button">Go Back</button>
+        </div>
+      </form>
+    </main>
+  </body>
+  <script type="module" src="./pick-server.js"></script>
+</html>

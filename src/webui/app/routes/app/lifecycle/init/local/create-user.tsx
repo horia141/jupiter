@@ -32,6 +32,7 @@ import { EMPTY_CONTEXT } from "@jupiter/core/infra/top-level-context";
 import { AUTH_TOKEN_NAME } from "@jupiter/core/infra/names";
 import { handleActionApiError } from "@jupiter/core/infra/errors.server";
 import { getGuestApiClient } from "@jupiter/core/infra/api-clients.server";
+import { hasShellFeature, ShellFeature } from "@jupiter/core/frontdoor";
 
 import { ServicePropertiesContext } from "~/logic/config";
 import {
@@ -94,6 +95,10 @@ export default function InitCreateUser() {
   const inputsEnabled = navigation.state === "idle";
 
   const serviceProperties = useContext(ServicePropertiesContext);
+  const canPickServer = hasShellFeature(
+    serviceProperties.frontDoorInfo,
+    ShellFeature.LOCAL_PICKER,
+  );
 
   return (
     <StandaloneContainer>
@@ -136,10 +141,8 @@ export default function InitCreateUser() {
                     }),
                     NavSingle({
                       text: "Pick Server",
-                      link: "/app/pick-server/desktop",
-                      disabled:
-                        serviceProperties.frontDoorInfo.appShell !==
-                        AppShell.DESKTOP_ELECTRON,
+                      link: "/app/pick-server",
+                      disabled: !canPickServer,
                     }),
                   ],
                 }),

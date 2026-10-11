@@ -63,6 +63,7 @@ Current topics include (non-exhaustive; browse the directory):
 | 0011 | Access control and authenticated sharing |
 | 0012 | Undo/redo sessions and groups (proposed) |
 | 0014 | Section filters live in the URL |
+| 0015 | Shared shell for the desktop and mobile apps |
 
 ## Generating code
 

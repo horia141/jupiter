@@ -3,6 +3,7 @@ packages:
   - "src/core"
   - "src/webui"
   - "src/published"
+  - "src/shell"
   - "src/desktop"
   - "src/mobile"
 

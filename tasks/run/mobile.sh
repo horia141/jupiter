@@ -23,6 +23,10 @@ set -e -o pipefail
 
 source tasks/_common.sh
 
+# CocoaPods (run by cap sync for iOS) fails without a UTF-8 locale.
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+
 webui_url=$(get_webui_url_for_universe "$usage_universe" "$usage_environment" "$usage_instance")
 export HOSTED_GLOBAL_WEBUI_URL="$webui_url"
 export BUILD_TARGET="$usage_platform"

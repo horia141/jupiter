@@ -1,22 +1,28 @@
 PODS:
-  - Capacitor (7.4.4):
+  - Capacitor (8.5.2):
     - CapacitorCordova
-  - CapacitorApp (7.1.0):
+  - CapacitorApp (8.1.2):
     - Capacitor
-  - CapacitorCordova (7.4.4)
-  - CapacitorDevice (7.0.2):
+  - CapacitorBrowser (8.0.5):
     - Capacitor
-  - CapacitorKeyboard (7.0.4):
+  - CapacitorCordova (8.5.2)
+  - CapacitorDevice (8.0.3):
     - Capacitor
-  - CapacitorSplashScreen (7.0.3):
+  - CapacitorKeyboard (8.0.6):
+    - Capacitor
+  - CapacitorPreferences (8.0.1):
+    - Capacitor
+  - CapacitorSplashScreen (8.0.2):
     - Capacitor
 
 DEPENDENCIES:
   - "Capacitor (from `../../../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../../../node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../../../node_modules/@capacitor/browser`)"
   - "CapacitorCordova (from `../../../../node_modules/@capacitor/ios`)"
   - "CapacitorDevice (from `../../../../node_modules/@capacitor/device`)"
   - "CapacitorKeyboard (from `../../../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorPreferences (from `../../../../node_modules/@capacitor/preferences`)"
   - "CapacitorSplashScreen (from `../../../../node_modules/@capacitor/splash-screen`)"
 
 EXTERNAL SOURCES:
@@ -24,23 +30,29 @@ EXTERNAL SOURCES:
     :path: "../../../../node_modules/@capacitor/ios"
   CapacitorApp:
     :path: "../../../../node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../../../node_modules/@capacitor/browser"
   CapacitorCordova:
     :path: "../../../../node_modules/@capacitor/ios"
   CapacitorDevice:
     :path: "../../../../node_modules/@capacitor/device"
   CapacitorKeyboard:
     :path: "../../../../node_modules/@capacitor/keyboard"
+  CapacitorPreferences:
+    :path: "../../../../node_modules/@capacitor/preferences"
   CapacitorSplashScreen:
     :path: "../../../../node_modules/@capacitor/splash-screen"
 
 SPEC CHECKSUMS:
-  Capacitor: 358dd1c3fdd71d969547b17e159fd8a7736cb45f
-  CapacitorApp: 26587c2ce485d88ddb39adb21cac64f8e481afe3
-  CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
-  CapacitorDevice: 81ae78d5d1942707caad79276badd458bf6ec603
-  CapacitorKeyboard: 5660c760113bfa48962817a785879373cf5339c3
-  CapacitorSplashScreen: e388b8e0ed0e982a9d3a40417f478e7a018a8763
+  Capacitor: 89067779e14fb7ea56af07b4817f45d1f0c2a269
+  CapacitorApp: 7b7e43debe505bc61beedb83796aa1368c86078b
+  CapacitorBrowser: f94f92654e92a97981bf346b3681af76527dace0
+  CapacitorCordova: 5bec5648cbd09a176ce34ce5e7b6cdabb2c8a327
+  CapacitorDevice: 708e742b60a61572cd593e44c809592e8f31da14
+  CapacitorKeyboard: f9e85e685082e9f63404de15db4a4291448b0912
+  CapacitorPreferences: cca2021f386efb75947c850334447d9ff22b14f1
+  CapacitorSplashScreen: 7bf61c2001557ff9e195e601c6b87344480d3c65
 
-PODFILE CHECKSUM: 74eae6f3edf5e4e0bdd23ade1b6948c10c3d0863
+PODFILE CHECKSUM: cb42160cba93e71c9947a06d1f058d592ca0867b
 
 COCOAPODS: 1.16.2

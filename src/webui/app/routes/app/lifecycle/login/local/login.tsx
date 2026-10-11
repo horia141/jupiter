@@ -31,6 +31,7 @@ import {
 import { EMPTY_CONTEXT } from "@jupiter/core/infra/top-level-context";
 import { handleActionApiError } from "@jupiter/core/infra/errors.server";
 import { getGuestApiClient } from "@jupiter/core/infra/api-clients.server";
+import { hasShellFeature, ShellFeature } from "@jupiter/core/frontdoor";
 
 import { ServicePropertiesContext } from "~/logic/config";
 import { commitSession, getSession } from "~/sessions";
@@ -86,6 +87,10 @@ export default function Login() {
   const navigation = useNavigation();
 
   const serviceProperties = useContext(ServicePropertiesContext);
+  const canPickServer = hasShellFeature(
+    serviceProperties.frontDoorInfo,
+    ShellFeature.LOCAL_PICKER,
+  );
 
   const inputsEnabled = navigation.state === "idle";
 
@@ -134,10 +139,8 @@ export default function Login() {
                     }),
                     NavSingle({
                       text: "Pick Server",
-                      link: "/app/pick-server/desktop",
-                      disabled:
-                        serviceProperties.frontDoorInfo.appShell !==
-                        AppShell.DESKTOP_ELECTRON,
+                      link: "/app/pick-server",
+                      disabled: !canPickServer,
                     }),
                   ],
                 }),

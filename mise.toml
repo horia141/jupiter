@@ -51,6 +51,7 @@ includes = [
     "src/docs/package.mise.toml",
     "src/webui/package.mise.toml",
     "src/published/package.mise.toml",
+    "src/shell/package.mise.toml",
     "src/desktop/package.mise.toml",
     "src/mobile/package.mise.toml",
     "itests/package.mise.toml",

@@ -1,17 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-import { sanitizeUrl } from "@braintree/sanitize-url";
+import { checkServer } from "@jupiter/shell/check-server";
 import { config } from "dotenv";
 import { BrowserWindow, app, ipcMain, shell } from "electron";
 import fs from "fs";
 import path from "node:path";
-import normalizeUrl from "normalize-url";
-import semver from "semver";
 import { fileURLToPath } from "url";
 
 loadEnvironment();
 
 const APP_CONFIG_PATH = "thrive.config";
-const VERSION_HEADER = "X-Jupiter-Version";
 
 const FRONTDOOR_PATTERN = process.env.FRONTDOOR_PATTERN;
 const VERSION = process.env.VERSION;
@@ -19,14 +15,28 @@ const HOSTED_GLOBAL_WEBUI_URL = process.env.HOSTED_GLOBAL_WEBUI_URL;
 const INITIAL_WIDTH = parseInt(process.env.INITIAL_WINDOW_WIDTH, 10);
 const INITIAL_HEIGHT = parseInt(process.env.INITIAL_WINDOW_HEIGHT, 10);
 const DISTRIBUTION = process.env.DISTRIBUTION;
+// Plain http:// servers are only for local development. A packaged app ships
+// the repo's Config.global, whose ENV is always local, so we can't go by ENV.
+const ALLOW_HTTP = !app.isPackaged;
+// Development runs are always aimed at a specific instance (run:desktop sets
+// HOSTED_GLOBAL_WEBUI_URL), and local instances change ports between runs, so
+// a server picked in one would go stale. They start on the instance they were
+// given, and a server picked in them lasts only until the app quits.
+const PERSIST_SERVER = app.isPackaged;
 
-const APP_CONFIG = loadAppConfig(APP_CONFIG_PATH);
+// The picked server. The official one is never saved, so with no saved
+// server the app follows whatever its build points at.
+let serverUrl = loadServerUrl();
 
 app.whenReady().then(() => {
   const win = createWindow();
   ipcMain.handle("exit", handleLifecycleQuit);
-  ipcMain.handle("getWebUiUrl", handleGetWebUiUrl);
-  ipcMain.handle("getHostedGlobalWebUiUrl", handleGetHostedGlobalWebUiUrl);
+  ipcMain.handle("getWebUiUrl", (event, options) => handleGetWebUiUrl(options));
+  ipcMain.handle("getServerInfo", handleGetServerInfo);
+  ipcMain.handle("openPicker", () => handleOpenPicker(win));
+  ipcMain.handle("checkServer", (event, serverUrlString) =>
+    handleCheckServer(serverUrlString),
+  );
   ipcMain.handle("pickServer", (event, serverUrlString) =>
     handlePickServer(win, serverUrlString),
   );
@@ -58,13 +68,41 @@ function createWindow() {
 
   win.loadFile("dist/index.html");
 
-  win.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
-    win.loadFile("dist/error.html");
-    console.error(
-      "An error occurred loading the webui: ",
-      errorCode,
-      errorDescription,
-    );
+  win.webContents.on(
+    "did-fail-load",
+    (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      // ERR_ABORTED (-3) means the load was superseded by another navigation,
+      // and subframe failures don't take the app down, so neither is an error.
+      if (!isMainFrame || errorCode === -3) {
+        return;
+      }
+
+      console.error(
+        "An error occurred loading the webui: ",
+        errorCode,
+        errorDescription,
+        validatedURL,
+      );
+      win.loadFile("dist/error.html", {
+        query: {
+          reason: "navigation",
+          code: String(errorCode),
+          detail: errorDescription,
+          url: validatedURL,
+        },
+      });
+    },
+  );
+  // A server that answers with a 5xx is as broken as one that doesn't answer.
+  win.webContents.on("did-navigate", (event, url, httpResponseCode) => {
+    if (url.startsWith("file:") || httpResponseCode < 500) {
+      return;
+    }
+
+    console.error("The webui answered with an error: ", httpResponseCode, url);
+    win.loadFile("dist/error.html", {
+      query: { reason: "http", code: String(httpResponseCode), url },
+    });
   });
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -97,163 +135,109 @@ function loadEnvironment() {
   }
 }
 
-function loadAppConfig(appConfigPath) {
-  const configPath = path.join(app.getPath("userData"), appConfigPath);
+function appConfigPath() {
+  return path.join(app.getPath("userData"), APP_CONFIG_PATH);
+}
+
+function loadServerUrl() {
+  if (!PERSIST_SERVER) {
+    return HOSTED_GLOBAL_WEBUI_URL;
+  }
+
   try {
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-      return {
-        version: config.version,
-        webUiUrl: buildFrontdoor(config.remoteHostWebUiUrl, DISTRIBUTION),
-        hostedGlobalWebUiUrl: buildFrontdoor(
-          HOSTED_GLOBAL_WEBUI_URL,
-          DISTRIBUTION,
-        ),
-      };
+    if (fs.existsSync(appConfigPath())) {
+      const config = JSON.parse(fs.readFileSync(appConfigPath(), "utf8"));
+      // Older versions saved the official server too; treat that as unset.
+      if (
+        config.remoteHostWebUiUrl &&
+        !isHostedGlobal(config.remoteHostWebUiUrl)
+      ) {
+        return config.remoteHostWebUiUrl;
+      }
     }
   } catch (error) {
     console.error("Invalid config file", error);
   }
 
-  const frontDoorUrl = buildFrontdoor(HOSTED_GLOBAL_WEBUI_URL, DISTRIBUTION);
-
-  return {
-    version: "v1",
-    webUiUrl: frontDoorUrl.toString(),
-    hostedGlobalWebUiUrl: frontDoorUrl.toString(),
-  };
+  return HOSTED_GLOBAL_WEBUI_URL;
 }
 
-function updateAppConfig(appConfigPath, remoteHostWebUiUrl) {
-  const configPath = path.join(app.getPath("userData"), appConfigPath);
-  fs.writeFileSync(
-    configPath,
-    JSON.stringify({
-      version: "v1",
-      remoteHostWebUiUrl: remoteHostWebUiUrl,
-    }),
-  );
+function saveServerUrl(newServerUrl) {
+  serverUrl = newServerUrl;
+  if (!PERSIST_SERVER) {
+    return;
+  }
+
+  if (isHostedGlobal(newServerUrl)) {
+    fs.rmSync(appConfigPath(), { force: true });
+  } else {
+    fs.writeFileSync(
+      appConfigPath(),
+      JSON.stringify({ version: "v1", remoteHostWebUiUrl: newServerUrl }),
+    );
+  }
+}
+
+function isHostedGlobal(url) {
+  return new URL(url).origin === new URL(HOSTED_GLOBAL_WEBUI_URL).origin;
 }
 
 function handleLifecycleQuit() {
   app.quit();
 }
 
-function handleGetWebUiUrl() {
-  return APP_CONFIG.webUiUrl.toString();
+function handleGetWebUiUrl({ hostedGlobal } = {}) {
+  return buildFrontdoor(
+    hostedGlobal ? HOSTED_GLOBAL_WEBUI_URL : serverUrl,
+  ).toString();
 }
 
-function handleGetHostedGlobalWebUiUrl() {
-  return APP_CONFIG.hostedGlobalWebUiUrl.toString();
+function handleGetServerInfo() {
+  return { serverUrl, hostedGlobalUrl: HOSTED_GLOBAL_WEBUI_URL };
+}
+
+function handleOpenPicker(win) {
+  // The picker lives in the app itself, so it's reachable even when the
+  // picked server is down.
+  win.loadFile("dist/pick-server.html");
+}
+
+function handleCheckServer(serverUrlString) {
+  return checkServerFromMain(serverUrlString);
 }
 
 async function handlePickServer(win, serverUrlString) {
-  let urlToUse;
-  try {
-    let cleanUrl = normalizeUrl(sanitizeUrl(serverUrlString), {
-      defaultProtocol: "http",
-      stripWWW: false,
-      stripAuthentication: true,
-      stripHash: true,
-      stripTextFragment: true,
-      removeQueryParameters: true,
-      removeSingleSlash: true,
-    });
-    if (cleanUrl === "localhost" || cleanUrl.startsWith("localhost:")) {
-      cleanUrl = "http://" + cleanUrl;
-    }
-
-    urlToUse = new URL(cleanUrl);
-
-    if (urlToUse.protocol != "http:" && urlToUse.protocol != "https:") {
-      throw new Error("Protocol must be http or https");
-    }
-  } catch (error) {
-    return {
-      result: "error",
-      errorMsg: error.toString(),
-    };
+  const res = await checkServerFromMain(serverUrlString);
+  if (res.result === "error") {
+    return res;
   }
 
-  let latestVersionResponse;
-  try {
-    const latestVersionUrl = new URL("apps-latest-versions", urlToUse);
-    latestVersionUrl.searchParams.set("distribution", "web");
+  saveServerUrl(res.serverUrl);
+  win.loadURL(buildFrontdoor(res.serverUrl).toString());
+  return res;
+}
 
-    latestVersionResponse = await fetch(latestVersionUrl, {
-      redirect: "manual",
-    });
+function checkServerFromMain(serverUrlString) {
+  return checkServer(serverUrlString, {
+    httpGet,
+    allowHttp: ALLOW_HTTP,
+    clientVersion: VERSION,
+  });
+}
 
-    if (!(
-      latestVersionResponse.status === 302 ||
-      latestVersionResponse.status === 301
-    )) {
-      throw new Error("The server doesn't appear to be an instance");
-    }
-
-    if (latestVersionResponse.headers.get("Location").startsWith("https://")) {
-      // In production self-hosted http gets redirected to https.
-      // So the first redirect doesn't do what we want, we just do it once
-      // more, so we get to the proper redirect we want.
-      latestVersionResponse = await fetch(
-        latestVersionResponse.headers.get("Location"),
-        { redirect: "manual" },
-      );
-
-      if (!(
-        latestVersionResponse.status === 302 ||
-        latestVersionResponse.status === 301
-      )) {
-        throw new Error("The server doesn't appear to be an instance");
-      }
-    }
-  } catch (error) {
-    return {
-      result: "error",
-      errorMsg: error.hasOwnProperty("cause")
-        ? error.cause.toString()
-        : error.toString(),
-    };
-  }
-
-  const remoteVersionStr = latestVersionResponse.headers.get(VERSION_HEADER);
-  if (remoteVersionStr === undefined) {
-    return {
-      result: "error",
-      errorMsg: "The server doesn't appear to be an instance - version",
-    };
-  }
-  const remoteVersion = semver.parse(remoteVersionStr);
-
-  if (remoteVersion === null) {
-    return {
-      result: "error",
-      errorMsg: "The server doesn't appear to be an instance - version format",
-    };
-  }
-  const localVersion = semver.parse(VERSION);
-
-  if (localVersion.major !== remoteVersion.major) {
-    return {
-      result: "error",
-      errorMsg: `Local version ${localVersion} is incompatible with remote ${remoteVersion}`,
-    };
-  }
-
-  const redirectLocation = buildFrontdoor(urlToUse, DISTRIBUTION);
-
-  win.loadURL(redirectLocation.toString());
-  updateAppConfig(APP_CONFIG_PATH, urlToUse.toString());
-
+// Node's fetch, with redirects left unfollowed so the check can see them.
+async function httpGet(url) {
+  const response = await fetch(url, { redirect: "manual" });
   return {
-    result: "ok",
+    status: response.status,
+    headers: Object.fromEntries(response.headers),
   };
 }
 
-function buildFrontdoor(remoteHostWebUiUrl, distribution) {
+function buildFrontdoor(remoteHostWebUiUrl) {
   const frontDoorUrl = new URL(FRONTDOOR_PATTERN, remoteHostWebUiUrl);
   frontDoorUrl.searchParams.set("clientVersion", VERSION);
   frontDoorUrl.searchParams.set("initialWindowWidth", INITIAL_WIDTH);
-  frontDoorUrl.searchParams.set("appDistribution", distribution);
+  frontDoorUrl.searchParams.set("appDistribution", DISTRIBUTION);
   return frontDoorUrl;
 }

@@ -1,3 +1,3 @@
 INITIAL_WINDOW_WIDTH=1400
 INITIAL_WINDOW_HEIGHT=900
-FRONTDOOR_PATTERN=/frontdoor?clientVersion=to-fill&appShell=desktop-electron&appPlatform=desktop-macos&appDistribution=mac-store&initialWindowWidth=to-fill
+FRONTDOOR_PATTERN=/frontdoor?clientVersion=to-fill&appShell=desktop-electron&appPlatform=desktop-macos&appDistribution=mac-store&initialWindowWidth=to-fill&shellFeatures=local-picker
