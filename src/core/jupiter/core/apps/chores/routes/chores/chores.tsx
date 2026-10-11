@@ -72,6 +72,7 @@ import {
 } from "#/core/infra/component/use-nested-entities";
 import { TopLevelInfoContext } from "#/core/infra/top-level-context";
 import { IsKeyTag } from "#/core/common/component/is-key-tag";
+import { IsSuspendedTag } from "#/core/common/component/is-suspended-tag";
 import { GoalTag } from "#/core/apps/life_plan/sub/goals/components/tag";
 import { ChapterTag } from "#/core/apps/life_plan/sub/chapters/components/tag";
 import { sortGoalsNaturally } from "#/core/apps/life_plan/sub/goals/root";
@@ -636,7 +637,7 @@ function ChoreRow(props: ChoreRowProps) {
             WorkspaceFeature.LIFE_PLAN,
           ) &&
           entry.goal && <GoalTag goal={entry.goal as Goal} />}
-        {chore.suspended && <span className="tag">Suspended</span>}
+        <IsSuspendedTag isSuspended={chore.suspended} />
         {props.showPeriodTag && <PeriodTag period={chore.gen_params.period} />}
         {props.showStackTag !== false && entry.stack && (
           <ChoreStackTag choreStack={entry.stack} />

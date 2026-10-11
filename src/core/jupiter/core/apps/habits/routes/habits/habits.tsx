@@ -67,6 +67,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "#/core/infra/component/use-nested-entities";
 import { IsKeyTag } from "#/core/common/component/is-key-tag";
+import { IsSuspendedTag } from "#/core/common/component/is-suspended-tag";
 import { HabitKeyHabitStreakWidget } from "#/core/apps/habits/component/key-habit-streak-widget";
 import { HabitInboxTasksWidget } from "#/core/apps/habits/component/inbox-tasks-widget";
 import { WidgetProps } from "#/core/home/component/common";
@@ -729,7 +730,7 @@ function HabitRow(props: HabitRowProps) {
             WorkspaceFeature.LIFE_PLAN,
           ) &&
           entry.goal && <GoalTag goal={entry.goal as Goal} />}
-        {habit.suspended && <span className="tag">Suspended</span>}
+        <IsSuspendedTag isSuspended={habit.suspended} />
         {props.showPeriodTag && <PeriodTag period={habit.gen_params.period} />}
         {props.showStackTag !== false && entry.stack && (
           <HabitStackTag habitStack={entry.stack} />
