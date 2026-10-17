@@ -76,7 +76,10 @@ export function LifecycleOAuthProviderButtons({
           );
         }
       }
-    } catch {
+    } catch (err) {
+      // The SDKs' messages are for us, not the user, but they're the only way
+      // to tell a misconfigured client id from a failed exchange.
+      console.error(`Native ${provider} sign in failed`, err);
       setError("Could not sign in. Please try again.");
     }
   }

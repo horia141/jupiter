@@ -16,7 +16,7 @@ pnpm = "latest"
 postgres = "18.3"
 terraform = "latest"
 ruby = "3.2.10"
-java = "openjdk-17"
+java = "openjdk-21"
 
 [env]
 UV_PROJECT_ENVIRONMENT = "{{ config_root }}/.build-cache/venv"

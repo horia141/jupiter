@@ -81,7 +81,9 @@ export async function signInWithGoogleNatively(
   try {
     const { result } = await SocialLogin.login({
       provider: "google",
-      options: {},
+      // Like `prompt=consent` in the web flow: without it, Google can issue a
+      // code that yields no refresh token, which a new account can't do without.
+      options: { forceRefreshToken: true },
     });
 
     if (!("serverAuthCode" in result)) {
