@@ -103,6 +103,19 @@ class GoogleOauthClient:
         callback_uri: SystemUrl,
     ) -> GoogleUserInfo:
         """Exchange an authorisation code and return parsed Google user info."""
+        return await self._get_user_info(code, callback_uri)
+
+    async def get_user_info_from_native_code(self, code: str) -> GoogleUserInfo:
+        """Exchange a ``serverAuthCode`` from the native sign in SDK.
+
+        It has no redirect, and is exchanged with the same web client, so the ID
+        token audience stays the same.
+        """
+        return await self._get_user_info(code, None)
+
+    async def _get_user_info(
+        self, code: str, callback_uri: SystemUrl | None
+    ) -> GoogleUserInfo:
         try:
             token_raw = await self._exchange_code_for_tokens(code, callback_uri)
             token_response = self._realm_codec_registry.get_decoder(
@@ -216,12 +229,12 @@ class GoogleOauthClient:
     async def _exchange_code_for_tokens(
         self,
         code: str,
-        callback_uri: SystemUrl,
+        callback_uri: SystemUrl | None,
     ) -> dict[str, RealmThing]:
         token = await self._client.fetch_token(
             _GOOGLE_TOKEN_URL,
             code=code,
-            redirect_uri=callback_uri.the_url,
+            redirect_uri=callback_uri.the_url if callback_uri is not None else None,
         )
         return cast(dict[str, RealmThing], token)
 

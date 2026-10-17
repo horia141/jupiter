@@ -27,6 +27,8 @@ export interface ServicePropertiesServer {
   overdueWarningDays: number;
   overdueDangerDays: number;
   googleMapsApiKey: string;
+  googleClientId: string;
+  googleIosClientId: string;
 }
 
 // @secureFn
@@ -66,6 +68,8 @@ function loadServicePropertiesOnServer(): ServicePropertiesServer {
     ),
     overdueDangerDays: parseInt(process.env.OVERDUE_DANGER_DAYS as string, 10),
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? "",
+    googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
+    googleIosClientId: process.env.GOOGLE_IOS_CLIENT_ID ?? "",
   };
 
   return serviceProperties;
@@ -97,6 +101,10 @@ export function serverToClientServiceProperties(
     googleMapsApiKey: publicGoogleMapsApiKey(
       servicePropertiesServer.googleMapsApiKey,
     ),
+    nativeSignIn: {
+      googleWebClientId: servicePropertiesServer.googleClientId,
+      googleIosClientId: servicePropertiesServer.googleIosClientId,
+    },
   };
 }
 

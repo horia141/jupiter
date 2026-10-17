@@ -1,2 +1,2 @@
 BUILD_TARGET=to-fill
-FRONTDOOR_PATTERN=/frontdoor?clientVersion=to-fill&appShell=mobile-capacitor&appPlatform=to-fill&appDistribution=to-fill&shellFeatures=local-picker,external-browser
+FRONTDOOR_PATTERN=/frontdoor?clientVersion=to-fill&appShell=mobile-capacitor&appPlatform=to-fill&appDistribution=to-fill&shellFeatures=local-picker,external-browser,native-sign-in

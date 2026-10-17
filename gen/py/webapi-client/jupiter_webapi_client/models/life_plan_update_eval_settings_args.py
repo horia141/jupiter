@@ -92,9 +92,7 @@ class LifePlanUpdateEvalSettingsArgs:
         from ..models.life_plan_update_eval_settings_args_eval_approach import (
             LifePlanUpdateEvalSettingsArgsEvalApproach,  # noqa: PLC0415
         )
-        from ..models.life_plan_update_eval_settings_args_eval_periods import (
-            LifePlanUpdateEvalSettingsArgsEvalPeriods,  # noqa: PLC0415
-        )
+        from ..models.life_plan_update_eval_settings_args_eval_periods import LifePlanUpdateEvalSettingsArgsEvalPeriods  # noqa: PLC0415
         from ..models.life_plan_update_eval_settings_args_eval_task_difficulty import (
             LifePlanUpdateEvalSettingsArgsEvalTaskDifficulty,  # noqa: PLC0415
         )

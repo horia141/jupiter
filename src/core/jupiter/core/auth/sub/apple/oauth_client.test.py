@@ -1,5 +1,7 @@
 """Tests for Apple ID token claims, redirect state, and the client-secret JWT."""
 
+import asyncio
+
 import jupiter.core
 import jwt
 import pytest
@@ -16,12 +18,14 @@ from jupiter.core.auth.sub.apple.user_info import AppleUserInfo
 from jupiter.core.common.email_address import EmailAddress
 from jupiter.core.common.system_url import SystemUrl
 from jupiter.core.users.name import UserName
+from jupiter.framework.errors import InputValidationError
 from jupiter.framework.realm.realm import WebRealm
 from jupiter.framework.realm.standard import ModuleExplorerRealmCodecRegistry
 
 _TEAM_ID = "TEAMID123"
 _KEY_ID = "KEYID12345"
 _SERVICES_ID = "com.example.thrive.service"
+_NATIVE_CLIENT_ID = "com.example.thrive"
 
 
 @pytest.fixture(scope="module")
@@ -119,10 +123,11 @@ def test_client_secret_jwt_claims(
         private_key_pem=pem.replace("\n", "\\n"),
         refresh_token_encryption_key="unused",  # nosec B106
         realm_codec_registry=realm_codec_registry,
+        native_client_id=_NATIVE_CLIENT_ID,
     )
 
-    token = client._client_secret()
-    assert client._client_secret() == token
+    token = client._client_secret(_SERVICES_ID)
+    assert client._client_secret(_SERVICES_ID) == token
 
     header = jwt.get_unverified_header(token)
     assert header["alg"] == "ES256"
@@ -137,3 +142,31 @@ def test_client_secret_jwt_claims(
     assert claims["iss"] == _TEAM_ID
     assert claims["sub"] == _SERVICES_ID
     assert claims["exp"] - claims["iat"] == 60 * 60
+
+    # The app signs in as its bundle id, so its secret names that as the subject.
+    native_token = client._client_secret(_NATIVE_CLIENT_ID)
+    assert native_token != token
+    native_claims = jwt.decode(
+        native_token,
+        public_pem,
+        algorithms=["ES256"],
+        audience="https://appleid.apple.com",
+    )
+    assert native_claims["sub"] == _NATIVE_CLIENT_ID
+
+
+def test_native_code_is_refused_without_a_native_client_id(
+    realm_codec_registry: ModuleExplorerRealmCodecRegistry,
+) -> None:
+    """A code with no redirect URI can't be exchanged unless the app id is set."""
+    client = AppleOauthClient(
+        team_id=_TEAM_ID,
+        key_id=_KEY_ID,
+        services_id=_SERVICES_ID,
+        private_key_pem="unused",  # nosec B106
+        refresh_token_encryption_key="unused",  # nosec B106
+        realm_codec_registry=realm_codec_registry,
+    )
+
+    with pytest.raises(InputValidationError):
+        asyncio.run(client.get_user_info_from_native_code("some-code", None))

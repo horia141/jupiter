@@ -80,12 +80,8 @@ class TimeEventInDayBlockUpdateArgs:
         from ..models.time_event_in_day_block_update_args_buffer_before_mins import (
             TimeEventInDayBlockUpdateArgsBufferBeforeMins,  # noqa: PLC0415
         )
-        from ..models.time_event_in_day_block_update_args_duration_mins import (
-            TimeEventInDayBlockUpdateArgsDurationMins,  # noqa: PLC0415
-        )
-        from ..models.time_event_in_day_block_update_args_start_date import (
-            TimeEventInDayBlockUpdateArgsStartDate,  # noqa: PLC0415
-        )
+        from ..models.time_event_in_day_block_update_args_duration_mins import TimeEventInDayBlockUpdateArgsDurationMins  # noqa: PLC0415
+        from ..models.time_event_in_day_block_update_args_start_date import TimeEventInDayBlockUpdateArgsStartDate  # noqa: PLC0415
         from ..models.time_event_in_day_block_update_args_start_time_in_day import (
             TimeEventInDayBlockUpdateArgsStartTimeInDay,  # noqa: PLC0415
         )

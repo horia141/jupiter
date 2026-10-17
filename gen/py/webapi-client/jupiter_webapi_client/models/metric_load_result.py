@@ -59,9 +59,7 @@ class MetricLoadResult:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.access_status import AccessStatus  # noqa: PLC0415
-        from ..models.metric_load_result_metric_entry_contacts_type_0 import (
-            MetricLoadResultMetricEntryContactsType0,  # noqa: PLC0415
-        )
+        from ..models.metric_load_result_metric_entry_contacts_type_0 import MetricLoadResultMetricEntryContactsType0  # noqa: PLC0415
         from ..models.note import Note  # noqa: PLC0415
         from ..models.publish_entity import PublishEntity  # noqa: PLC0415
 
@@ -157,9 +155,7 @@ class MetricLoadResult:
         from ..models.metric import Metric  # noqa: PLC0415
         from ..models.metric_entry import MetricEntry  # noqa: PLC0415
         from ..models.metric_load_metric_entry_tags import MetricLoadMetricEntryTags  # noqa: PLC0415
-        from ..models.metric_load_result_metric_entry_contacts_type_0 import (
-            MetricLoadResultMetricEntryContactsType0,  # noqa: PLC0415
-        )
+        from ..models.metric_load_result_metric_entry_contacts_type_0 import MetricLoadResultMetricEntryContactsType0  # noqa: PLC0415
         from ..models.note import Note  # noqa: PLC0415
         from ..models.publish_entity import PublishEntity  # noqa: PLC0415
         from ..models.tag import Tag  # noqa: PLC0415

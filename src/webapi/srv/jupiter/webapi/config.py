@@ -122,6 +122,7 @@ class JupiterWebApiProperties(ServiceProperties):
     apple_team_id: str
     apple_key_id: str
     apple_services_id: str
+    apple_native_client_id: str
     apple_private_key: str
     apple_refresh_token_encryption_key: str
     resend_api_key: str
@@ -196,6 +197,8 @@ def build_web_api_properties() -> JupiterWebApiProperties:
     apple_team_id = cast(str, os.getenv("APPLE_TEAM_ID"))
     apple_key_id = cast(str, os.getenv("APPLE_KEY_ID"))
     apple_services_id = cast(str, os.getenv("APPLE_SERVICES_ID"))
+    # Sign in with Apple in the app uses the bundle id as its client id.
+    apple_native_client_id = cast(str, os.getenv("BUNDLE_ID"))
     apple_private_key = cast(str, os.getenv("APPLE_PRIVATE_KEY"))
     apple_refresh_token_encryption_key = cast(
         str, os.getenv("APPLE_REFRESH_TOKEN_ENCRYPTION_KEY")
@@ -235,6 +238,7 @@ def build_web_api_properties() -> JupiterWebApiProperties:
         apple_team_id=apple_team_id,
         apple_key_id=apple_key_id,
         apple_services_id=apple_services_id,
+        apple_native_client_id=apple_native_client_id,
         apple_private_key=apple_private_key,
         apple_refresh_token_encryption_key=apple_refresh_token_encryption_key,
         resend_api_key=resend_api_key,

@@ -97,9 +97,7 @@ class TimePlanLoadResult:
         from ..models.access_status import AccessStatus  # noqa: PLC0415
         from ..models.publish_entity import PublishEntity  # noqa: PLC0415
         from ..models.time_plan import TimePlan  # noqa: PLC0415
-        from ..models.time_plan_load_result_activity_doneness_type_0 import (
-            TimePlanLoadResultActivityDonenessType0,  # noqa: PLC0415
-        )
+        from ..models.time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0  # noqa: PLC0415
 
         time_plan = self.time_plan.to_dict()
 
@@ -378,9 +376,7 @@ class TimePlanLoadResult:
         from ..models.time_event_in_day_block import TimeEventInDayBlock  # noqa: PLC0415
         from ..models.time_plan import TimePlan  # noqa: PLC0415
         from ..models.time_plan_activity import TimePlanActivity  # noqa: PLC0415
-        from ..models.time_plan_load_result_activity_doneness_type_0 import (
-            TimePlanLoadResultActivityDonenessType0,  # noqa: PLC0415
-        )
+        from ..models.time_plan_load_result_activity_doneness_type_0 import TimePlanLoadResultActivityDonenessType0  # noqa: PLC0415
         from ..models.todo_task import TodoTask  # noqa: PLC0415
         from ..models.user_light import UserLight  # noqa: PLC0415
 

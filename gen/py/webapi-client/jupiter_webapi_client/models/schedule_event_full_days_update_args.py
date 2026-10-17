@@ -59,12 +59,8 @@ class ScheduleEventFullDaysUpdateArgs:
         from ..models.schedule_event_full_days_update_args_duration_days import (
             ScheduleEventFullDaysUpdateArgsDurationDays,  # noqa: PLC0415
         )
-        from ..models.schedule_event_full_days_update_args_name import (
-            ScheduleEventFullDaysUpdateArgsName,  # noqa: PLC0415
-        )
-        from ..models.schedule_event_full_days_update_args_start_date import (
-            ScheduleEventFullDaysUpdateArgsStartDate,  # noqa: PLC0415
-        )
+        from ..models.schedule_event_full_days_update_args_name import ScheduleEventFullDaysUpdateArgsName  # noqa: PLC0415
+        from ..models.schedule_event_full_days_update_args_start_date import ScheduleEventFullDaysUpdateArgsStartDate  # noqa: PLC0415
 
         d = dict(src_dict)
         ref_id = d.pop("ref_id")

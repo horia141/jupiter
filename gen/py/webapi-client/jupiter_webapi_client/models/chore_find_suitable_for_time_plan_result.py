@@ -42,9 +42,7 @@ class ChoreFindSuitableForTimePlanResult:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.chore_find_suitable_for_time_plan_result_entry import (
-            ChoreFindSuitableForTimePlanResultEntry,  # noqa: PLC0415
-        )
+        from ..models.chore_find_suitable_for_time_plan_result_entry import ChoreFindSuitableForTimePlanResultEntry  # noqa: PLC0415
 
         d = dict(src_dict)
         entries = []

@@ -70,12 +70,20 @@ export default [
       "routes/app/lifecycle/init/google/ready.tsx",
     ),
     route(
+      "lifecycle/init/google/native",
+      "routes/app/lifecycle/init/google/native.tsx",
+    ),
+    route(
       "lifecycle/init/apple/prepare",
       "routes/app/lifecycle/init/apple/prepare.tsx",
     ),
     route(
       "lifecycle/init/apple/ready",
       "routes/app/lifecycle/init/apple/ready.tsx",
+    ),
+    route(
+      "lifecycle/init/apple/native",
+      "routes/app/lifecycle/init/apple/native.tsx",
     ),
     route(
       "lifecycle/login/local/login",

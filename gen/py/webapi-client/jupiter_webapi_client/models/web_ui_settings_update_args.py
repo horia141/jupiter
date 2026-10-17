@@ -39,9 +39,7 @@ class WebUiSettingsUpdateArgs:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.web_ui_settings_update_args_use_night_mode import (
-            WebUiSettingsUpdateArgsUseNightMode,  # noqa: PLC0415
-        )
+        from ..models.web_ui_settings_update_args_use_night_mode import WebUiSettingsUpdateArgsUseNightMode  # noqa: PLC0415
 
         d = dict(src_dict)
         use_night_mode = WebUiSettingsUpdateArgsUseNightMode.from_dict(d.pop("use_night_mode"))

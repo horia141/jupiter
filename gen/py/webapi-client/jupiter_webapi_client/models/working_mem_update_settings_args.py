@@ -64,9 +64,7 @@ class WorkingMemUpdateSettingsArgs:
         from ..models.working_mem_update_settings_args_generation_period import (
             WorkingMemUpdateSettingsArgsGenerationPeriod,  # noqa: PLC0415
         )
-        from ..models.working_mem_update_settings_args_schedulability import (
-            WorkingMemUpdateSettingsArgsSchedulability,  # noqa: PLC0415
-        )
+        from ..models.working_mem_update_settings_args_schedulability import WorkingMemUpdateSettingsArgsSchedulability  # noqa: PLC0415
         from ..models.working_mem_update_settings_args_scheduling_event_count import (
             WorkingMemUpdateSettingsArgsSchedulingEventCount,  # noqa: PLC0415
         )

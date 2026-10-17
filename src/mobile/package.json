@@ -22,6 +22,7 @@
     "@capacitor/keyboard": "^8.0.6",
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.2",
+    "@capgo/capacitor-social-login": "^8.5.15",
     "@jupiter/shell": "workspace:*",
     "@jupiter/webapi-client": "workspace:*",
     "dotenv": "^18.0.5"

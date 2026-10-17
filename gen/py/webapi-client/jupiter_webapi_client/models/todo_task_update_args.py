@@ -128,9 +128,7 @@ class TodoTaskUpdateArgs:
         from ..models.todo_task_update_args_is_key import TodoTaskUpdateArgsIsKey  # noqa: PLC0415
         from ..models.todo_task_update_args_name import TodoTaskUpdateArgsName  # noqa: PLC0415
         from ..models.todo_task_update_args_schedulability import TodoTaskUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.todo_task_update_args_scheduling_event_count import (
-            TodoTaskUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
+        from ..models.todo_task_update_args_scheduling_event_count import TodoTaskUpdateArgsSchedulingEventCount  # noqa: PLC0415
         from ..models.todo_task_update_args_scheduling_event_duration_mins import (
             TodoTaskUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
         )

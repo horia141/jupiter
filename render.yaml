@@ -78,6 +78,8 @@ envVarGroups:
         sync: false
       - key: APPLE_SERVICES_ID
         sync: false
+      - key: GOOGLE_IOS_CLIENT_ID
+        sync: false
       - key: APPLE_PRIVATE_KEY
         sync: false
       - key: APPLE_REFRESH_TOKEN_ENCRYPTION_KEY

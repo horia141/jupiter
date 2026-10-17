@@ -75,9 +75,7 @@ class WidgetTypeConstraints:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.widget_type_constraints_allowed_dimensions import (
-            WidgetTypeConstraintsAllowedDimensions,  # noqa: PLC0415
-        )
+        from ..models.widget_type_constraints_allowed_dimensions import WidgetTypeConstraintsAllowedDimensions  # noqa: PLC0415
 
         d = dict(src_dict)
         allowed_dimensions = WidgetTypeConstraintsAllowedDimensions.from_dict(d.pop("allowed_dimensions"))

@@ -80,9 +80,7 @@ class OccasionUpdateArgs:
         from ..models.occasion_update_args_kind import OccasionUpdateArgsKind  # noqa: PLC0415
         from ..models.occasion_update_args_name import OccasionUpdateArgsName  # noqa: PLC0415
         from ..models.occasion_update_args_schedulability import OccasionUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.occasion_update_args_scheduling_event_count import (
-            OccasionUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
+        from ..models.occasion_update_args_scheduling_event_count import OccasionUpdateArgsSchedulingEventCount  # noqa: PLC0415
         from ..models.occasion_update_args_scheduling_event_duration_mins import (
             OccasionUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
         )

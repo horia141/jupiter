@@ -135,9 +135,7 @@ class BigPlanUpdateArgs:
         from ..models.big_plan_update_args_is_key import BigPlanUpdateArgsIsKey  # noqa: PLC0415
         from ..models.big_plan_update_args_name import BigPlanUpdateArgsName  # noqa: PLC0415
         from ..models.big_plan_update_args_schedulability import BigPlanUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.big_plan_update_args_scheduling_event_count import (
-            BigPlanUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
+        from ..models.big_plan_update_args_scheduling_event_count import BigPlanUpdateArgsSchedulingEventCount  # noqa: PLC0415
         from ..models.big_plan_update_args_scheduling_event_duration_mins import (
             BigPlanUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
         )

@@ -116,9 +116,7 @@ class JournalUpdateSettingsArgs:
             JournalUpdateSettingsArgsIncludeGoalsInNote,  # noqa: PLC0415
         )
         from ..models.journal_update_settings_args_periods import JournalUpdateSettingsArgsPeriods  # noqa: PLC0415
-        from ..models.journal_update_settings_args_schedulability import (
-            JournalUpdateSettingsArgsSchedulability,  # noqa: PLC0415
-        )
+        from ..models.journal_update_settings_args_schedulability import JournalUpdateSettingsArgsSchedulability  # noqa: PLC0415
         from ..models.journal_update_settings_args_scheduling_event_count import (
             JournalUpdateSettingsArgsSchedulingEventCount,  # noqa: PLC0415
         )
@@ -128,9 +126,7 @@ class JournalUpdateSettingsArgs:
         from ..models.journal_update_settings_args_writing_task_difficulty import (
             JournalUpdateSettingsArgsWritingTaskDifficulty,  # noqa: PLC0415
         )
-        from ..models.journal_update_settings_args_writing_task_eisen import (
-            JournalUpdateSettingsArgsWritingTaskEisen,  # noqa: PLC0415
-        )
+        from ..models.journal_update_settings_args_writing_task_eisen import JournalUpdateSettingsArgsWritingTaskEisen  # noqa: PLC0415
 
         d = dict(src_dict)
         periods = JournalUpdateSettingsArgsPeriods.from_dict(d.pop("periods"))

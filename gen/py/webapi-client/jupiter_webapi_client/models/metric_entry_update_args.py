@@ -50,9 +50,7 @@ class MetricEntryUpdateArgs:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.metric_entry_update_args_collection_time import (
-            MetricEntryUpdateArgsCollectionTime,  # noqa: PLC0415
-        )
+        from ..models.metric_entry_update_args_collection_time import MetricEntryUpdateArgsCollectionTime  # noqa: PLC0415
         from ..models.metric_entry_update_args_value import MetricEntryUpdateArgsValue  # noqa: PLC0415
 
         d = dict(src_dict)

@@ -22,6 +22,13 @@ export interface ServicePropertiesClient {
   overdueWarningDays: number;
   overdueDangerDays: number;
   googleMapsApiKey: string | null;
+  nativeSignIn: NativeSignInConfig;
+}
+
+/** Public client ids the native Google SDK needs to start. */
+export interface NativeSignInConfig {
+  googleWebClientId: string;
+  googleIosClientId: string;
 }
 
 export const ServicePropertiesContext = createContext<ServicePropertiesClient>({
@@ -45,6 +52,7 @@ export const ServicePropertiesContext = createContext<ServicePropertiesClient>({
   overdueWarningDays: 2,
   overdueDangerDays: 3,
   googleMapsApiKey: null,
+  nativeSignIn: { googleWebClientId: "", googleIosClientId: "" },
 });
 
 export function useServiceProperties(): ServicePropertiesClient {

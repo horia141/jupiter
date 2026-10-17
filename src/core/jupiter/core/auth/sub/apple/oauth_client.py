@@ -75,12 +75,12 @@ class AppleOauthClient:
     _team_id: Final[str]
     _key_id: Final[str]
     _services_id: Final[str]
+    _native_client_id: Final[str | None]
     _private_key_pem: Final[str]
     _refresh_token_encryption_key: Final[str]
     _realm_codec_registry: Final[RealmCodecRegistry]
-    _client: Final[AsyncOAuth2Client]
-    _cached_client_secret: str | None
-    _cached_client_secret_exp: int
+    _clients: Final[dict[str, AsyncOAuth2Client]]
+    _cached_client_secrets: Final[dict[str, tuple[str, int]]]
 
     def __init__(
         self,
@@ -90,24 +90,31 @@ class AppleOauthClient:
         private_key_pem: str,
         refresh_token_encryption_key: str,
         realm_codec_registry: RealmCodecRegistry,
+        native_client_id: str | None = None,
     ) -> None:
         """Initialize the OAuth client.
 
         The PEM is kept as text and parsed only when a client secret is needed,
         so a placeholder key does not stop the process from starting.
+
+        Sign in from the iOS app uses the app's bundle id as the client id, not the
+        Services ID of the web flow, so ``native_client_id`` is that bundle id.
         """
         self._team_id = team_id
         self._key_id = key_id
         self._services_id = services_id
+        self._native_client_id = native_client_id or None
         self._private_key_pem = private_key_pem
         self._refresh_token_encryption_key = refresh_token_encryption_key
         self._realm_codec_registry = realm_codec_registry
-        self._cached_client_secret = None
-        self._cached_client_secret_exp = 0
-        self._client = AsyncOAuth2Client(
-            client_id=self._services_id,
-            token_endpoint_auth_method="client_secret_post",  # nosec B106
-        )
+        self._cached_client_secrets = {}
+        self._clients = {
+            client_id: AsyncOAuth2Client(
+                client_id=client_id,
+                token_endpoint_auth_method="client_secret_post",  # nosec B106
+            )
+            for client_id in self._client_ids()
+        }
 
     def get_authorisation_url(
         self,
@@ -127,7 +134,9 @@ class AppleOauthClient:
                 )
             ),
         )
-        authorisation_url, _ = self._client.create_authorization_url(
+        authorisation_url, _ = self._clients[
+            self._services_id
+        ].create_authorization_url(
             _APPLE_AUTHORISATION_URL,
             scope="name email",
             response_mode="form_post",
@@ -143,12 +152,36 @@ class AppleOauthClient:
         user_json: str | None,
     ) -> AppleUserInfo:
         """Exchange an authorisation code and return parsed Apple user info."""
+        return await self._get_user_info(
+            self._services_id, code, callback_uri, user_json
+        )
+
+    async def get_user_info_from_native_code(
+        self, code: str, user_json: str | None
+    ) -> AppleUserInfo:
+        """Exchange an authorisation code from Sign in with Apple in the app.
+
+        It has no redirect, and belongs to the app's bundle id, not the Services ID.
+        """
+        if self._native_client_id is None:
+            raise InputValidationError("Apple sign in from the app is not enabled")
+        return await self._get_user_info(self._native_client_id, code, None, user_json)
+
+    async def _get_user_info(
+        self,
+        client_id: str,
+        code: str,
+        callback_uri: SystemUrl | None,
+        user_json: str | None,
+    ) -> AppleUserInfo:
         try:
-            token_raw = await self._exchange_code_for_tokens(code, callback_uri)
+            token_raw = await self._exchange_code_for_tokens(
+                client_id, code, callback_uri
+            )
             token_response = self._realm_codec_registry.get_decoder(
                 AppleOAuthTokenResponse, WebRealm
             ).decode(token_raw)
-            claims_raw = self._decode_apple_id_token(token_response.id_token)
+            claims_raw = self._decode_apple_id_token(token_response.id_token, client_id)
             claims = self._realm_codec_registry.get_decoder(
                 AppleIdTokenClaims, WebRealm
             ).decode(claims_raw)
@@ -171,7 +204,20 @@ class AppleOauthClient:
         refresh token is returned when Apple rotates it.
         """
         plain = refresh_token.to_plain(self._refresh_token_encryption_key)
-        rotated = await self._exchange_refresh_token(plain)
+        rotated: AppleRefreshTokenPlain | None = None
+        revoked_error: AppleRefreshTokenRevokedError | None = None
+        # A refresh token belongs to whichever client id minted it: the Services
+        # ID for the web flow, the bundle id for the app. We don't record which.
+        for client_id in self._client_ids():
+            try:
+                rotated = await self._exchange_refresh_token(client_id, plain)
+            except AppleRefreshTokenRevokedError as err:
+                revoked_error = err
+                continue
+            revoked_error = None
+            break
+        if revoked_error is not None:
+            raise revoked_error
         if rotated is None:
             return None
         return AppleRefreshTokenEncrypted.from_plain(
@@ -187,19 +233,23 @@ class AppleOauthClient:
         if not plain.token_raw:
             return
         async with httpx.AsyncClient() as http:
-            resp = await http.post(
-                _APPLE_REVOKE_URL,
-                data={
-                    "client_id": self._services_id,
-                    "client_secret": self._client_secret(),
-                    "token": plain.token_raw,
-                    "token_type_hint": "refresh_token",  # nosec B105
-                },
-            )
-            if resp.status_code != 200:
-                raise InputValidationError(
-                    f"Apple token revoke failed with status {resp.status_code}"
+            status_code = 0
+            for client_id in self._client_ids():
+                resp = await http.post(
+                    _APPLE_REVOKE_URL,
+                    data={
+                        "client_id": client_id,
+                        "client_secret": self._client_secret(client_id),
+                        "token": plain.token_raw,
+                        "token_type_hint": "refresh_token",  # nosec B105
+                    },
                 )
+                if resp.status_code == 200:
+                    return
+                status_code = resp.status_code
+            raise InputValidationError(
+                f"Apple token revoke failed with status {status_code}"
+            )
 
     def cleared_refresh_token(self) -> AppleRefreshTokenEncrypted:
         """An encrypted placeholder for a revoked refresh token."""
@@ -210,17 +260,21 @@ class AppleOauthClient:
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
-        await cast(httpx.AsyncClient, self._client).aclose()
+        for client in self._clients.values():
+            await cast(httpx.AsyncClient, client).aclose()
 
-    def _client_secret(self) -> str:
+    def _client_ids(self) -> list[str]:
+        """The client ids tokens can be minted under: web first, then the app."""
+        if self._native_client_id is None:
+            return [self._services_id]
+        return [self._services_id, self._native_client_id]
+
+    def _client_secret(self, client_id: str) -> str:
         """An ES256 JWT Apple accepts as ``client_secret``, cached under an hour."""
         now = int(time.time())
-        if (
-            self._cached_client_secret is not None
-            and self._cached_client_secret_exp - _CLIENT_SECRET_RENEW_BEFORE_SECONDS
-            > now
-        ):
-            return self._cached_client_secret
+        cached = self._cached_client_secrets.get(client_id)
+        if cached is not None and cached[1] - _CLIENT_SECRET_RENEW_BEFORE_SECONDS > now:
+            return cached[0]
 
         exp = now + _CLIENT_SECRET_LIFETIME_SECONDS
         token = jwt.encode(
@@ -229,14 +283,13 @@ class AppleOauthClient:
                 "iat": now,
                 "exp": exp,
                 "aud": _APPLE_ISSUER,
-                "sub": self._services_id,
+                "sub": client_id,
             },
             self._private_key(),
             algorithm="ES256",
             headers={"kid": self._key_id, "alg": "ES256"},
         )
-        self._cached_client_secret = token
-        self._cached_client_secret_exp = exp
+        self._cached_client_secrets[client_id] = (token, exp)
         return token
 
     def _private_key(self) -> EllipticCurvePrivateKey:
@@ -253,12 +306,13 @@ class AppleOauthClient:
         return key
 
     async def _exchange_refresh_token(
-        self, refresh_token: AppleRefreshTokenPlain
+        self, client_id: str, refresh_token: AppleRefreshTokenPlain
     ) -> AppleRefreshTokenPlain | None:
         """Exchange a refresh token; return a rotated refresh token when Apple sends one."""
-        self._client.client_secret = self._client_secret()
+        client = self._clients[client_id]
+        client.client_secret = self._client_secret(client_id)
         try:
-            token_raw = await self._client.refresh_token(
+            token_raw = await client.refresh_token(
                 _APPLE_TOKEN_URL,
                 refresh_token=refresh_token.token_raw,
             )
@@ -275,27 +329,35 @@ class AppleOauthClient:
 
     async def _exchange_code_for_tokens(
         self,
+        client_id: str,
         code: str,
-        callback_uri: SystemUrl,
+        callback_uri: SystemUrl | None,
     ) -> dict[str, RealmThing]:
-        self._client.client_secret = self._client_secret()
-        token = await self._client.fetch_token(
+        client = self._clients[client_id]
+        client.client_secret = self._client_secret(client_id)
+        token = await client.fetch_token(
             _APPLE_TOKEN_URL,
             code=code,
-            redirect_uri=callback_uri.the_url,
+            redirect_uri=callback_uri.the_url if callback_uri is not None else None,
         )
         return cast(dict[str, RealmThing], token)
 
-    def _decode_apple_id_token(self, id_token: str) -> dict[str, RealmThing]:
+    def _decode_apple_id_token(
+        self, id_token: str, client_id: str
+    ) -> dict[str, RealmThing]:
         try:
-            return self._decode_apple_id_token_with_jwks(id_token, _get_jwks_client())
+            return self._decode_apple_id_token_with_jwks(
+                id_token, client_id, _get_jwks_client()
+            )
         except jwt.InvalidTokenError:
             global _cached_jwks_client
             _cached_jwks_client = PyJWKClient(_APPLE_JWKS_URL)
-            return self._decode_apple_id_token_with_jwks(id_token, _cached_jwks_client)
+            return self._decode_apple_id_token_with_jwks(
+                id_token, client_id, _cached_jwks_client
+            )
 
     def _decode_apple_id_token_with_jwks(
-        self, id_token: str, jwks_client: PyJWKClient
+        self, id_token: str, client_id: str, jwks_client: PyJWKClient
     ) -> dict[str, RealmThing]:
         signing_key = jwks_client.get_signing_key_from_jwt(id_token)
         return cast(
@@ -304,7 +366,7 @@ class AppleOauthClient:
                 id_token,
                 signing_key.key,
                 algorithms=_APPLE_ID_TOKEN_ALGORITHMS,
-                audience=self._services_id,
+                audience=client_id,
                 issuer=_APPLE_ISSUER,
             ),
         )

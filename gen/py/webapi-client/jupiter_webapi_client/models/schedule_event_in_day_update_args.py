@@ -82,13 +82,9 @@ class ScheduleEventInDayUpdateArgs:
         from ..models.schedule_event_in_day_update_args_buffer_before_mins import (
             ScheduleEventInDayUpdateArgsBufferBeforeMins,  # noqa: PLC0415
         )
-        from ..models.schedule_event_in_day_update_args_duration_mins import (
-            ScheduleEventInDayUpdateArgsDurationMins,  # noqa: PLC0415
-        )
+        from ..models.schedule_event_in_day_update_args_duration_mins import ScheduleEventInDayUpdateArgsDurationMins  # noqa: PLC0415
         from ..models.schedule_event_in_day_update_args_name import ScheduleEventInDayUpdateArgsName  # noqa: PLC0415
-        from ..models.schedule_event_in_day_update_args_start_date import (
-            ScheduleEventInDayUpdateArgsStartDate,  # noqa: PLC0415
-        )
+        from ..models.schedule_event_in_day_update_args_start_date import ScheduleEventInDayUpdateArgsStartDate  # noqa: PLC0415
         from ..models.schedule_event_in_day_update_args_start_time_in_day import (
             ScheduleEventInDayUpdateArgsStartTimeInDay,  # noqa: PLC0415
         )

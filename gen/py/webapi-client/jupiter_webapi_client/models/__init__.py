@@ -223,6 +223,7 @@ from .chore_update_args_scheduling_event_duration_mins import ChoreUpdateArgsSch
 from .chore_update_args_skip_rule import ChoreUpdateArgsSkipRule
 from .chore_update_args_stack_ref_id import ChoreUpdateArgsStackRefId
 from .chore_update_args_start_at_date import ChoreUpdateArgsStartAtDate
+from .chore_update_args_suspended import ChoreUpdateArgsSuspended
 from .chore_update_result import ChoreUpdateResult
 from .circle import Circle
 from .circle_archive_args import CircleArchiveArgs
@@ -470,6 +471,7 @@ from .habit_update_args_scheduling_event_count import HabitUpdateArgsSchedulingE
 from .habit_update_args_scheduling_event_duration_mins import HabitUpdateArgsSchedulingEventDurationMins
 from .habit_update_args_skip_rule import HabitUpdateArgsSkipRule
 from .habit_update_args_stack_ref_id import HabitUpdateArgsStackRefId
+from .habit_update_args_suspended import HabitUpdateArgsSuspended
 from .habit_update_result import HabitUpdateResult
 from .heading_block import HeadingBlock
 from .heading_block_kind import HeadingBlockKind
@@ -528,8 +530,10 @@ from .init_args import InitArgs
 from .init_create_user_local_args import InitCreateUserLocalArgs
 from .init_create_user_local_result import InitCreateUserLocalResult
 from .init_create_user_or_login_apple_args import InitCreateUserOrLoginAppleArgs
+from .init_create_user_or_login_apple_native_args import InitCreateUserOrLoginAppleNativeArgs
 from .init_create_user_or_login_apple_result import InitCreateUserOrLoginAppleResult
 from .init_create_user_or_login_google_args import InitCreateUserOrLoginGoogleArgs
+from .init_create_user_or_login_google_native_args import InitCreateUserOrLoginGoogleNativeArgs
 from .init_create_user_or_login_google_result import InitCreateUserOrLoginGoogleResult
 from .init_create_workspace_args import InitCreateWorkspaceArgs
 from .init_create_workspace_result import InitCreateWorkspaceResult
@@ -1600,6 +1604,7 @@ __all__ = (
     "ChoreUpdateArgsSkipRule",
     "ChoreUpdateArgsStackRefId",
     "ChoreUpdateArgsStartAtDate",
+    "ChoreUpdateArgsSuspended",
     "ChoreUpdateResult",
     "Circle",
     "CircleArchiveArgs",
@@ -1847,6 +1852,7 @@ __all__ = (
     "HabitUpdateArgsSchedulingEventDurationMins",
     "HabitUpdateArgsSkipRule",
     "HabitUpdateArgsStackRefId",
+    "HabitUpdateArgsSuspended",
     "HabitUpdateResult",
     "HeadingBlock",
     "HeadingBlockKind",
@@ -1905,8 +1911,10 @@ __all__ = (
     "InitCreateUserLocalArgs",
     "InitCreateUserLocalResult",
     "InitCreateUserOrLoginAppleArgs",
+    "InitCreateUserOrLoginAppleNativeArgs",
     "InitCreateUserOrLoginAppleResult",
     "InitCreateUserOrLoginGoogleArgs",
+    "InitCreateUserOrLoginGoogleNativeArgs",
     "InitCreateUserOrLoginGoogleResult",
     "InitCreateWorkspaceArgs",
     "InitCreateWorkspaceResult",

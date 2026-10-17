@@ -110,9 +110,7 @@ class PersonUpdateArgs:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.person_update_args_catch_up_actionable_from_day import (
-            PersonUpdateArgsCatchUpActionableFromDay,  # noqa: PLC0415
-        )
+        from ..models.person_update_args_catch_up_actionable_from_day import PersonUpdateArgsCatchUpActionableFromDay  # noqa: PLC0415
         from ..models.person_update_args_catch_up_actionable_from_month import (
             PersonUpdateArgsCatchUpActionableFromMonth,  # noqa: PLC0415
         )
@@ -124,9 +122,7 @@ class PersonUpdateArgs:
         from ..models.person_update_args_circle_ref_ids import PersonUpdateArgsCircleRefIds  # noqa: PLC0415
         from ..models.person_update_args_name import PersonUpdateArgsName  # noqa: PLC0415
         from ..models.person_update_args_schedulability import PersonUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.person_update_args_scheduling_event_count import (
-            PersonUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
+        from ..models.person_update_args_scheduling_event_count import PersonUpdateArgsSchedulingEventCount  # noqa: PLC0415
         from ..models.person_update_args_scheduling_event_duration_mins import (
             PersonUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
         )

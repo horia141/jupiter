@@ -68,21 +68,11 @@ class TimePlanChangeTimeConfigArgs:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.time_plan_change_time_config_args_aspect_ref_ids import (
-            TimePlanChangeTimeConfigArgsAspectRefIds,  # noqa: PLC0415
-        )
-        from ..models.time_plan_change_time_config_args_chapter_ref_ids import (
-            TimePlanChangeTimeConfigArgsChapterRefIds,  # noqa: PLC0415
-        )
-        from ..models.time_plan_change_time_config_args_goal_ref_ids import (
-            TimePlanChangeTimeConfigArgsGoalRefIds,  # noqa: PLC0415
-        )
-        from ..models.time_plan_change_time_config_args_period import (
-            TimePlanChangeTimeConfigArgsPeriod,  # noqa: PLC0415
-        )
-        from ..models.time_plan_change_time_config_args_right_now import (
-            TimePlanChangeTimeConfigArgsRightNow,  # noqa: PLC0415
-        )
+        from ..models.time_plan_change_time_config_args_aspect_ref_ids import TimePlanChangeTimeConfigArgsAspectRefIds  # noqa: PLC0415
+        from ..models.time_plan_change_time_config_args_chapter_ref_ids import TimePlanChangeTimeConfigArgsChapterRefIds  # noqa: PLC0415
+        from ..models.time_plan_change_time_config_args_goal_ref_ids import TimePlanChangeTimeConfigArgsGoalRefIds  # noqa: PLC0415
+        from ..models.time_plan_change_time_config_args_period import TimePlanChangeTimeConfigArgsPeriod  # noqa: PLC0415
+        from ..models.time_plan_change_time_config_args_right_now import TimePlanChangeTimeConfigArgsRightNow  # noqa: PLC0415
 
         d = dict(src_dict)
         ref_id = d.pop("ref_id")

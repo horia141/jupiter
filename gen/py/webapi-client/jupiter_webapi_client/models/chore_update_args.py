@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from ..models.chore_update_args_skip_rule import ChoreUpdateArgsSkipRule
     from ..models.chore_update_args_stack_ref_id import ChoreUpdateArgsStackRefId
     from ..models.chore_update_args_start_at_date import ChoreUpdateArgsStartAtDate
+    from ..models.chore_update_args_suspended import ChoreUpdateArgsSuspended
 
 
 T = TypeVar("T", bound="ChoreUpdateArgs")
@@ -56,6 +57,7 @@ class ChoreUpdateArgs:
         schedulability (ChoreUpdateArgsSchedulability):
         scheduling_event_duration_mins (ChoreUpdateArgsSchedulingEventDurationMins):
         scheduling_event_count (ChoreUpdateArgsSchedulingEventCount):
+        suspended (ChoreUpdateArgsSuspended):
     """
 
     ref_id: str
@@ -78,6 +80,7 @@ class ChoreUpdateArgs:
     schedulability: ChoreUpdateArgsSchedulability
     scheduling_event_duration_mins: ChoreUpdateArgsSchedulingEventDurationMins
     scheduling_event_count: ChoreUpdateArgsSchedulingEventCount
+    suspended: ChoreUpdateArgsSuspended
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -121,6 +124,8 @@ class ChoreUpdateArgs:
 
         scheduling_event_count = self.scheduling_event_count.to_dict()
 
+        suspended = self.suspended.to_dict()
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -145,6 +150,7 @@ class ChoreUpdateArgs:
                 "schedulability": schedulability,
                 "scheduling_event_duration_mins": scheduling_event_duration_mins,
                 "scheduling_event_count": scheduling_event_count,
+                "suspended": suspended,
             }
         )
 
@@ -166,15 +172,12 @@ class ChoreUpdateArgs:
         from ..models.chore_update_args_must_do import ChoreUpdateArgsMustDo  # noqa: PLC0415
         from ..models.chore_update_args_name import ChoreUpdateArgsName  # noqa: PLC0415
         from ..models.chore_update_args_schedulability import ChoreUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.chore_update_args_scheduling_event_count import (
-            ChoreUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
-        from ..models.chore_update_args_scheduling_event_duration_mins import (
-            ChoreUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
-        )
+        from ..models.chore_update_args_scheduling_event_count import ChoreUpdateArgsSchedulingEventCount  # noqa: PLC0415
+        from ..models.chore_update_args_scheduling_event_duration_mins import ChoreUpdateArgsSchedulingEventDurationMins  # noqa: PLC0415
         from ..models.chore_update_args_skip_rule import ChoreUpdateArgsSkipRule  # noqa: PLC0415
         from ..models.chore_update_args_stack_ref_id import ChoreUpdateArgsStackRefId  # noqa: PLC0415
         from ..models.chore_update_args_start_at_date import ChoreUpdateArgsStartAtDate  # noqa: PLC0415
+        from ..models.chore_update_args_suspended import ChoreUpdateArgsSuspended  # noqa: PLC0415
 
         d = dict(src_dict)
         ref_id = d.pop("ref_id")
@@ -219,6 +222,8 @@ class ChoreUpdateArgs:
 
         scheduling_event_count = ChoreUpdateArgsSchedulingEventCount.from_dict(d.pop("scheduling_event_count"))
 
+        suspended = ChoreUpdateArgsSuspended.from_dict(d.pop("suspended"))
+
         chore_update_args = cls(
             ref_id=ref_id,
             name=name,
@@ -240,6 +245,7 @@ class ChoreUpdateArgs:
             schedulability=schedulability,
             scheduling_event_duration_mins=scheduling_event_duration_mins,
             scheduling_event_count=scheduling_event_count,
+            suspended=suspended,
         )
 
         chore_update_args.additional_properties = d

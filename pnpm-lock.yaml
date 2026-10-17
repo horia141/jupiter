@@ -298,6 +298,9 @@ importers:
       '@capacitor/splash-screen':
         specifier: ^8.0.2
         version: 8.0.2(@capacitor/core@8.5.2)
+      '@capgo/capacitor-social-login':
+        specifier: ^8.5.15
+        version: 8.5.15(@capacitor/core@8.5.2)
       '@jupiter/shell':
         specifier: workspace:*
         version: link:../shell
@@ -481,6 +484,9 @@ importers:
       '@capacitor/splash-screen':
         specifier: ^8.0.2
         version: 8.0.2(@capacitor/core@8.5.2)
+      '@capgo/capacitor-social-login':
+        specifier: ^8.5.15
+        version: 8.5.15(@capacitor/core@8.5.2)
       '@editorjs/checklist':
         specifier: ^1.6.0
         version: 1.6.0
@@ -1353,6 +1359,11 @@ packages:
 
   '@capacitor/splash-screen@8.0.2':
     resolution: {integrity: sha512-0C6rYScr13WfAE9nPl4ScOQynmjFv9NT3Th+RZkD4ezYHmER6mcl1/lDYsv7jg3Rj3FOvLrlTlmNkUrr83kZzQ==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
+  '@capgo/capacitor-social-login@8.5.15':
+    resolution: {integrity: sha512-TZrMQlpCvBpJFh0R/MTdOe1NVfzwyLxcVEbSqltChwetqDA7OhFLRsZrJh0gqmxiQ1EZ/dYye7XGn2AI5aDNDg==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
@@ -7965,6 +7976,11 @@ snapshots:
   '@capacitor/splash-screen@8.0.2(@capacitor/core@8.5.2)':
     dependencies:
       '@capacitor/core': 8.5.2
+
+  '@capgo/capacitor-social-login@8.5.15(@capacitor/core@8.5.2)':
+    dependencies:
+      '@capacitor/core': 8.5.2
+      tslib: 2.8.1
 
   '@codexteam/icons@0.0.2': {}
 

@@ -1,4 +1,4 @@
-import { ApiError, AppShell, DocsHelpSubject } from "@jupiter/webapi-client";
+import { ApiError, DocsHelpSubject } from "@jupiter/webapi-client";
 import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { redirect, useActionData, useNavigation } from "react-router";
@@ -35,6 +35,7 @@ import { getGuestApiClient } from "@jupiter/core/infra/api-clients.server";
 import { hasShellFeature, ShellFeature } from "@jupiter/core/frontdoor";
 
 import { ServicePropertiesContext } from "~/logic/config";
+import { useOAuthProviderButtonProps } from "~/logic/native-sign-in";
 import {
   emailVerificationVerifyUrl,
   redirectForLifecycleState,
@@ -95,6 +96,7 @@ export default function InitCreateUser() {
   const inputsEnabled = navigation.state === "idle";
 
   const serviceProperties = useContext(ServicePropertiesContext);
+  const oauthProviderButtonProps = useOAuthProviderButtonProps();
   const canPickServer = hasShellFeature(
     serviceProperties.frontDoorInfo,
     ShellFeature.LOCAL_PICKER,
@@ -150,12 +152,7 @@ export default function InitCreateUser() {
             />
           }
         >
-          <LifecycleOAuthProviderButtons
-            disabled={
-              serviceProperties.frontDoorInfo.appShell ===
-              AppShell.MOBILE_CAPACITOR
-            }
-          />
+          <LifecycleOAuthProviderButtons {...oauthProviderButtonProps} />
 
           <FormControl fullWidth>
             <InputLabel id="userEmailAddress">Your Email Address</InputLabel>

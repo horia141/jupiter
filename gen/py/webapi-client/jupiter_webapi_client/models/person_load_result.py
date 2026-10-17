@@ -202,9 +202,7 @@ class PersonLoadResult:
         from ..models.note import Note  # noqa: PLC0415
         from ..models.occasion import Occasion  # noqa: PLC0415
         from ..models.person import Person  # noqa: PLC0415
-        from ..models.person_load_result_occasion_tags_by_ref_id import (
-            PersonLoadResultOccasionTagsByRefId,  # noqa: PLC0415
-        )
+        from ..models.person_load_result_occasion_tags_by_ref_id import PersonLoadResultOccasionTagsByRefId  # noqa: PLC0415
         from ..models.publish_entity import PublishEntity  # noqa: PLC0415
         from ..models.tag import Tag  # noqa: PLC0415
         from ..models.time_event_full_days_block import TimeEventFullDaysBlock  # noqa: PLC0415

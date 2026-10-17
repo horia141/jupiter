@@ -229,6 +229,7 @@ async def main() -> None:
         team_id=service_properties.apple_team_id,
         key_id=service_properties.apple_key_id,
         services_id=service_properties.apple_services_id,
+        native_client_id=service_properties.apple_native_client_id or None,
         private_key_pem=service_properties.apple_private_key,
         refresh_token_encryption_key=service_properties.apple_refresh_token_encryption_key,
         realm_codec_registry=realm_codec_registry,

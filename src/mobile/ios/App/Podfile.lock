@@ -1,4 +1,16 @@
 PODS:
+  - AppAuth (2.1.0):
+    - AppAuth/Core (= 2.1.0)
+    - AppAuth/ExternalUserAgent (= 2.1.0)
+  - AppAuth/Core (2.1.0)
+  - AppAuth/ExternalUserAgent (2.1.0):
+    - AppAuth/Core
+  - AppCheckCore (11.3.2):
+    - GoogleUtilities/Environment (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - PromisesObjC (~> 2.4)
+    - PromisesSwift (~> 2.4)
+    - RecaptchaInterop (~> 101.0)
   - Capacitor (8.5.2):
     - CapacitorCordova
   - CapacitorApp (8.1.2):
@@ -14,6 +26,41 @@ PODS:
     - Capacitor
   - CapacitorSplashScreen (8.0.2):
     - Capacitor
+  - CapgoCapacitorSocialLogin (8.5.15):
+    - Capacitor
+    - FBSDKCoreKit (~> 18.0)
+    - FBSDKLoginKit (~> 18.0)
+    - GoogleSignIn (~> 9.0.0)
+  - FBAEMKit (18.1.1):
+    - FBSDKCoreKit_Basics (= 18.1.1)
+  - FBSDKCoreKit (18.1.1):
+    - FBAEMKit (= 18.1.1)
+    - FBSDKCoreKit_Basics (= 18.1.1)
+  - FBSDKCoreKit_Basics (18.1.1)
+  - FBSDKLoginKit (18.1.1):
+    - FBSDKCoreKit (= 18.1.1)
+  - GoogleSignIn (9.0.0):
+    - AppAuth (~> 2.0)
+    - AppCheckCore (~> 11.0)
+    - GTMAppAuth (~> 5.0)
+    - GTMSessionFetcher/Core (~> 3.3)
+  - GoogleUtilities/Environment (8.1.5):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.5):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.5)
+  - GoogleUtilities/UserDefaults (8.1.5):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GTMAppAuth (5.0.0):
+    - AppAuth/Core (~> 2.0)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3)
+  - GTMSessionFetcher/Core (3.5.0)
+  - PromisesObjC (2.4.1)
+  - PromisesSwift (2.4.1):
+    - PromisesObjC (= 2.4.1)
+  - RecaptchaInterop (101.0.0)
 
 DEPENDENCIES:
   - "Capacitor (from `../../../../node_modules/@capacitor/ios`)"
@@ -24,6 +71,23 @@ DEPENDENCIES:
   - "CapacitorKeyboard (from `../../../../node_modules/@capacitor/keyboard`)"
   - "CapacitorPreferences (from `../../../../node_modules/@capacitor/preferences`)"
   - "CapacitorSplashScreen (from `../../../../node_modules/@capacitor/splash-screen`)"
+  - "CapgoCapacitorSocialLogin (from `../../../../node_modules/@capgo/capacitor-social-login`)"
+
+SPEC REPOS:
+  trunk:
+    - AppAuth
+    - AppCheckCore
+    - FBAEMKit
+    - FBSDKCoreKit
+    - FBSDKCoreKit_Basics
+    - FBSDKLoginKit
+    - GoogleSignIn
+    - GoogleUtilities
+    - GTMAppAuth
+    - GTMSessionFetcher
+    - PromisesObjC
+    - PromisesSwift
+    - RecaptchaInterop
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -42,8 +106,12 @@ EXTERNAL SOURCES:
     :path: "../../../../node_modules/@capacitor/preferences"
   CapacitorSplashScreen:
     :path: "../../../../node_modules/@capacitor/splash-screen"
+  CapgoCapacitorSocialLogin:
+    :path: "../../../../node_modules/@capgo/capacitor-social-login"
 
 SPEC CHECKSUMS:
+  AppAuth: ef4da5a3fc2e10b90c09a0a94a9baeaedc0341d5
+  AppCheckCore: be8fce5469f68d7f6a29aa94b25f097409ff7fdc
   Capacitor: 89067779e14fb7ea56af07b4817f45d1f0c2a269
   CapacitorApp: 7b7e43debe505bc61beedb83796aa1368c86078b
   CapacitorBrowser: f94f92654e92a97981bf346b3681af76527dace0
@@ -52,7 +120,19 @@ SPEC CHECKSUMS:
   CapacitorKeyboard: f9e85e685082e9f63404de15db4a4291448b0912
   CapacitorPreferences: cca2021f386efb75947c850334447d9ff22b14f1
   CapacitorSplashScreen: 7bf61c2001557ff9e195e601c6b87344480d3c65
+  CapgoCapacitorSocialLogin: 2ccbdb91a1dfa3f7fd9c3bf7234853e28c4dae77
+  FBAEMKit: fbb0a50e13109400d0615e7630a0db26ec6b8206
+  FBSDKCoreKit: 0063014b3b1f7e975e70b60232b0cf8003839746
+  FBSDKCoreKit_Basics: f4a1e0f38769eb71abaf6395b85e015318fcda49
+  FBSDKLoginKit: 0e6d0df30ae0a5b33f33d9050ca10ca21e0da234
+  GoogleSignIn: c7f09cfbc85a1abf69187be091997c317cc33b77
+  GoogleUtilities: 7dc09b3fa9ecb5c2298b952313d14628b61b9da3
+  GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
+  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
+  PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
+  PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
+  RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
 
-PODFILE CHECKSUM: cb42160cba93e71c9947a06d1f058d592ca0867b
+PODFILE CHECKSUM: 8b3a3e435c7f698bdd995ff1da438f89d1154fc2
 
 COCOAPODS: 1.16.2

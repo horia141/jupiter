@@ -130,21 +130,13 @@ class EmailTaskUpdateArgs:
         from ..models.email_task_update_args_generation_actionable_date import (
             EmailTaskUpdateArgsGenerationActionableDate,  # noqa: PLC0415
         )
-        from ..models.email_task_update_args_generation_difficulty import (
-            EmailTaskUpdateArgsGenerationDifficulty,  # noqa: PLC0415
-        )
-        from ..models.email_task_update_args_generation_due_date import (
-            EmailTaskUpdateArgsGenerationDueDate,  # noqa: PLC0415
-        )
+        from ..models.email_task_update_args_generation_difficulty import EmailTaskUpdateArgsGenerationDifficulty  # noqa: PLC0415
+        from ..models.email_task_update_args_generation_due_date import EmailTaskUpdateArgsGenerationDueDate  # noqa: PLC0415
         from ..models.email_task_update_args_generation_eisen import EmailTaskUpdateArgsGenerationEisen  # noqa: PLC0415
         from ..models.email_task_update_args_generation_name import EmailTaskUpdateArgsGenerationName  # noqa: PLC0415
-        from ..models.email_task_update_args_generation_status import (
-            EmailTaskUpdateArgsGenerationStatus,  # noqa: PLC0415
-        )
+        from ..models.email_task_update_args_generation_status import EmailTaskUpdateArgsGenerationStatus  # noqa: PLC0415
         from ..models.email_task_update_args_schedulability import EmailTaskUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.email_task_update_args_scheduling_event_count import (
-            EmailTaskUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
+        from ..models.email_task_update_args_scheduling_event_count import EmailTaskUpdateArgsSchedulingEventCount  # noqa: PLC0415
         from ..models.email_task_update_args_scheduling_event_duration_mins import (
             EmailTaskUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
         )

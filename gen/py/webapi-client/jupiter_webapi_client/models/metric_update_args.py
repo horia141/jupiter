@@ -130,15 +130,9 @@ class MetricUpdateArgs:
         from ..models.metric_update_args_collection_actionable_from_month import (
             MetricUpdateArgsCollectionActionableFromMonth,  # noqa: PLC0415
         )
-        from ..models.metric_update_args_collection_difficulty import (
-            MetricUpdateArgsCollectionDifficulty,  # noqa: PLC0415
-        )
-        from ..models.metric_update_args_collection_due_at_day import (
-            MetricUpdateArgsCollectionDueAtDay,  # noqa: PLC0415
-        )
-        from ..models.metric_update_args_collection_due_at_month import (
-            MetricUpdateArgsCollectionDueAtMonth,  # noqa: PLC0415
-        )
+        from ..models.metric_update_args_collection_difficulty import MetricUpdateArgsCollectionDifficulty  # noqa: PLC0415
+        from ..models.metric_update_args_collection_due_at_day import MetricUpdateArgsCollectionDueAtDay  # noqa: PLC0415
+        from ..models.metric_update_args_collection_due_at_month import MetricUpdateArgsCollectionDueAtMonth  # noqa: PLC0415
         from ..models.metric_update_args_collection_eisen import MetricUpdateArgsCollectionEisen  # noqa: PLC0415
         from ..models.metric_update_args_collection_period import MetricUpdateArgsCollectionPeriod  # noqa: PLC0415
         from ..models.metric_update_args_icon import MetricUpdateArgsIcon  # noqa: PLC0415
@@ -146,9 +140,7 @@ class MetricUpdateArgs:
         from ..models.metric_update_args_metric_direction import MetricUpdateArgsMetricDirection  # noqa: PLC0415
         from ..models.metric_update_args_name import MetricUpdateArgsName  # noqa: PLC0415
         from ..models.metric_update_args_schedulability import MetricUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.metric_update_args_scheduling_event_count import (
-            MetricUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
+        from ..models.metric_update_args_scheduling_event_count import MetricUpdateArgsSchedulingEventCount  # noqa: PLC0415
         from ..models.metric_update_args_scheduling_event_duration_mins import (
             MetricUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
         )

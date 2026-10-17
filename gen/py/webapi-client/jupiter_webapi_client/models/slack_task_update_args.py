@@ -116,22 +116,14 @@ class SlackTaskUpdateArgs:
         from ..models.slack_task_update_args_generation_actionable_date import (
             SlackTaskUpdateArgsGenerationActionableDate,  # noqa: PLC0415
         )
-        from ..models.slack_task_update_args_generation_difficulty import (
-            SlackTaskUpdateArgsGenerationDifficulty,  # noqa: PLC0415
-        )
-        from ..models.slack_task_update_args_generation_due_date import (
-            SlackTaskUpdateArgsGenerationDueDate,  # noqa: PLC0415
-        )
+        from ..models.slack_task_update_args_generation_difficulty import SlackTaskUpdateArgsGenerationDifficulty  # noqa: PLC0415
+        from ..models.slack_task_update_args_generation_due_date import SlackTaskUpdateArgsGenerationDueDate  # noqa: PLC0415
         from ..models.slack_task_update_args_generation_eisen import SlackTaskUpdateArgsGenerationEisen  # noqa: PLC0415
         from ..models.slack_task_update_args_generation_name import SlackTaskUpdateArgsGenerationName  # noqa: PLC0415
-        from ..models.slack_task_update_args_generation_status import (
-            SlackTaskUpdateArgsGenerationStatus,  # noqa: PLC0415
-        )
+        from ..models.slack_task_update_args_generation_status import SlackTaskUpdateArgsGenerationStatus  # noqa: PLC0415
         from ..models.slack_task_update_args_message import SlackTaskUpdateArgsMessage  # noqa: PLC0415
         from ..models.slack_task_update_args_schedulability import SlackTaskUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.slack_task_update_args_scheduling_event_count import (
-            SlackTaskUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
+        from ..models.slack_task_update_args_scheduling_event_count import SlackTaskUpdateArgsSchedulingEventCount  # noqa: PLC0415
         from ..models.slack_task_update_args_scheduling_event_duration_mins import (
             SlackTaskUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
         )

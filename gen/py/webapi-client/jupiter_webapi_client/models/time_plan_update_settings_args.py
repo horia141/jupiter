@@ -124,9 +124,7 @@ class TimePlanUpdateSettingsArgs:
         from ..models.time_plan_update_settings_args_planning_task_eisen import (
             TimePlanUpdateSettingsArgsPlanningTaskEisen,  # noqa: PLC0415
         )
-        from ..models.time_plan_update_settings_args_schedulability import (
-            TimePlanUpdateSettingsArgsSchedulability,  # noqa: PLC0415
-        )
+        from ..models.time_plan_update_settings_args_schedulability import TimePlanUpdateSettingsArgsSchedulability  # noqa: PLC0415
         from ..models.time_plan_update_settings_args_scheduling_event_count import (
             TimePlanUpdateSettingsArgsSchedulingEventCount,  # noqa: PLC0415
         )

@@ -92,5 +92,9 @@ export type ChoreUpdateArgs = {
         should_change: boolean;
         value?: (number | null);
     };
+    suspended: {
+        should_change: boolean;
+        value?: boolean;
+    };
 };
 

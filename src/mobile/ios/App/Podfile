@@ -17,6 +17,7 @@ def capacitor_pods
   pod 'CapacitorKeyboard', :path => '../../../../node_modules/@capacitor/keyboard'
   pod 'CapacitorPreferences', :path => '../../../../node_modules/@capacitor/preferences'
   pod 'CapacitorSplashScreen', :path => '../../../../node_modules/@capacitor/splash-screen'
+  pod 'CapgoCapacitorSocialLogin', :path => '../../../../node_modules/@capgo/capacitor-social-login'
 end
 
 target 'App' do

@@ -20,6 +20,7 @@
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
     "@capacitor/splash-screen": "^8.0.2",
+    "@capgo/capacitor-social-login": "^8.5.15",
     "@editorjs/checklist": "^1.6.0",
     "@editorjs/delimiter": "^1.4.2",
     "@editorjs/editorjs": "^2.31.7",

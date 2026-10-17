@@ -143,9 +143,7 @@ class JournalCollection:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.journal_collection_generation_in_advance_days import (
-            JournalCollectionGenerationInAdvanceDays,  # noqa: PLC0415
-        )
+        from ..models.journal_collection_generation_in_advance_days import JournalCollectionGenerationInAdvanceDays  # noqa: PLC0415
         from ..models.journal_collection_order_of_questions import JournalCollectionOrderOfQuestions  # noqa: PLC0415
         from ..models.recurring_task_gen_params import RecurringTaskGenParams  # noqa: PLC0415
         from ..models.scheduling_params import SchedulingParams  # noqa: PLC0415

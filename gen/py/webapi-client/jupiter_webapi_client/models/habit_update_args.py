@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from ..models.habit_update_args_scheduling_event_duration_mins import HabitUpdateArgsSchedulingEventDurationMins
     from ..models.habit_update_args_skip_rule import HabitUpdateArgsSkipRule
     from ..models.habit_update_args_stack_ref_id import HabitUpdateArgsStackRefId
+    from ..models.habit_update_args_suspended import HabitUpdateArgsSuspended
 
 
 T = TypeVar("T", bound="HabitUpdateArgs")
@@ -54,6 +55,7 @@ class HabitUpdateArgs:
         schedulability (HabitUpdateArgsSchedulability):
         scheduling_event_duration_mins (HabitUpdateArgsSchedulingEventDurationMins):
         scheduling_event_count (HabitUpdateArgsSchedulingEventCount):
+        suspended (HabitUpdateArgsSuspended):
     """
 
     ref_id: str
@@ -75,6 +77,7 @@ class HabitUpdateArgs:
     schedulability: HabitUpdateArgsSchedulability
     scheduling_event_duration_mins: HabitUpdateArgsSchedulingEventDurationMins
     scheduling_event_count: HabitUpdateArgsSchedulingEventCount
+    suspended: HabitUpdateArgsSuspended
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -116,6 +119,8 @@ class HabitUpdateArgs:
 
         scheduling_event_count = self.scheduling_event_count.to_dict()
 
+        suspended = self.suspended.to_dict()
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -139,6 +144,7 @@ class HabitUpdateArgs:
                 "schedulability": schedulability,
                 "scheduling_event_duration_mins": scheduling_event_duration_mins,
                 "scheduling_event_count": scheduling_event_count,
+                "suspended": suspended,
             }
         )
 
@@ -157,19 +163,14 @@ class HabitUpdateArgs:
         from ..models.habit_update_args_goal_ref_id import HabitUpdateArgsGoalRefId  # noqa: PLC0415
         from ..models.habit_update_args_is_key import HabitUpdateArgsIsKey  # noqa: PLC0415
         from ..models.habit_update_args_name import HabitUpdateArgsName  # noqa: PLC0415
-        from ..models.habit_update_args_repeats_in_period_count import (
-            HabitUpdateArgsRepeatsInPeriodCount,  # noqa: PLC0415
-        )
+        from ..models.habit_update_args_repeats_in_period_count import HabitUpdateArgsRepeatsInPeriodCount  # noqa: PLC0415
         from ..models.habit_update_args_repeats_strategy import HabitUpdateArgsRepeatsStrategy  # noqa: PLC0415
         from ..models.habit_update_args_schedulability import HabitUpdateArgsSchedulability  # noqa: PLC0415
-        from ..models.habit_update_args_scheduling_event_count import (
-            HabitUpdateArgsSchedulingEventCount,  # noqa: PLC0415
-        )
-        from ..models.habit_update_args_scheduling_event_duration_mins import (
-            HabitUpdateArgsSchedulingEventDurationMins,  # noqa: PLC0415
-        )
+        from ..models.habit_update_args_scheduling_event_count import HabitUpdateArgsSchedulingEventCount  # noqa: PLC0415
+        from ..models.habit_update_args_scheduling_event_duration_mins import HabitUpdateArgsSchedulingEventDurationMins  # noqa: PLC0415
         from ..models.habit_update_args_skip_rule import HabitUpdateArgsSkipRule  # noqa: PLC0415
         from ..models.habit_update_args_stack_ref_id import HabitUpdateArgsStackRefId  # noqa: PLC0415
+        from ..models.habit_update_args_suspended import HabitUpdateArgsSuspended  # noqa: PLC0415
 
         d = dict(src_dict)
         ref_id = d.pop("ref_id")
@@ -212,6 +213,8 @@ class HabitUpdateArgs:
 
         scheduling_event_count = HabitUpdateArgsSchedulingEventCount.from_dict(d.pop("scheduling_event_count"))
 
+        suspended = HabitUpdateArgsSuspended.from_dict(d.pop("suspended"))
+
         habit_update_args = cls(
             ref_id=ref_id,
             name=name,
@@ -232,6 +235,7 @@ class HabitUpdateArgs:
             schedulability=schedulability,
             scheduling_event_duration_mins=scheduling_event_duration_mins,
             scheduling_event_count=scheduling_event_count,
+            suspended=suspended,
         )
 
         habit_update_args.additional_properties = d

@@ -11,6 +11,9 @@ export enum ShellFeature {
   LOCAL_PICKER = "local-picker",
   // The shell can open links in the system browser (@capacitor/browser).
   EXTERNAL_BROWSER = "external-browser",
+  // The shell has the native Google/Apple sign-in SDKs (@capgo/capacitor-social-login),
+  // since the redirect flow can't hand the session back from the system browser.
+  NATIVE_SIGN_IN = "native-sign-in",
 }
 
 export interface FrontDoorInfo {
